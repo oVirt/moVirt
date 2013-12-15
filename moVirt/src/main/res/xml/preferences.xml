@@ -3,14 +3,17 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <EditTextPreference android:title="@string/prefs_endpoint"
                         android:key="endpoint"
-                        android:summary="@string/prefs_endpoint_summary" />
+                        android:summary="@string/prefs_endpoint_summary"
+                        android:persistent="true"/>
 
     <EditTextPreference android:title="@string/prefs_username"
                         android:key="username"
-                        android:summary="@string/prefs_username_summary" />
+                        android:summary="@string/prefs_username_summary"
+                        android:persistent="true"/>
 
     <EditTextPreference android:title="@string/prefs_password"
                         android:key="password"
                         android:summary="@string/prefs_password_summary"
-                        android:password="true" />
+                        android:password="true"
+                        android:persistent="true"/>
 </PreferenceScreen>

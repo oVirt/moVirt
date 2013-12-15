@@ -1,7 +1,9 @@
 package org.ovirt.mobile.movirt;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.app.Activity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -17,6 +19,7 @@ import com.googlecode.androidannotations.annotations.OptionsItem;
 import com.googlecode.androidannotations.annotations.OptionsMenu;
 import com.googlecode.androidannotations.annotations.UiThread;
 import com.googlecode.androidannotations.annotations.ViewById;
+import com.googlecode.androidannotations.annotations.sharedpreferences.Pref;
 
 import java.io.IOException;
 
@@ -27,6 +30,7 @@ import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.PullToRefresh
 public class MainActivity extends Activity implements uk.co.senab.actionbarpulltorefresh.library.PullToRefreshAttacher.OnRefreshListener {
 
     private static final int SELECT_CLUSTER_CODE = 1;
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     @App
     MovirtApp app;
@@ -40,16 +44,41 @@ public class MainActivity extends Activity implements uk.co.senab.actionbarpullt
     private VmListAdapter vmListAdapter;
     private PullToRefreshAttacher pullToRefreshAttacher;
 
+    @Pref
+    AppPrefs_ prefs;
+
     @AfterViews
     void initAdapters() {
         pullToRefreshAttacher = PullToRefreshAttacher.get(this);
         pullToRefreshAttacher.addRefreshableView(listView, this);
 
+        if (!endpointConfigured()) {
+            final Dialog dialog = new Dialog(this);
+            dialog.setContentView(R.layout.settings_dialog);
+            dialog.setTitle(getString(R.string.configuration));
+            Button continueButton = (Button) dialog.findViewById(R.id.continueButton);
+            continueButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                    startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
+                }
+            });
+            dialog.show();
+            return;
+        }
+
         vmListAdapter = new VmListAdapter(app.getClient());
         listView.setAdapter(vmListAdapter);
         listView.setEmptyView(findViewById(android.R.id.empty));
 
-        refresh();
+        updateSelectedCluster(null);
+    }
+
+    private boolean endpointConfigured() {
+        return prefs.endpoint().exists() &&
+               prefs.username().exists() &&
+               prefs.password().exists();
     }
 
     @Background
@@ -99,6 +128,7 @@ public class MainActivity extends Activity implements uk.co.senab.actionbarpullt
 
     @Override
     public void onRefreshStarted(View view) {
+        Log.i(TAG, "refresh started");
         refresh();
     }
 }

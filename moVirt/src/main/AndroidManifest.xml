@@ -9,12 +9,12 @@
         android:targetSdkVersion="18" />
 
     <application
+        android:name="org.ovirt.mobile.movirt.MovirtApp_"
         android:allowBackup="true"
         android:debuggable="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme"
-        android:name=".MovirtApp_">
+        android:theme="@style/AppTheme" >
         <activity
             android:name="org.ovirt.mobile.movirt.MainActivity_"
             android:label="@string/app_name" >
@@ -28,6 +28,10 @@
         <activity
             android:name="org.ovirt.mobile.movirt.SelectClusterActivity_"
             android:label="@string/title_activity_select_cluster" >
+        </activity>
+        <activity
+            android:name="org.ovirt.mobile.movirt.SettingsActivity"
+            android:label="@string/title_activity_settings" >
         </activity>
     </application>
 

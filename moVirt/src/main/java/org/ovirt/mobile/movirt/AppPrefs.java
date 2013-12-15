@@ -5,12 +5,10 @@ import com.googlecode.androidannotations.annotations.sharedpreferences.SharedPre
 
 @SharedPref
 public interface AppPrefs {
-    @DefaultString("http://localhost:8080")
     String endpoint();
 
     @DefaultString("admin")
     String username();
 
-    @DefaultString("engine")
     String password();
 }

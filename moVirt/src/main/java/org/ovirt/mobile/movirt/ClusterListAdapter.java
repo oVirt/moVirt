@@ -21,7 +21,7 @@ public class ClusterListAdapter extends BaseAdapter {
     public static final String TAG = ClusterListAdapter.class.getSimpleName();
     private OVirtClient client;
 
-    List<String> clusterList = new ArrayList<String>();
+    List<String> clusterList = new ArrayList<>();
     private String noFilterPlaceholder;
 
     public ClusterListAdapter(OVirtClient client, String noFilterPlaceholder) {

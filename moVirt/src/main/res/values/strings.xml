@@ -16,5 +16,8 @@
     <string name="refresh">Refresh</string>
     <string name="all_clusters">All (no filter)</string>
     <string name="no_vms">No VMs</string>
+    <string name="needs_configuration">To use the moVirt client, you first need to setup connection parameters for your data center.</string>
+    <string name="continue_str">Continue</string>
+    <string name="configuration">Configuration</string>
 
 </resources>
