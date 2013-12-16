@@ -1,14 +1,16 @@
 package org.ovirt.mobile.movirt;
 
-import org.androidannotations.annotations.sharedpreferences.DefaultString;
+import org.androidannotations.annotations.sharedpreferences.DefaultRes;
 import org.androidannotations.annotations.sharedpreferences.SharedPref;
 
 @SharedPref
 public interface AppPrefs {
+    @DefaultRes(R.string.default_endpoint)
     String endpoint();
 
-    @DefaultString("admin")
+    @DefaultRes(R.string.default_username)
     String username();
 
+    @DefaultRes(R.string.default_password)
     String password();
 }

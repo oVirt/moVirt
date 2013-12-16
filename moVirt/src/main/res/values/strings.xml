@@ -19,5 +19,8 @@
     <string name="needs_configuration">To use the moVirt client, you first need to setup connection parameters for your data center.</string>
     <string name="continue_str">Continue</string>
     <string name="configuration">Configuration</string>
+    <string name="default_username">admin@internal</string>
+    <string name="default_endpoint">http://10.0.2.2:8080/ovirt-engine/api</string>
+    <string name="default_password">123456</string>
 
 </resources>

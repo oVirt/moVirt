@@ -23,21 +23,16 @@ public class OVirtClient {
     OVirtRestClient restClient;
 
     public List<Vm> getVms() {
-        return restClient.getVms().vms;
+        return restClient.getVms();
     }
 
     public List<Vm> getVmsByClusterName(String clusterName) {
-        return restClient.getVms("cluster=" + clusterName).vms;
+        return restClient.getVms("cluster=" + clusterName);
     }
 
     public List<Cluster> getClusters() {
-        return restClient.getClusters().clusters;
+        return restClient.getClusters();
     }
-
-    @Bean
-    AuthInterceptor authInterceptor;
-
-    public static final String ROOT_URL = "http://10.0.2.2:8080/ovirt-engine/api";
 
     @Pref
     AppPrefs_ prefs;
@@ -47,18 +42,12 @@ public class OVirtClient {
 
     @AfterInject
     void initClient() {
-        setAuthInterceptor();
         updateRootUrlFromSettings();
         registerSharedPreferencesListener();
     }
 
     private void updateRootUrlFromSettings() {
         restClient.setRootUrl(prefs.endpoint().get());
-    }
-
-    private void setAuthInterceptor() {
-        RestTemplate template = restClient.getRestTemplate();
-        template.setInterceptors(Arrays.asList((ClientHttpRequestInterceptor) authInterceptor));
     }
 
     private void registerSharedPreferencesListener() {

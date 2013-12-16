@@ -9,7 +9,10 @@ import org.androidannotations.api.rest.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-@Rest(converters = {MappingJackson2HttpMessageConverter.class})
+import java.util.List;
+
+@Rest(converters = MappingJackson2HttpMessageConverter.class,
+      interceptors = AuthInterceptor.class)
 @Accept(MediaType.APPLICATION_JSON)
 public interface OVirtRestClient {
 
@@ -18,14 +21,14 @@ public interface OVirtRestClient {
     RestTemplate getRestTemplate();
 
     @Get("/vms")
-    Vms getVms();
+    List<Vm> getVms();
 
     @Get("/vms?search={query}")
-    Vms getVms(String query);
+    List<Vm> getVms(String query);
 
     @Post("/vms/{id}/start")
     void startVm(Action action, String id);
 
     @Get("/clusters")
-    Clusters getClusters();
+    List<Cluster> getClusters();
 }
