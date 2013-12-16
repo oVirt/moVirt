@@ -1,33 +1,75 @@
 package org.ovirt.mobile.movirt.rest;
 
-import com.googlecode.androidannotations.annotations.rest.Accept;
-import com.googlecode.androidannotations.annotations.rest.Get;
-import com.googlecode.androidannotations.annotations.rest.Post;
-import com.googlecode.androidannotations.annotations.rest.Rest;
-import com.googlecode.androidannotations.api.rest.MediaType;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.androidannotations.annotations.AfterInject;
+import org.androidannotations.annotations.App;
+import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.rest.RestService;
+import org.androidannotations.annotations.sharedpreferences.Pref;
+import org.ovirt.mobile.movirt.AppPrefs_;
+import org.ovirt.mobile.movirt.MoVirtApp;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.List;
 
-@Rest(converters = {MappingJackson2HttpMessageConverter.class})
-@Accept(MediaType.APPLICATION_JSON)
-public interface OVirtClient {
+@EBean(scope = EBean.Scope.Singleton)
+public class OVirtClient {
+    @RestService
+    OVirtRestClient restClient;
 
-    void setRootUrl(String rootUrl);
+    public List<Vm> getVms() {
+        return restClient.getVms().vms;
+    }
 
-    RestTemplate getRestTemplate();
+    public List<Vm> getVmsByClusterName(String clusterName) {
+        return restClient.getVms("cluster=" + clusterName).vms;
+    }
 
-    @Get("/vms")
-    Vms getVms();
+    public List<Cluster> getClusters() {
+        return restClient.getClusters().clusters;
+    }
 
-    @Get("/vms?search={query}")
-    Vms getVms(String query);
+    @Bean
+    AuthInterceptor authInterceptor;
 
-    @Post("/vms/{id}/start")
-    void startVm(Action action, String id);
+    public static final String ROOT_URL = "http://10.0.2.2:8080/ovirt-engine/api";
 
-    @Get("/clusters")
-    Clusters getClusters();
+    @Pref
+    AppPrefs_ prefs;
+
+    @App
+    MoVirtApp app;
+
+    @AfterInject
+    void initClient() {
+        setAuthInterceptor();
+        updateRootUrlFromSettings();
+        registerSharedPreferencesListener();
+    }
+
+    private void updateRootUrlFromSettings() {
+        restClient.setRootUrl(prefs.endpoint().get());
+    }
+
+    private void setAuthInterceptor() {
+        RestTemplate template = restClient.getRestTemplate();
+        template.setInterceptors(Arrays.asList((ClientHttpRequestInterceptor) authInterceptor));
+    }
+
+    private void registerSharedPreferencesListener() {
+        PreferenceManager.getDefaultSharedPreferences(app)
+                .registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+                    @Override
+                    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                        if (key.equals("endpoint")) {
+                            updateRootUrlFromSettings();
+                        }
+                    }
+                });
+    }
 }

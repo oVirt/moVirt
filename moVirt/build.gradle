@@ -4,18 +4,28 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:0.6.+'
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.0'
     }
 }
 apply plugin: 'android'
 
 repositories {
     mavenCentral()
+
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
 }
+
+apply plugin: 'android-apt'
+ext.androidAnnottationVersion = '3.0-SNAPSHOT'
 
 dependencies {
     compile 'com.android.support:support-v4:18.0.+'
-    compile 'com.googlecode.androidannotations:androidannotations:2.7.1'
-    compile 'com.googlecode.androidannotations:androidannotations-api:2.7.1'
+//    compile 'com.googlecode.androidannotations:androidannotations:2.7.1'
+//    compile 'com.googlecode.androidannotations:androidannotations-api:2.7.1'
+    apt "org.androidannotations:androidannotations:$androidAnnottationVersion"
+    compile "org.androidannotations:androidannotations-api:$androidAnnottationVersion"
     compile 'org.springframework.android:spring-android-rest-template:+'
     compile 'com.fasterxml.jackson.core:jackson-core:+'
     compile 'com.fasterxml.jackson.core:jackson-databind:+'

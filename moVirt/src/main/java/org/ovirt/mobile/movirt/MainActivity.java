@@ -10,18 +10,18 @@ import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.Toast;
 
-import com.googlecode.androidannotations.annotations.AfterViews;
-import com.googlecode.androidannotations.annotations.App;
-import com.googlecode.androidannotations.annotations.Background;
-import com.googlecode.androidannotations.annotations.Click;
-import com.googlecode.androidannotations.annotations.EActivity;
-import com.googlecode.androidannotations.annotations.OptionsItem;
-import com.googlecode.androidannotations.annotations.OptionsMenu;
-import com.googlecode.androidannotations.annotations.UiThread;
-import com.googlecode.androidannotations.annotations.ViewById;
-import com.googlecode.androidannotations.annotations.sharedpreferences.Pref;
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Background;
+import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.Click;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.OptionsItem;
+import org.androidannotations.annotations.OptionsMenu;
+import org.androidannotations.annotations.UiThread;
+import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.sharedpreferences.Pref;
 
-import java.io.IOException;
+import org.ovirt.mobile.movirt.rest.OVirtClient;
 
 import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.PullToRefreshAttacher;
 
@@ -32,8 +32,8 @@ public class MainActivity extends Activity implements uk.co.senab.actionbarpullt
     private static final int SELECT_CLUSTER_CODE = 1;
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    @App
-    MovirtApp app;
+    @Bean
+    OVirtClient client;
 
     @ViewById(R.id.vmListView)
     ListView listView;
@@ -68,7 +68,7 @@ public class MainActivity extends Activity implements uk.co.senab.actionbarpullt
             return;
         }
 
-        vmListAdapter = new VmListAdapter(app.getClient());
+        vmListAdapter = new VmListAdapter(client);
         listView.setAdapter(vmListAdapter);
         listView.setEmptyView(findViewById(android.R.id.empty));
 

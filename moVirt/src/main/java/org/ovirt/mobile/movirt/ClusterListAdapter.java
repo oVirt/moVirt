@@ -7,9 +7,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.googlecode.androidannotations.annotations.EBean;
-import com.googlecode.androidannotations.annotations.App;
-
 import org.ovirt.mobile.movirt.rest.Cluster;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 
@@ -31,7 +28,7 @@ public class ClusterListAdapter extends BaseAdapter {
 
     public void fetchData() {
         Log.i(TAG, "Fetching cluster data ...");
-        List<Cluster> clusters = client.getClusters().clusters;
+        List<Cluster> clusters = client.getClusters();
         clusterList.clear();
         clusterList.add(null); // default field representing no filter
         for (Cluster cluster : clusters) {

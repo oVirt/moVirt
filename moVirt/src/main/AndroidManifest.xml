@@ -9,7 +9,7 @@
         android:targetSdkVersion="18" />
 
     <application
-        android:name="org.ovirt.mobile.movirt.MovirtApp_"
+        android:name="org.ovirt.mobile.movirt.MoVirtApp_"
         android:allowBackup="true"
         android:debuggable="true"
         android:icon="@drawable/ic_launcher"

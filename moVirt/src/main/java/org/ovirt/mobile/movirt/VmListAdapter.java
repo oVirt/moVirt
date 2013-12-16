@@ -8,7 +8,6 @@ import android.widget.TextView;
 
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.rest.Vm;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -30,9 +29,9 @@ public class VmListAdapter extends BaseAdapter {
 
     public void fetchData() {
         if (clusterName != null) {
-            vmList = client.getVms("cluster=" + clusterName).vms;
+            vmList = client.getVmsByClusterName(clusterName);
         } else {
-            vmList = client.getVms().vms;
+            vmList = client.getVms();
         }
     }
 

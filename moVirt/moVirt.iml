@@ -38,6 +38,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/debug/aidl" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/assets" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/build/source/apt/debug" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/jni" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/rs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/res" type="java-resource" />
@@ -71,7 +72,6 @@
     <orderEntry type="jdk" jdkName="Android API 19 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="spring-android-rest-template-1.0.1.RELEASE" level="project" />
-    <orderEntry type="library" exported="" name="codemodel-2.4.1" level="project" />
     <orderEntry type="library" exported="" name="support-v4-18.0.0" level="project" />
     <orderEntry type="library" exported="" name="ComGithubChrisbanesActionbarpulltorefreshExtraAbs08.aar" level="project" />
     <orderEntry type="library" exported="" name="jackson-databind-2.3.0" level="project" />
@@ -79,9 +79,8 @@
     <orderEntry type="library" exported="" name="spring-android-core-1.0.1.RELEASE" level="project" />
     <orderEntry type="library" exported="" name="ComActionbarsherlockActionbarsherlock440.aar" level="project" />
     <orderEntry type="library" exported="" name="ComGithubChrisbanesActionbarpulltorefreshLibrary08.aar" level="project" />
-    <orderEntry type="library" exported="" name="androidannotations-api-2.7.1" level="project" />
+    <orderEntry type="library" exported="" name="androidannotations-api-3.0-SNAPSHOT" level="project" />
     <orderEntry type="library" exported="" name="jackson-core-2.3.0" level="project" />
-    <orderEntry type="library" exported="" name="androidannotations-2.7.1" level="project" />
   </component>
 </module>
 

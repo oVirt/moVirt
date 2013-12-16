@@ -1,9 +1,9 @@
 package org.ovirt.mobile.movirt.rest;
 
-import com.googlecode.androidannotations.annotations.EBean;
-import com.googlecode.androidannotations.annotations.sharedpreferences.Pref;
-import com.googlecode.androidannotations.api.Scope;
+import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.sharedpreferences.Pref;
 
+import org.ovirt.mobile.movirt.AppPrefs_;
 import org.springframework.http.HttpBasicAuthentication;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
@@ -11,11 +11,9 @@ import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 
-import org.ovirt.mobile.movirt.*;
-
 import java.io.IOException;
 
-@EBean(scope = Scope.Singleton)
+@EBean(scope = EBean.Scope.Singleton)
 public class AuthInterceptor implements ClientHttpRequestInterceptor {
     @Pref
     AppPrefs_ prefs;
