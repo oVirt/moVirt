@@ -3,7 +3,7 @@ package org.ovirt.mobile.movirt;
 import org.androidannotations.annotations.sharedpreferences.DefaultRes;
 import org.androidannotations.annotations.sharedpreferences.SharedPref;
 
-@SharedPref
+@SharedPref(SharedPref.Scope.APPLICATION_DEFAULT)
 public interface AppPrefs {
     @DefaultRes(R.string.default_endpoint)
     String endpoint();

@@ -14,7 +14,7 @@
     <string name="title_activity_select_cluster">SelectClusterActivity</string>
     <string name="action_select_cluster">Select Cluster</string>
     <string name="refresh">Refresh</string>
-    <string name="all_clusters">All (no filter)</string>
+    <string name="all_clusters">All clusters</string>
     <string name="no_vms">No VMs</string>
     <string name="needs_configuration">To use the moVirt client, you first need to setup connection parameters for your data center.</string>
     <string name="continue_str">Continue</string>
@@ -22,5 +22,6 @@
     <string name="default_username">admin@internal</string>
     <string name="default_endpoint">http://10.0.2.2:8080/ovirt-engine/api</string>
     <string name="default_password">123456</string>
+    <string name="action_refresh">Refresh</string>
 
 </resources>

@@ -3,32 +3,27 @@ package org.ovirt.mobile.movirt.rest;
 import org.androidannotations.annotations.rest.Accept;
 import org.androidannotations.annotations.rest.Get;
 import org.androidannotations.annotations.rest.Post;
+import org.androidannotations.annotations.rest.RequiresAuthentication;
 import org.androidannotations.annotations.rest.Rest;
 import org.androidannotations.api.rest.MediaType;
-
+import org.androidannotations.api.rest.RestClientHeaders;
+import org.androidannotations.api.rest.RestClientRootUrl;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-
-@Rest(converters = MappingJackson2HttpMessageConverter.class,
-      interceptors = AuthInterceptor.class)
+@Rest(converters = MappingJackson2HttpMessageConverter.class)
 @Accept(MediaType.APPLICATION_JSON)
-public interface OVirtRestClient {
-
-    void setRootUrl(String rootUrl);
-
-    RestTemplate getRestTemplate();
+@RequiresAuthentication
+public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders {
 
     @Get("/vms")
-    List<Vm> getVms();
+    Vms getVms();
 
     @Get("/vms?search={query}")
-    List<Vm> getVms(String query);
+    Vms getVms(String query);
 
     @Post("/vms/{id}/start")
     void startVm(Action action, String id);
 
     @Get("/clusters")
-    List<Cluster> getClusters();
+    Clusters getClusters();
 }

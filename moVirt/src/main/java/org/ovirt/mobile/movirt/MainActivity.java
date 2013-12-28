@@ -1,13 +1,12 @@
 package org.ovirt.mobile.movirt;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
-import android.app.Activity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
@@ -20,7 +19,6 @@ import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.sharedpreferences.Pref;
-
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 
 import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.PullToRefreshAttacher;
@@ -82,11 +80,13 @@ public class MainActivity extends Activity implements uk.co.senab.actionbarpullt
     }
 
     @Background
+    @Click
     void refresh() {
         try {
             vmListAdapter.fetchData();
             updateVms();
         } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
             showError(e.getMessage());
         }
     }
