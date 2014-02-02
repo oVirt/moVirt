@@ -13,7 +13,7 @@ import org.ovirt.mobile.movirt.MoVirtApp;
 import java.util.List;
 
 @EBean(scope = EBean.Scope.Singleton)
-public class OVirtClient {
+public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeListener {
     @RestService
     OVirtRestClient restClient;
 
@@ -51,16 +51,16 @@ public class OVirtClient {
     }
 
     private void registerSharedPreferencesListener() {
-        prefs.getSharedPreferences().registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
-                    @Override
-                    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                        if (key.equals("endpoint")) {
-                            updateRootUrlFromSettings();
-                        }
-                        if (key.equals("username") || key.equals("password")) {
-                            updateAuthenticationFromSettings();
-                        }
-                    }
-                });
+        prefs.getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals("endpoint")) {
+            updateRootUrlFromSettings();
+        }
+        if (key.equals("username") || key.equals("password")) {
+            updateAuthenticationFromSettings();
+        }
     }
 }

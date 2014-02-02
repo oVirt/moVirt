@@ -63,7 +63,7 @@ public class VmListAdapter extends BaseAdapter {
 
         Vm vm = vmList.get(i);
         TextView textView = (TextView) view.findViewById(R.id.vm_view);
-        textView.setText(vm.name);
+        textView.setText(vm.getName() + " (status: " + vm.getStatus() + ")");
 
         return view;
     }

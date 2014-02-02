@@ -32,8 +32,8 @@ public class ClusterListAdapter extends BaseAdapter {
         clusterList.clear();
         clusterList.add(null); // default field representing no filter
         for (Cluster cluster : clusters) {
-            clusterList.add(cluster.name);
-            Log.i(TAG, "Fetched cluster: " + cluster.name);
+            clusterList.add(cluster.getName());
+            Log.i(TAG, "Fetched cluster: " + cluster.getName());
         }
     }
 
