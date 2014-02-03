@@ -19,12 +19,9 @@ public class SelectClusterActivity extends ListActivity {
     private static final String TAG = SelectClusterActivity.class.getSimpleName();
     private ClusterListAdapter clusterListAdapter;
 
-    @Bean
-    OVirtClient client;
-
     @AfterViews
     void initListView() {
-        clusterListAdapter = new ClusterListAdapter(client, getString(R.string.all_clusters));
+        clusterListAdapter = new ClusterListAdapter(this);
         setListAdapter(clusterListAdapter);
 
         refresh();
@@ -33,7 +30,7 @@ public class SelectClusterActivity extends ListActivity {
     @Background
     void refresh() {
         try {
-            clusterListAdapter.fetchData();
+//            clusterListAdapter.fetchData();
             updateClusters();
         } catch (Exception e) {
             showError(e.getMessage());

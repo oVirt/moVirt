@@ -35,10 +35,4 @@
         android:textSize="20sp"
         android:textAlignment="center"/>
 
-    <TextView
-        android:id="@+id/pullToRefresh"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/pull_to_refresh_pull_label" />
-
 </LinearLayout>

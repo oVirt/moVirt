@@ -34,11 +34,11 @@
             android:label="@string/title_activity_settings" >
         </activity>
 
-        <intent-service
-            android:name="org.ovirt.mobile.movirt.UpdaterService"
+        <service
+            android:name="org.ovirt.mobile.movirt.UpdaterService_"
             android:enabled="true"
-            android:exported="true" >
-        </intent-service>
+            android:exported="false">
+        </service>
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />

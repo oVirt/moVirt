@@ -2,7 +2,11 @@ package org.ovirt.mobile.movirt;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -11,7 +15,6 @@ import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.OptionsItem;
@@ -19,19 +22,13 @@ import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.sharedpreferences.Pref;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
-
-import uk.co.senab.actionbarpulltorefresh.extras.actionbarsherlock.PullToRefreshAttacher;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends Activity implements uk.co.senab.actionbarpulltorefresh.library.PullToRefreshAttacher.OnRefreshListener {
+public class MainActivity extends Activity {
 
     private static final int SELECT_CLUSTER_CODE = 1;
     private static final String TAG = MainActivity.class.getSimpleName();
-
-    @Bean
-    OVirtClient client;
 
     @ViewById(R.id.vmListView)
     ListView listView;
@@ -40,16 +37,13 @@ public class MainActivity extends Activity implements uk.co.senab.actionbarpullt
     Button selectCluster;
 
     private VmListAdapter vmListAdapter;
-    private PullToRefreshAttacher pullToRefreshAttacher;
 
     @Pref
     AppPrefs_ prefs;
+    private UpdateBroadcastReceiver receiver = new UpdateBroadcastReceiver();
 
     @AfterViews
     void initAdapters() {
-        pullToRefreshAttacher = PullToRefreshAttacher.get(this);
-        pullToRefreshAttacher.addRefreshableView(listView, this);
-
         if (!endpointConfigured()) {
             final Dialog dialog = new Dialog(this);
             dialog.setContentView(R.layout.settings_dialog);
@@ -66,7 +60,7 @@ public class MainActivity extends Activity implements uk.co.senab.actionbarpullt
             return;
         }
 
-        vmListAdapter = new VmListAdapter(client);
+        vmListAdapter = new VmListAdapter(this);
         listView.setAdapter(vmListAdapter);
         listView.setEmptyView(findViewById(android.R.id.empty));
 
@@ -83,7 +77,7 @@ public class MainActivity extends Activity implements uk.co.senab.actionbarpullt
     @Click
     void refresh() {
         try {
-            vmListAdapter.fetchData();
+            //vmListAdapter.fetchData();
             updateVms();
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
@@ -99,7 +93,6 @@ public class MainActivity extends Activity implements uk.co.senab.actionbarpullt
     @UiThread
     void updateVms() {
         vmListAdapter.notifyDataSetChanged();
-        pullToRefreshAttacher.setRefreshComplete();
     }
 
     @Click
@@ -122,13 +115,32 @@ public class MainActivity extends Activity implements uk.co.senab.actionbarpullt
     private void updateSelectedCluster(String clusterName) {
         selectCluster.setText(clusterName == null ? getString(R.string.all_clusters) : clusterName);
 
-        vmListAdapter.setClusterName(clusterName);
+     //   vmListAdapter.setClusterName(clusterName);
         refresh();
     }
 
     @Override
-    public void onRefreshStarted(View view) {
-        Log.i(TAG, "refresh started");
-        refresh();
+    protected void onResume() {
+        super.onResume();
+
+        IntentFilter filter = new IntentFilter(UpdaterService.VM_LIST_UPDATE);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+    }
+
+    class UpdateBroadcastReceiver extends BroadcastReceiver {
+        private final String TAG = UpdateBroadcastReceiver.class.getSimpleName();
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            vmListAdapter.clear();
+            vmListAdapter.addAll();
+        }
     }
 }

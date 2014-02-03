@@ -31,7 +31,7 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-databind:+'
     compile 'com.fasterxml.jackson.core:jackson-annotations:+'
     compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
-    compile 'com.github.chrisbanes.actionbarpulltorefresh:extra-abs:0.8'
+//    compile 'com.github.chrisbanes.actionbarpulltorefresh:extra-abs:0.8'
 }
 
 android {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
