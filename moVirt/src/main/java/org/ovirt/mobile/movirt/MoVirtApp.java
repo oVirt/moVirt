@@ -7,6 +7,9 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 
 import org.androidannotations.annotations.EApplication;
+import org.ovirt.mobile.movirt.service.IUpdaterService;
+import org.ovirt.mobile.movirt.service.UpdaterService;
+import org.ovirt.mobile.movirt.service.UpdaterService_;
 
 @EApplication
 public class MoVirtApp extends Application implements ServiceConnection {

@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt;
+package org.ovirt.mobile.movirt.service;
 
 
 import org.ovirt.mobile.movirt.rest.Cluster;
@@ -8,7 +8,4 @@ import java.util.List;
 
 public interface IUpdaterService {
     void fullUpdate();
-
-    List<Vm> getCachedVms();
-    List<Cluster> getCachedClusters();
 }

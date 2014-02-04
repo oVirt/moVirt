@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt;
+package org.ovirt.mobile.movirt.service;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -18,15 +17,14 @@ import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.rest.Vm;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @EService
 public class UpdaterService extends Service implements IUpdaterService {
 
     private static final String TAG = UpdaterService.class.getSimpleName();
-    public static final String VM_LIST_UPDATE = "org.ovirt.mobile.movirt.UpdaterService.VM_LIST_UPDATE";
-    public static final String CLUSTER_LIST_UPDATE = "org.ovirt.mobile.movirt.UpdaterService.CLUSTER_LIST_UPDATE";
+    public static final String VM_LIST_UPDATE = "org.ovirt.mobile.movirt.service.UpdaterService.VM_LIST_UPDATE";
+    public static final String CLUSTER_LIST_UPDATE = "org.ovirt.mobile.movirt.service.UpdaterService.CLUSTER_LIST_UPDATE";
     private static final String EXTRA_CLUSTER_NAME = "cluster_name";
     private static final String EXTRA_VMS = "vms";
     private static final String EXTRA_CLUSTERS = "clusters";
@@ -52,7 +50,7 @@ public class UpdaterService extends Service implements IUpdaterService {
         vms.addAll(client.getVms());
         Intent intent = new Intent(VM_LIST_UPDATE);
         intent.getExtras().putString(EXTRA_CLUSTER_NAME, null);
-        intent.getExtras().putParcelableArrayList(EXTRA_VMS, vms);
+        //intent.getExtras().putParcelableArrayList(EXTRA_VMS, vms);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
@@ -62,22 +60,12 @@ public class UpdaterService extends Service implements IUpdaterService {
         clusters.clear();
         clusters.addAll(client.getClusters());
         Intent intent = new Intent(CLUSTER_LIST_UPDATE);
-        intent.getExtras().putParcelableArrayList(EXTRA_CLUSTERS, clusters);
+        //intent.getExtras().putParcelableArrayList(EXTRA_CLUSTERS, clusters);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    @Override
-    public List<Vm> getCachedVms() {
-        return vms;
-    }
-
-    @Override
-    public List<Cluster> getCachedClusters() {
-        return clusters;
-    }
-
     public class Updater extends Binder {
-        IUpdaterService getService() {
+        public IUpdaterService getService() {
             return UpdaterService.this;
         }
     }

@@ -1,19 +1,14 @@
-package org.ovirt.mobile.movirt;
+package org.ovirt.mobile.movirt.ui;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.rest.Cluster;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ClusterListAdapter extends ArrayAdapter<Cluster> {
 

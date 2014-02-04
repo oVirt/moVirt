@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt;
+package org.ovirt.mobile.movirt.ui;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -7,11 +7,10 @@ import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.UiThread;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.R;
 
 @EActivity(R.layout.activity_cluster)
 public class SelectClusterActivity extends ListActivity {

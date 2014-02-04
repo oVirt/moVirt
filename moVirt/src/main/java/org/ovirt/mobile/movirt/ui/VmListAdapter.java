@@ -1,17 +1,14 @@
-package org.ovirt.mobile.movirt;
+package org.ovirt.mobile.movirt.ui;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.rest.Vm;
-
-import java.util.List;
 
 public class VmListAdapter extends ArrayAdapter<Vm> {
     private static final String TAG = VmListAdapter.class.getSimpleName();

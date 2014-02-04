@@ -1,7 +1,9 @@
-package org.ovirt.mobile.movirt;
+package org.ovirt.mobile.movirt.ui;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+
+import org.ovirt.mobile.movirt.R;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On

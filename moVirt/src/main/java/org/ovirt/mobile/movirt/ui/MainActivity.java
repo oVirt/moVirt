@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt;
+package org.ovirt.mobile.movirt.ui;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -22,6 +22,8 @@ import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.sharedpreferences.Pref;
+import org.ovirt.mobile.movirt.*;
+import org.ovirt.mobile.movirt.service.UpdaterService;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
@@ -140,7 +142,7 @@ public class MainActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             vmListAdapter.clear();
-            vmListAdapter.addAll();
+            //vmListAdapter.addAll();
         }
     }
 }

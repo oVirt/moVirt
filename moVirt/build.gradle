@@ -22,6 +22,8 @@ ext.androidAnnottationVersion = '3.0+'
 
 dependencies {
     compile 'com.android.support:support-v4:18.0.+'
+    compile 'com.j256.ormlite:ormlite-android:4.+'
+    compile 'com.blandware.android.atleap:core:+@aar'
 //    compile 'com.googlecode.androidannotations:androidannotations:2.7.1'
 //    compile 'com.googlecode.androidannotations:androidannotations-api:2.7.1'
     apt "org.androidannotations:androidannotations:$androidAnnottationVersion"
@@ -39,7 +41,7 @@ android {
     buildToolsVersion "19.0.0"
 
     defaultConfig {
-        minSdkVersion 7
+        minSdkVersion 10
         targetSdkVersion 19
     }
 
