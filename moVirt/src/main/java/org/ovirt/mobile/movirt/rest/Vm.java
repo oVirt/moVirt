@@ -26,4 +26,9 @@ public class Vm {
     public String getStatus() {
         return status.state;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Vm: name=%s, id=%s, status=%s", name, id, getStatus());
+    }
 }

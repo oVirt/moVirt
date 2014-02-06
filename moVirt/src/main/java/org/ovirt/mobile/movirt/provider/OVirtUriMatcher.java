@@ -6,7 +6,7 @@ import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Vm;
 
 public class OVirtUriMatcher extends OrmLiteUriMatcher {
-    protected OVirtUriMatcher(String authority) {
+    public OVirtUriMatcher(String authority) {
         super(authority);
     }
 

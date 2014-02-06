@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
@@ -21,9 +22,7 @@ import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
-import org.androidannotations.annotations.sharedpreferences.Pref;
 import org.ovirt.mobile.movirt.*;
-import org.ovirt.mobile.movirt.service.UpdaterService;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
@@ -31,6 +30,9 @@ public class MainActivity extends Activity {
 
     private static final int SELECT_CLUSTER_CODE = 1;
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    @App
+    MoVirtApp app;
 
     @ViewById(R.id.vmListView)
     ListView listView;
@@ -40,13 +42,9 @@ public class MainActivity extends Activity {
 
     private VmListAdapter vmListAdapter;
 
-    @Pref
-    AppPrefs_ prefs;
-    private UpdateBroadcastReceiver receiver = new UpdateBroadcastReceiver();
-
     @AfterViews
     void initAdapters() {
-        if (!endpointConfigured()) {
+        if (!app.endpointConfigured()) {
             final Dialog dialog = new Dialog(this);
             dialog.setContentView(R.layout.settings_dialog);
             dialog.setTitle(getString(R.string.configuration));
@@ -67,12 +65,6 @@ public class MainActivity extends Activity {
         listView.setEmptyView(findViewById(android.R.id.empty));
 
         updateSelectedCluster(null);
-    }
-
-    private boolean endpointConfigured() {
-        return prefs.endpoint().exists() &&
-               prefs.username().exists() &&
-               prefs.password().exists();
     }
 
     @Background
@@ -119,30 +111,5 @@ public class MainActivity extends Activity {
 
      //   vmListAdapter.setClusterName(clusterName);
         refresh();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        IntentFilter filter = new IntentFilter(UpdaterService.VM_LIST_UPDATE);
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
-    }
-
-    class UpdateBroadcastReceiver extends BroadcastReceiver {
-        private final String TAG = UpdateBroadcastReceiver.class.getSimpleName();
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            vmListAdapter.clear();
-            //vmListAdapter.addAll();
-        }
     }
 }
