@@ -4,5 +4,6 @@
                        android:accountType="org.ovirt.mobile.movirt.authenticator"
                        android:icon="@drawable/ic_launcher"
                        android:smallIcon="@drawable/ic_launcher"
-                       android:label="@string/app_name">
+                       android:label="@string/app_name"
+                       android:accountPreferences="@xml/preferences">
 </account-authenticator>

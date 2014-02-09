@@ -21,7 +21,7 @@
     <string name="configuration">Configuration</string>
     <string name="default_username">admin@internal</string>
     <string name="default_endpoint">http://10.0.2.2:8080/ovirt-engine/api</string>
-    <string name="default_password">123456</string>
+    <string name="default_password">engine</string>
     <string name="action_refresh">Refresh</string>
 
 </resources>

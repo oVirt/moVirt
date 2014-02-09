@@ -2,11 +2,7 @@ package org.ovirt.mobile.movirt.ui;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -15,7 +11,6 @@ import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
-import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.OptionsItem;
@@ -23,6 +18,7 @@ import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.*;
+import org.ovirt.mobile.movirt.sync.SyncUtils;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
@@ -53,12 +49,17 @@ public class MainActivity extends Activity {
                 @Override
                 public void onClick(View v) {
                     dialog.dismiss();
-                    startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
+                    showSettings();
                 }
             });
             dialog.show();
             return;
         }
+        // Sync every 5 minutes by default
+        Log.d(TAG, "Adding periodic sync");
+//        ContentResolver.setIsSyncable(AccountAuthenticator.DUMMY_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
+//        ContentResolver.setSyncAutomatically(AccountAuthenticator.DUMMY_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
+//        ContentResolver.addPeriodicSync(AccountAuthenticator.DUMMY_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, new Bundle(), 5);
 
         vmListAdapter = new VmListAdapter(this);
         listView.setAdapter(vmListAdapter);
@@ -67,16 +68,11 @@ public class MainActivity extends Activity {
         updateSelectedCluster(null);
     }
 
-    @Background
     @Click
     void refresh() {
-        try {
-            //vmListAdapter.fetchData();
-            updateVms();
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-            showError(e.getMessage());
-        }
+        Log.d(TAG, "Refresh button clicked");
+
+        SyncUtils.triggerRefresh();
     }
 
     @UiThread
@@ -84,15 +80,15 @@ public class MainActivity extends Activity {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
-    @UiThread
-    void updateVms() {
-        vmListAdapter.notifyDataSetChanged();
-    }
-
     @Click
     @OptionsItem(R.id.action_select_cluster)
     void selectCluster() {
         startActivityForResult(new Intent(this, SelectClusterActivity_.class), SELECT_CLUSTER_CODE);
+    }
+
+    @OptionsItem(R.id.action_settings)
+    void showSettings() {
+        startActivity(new Intent(this, SettingsActivity.class));
     }
 
     @Override

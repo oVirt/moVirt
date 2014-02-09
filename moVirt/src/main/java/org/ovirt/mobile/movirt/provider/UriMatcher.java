@@ -5,8 +5,8 @@ import com.blandware.android.atleap.provider.ormlite.OrmLiteUriMatcher;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Vm;
 
-public class OVirtUriMatcher extends OrmLiteUriMatcher {
-    public OVirtUriMatcher(String authority) {
+public class UriMatcher extends OrmLiteUriMatcher {
+    public UriMatcher(String authority) {
         super(authority);
     }
 
