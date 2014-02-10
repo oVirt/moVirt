@@ -1,29 +1,13 @@
 package org.ovirt.mobile.movirt.model;
 
-import android.provider.BaseColumns;
-
-import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.util.Collection;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Cluster.*;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Cluster.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Cluster {
+public class Cluster extends BaseEntity {
 
-    public Cluster() {
-        id = "";
-        name = "";
-    }
-
-    @DatabaseField(columnName = BaseColumns._ID, id = true)
-    private String id;
-
-    @DatabaseField(columnName = NAME, canBeNull = false)
-    private String name;
-
-    @ForeignCollectionField
-    private Collection<Vm> vms;
 }

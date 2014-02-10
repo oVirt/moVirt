@@ -1,35 +1,43 @@
 package org.ovirt.mobile.movirt.sync;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
+import android.content.ContentProviderOperation;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SyncResult;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.util.Log;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.auth.AuthenticatorService;
-import org.ovirt.mobile.movirt.rest.Cluster;
+import org.ovirt.mobile.movirt.model.BaseEntity;
+import org.ovirt.mobile.movirt.model.Cluster;
+import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.rest.Vm;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @EBean
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = SyncAdapter.class.getSimpleName();
 
     @Bean
-    OVirtClient client;
+    OVirtClient oVirtClient;
 
-    final AccountManager accountManager;
+    ContentProviderClient contentClient;
 
     public SyncAdapter(Context context) {
         super(context, true);
-        accountManager = AccountManager.get(context);
+        contentClient = context.getContentResolver().acquireContentProviderClient(OVirtContract.BASE_CONTENT_URI);
     }
 
     @Override
@@ -37,19 +45,99 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         Log.d(TAG, "Performing full sync for account[" + account.name + "]");
 
         try {
-//            String authToken = accountManager.blockingGetAuthToken(account, AuthenticatorService.AccountAuthenticator.DEFAULT_AUTH_TOKEN_TYPE, true);
-//            Log.i(TAG, "Auth token: " + authToken);
-            final List<Vm> vms = client.getVms();
-            final List<Cluster> clusters = client.getClusters();
+            final List<Vm> remoteVms = oVirtClient.getVms();
+            final List<Cluster> remoteClusters = oVirtClient.getClusters();
 
-            for (Vm vm : vms) {
-                Log.i(TAG, "Fetched: " + vm.toString());
-            }
-            for (Cluster cluster : clusters) {
-                Log.i(TAG, "Fetched: " + cluster.toString());
-            }
+            final ArrayList<ContentProviderOperation> batch = new ArrayList<>();
+            batch.addAll(updateLocalEntities(OVirtContract.Cluster.CONTENT_URI, remoteClusters, new EntityMapper<Cluster>() {
+                @Override
+                public Cluster fromCursor(Cursor cursor) {
+                    Cluster cluster = new Cluster();
+                    cluster.setId(cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster._ID)));
+                    cluster.setName(cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster.NAME)));
+                    return cluster;
+                }
+
+                @Override
+                public ContentValues toValues(Cluster entity) {
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(OVirtContract.Cluster._ID, entity.getId());
+                    contentValues.put(OVirtContract.Cluster.NAME, entity.getName());
+                    return contentValues;
+                }
+            }));
+
+            batch.addAll(updateLocalEntities(OVirtContract.Vm.CONTENT_URI, remoteVms, new EntityMapper<Vm>() {
+                @Override
+                public Vm fromCursor(Cursor cursor) {
+                    Vm vm = new Vm();
+                    vm.setId(cursor.getString(cursor.getColumnIndex(OVirtContract.Vm._ID)));
+                    vm.setName(cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.NAME)));
+                    vm.setStatus(cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.STATUS)));
+                    vm.setClusterId(cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.CLUSTER_ID)));
+                    return vm;
+                }
+
+                @Override
+                public ContentValues toValues(Vm entity) {
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(OVirtContract.Vm._ID, entity.getId());
+                    contentValues.put(OVirtContract.Vm.NAME, entity.getName());
+                    contentValues.put(OVirtContract.Vm.STATUS, entity.getStatus());
+                    contentValues.put(OVirtContract.Vm.CLUSTER_ID, entity.getClusterId());
+                    return contentValues;
+                }
+            }));
+
+            Log.i(TAG, "Applying batch update");
+            contentClient.applyBatch(batch);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private <E extends BaseEntity> List<ContentProviderOperation> updateLocalEntities(Uri baseContentUri, List<E> remoteEntities, EntityMapper<E> builder)
+            throws RemoteException {
+        final ArrayList<ContentProviderOperation> batch = new ArrayList<>();
+
+        final Map<String, E> entityMap = groupEntitiesById(remoteEntities);
+
+        final Cursor cursor = contentClient.query(baseContentUri, null, null, null, null);
+        while (cursor.moveToNext()) {
+            E localEntity = builder.fromCursor(cursor);
+            E remoteEntity = entityMap.get(localEntity.getId());
+            if (remoteEntity == null) { // local entity obsolete, schedule delete from db
+                Uri deleteUri = baseContentUri.buildUpon().appendPath(localEntity.getId()).build();
+                Log.i(TAG, "Scheduling delete for URI: " + deleteUri);
+                batch.add(ContentProviderOperation.newDelete(deleteUri).build());
+            } else { // existing entity, update stats if changed
+                entityMap.remove(localEntity.getId());
+                if (!localEntity.equals(remoteEntity)) {
+                    Uri existingUri = baseContentUri.buildUpon().appendPath(localEntity.getId()).build();
+                    Log.i(TAG, "Scheduling update for URI: " + existingUri);
+                    batch.add(ContentProviderOperation.newUpdate(existingUri).withValues(builder.toValues(remoteEntity)).build());
+                }
+            }
+        }
+
+        for (E entity : entityMap.values()) {
+            Log.i(TAG, "Scheduling insert for entity: id = " + entity.getId());
+            batch.add(ContentProviderOperation.newInsert(baseContentUri).withValues(builder.toValues(entity)).build());
+        }
+
+        return batch;
+    }
+
+    private static <E extends BaseEntity> Map<String, E> groupEntitiesById(List<E> entities) {
+        Map<String, E> entityMap = new HashMap<>();
+        for (E entity : entities) {
+            entityMap.put(entity.getId(), entity);
+        }
+        return entityMap;
+    }
+
+    private static interface EntityMapper<E> {
+        E fromCursor(Cursor cursor);
+        ContentValues toValues(E entity);
     }
 }

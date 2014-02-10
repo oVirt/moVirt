@@ -2,8 +2,6 @@ package org.ovirt.mobile.movirt;
 
 import android.app.Application;
 
-import com.googlecode.androidannotations.annotations.AfterInject;
-
 import org.androidannotations.annotations.EApplication;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 import org.ovirt.mobile.movirt.sync.SyncUtils;

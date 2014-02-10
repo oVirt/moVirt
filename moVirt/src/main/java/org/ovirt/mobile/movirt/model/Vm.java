@@ -1,35 +1,75 @@
 package org.ovirt.mobile.movirt.model;
 
-import android.provider.BaseColumns;
-
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import org.ovirt.mobile.movirt.util.ObjectUtils;
+
+import java.util.Objects;
+
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.*;
 
 @DatabaseTable(tableName = TABLE)
-public class Vm {
+public class Vm extends BaseEntity {
 
     public static enum Status {
         UP,
-        DOWN
+        DOWN,
+        UNKNOWN
     }
 
-    public Vm() {
-        id = "";
-        name = "";
-    }
-
-    @DatabaseField(columnName = BaseColumns._ID, id = true)
-    private String id;
-
-    @DatabaseField(columnName = NAME, canBeNull = false)
-    private String name;
-
-    @DatabaseField(columnName = STATUS, dataType = DataType.ENUM_INTEGER, canBeNull = false)
-    private Status status = Status.DOWN;
+ //   @DatabaseField(columnName = STATUS, dataType = DataType.ENUM_INTEGER, canBeNull = false)
+ //   private Status status = Status.DOWN;
+    @DatabaseField(columnName = STATUS, canBeNull = false)
+    private String status;
 
     @DatabaseField(foreign = true, columnName = CLUSTER_ID)
-    private Cluster cluster;
+    private String clusterId;
+
+//    public Status getStatus() {
+//        return status;
+//    }
+//
+//    public void setStatus(Status status) {
+//        this.status = status;
+//    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(String clusterId) {
+        this.clusterId = clusterId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Vm)) return false;
+        if (!super.equals(o)) return false;
+
+        Vm vm = (Vm) o;
+
+        if (!ObjectUtils.equals(clusterId, vm.clusterId)) return false;
+        if (!ObjectUtils.equals(status, vm.status)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + status.hashCode();
+        result = 31 * result + clusterId.hashCode();
+        return result;
+    }
 }

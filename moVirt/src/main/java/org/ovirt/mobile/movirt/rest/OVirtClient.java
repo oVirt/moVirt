@@ -2,8 +2,6 @@ package org.ovirt.mobile.movirt.rest;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.util.Log;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.App;
@@ -12,8 +10,11 @@ import org.androidannotations.annotations.rest.RestService;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 import org.ovirt.mobile.movirt.AppPrefs_;
 import org.ovirt.mobile.movirt.MoVirtApp;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.model.BaseEntity;
+import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.Cluster;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @EBean(scope = EBean.Scope.Singleton)
@@ -23,16 +24,16 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     OVirtRestClient restClient;
 
     public List<Vm> getVms() {
-        Log.d(TAG, "Getting VMs using " + prefs.username().get() + " and " + prefs.password().get());
-        return restClient.getVms().vm;
+     //   Log.d(TAG, "Getting VMs using " + prefs.username().get() + " and " + prefs.password().get());
+        return mapRestWrappers(restClient.getVms().vm);
     }
 
     public List<Vm> getVmsByClusterName(String clusterName) {
-        return restClient.getVms("cluster=" + clusterName).vm;
+        return mapRestWrappers(restClient.getVms("cluster=" + clusterName).vm);
     }
 
     public List<Cluster> getClusters() {
-        return restClient.getClusters().cluster;
+        return mapRestWrappers(restClient.getClusters().cluster);
     }
 
     @Pref
@@ -68,5 +69,13 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         if (key.equals("username") || key.equals("password")) {
             updateAuthenticationFromSettings();
         }
+    }
+
+    private static <E extends BaseEntity, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers) {
+        List<E> entities = new ArrayList<>();
+        for (R rest : wrappers) {
+            entities.add(rest.toEntity());
+        }
+        return entities;
     }
 }
