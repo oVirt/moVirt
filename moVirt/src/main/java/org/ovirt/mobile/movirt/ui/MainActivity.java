@@ -46,6 +46,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     Button selectCluster;
 
     private SimpleCursorAdapter vmListAdapter;
+    private String selectedClusterId;
 
     @AfterViews
     void initAdapters() {
@@ -70,6 +71,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                                                 null,
                                                 PROJECTION,
                                                 new int[] {R.id.vm_view});
+
         vmListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
@@ -82,10 +84,9 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         });
         listView.setAdapter(vmListAdapter);
         listView.setEmptyView(findViewById(android.R.id.empty));
+        listView.setTextFilterEnabled(true);
 
-        updateSelectedCluster(null);
-
-        getLoaderManager().initLoader(0, null, this);
+        updateSelectedCluster(null, null);
 
     }
 
@@ -117,16 +118,18 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         switch (requestCode) {
             case SELECT_CLUSTER_CODE:
                 if (resultCode == RESULT_OK) {
-                    updateSelectedCluster(data.getStringExtra("cluster"));
+                    updateSelectedCluster(data.getStringExtra(SelectClusterActivity.EXTRA_CLUSTER_ID),
+                                          data.getStringExtra(SelectClusterActivity.EXTRA_CLUSTER_NAME));
                 }
                 break;
         }
     }
 
-    private void updateSelectedCluster(String clusterName) {
+    private void updateSelectedCluster(String clusterId, String clusterName) {
+        Log.d(TAG, "Updating selected cluster: id=" + clusterId + ", name=" + clusterName);
         selectCluster.setText(clusterName == null ? getString(R.string.all_clusters) : clusterName);
-
-     //   vmListAdapter.setClusterName(clusterName);
+        selectedClusterId = clusterId;
+        getLoaderManager().restartLoader(0, null, this);
     }
 
     @Override
@@ -134,14 +137,29 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         return new CursorLoader(this,
                                 OVirtContract.Vm.CONTENT_URI,
                                 PROJECTION,
-                                null,
-                                null,
+                                getClusterSelection(),
+                                getClusterSelectionArgs(),
                                 OVirtContract.Vm.NAME + " asc");
+    }
+
+    private String getClusterSelection() {
+        if (selectedClusterId == null) {
+            return null;
+        }
+        return OVirtContract.Vm.CLUSTER_ID + " = ?";
+    }
+
+    private String[] getClusterSelectionArgs() {
+        if (selectedClusterId == null) {
+            return null;
+        }
+        return new String[] {selectedClusterId};
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         vmListAdapter.swapCursor(data);
+
     }
 
     @Override

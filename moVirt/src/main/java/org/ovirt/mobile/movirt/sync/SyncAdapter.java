@@ -89,8 +89,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             }));
 
-            Log.i(TAG, "Applying batch update");
-            contentClient.applyBatch(batch);
+            if (batch.isEmpty()) {
+                Log.i(TAG, "No updates necessary");
+            } else {
+                Log.i(TAG, "Applying batch update");
+                contentClient.applyBatch(batch);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

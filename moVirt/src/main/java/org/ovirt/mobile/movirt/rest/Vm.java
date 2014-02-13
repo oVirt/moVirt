@@ -15,30 +15,30 @@ class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     public String id;
     public String name;
     public Status status;
+    public Cluster cluster;
 
     // status complex object in rest
     public static class Status {
         public String state;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getStatus() {
-        return status.state;
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Cluster {
+        public String id;
     }
 
     @Override
     public String toString() {
-        return String.format("Vm: name=%s, id=%s, status=%s", name, id, getStatus());
+        return String.format("Vm: name=%s, id=%s, status=%s, clusterId=%s",
+                             name, id, status.state, cluster.id);
     }
 
     public org.ovirt.mobile.movirt.model.Vm toEntity() {
         org.ovirt.mobile.movirt.model.Vm vm = new org.ovirt.mobile.movirt.model.Vm();
         vm.setId(id);
         vm.setName(name);
-        vm.setStatus(mapStatus(getStatus()));
+        vm.setStatus(mapStatus(status.state));
+        vm.setClusterId(cluster.id);
 
         return vm;
     }

@@ -28,6 +28,9 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 @EActivity(R.layout.activity_cluster)
 public class SelectClusterActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    public static String EXTRA_CLUSTER_ID = "cluster_id";
+    public static String EXTRA_CLUSTER_NAME = "cluster_name";
+
     private static final String TAG = SelectClusterActivity.class.getSimpleName();
     private SimpleCursorAdapter clusterListAdapter;
     private MatrixCursor emptyClusterCursor;
@@ -75,10 +78,12 @@ public class SelectClusterActivity extends ListActivity implements LoaderManager
 
     @ItemClick(android.R.id.list)
     void selectClusterItemClicked(Cursor cursor) {
-        String clusterId = cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster._ID));
+        final String clusterId = cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster._ID));
+        final String clusterName = cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster.NAME));
         Log.i(TAG, "Cluster " + (clusterId == null ? "<ALL>" : clusterId) + " selected");
         Intent intent = getIntent();
-        intent.putExtra("cluster", clusterId);
+        intent.putExtra(EXTRA_CLUSTER_ID, clusterId);
+        intent.putExtra(EXTRA_CLUSTER_NAME, clusterName);
         setResult(RESULT_OK, intent);
         finish();
     }
