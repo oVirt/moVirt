@@ -57,14 +57,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     cluster.setName(cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster.NAME)));
                     return cluster;
                 }
-
-                @Override
-                public ContentValues toValues(Cluster entity) {
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(OVirtContract.Cluster._ID, entity.getId());
-                    contentValues.put(OVirtContract.Cluster.NAME, entity.getName());
-                    return contentValues;
-                }
             }));
 
             batch.addAll(updateLocalEntities(OVirtContract.Vm.CONTENT_URI, remoteVms, new EntityMapper<Vm>() {
@@ -76,16 +68,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     vm.setStatus(cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.STATUS)));
                     vm.setClusterId(cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.CLUSTER_ID)));
                     return vm;
-                }
-
-                @Override
-                public ContentValues toValues(Vm entity) {
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(OVirtContract.Vm._ID, entity.getId());
-                    contentValues.put(OVirtContract.Vm.NAME, entity.getName());
-                    contentValues.put(OVirtContract.Vm.STATUS, entity.getStatus());
-                    contentValues.put(OVirtContract.Vm.CLUSTER_ID, entity.getClusterId());
-                    return contentValues;
                 }
             }));
 
@@ -119,14 +101,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 if (!localEntity.equals(remoteEntity)) {
                     Uri existingUri = baseContentUri.buildUpon().appendPath(localEntity.getId()).build();
                     Log.i(TAG, "Scheduling update for URI: " + existingUri);
-                    batch.add(ContentProviderOperation.newUpdate(existingUri).withValues(builder.toValues(remoteEntity)).build());
+                    batch.add(ContentProviderOperation.newUpdate(existingUri).withValues(remoteEntity.toValues()).build());
                 }
             }
         }
 
         for (E entity : entityMap.values()) {
             Log.i(TAG, "Scheduling insert for entity: id = " + entity.getId());
-            batch.add(ContentProviderOperation.newInsert(baseContentUri).withValues(builder.toValues(entity)).build());
+            batch.add(ContentProviderOperation.newInsert(baseContentUri).withValues(entity.toValues()).build());
         }
 
         return batch;
@@ -142,6 +124,5 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private static interface EntityMapper<E> {
         E fromCursor(Cursor cursor);
-        ContentValues toValues(E entity);
     }
 }

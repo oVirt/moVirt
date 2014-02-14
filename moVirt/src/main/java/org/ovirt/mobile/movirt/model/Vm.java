@@ -1,9 +1,13 @@
 package org.ovirt.mobile.movirt.model;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.util.Objects;
@@ -71,5 +75,13 @@ public class Vm extends BaseEntity {
         result = 31 * result + status.hashCode();
         result = 31 * result + clusterId.hashCode();
         return result;
+    }
+
+    @Override
+    public ContentValues toValues() {
+        ContentValues contentValues = super.toValues();
+        contentValues.put(OVirtContract.Vm.STATUS, getStatus());
+        contentValues.put(OVirtContract.Vm.CLUSTER_ID, getClusterId());
+        return contentValues;
     }
 }

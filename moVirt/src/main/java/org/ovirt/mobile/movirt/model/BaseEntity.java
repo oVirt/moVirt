@@ -1,16 +1,19 @@
 package org.ovirt.mobile.movirt.model;
 
+import android.content.ContentValues;
+import android.database.Cursor;
 import android.provider.BaseColumns;
 
 import com.j256.ormlite.field.DatabaseField;
 
+import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.util.Objects;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 
-public class BaseEntity {
+public abstract class BaseEntity {
 
     public BaseEntity() {
         id = "";
@@ -57,5 +60,12 @@ public class BaseEntity {
         int result = id.hashCode();
         result = 31 * result + name.hashCode();
         return result;
+    }
+
+    public ContentValues toValues() {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(OVirtContract.NamedEntity._ID, getId());
+        contentValues.put(OVirtContract.NamedEntity.NAME, getName());
+        return contentValues;
     }
 }
