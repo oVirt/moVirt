@@ -35,4 +35,19 @@ public final class OVirtContract {
 
         public static final String TABLE = "clusters";
     }
+
+    public static final String PATH_TRIGGERS = "triggers";
+    public static final String PATH_TRIGGER = "triggers/*";
+
+    public static class Trigger implements BaseColumns {
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_TRIGGERS).build();
+
+        public static final String TABLE = "triggers";
+
+        public static final String CONDITION = "condition";
+        public static final String NOTIFICATION = "notification";
+        public static final String SCOPE = "scope";
+        public static final String TARGET_ID = "target_id";
+        public static final String ENTITY_TYPE = "entity_type";
+    }
 }

@@ -1,7 +1,6 @@
 package org.ovirt.mobile.movirt.model;
 
 import android.content.ContentValues;
-import android.database.Cursor;
 import android.provider.BaseColumns;
 
 import com.j256.ormlite.field.DatabaseField;
@@ -9,13 +8,11 @@ import com.j256.ormlite.field.DatabaseField;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
-import java.util.Objects;
-
 import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 
-public abstract class BaseEntity {
+public abstract class OVirtEntity {
 
-    public BaseEntity() {
+    public OVirtEntity() {
         id = "";
         name = "";
     }
@@ -45,9 +42,9 @@ public abstract class BaseEntity {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BaseEntity)) return false;
+        if (!(o instanceof OVirtEntity)) return false;
 
-        BaseEntity that = (BaseEntity) o;
+        OVirtEntity that = (OVirtEntity) o;
 
         if (!ObjectUtils.equals(id, that.id)) return false;
         if (!ObjectUtils.equals(name, that.name)) return false;

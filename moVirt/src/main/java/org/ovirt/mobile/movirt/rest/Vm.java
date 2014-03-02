@@ -43,15 +43,7 @@ class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
         return vm;
     }
 
-    private static String mapStatus(String status) {
-//        switch (status.toLowerCase()) {
-//            case "up":
-//                return UP;
-//            case "down":
-//                return DOWN;
-//            default:
-//                return UNKNOWN;
-//        }
-        return status.toLowerCase();
+    private static org.ovirt.mobile.movirt.model.Vm.Status mapStatus(String status) {
+        return org.ovirt.mobile.movirt.model.Vm.Status.valueOf(status.toUpperCase());
     }
 }

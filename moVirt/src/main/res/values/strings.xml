@@ -23,5 +23,20 @@
     <string name="default_endpoint">http://10.0.2.2:8080/ovirt-engine/api</string>
     <string name="default_password">engine</string>
     <string name="action_refresh">Refresh</string>
+    <string name="title_activity_edit_filters">EditFiltersActivity</string>
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="action_example">Example action</string>
+    <string name="edit_triggers">Triggers</string>
+    <string name="save">Save</string>
+    <string name="add_new">Add new</string>
+    <string name="trigger_scope">Editing triggers for:</string>
+    <string name="add_trigger">Add Trigger</string>
+    <string name="whole_datacenter">Whole datacenter</string>
+    <string name="cluster_scope">Cluster %1$s</string>
+    <string name="cancel">Cancel</string>
 
 </resources>

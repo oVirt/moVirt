@@ -9,12 +9,25 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/selectCluster"
-        android:layout_width="fill_parent"
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/action_select_cluster"
-        />
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/selectCluster"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/action_select_cluster"
+            android:layout_toLeftOf="@+id/editTriggers"
+            />
+
+        <Button
+            android:id="@+id/editTriggers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/edit_triggers"
+            android:layout_alignParentRight="true"/>
+    </RelativeLayout>
 
     <Button
         android:id="@+id/refresh"

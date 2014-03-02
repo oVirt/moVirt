@@ -8,7 +8,7 @@ import com.blandware.android.atleap.provider.ormlite.OrmLiteUriMatcher;
 public class DatabaseHelper extends OrmLiteDatabaseHelper<UriMatcher> {
 
     private static final String DB_NAME = "ovirt.db";
-    private static final int SCHEMA_VERSION = 1;
+    private static final int SCHEMA_VERSION = 3;
     private static final String TAG = DatabaseHelper.class.getSimpleName();
 
     public DatabaseHelper(Context context) {

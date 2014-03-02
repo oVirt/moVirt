@@ -10,7 +10,7 @@ import org.androidannotations.annotations.rest.RestService;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 import org.ovirt.mobile.movirt.AppPrefs_;
 import org.ovirt.mobile.movirt.MoVirtApp;
-import org.ovirt.mobile.movirt.model.BaseEntity;
+import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.Cluster;
 
@@ -71,7 +71,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         }
     }
 
-    private static <E extends BaseEntity, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers) {
+    private static <E extends OVirtEntity, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers) {
         List<E> entities = new ArrayList<>();
         for (R rest : wrappers) {
             entities.add(rest.toEntity());

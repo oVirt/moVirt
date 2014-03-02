@@ -25,6 +25,7 @@ import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.*;
+import org.ovirt.mobile.movirt.model.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 
@@ -47,6 +48,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
 
     private SimpleCursorAdapter vmListAdapter;
     private String selectedClusterId;
+    private String selectedClusterName;
 
     @AfterViews
     void initAdapters() {
@@ -103,9 +105,16 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     }
 
     @Click
-    @OptionsItem(R.id.action_select_cluster)
     void selectCluster() {
         startActivityForResult(new Intent(this, SelectClusterActivity_.class), SELECT_CLUSTER_CODE);
+    }
+
+    @Click
+    void editTriggers() {
+        final Intent intent = new Intent(this, EditTriggersActivity_.class);
+        intent.putExtra(EditTriggersActivity.EXTRA_TARGET_ENTITY_ID, selectedClusterId);
+        intent.putExtra(EditTriggersActivity.EXTRA_TARGET_ENTITY_NAME, selectedClusterName);
+        startActivity(intent);
     }
 
     @OptionsItem(R.id.action_settings)
@@ -129,6 +138,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         Log.d(TAG, "Updating selected cluster: id=" + clusterId + ", name=" + clusterName);
         selectCluster.setText(clusterName == null ? getString(R.string.all_clusters) : clusterName);
         selectedClusterId = clusterId;
+        selectedClusterName = clusterName;
         getLoaderManager().restartLoader(0, null, this);
     }
 

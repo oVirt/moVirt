@@ -28,22 +28,22 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.SelectClusterActivity_"
+            android:name="org.ovirt.mobile.movirt.ui.SelectClusterActivity_"
             android:label="@string/title_activity_select_cluster" >
         </activity>
         <activity
-            android:name=".ui.SettingsActivity"
+            android:name="org.ovirt.mobile.movirt.ui.SettingsActivity"
             android:label="@string/title_activity_settings" >
         </activity>
 
         <provider
-            android:name=".provider.Provider"
+            android:name="org.ovirt.mobile.movirt.provider.Provider"
             android:authorities="org.ovirt.mobile.movirt.provider"
             android:enabled="true"
             android:exported="false" >
         </provider>
 
-        <service android:name=".auth.AuthenticatorService">
+        <service android:name="org.ovirt.mobile.movirt.auth.AuthenticatorService" >
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
@@ -53,10 +53,10 @@
                 android:resource="@xml/authenticator" />
         </service>
         <service
-            android:name=".sync.SyncService_"
+            android:name="org.ovirt.mobile.movirt.sync.SyncService_"
             android:enabled="true"
             android:exported="true"
-            android:process=":sync">
+            android:process=":sync" >
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
@@ -65,6 +65,11 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/sync_adapter" />
         </service>
+
+        <activity
+            android:name="org.ovirt.mobile.movirt.ui.EditTriggersActivity_"
+            android:label="@string/title_activity_edit_filters" >
+        </activity>
     </application>
 
 </manifest>
