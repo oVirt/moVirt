@@ -23,7 +23,7 @@ public class Vm extends OVirtEntity {
     @DatabaseField(columnName = STATUS, canBeNull = false)
     private Status status;
 
-    @DatabaseField(foreign = true, columnName = CLUSTER_ID)
+    @DatabaseField(columnName = CLUSTER_ID, canBeNull = false)
     private String clusterId;
 
     public Status getStatus() {

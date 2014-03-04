@@ -22,7 +22,7 @@ public class Trigger<E extends OVirtEntity>  {
         CRITICAL
     }
 
-    @DatabaseField(columnName = _ID, id = true)
+    @DatabaseField(columnName = _ID, generatedId = true, allowGeneratedIdInsert = true)
     private int id;
 
     @DatabaseField(columnName = NOTIFICATION, canBeNull = false)
@@ -90,7 +90,9 @@ public class Trigger<E extends OVirtEntity>  {
 
     public ContentValues toValues() {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(_ID, id);
+        if (id != 0) {
+            contentValues.put(_ID, id);
+        }
         contentValues.put(NOTIFICATION, notificationType.toString());
         contentValues.put(CONDITION, JsonUtils.objectToString(condition));
         contentValues.put(SCOPE, scope.toString());

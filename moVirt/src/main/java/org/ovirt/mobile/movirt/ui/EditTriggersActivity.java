@@ -30,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 @EActivity(R.layout.activity_edit_triggers)
-public class EditTriggersActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class EditTriggersActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>, AddTriggerDialogFragment.AddTriggerActivity {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
 
@@ -132,15 +132,15 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
         return args.toArray(new String[args.size()]);
     }
 
-    private EntityType getEntityType() {
+    public EntityType getEntityType() {
         return EntityType.VM;
     }
 
-    private Trigger.Scope getScope() {
+    public Trigger.Scope getScope() {
         return targetEntityId == null ? Trigger.Scope.GLOBAL : Trigger.Scope.CLUSTER;
     }
 
-    private String getTargetId() {
+    public String getTargetId() {
         return targetEntityId;
     }
 }

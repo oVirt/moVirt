@@ -44,6 +44,7 @@ public abstract class EntityMapper<E> {
             trigger.setId(cursorHelper.getInt(OVirtContract.Trigger._ID));
             trigger.setNotificationType(cursorHelper.getEnum(OVirtContract.Trigger.NOTIFICATION, Trigger.NotificationType.class));
             trigger.setCondition(cursorHelper.getJson(OVirtContract.Trigger.CONDITION, Condition.class));
+            trigger.setScope(cursorHelper.getEnum(OVirtContract.Trigger.SCOPE, Trigger.Scope.class));
             trigger.setTargetId(cursorHelper.getString(OVirtContract.Trigger.TARGET_ID));
             trigger.setEntityType(cursorHelper.getEnum(OVirtContract.Trigger.ENTITY_TYPE, EntityType.class));
             return trigger;

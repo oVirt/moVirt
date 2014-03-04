@@ -37,7 +37,7 @@ public final class OVirtContract {
     }
 
     public static final String PATH_TRIGGERS = "triggers";
-    public static final String PATH_TRIGGER = "triggers/*";
+    public static final String PATH_TRIGGER = "triggers/#";
 
     public static class Trigger implements BaseColumns {
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_TRIGGERS).build();
