@@ -5,6 +5,8 @@ import android.content.ContentValues;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import org.ovirt.mobile.movirt.model.condition.Condition;
+import org.ovirt.mobile.movirt.model.condition.ConditionPersister;
 import org.ovirt.mobile.movirt.util.JsonUtils;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.*;

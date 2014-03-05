@@ -169,7 +169,6 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         vmListAdapter.swapCursor(data);
-
     }
 
     @Override

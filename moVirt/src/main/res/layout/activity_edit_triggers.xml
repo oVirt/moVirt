@@ -13,12 +13,14 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/trigger_scope"/>
+            android:text="@string/trigger_scope"
+            android:textSize="20sp"/>
 
         <TextView
             android:id="@+id/triggerScopeLabel"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textSize="24sp"/>
 
     </LinearLayout>
 
@@ -34,11 +36,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/add_new"/>
-
-    <Button
-        android:id="@+id/save"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/save"/>
 
 </LinearLayout>

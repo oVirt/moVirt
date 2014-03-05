@@ -8,7 +8,7 @@ public abstract class TriggerResolver<E extends OVirtEntity> {
     public abstract List<Trigger<E>> getTriggersForId(String id);
 
     private static final Trigger<Vm> DUMMY_VM_TRIGGER = new Trigger<Vm>() {{
-        setCondition(new DummyVmCondition());
+        //setCondition(new DummyVmCondition());
     }};
 
     private static final TriggerResolver<Vm> vmTriggerResolver = new TriggerResolver<Vm>() {

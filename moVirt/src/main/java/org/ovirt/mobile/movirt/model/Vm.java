@@ -26,6 +26,12 @@ public class Vm extends OVirtEntity {
     @DatabaseField(columnName = CLUSTER_ID, canBeNull = false)
     private String clusterId;
 
+    @DatabaseField(columnName = CPU_USAGE)
+    private int cpuUsage;
+
+    @DatabaseField(columnName = MEMORY_USAGE)
+    private int memoryUsage;
+
     public Status getStatus() {
         return status;
     }
@@ -42,6 +48,22 @@ public class Vm extends OVirtEntity {
         this.clusterId = clusterId;
     }
 
+    public int getCpuUsage() {
+        return cpuUsage;
+    }
+
+    public void setCpuUsage(int cpuUsage) {
+        this.cpuUsage = cpuUsage;
+    }
+
+    public int getMemoryUsage() {
+        return memoryUsage;
+    }
+
+    public void setMemoryUsage(int memoryUsage) {
+        this.memoryUsage = memoryUsage;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -50,8 +72,11 @@ public class Vm extends OVirtEntity {
 
         Vm vm = (Vm) o;
 
-        if (!ObjectUtils.equals(clusterId, vm.clusterId)) return false;
-        if (!ObjectUtils.equals(status, vm.status)) return false;
+        if (cpuUsage != vm.cpuUsage) return false;
+        if (memoryUsage != vm.memoryUsage) return false;
+        if (clusterId != null ? !clusterId.equals(vm.clusterId) : vm.clusterId != null)
+            return false;
+        if (status != vm.status) return false;
 
         return true;
     }
@@ -59,8 +84,10 @@ public class Vm extends OVirtEntity {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + status.hashCode();
-        result = 31 * result + clusterId.hashCode();
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
+        result = 31 * result + cpuUsage;
+        result = 31 * result + memoryUsage;
         return result;
     }
 

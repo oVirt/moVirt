@@ -33,10 +33,15 @@
     <string name="edit_triggers">Triggers</string>
     <string name="save">Save</string>
     <string name="add_new">Add new</string>
-    <string name="trigger_scope">Editing triggers for:</string>
+    <string name="trigger_scope">Editing triggers for: </string>
     <string name="add_trigger">Add Trigger</string>
     <string name="whole_datacenter">Whole datacenter</string>
     <string name="cluster_scope">Cluster %1$s</string>
     <string name="cancel">Cancel</string>
+    <string name="trigger_condition_type">Condition</string>
+    <string name="notification_type">Notify</string>
+    <string name="status">When status:</string>
+    <string name="above">Above:</string>
+    <string name="percentage_sign">%</string>
 
 </resources>

@@ -20,7 +20,7 @@ import android.util.Log;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.model.Cluster;
-import org.ovirt.mobile.movirt.model.Condition;
+import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.Trigger;
@@ -114,7 +114,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         int i = 0;
         for (Trigger<E> trigger : triggers) {
             Log.d(TAG, "Displaying notification " + i);
-            if (trigger.getCondition().evaluate(localEntity, remoteEntity)) {
+            if (!trigger.getCondition().evaluate(localEntity) && trigger.getCondition().evaluate(remoteEntity)) {
                 displayNotification(i++, trigger.getCondition(), trigger.getNotificationType());
             }
         }

@@ -91,11 +91,6 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
         dialog.show(getFragmentManager(), "");
     }
 
-//    @Click
-//    void save() {
-//
-//    }
-
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(this,

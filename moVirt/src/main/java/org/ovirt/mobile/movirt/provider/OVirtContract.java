@@ -25,6 +25,8 @@ public final class OVirtContract {
 
         public static final String STATUS = "status";
         public static final String CLUSTER_ID = "cluster_id";
+        public static final String CPU_USAGE = "cpu_usage";
+        public static final String MEMORY_USAGE = "mem_usage";
     }
 
     public static final String PATH_CLUSTERS = "clusters";

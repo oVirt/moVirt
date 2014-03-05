@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="condition_types">
+        <item>CPU</item>
+        <item>Memory</item>
+        <item>Status</item>
+    </string-array>
+    <string-array name="notification_types">
+        <item>Blink</item>
+        <item>Vibrate</item>
+    </string-array>
+    <string-array name="statuses">
+        <item>Down</item>
+        <item>Unknown</item>
+    </string-array>
+</resources>
