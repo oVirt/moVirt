@@ -21,6 +21,9 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders {
     @Get("/vms?search={query}")
     Vms getVms(String query);
 
+    @Get("/vms/{id}/statistics")
+    Statistics getVmStatistics(String id);
+
     @Post("/vms/{id}/start")
     void startVm(Action action, String id);
 

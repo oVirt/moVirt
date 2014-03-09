@@ -118,7 +118,7 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
     }
 
     private String[] getTriggerSelectionArgs() {
-        List<String> args = new ArrayList();
+        List<String> args = new ArrayList<>();
         args.add(getEntityType().toString());
         args.add(getScope().toString());
         if (getTargetId() != null) {

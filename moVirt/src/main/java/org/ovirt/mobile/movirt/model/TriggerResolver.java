@@ -20,7 +20,7 @@ public abstract class TriggerResolver<E extends OVirtEntity> {
 
     public static <E extends OVirtEntity> TriggerResolver<E> forEntity(Class<E> clazz) {
         if (clazz == Vm.class) {
-            return (TriggerResolver<E>) vmTriggerResolver;
+        //    return (TriggerResolver<E>) vmTriggerResolver;
         }
         return null;
     }

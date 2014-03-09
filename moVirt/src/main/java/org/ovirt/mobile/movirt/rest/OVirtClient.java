@@ -14,22 +14,51 @@ import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.Cluster;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = OVirtClient.class.getSimpleName();
+    private static final String CPU_PERCENTAGE_STAT = "cpu.current.total";
+    private static final String TOTAL_MEMORY_STAT = "memory.installed";
+    private static final String USED_MEMORY_STAT = "memory.used";
+
     @RestService
     OVirtRestClient restClient;
 
     public List<Vm> getVms() {
      //   Log.d(TAG, "Getting VMs using " + prefs.username().get() + " and " + prefs.password().get());
-        return mapRestWrappers(restClient.getVms().vm);
+        List<Vm> vms = mapRestWrappers(restClient.getVms().vm);
+        updateVmsStatistics(vms);
+
+        return vms;
     }
 
-    public List<Vm> getVmsByClusterName(String clusterName) {
-        return mapRestWrappers(restClient.getVms("cluster=" + clusterName).vm);
+    private void updateVmsStatistics(List<Vm> vms) {
+        for (Vm vm : vms) {
+            updateVmStatistics(vm);
+        }
+    }
+
+    private void updateVmStatistics(Vm vm) {
+        final List<Statistic> statistics = restClient.getVmStatistics(vm.getId()).statistic;
+        BigDecimal cpu = getStatisticValueByName(CPU_PERCENTAGE_STAT, statistics);
+        BigDecimal totalMemory = getStatisticValueByName(TOTAL_MEMORY_STAT, statistics);
+        BigDecimal usedMemory = getStatisticValueByName(USED_MEMORY_STAT, statistics);
+
+        vm.setCpuUsage(cpu.doubleValue());
+        vm.setMemoryUsage(usedMemory.divide(totalMemory).doubleValue());
+    }
+
+    private BigDecimal getStatisticValueByName(String name, List<Statistic> statistics) {
+        for (Statistic statistic : statistics) {
+            if (name.equals(statistic.name)) {
+                return new BigDecimal(statistic.values.value.get(0).datum);
+            }
+        }
+        return null;
     }
 
     public List<Cluster> getClusters() {

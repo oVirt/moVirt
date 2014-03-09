@@ -27,10 +27,10 @@ public class Vm extends OVirtEntity {
     private String clusterId;
 
     @DatabaseField(columnName = CPU_USAGE)
-    private int cpuUsage;
+    private double cpuUsage;
 
     @DatabaseField(columnName = MEMORY_USAGE)
-    private int memoryUsage;
+    private double memoryUsage;
 
     public Status getStatus() {
         return status;
@@ -48,19 +48,19 @@ public class Vm extends OVirtEntity {
         this.clusterId = clusterId;
     }
 
-    public int getCpuUsage() {
+    public double getCpuUsage() {
         return cpuUsage;
     }
 
-    public void setCpuUsage(int cpuUsage) {
+    public void setCpuUsage(double cpuUsage) {
         this.cpuUsage = cpuUsage;
     }
 
-    public int getMemoryUsage() {
+    public double getMemoryUsage() {
         return memoryUsage;
     }
 
-    public void setMemoryUsage(int memoryUsage) {
+    public void setMemoryUsage(double memoryUsage) {
         this.memoryUsage = memoryUsage;
     }
 
@@ -72,10 +72,9 @@ public class Vm extends OVirtEntity {
 
         Vm vm = (Vm) o;
 
-        if (cpuUsage != vm.cpuUsage) return false;
-        if (memoryUsage != vm.memoryUsage) return false;
-        if (clusterId != null ? !clusterId.equals(vm.clusterId) : vm.clusterId != null)
-            return false;
+        if (Double.compare(vm.cpuUsage, cpuUsage) != 0) return false;
+        if (Double.compare(vm.memoryUsage, memoryUsage) != 0) return false;
+        if (!clusterId.equals(vm.clusterId)) return false;
         if (status != vm.status) return false;
 
         return true;
@@ -84,10 +83,13 @@ public class Vm extends OVirtEntity {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (status != null ? status.hashCode() : 0);
-        result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
-        result = 31 * result + cpuUsage;
-        result = 31 * result + memoryUsage;
+        long temp;
+        result = 31 * result + status.hashCode();
+        result = 31 * result + clusterId.hashCode();
+        temp = Double.doubleToLongBits(cpuUsage);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(memoryUsage);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
 
@@ -96,6 +98,8 @@ public class Vm extends OVirtEntity {
         ContentValues contentValues = super.toValues();
         contentValues.put(STATUS, getStatus().toString());
         contentValues.put(CLUSTER_ID, getClusterId());
+        contentValues.put(CPU_USAGE, getCpuUsage());
+        contentValues.put(MEMORY_USAGE, getMemoryUsage());
         return contentValues;
     }
 }
