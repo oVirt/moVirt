@@ -43,5 +43,6 @@
     <string name="status">When status:</string>
     <string name="above">Above:</string>
     <string name="percentage_sign">%</string>
+    <string name="edit_trigger">Edit Trigger</string>
 
 </resources>

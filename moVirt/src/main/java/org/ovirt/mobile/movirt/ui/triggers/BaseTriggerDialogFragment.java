@@ -1,73 +1,49 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.triggers;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.ContentProviderClient;
-import android.content.DialogInterface;
-import android.os.Bundle;
-import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.condition.Condition;
-import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.EntityType;
 import org.ovirt.mobile.movirt.model.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.condition.Condition;
+import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.w3c.dom.Text;
 
-public class AddTriggerDialogFragment extends DialogFragment {
-    private static final String TAG = AddTriggerActivity.class.getSimpleName();
+public abstract class BaseTriggerDialogFragment extends DialogFragment {
+    private final int titleResourceId;
     ContentProviderClient client;
-    AddTriggerActivity addTriggerActivity;
+    TriggerActivity triggerActivity;
 
-    Spinner conditionTypeSpinner;
-    Spinner notificationTypeSpinner;
-    Spinner statusSpinner;
-    EditText percentageEdit;
+    protected Spinner conditionTypeSpinner;
+    protected Spinner notificationTypeSpinner;
+    protected Spinner statusSpinner;
+    protected EditText percentageEdit;
 
-    interface AddTriggerActivity {
-        EntityType getEntityType();
-
-        Trigger.Scope getScope();
-
-        String getTargetId();
+    protected BaseTriggerDialogFragment(int titleResourceId) {
+        this.titleResourceId = titleResourceId;
     }
 
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        final View view = getDialogView();
-        builder.setView(view)
-               .setPositiveButton(R.string.add_trigger, new DialogInterface.OnClickListener() {
-                   @Override
-                   public void onClick(DialogInterface dialog, int which) {
-                       addTrigger();
-                   }
-               })
-               .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                   @Override
-                   public void onClick(DialogInterface dialog, int which) {
-                       getDialog().cancel();
-                   }
-               });
-        return builder.create();
-    }
-
-    private View getDialogView() {
+    protected View getDialogView() {
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        final View view = inflater.inflate(R.layout.add_trigger_dialog, null);
+        final View view = inflater.inflate(R.layout.trigger_dialog, null);
         final ViewGroup rangePanel = (ViewGroup) view.findViewById(R.id.rangePanel);
         final ViewGroup statusPanel = (ViewGroup) view.findViewById(R.id.statusPanel);
+
+        final TextView headText = (TextView) view.findViewById(R.id.headText);
+        headText.setText(titleResourceId);
 
         conditionTypeSpinner = (Spinner) view.findViewById(R.id.conditionType);
         notificationTypeSpinner = (Spinner) view.findViewById(R.id.notificationSpinner);
@@ -101,29 +77,23 @@ public class AddTriggerDialogFragment extends DialogFragment {
         return view;
     }
 
+    interface TriggerActivity {
+        EntityType getEntityType();
+
+        Trigger.Scope getScope();
+
+        String getTargetId();
+    }
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
         client = activity.getContentResolver().acquireContentProviderClient(OVirtContract.BASE_CONTENT_URI);
-        addTriggerActivity = (AddTriggerActivity) activity;
+        triggerActivity = (TriggerActivity) activity;
     }
 
-    private void addTrigger() {
-        Trigger<Vm> trigger = new Trigger<>();
-        trigger.setTargetId(addTriggerActivity.getTargetId());
-        trigger.setEntityType(addTriggerActivity.getEntityType());
-        trigger.setCondition(getCondition());
-        trigger.setScope(addTriggerActivity.getScope());
-        trigger.setNotificationType(getNotificationType());
-        try {
-            client.insert(OVirtContract.Trigger.CONTENT_URI, trigger.toValues());
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public Condition<Vm> getCondition() {
+    protected Condition<Vm> getCondition() {
         String selectedConditionType = conditionTypeSpinner.getSelectedItem().toString();
         switch (selectedConditionType) {
             case "CPU": {
@@ -143,7 +113,7 @@ public class AddTriggerDialogFragment extends DialogFragment {
         }
     }
 
-    public Trigger.NotificationType getNotificationType() {
+    protected Trigger.NotificationType getNotificationType() {
         return notificationTypeSpinner.getSelectedItem().equals("Blink") ?
                 Trigger.NotificationType.INFO :
                 Trigger.NotificationType.CRITICAL;

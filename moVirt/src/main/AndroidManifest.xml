@@ -67,7 +67,7 @@
         </service>
 
         <activity
-            android:name="org.ovirt.mobile.movirt.ui.EditTriggersActivity_"
+            android:name="org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_"
             android:label="@string/title_activity_edit_filters" >
         </activity>
     </application>

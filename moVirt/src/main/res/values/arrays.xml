@@ -10,7 +10,7 @@
         <item>Vibrate</item>
     </string-array>
     <string-array name="statuses">
-        <item>Down</item>
-        <item>Unknown</item>
+        <item>DOWN</item>
+        <item>UNKNOWN</item>
     </string-array>
 </resources>

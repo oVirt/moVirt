@@ -11,11 +11,11 @@ public class CursorHelper {
     }
 
     public String getString(String columnName) {
-        return cursor.getString(cursor.getColumnIndex(columnName));
+        return cursor.getString(cursor.getColumnIndexOrThrow(columnName));
     }
 
     public int getInt(String columnName) {
-        return cursor.getInt(cursor.getColumnIndex(columnName));
+        return cursor.getInt(cursor.getColumnIndexOrThrow(columnName));
     }
 
     public <E extends Enum<E>> E getEnum(String columnName, Class<E> clazz) {

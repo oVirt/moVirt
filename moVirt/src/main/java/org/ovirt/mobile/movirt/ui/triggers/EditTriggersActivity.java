@@ -1,9 +1,8 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.triggers;
 
 import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
-import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -12,25 +11,23 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
-import com.googlecode.androidannotations.annotations.AfterViews;
-import com.googlecode.androidannotations.annotations.Click;
-import com.googlecode.androidannotations.annotations.EActivity;
-import com.googlecode.androidannotations.annotations.ViewById;
-import com.googlecode.androidannotations.annotations.res.StringRes;
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Click;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.res.StringRes;
 
+import org.androidannotations.annotations.ItemClick;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityType;
 import org.ovirt.mobile.movirt.model.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 @EActivity(R.layout.activity_edit_triggers)
-public class EditTriggersActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>, AddTriggerDialogFragment.AddTriggerActivity {
+public class EditTriggersActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>, BaseTriggerDialogFragment.TriggerActivity {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
 
@@ -39,6 +36,8 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
             OVirtContract.Trigger.CONDITION,
             OVirtContract.Trigger.NOTIFICATION,
             OVirtContract.Trigger.SCOPE,
+            OVirtContract.Trigger.TARGET_ID,
+            OVirtContract.Trigger.ENTITY_TYPE,
     };
 
     private String targetEntityId;
@@ -88,6 +87,12 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
     @Click
     void addTrigger() {
         AddTriggerDialogFragment dialog = new AddTriggerDialogFragment();
+        dialog.show(getFragmentManager(), "");
+    }
+
+    @ItemClick
+    void triggersListViewItemClicked(Cursor cursor) {
+        EditTriggerDialogFragment dialog = new EditTriggerDialogFragment(cursor);
         dialog.show(getFragmentManager(), "");
     }
 

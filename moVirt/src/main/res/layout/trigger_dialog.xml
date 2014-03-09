@@ -7,9 +7,9 @@
               android:id="@+id/mainLayout">
 
     <TextView
+        android:id="@+id/headText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/add_trigger"
         android:gravity="center"
         android:textSize="24sp"
         android:textStyle="bold">

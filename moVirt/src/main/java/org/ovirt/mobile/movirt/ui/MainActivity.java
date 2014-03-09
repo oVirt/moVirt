@@ -27,6 +27,8 @@ import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.*;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
+import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
+import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
