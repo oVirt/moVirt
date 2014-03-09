@@ -19,8 +19,13 @@ import org.androidannotations.annotations.res.StringRes;
 
 import org.androidannotations.annotations.ItemClick;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.EntityType;
 import org.ovirt.mobile.movirt.model.Trigger;
+import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
+import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
+import org.ovirt.mobile.movirt.model.condition.StatusCondition;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 
 import java.util.ArrayList;
@@ -68,7 +73,9 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
         triggerAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-                return false;
+                TextView textView = (TextView) view;
+                textView.setText(getTriggerString(EntityMapper.forEntity(Trigger.class).fromCursor(cursor)));
+                return true;
             }
         });
 
@@ -76,6 +83,23 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
         triggersListView.setEmptyView(findViewById(android.R.id.empty));
 
         getLoaderManager().initLoader(0, null, this);
+    }
+
+    private String getTriggerString(Trigger<Vm> trigger) {
+        StringBuilder builder =  new StringBuilder()
+                .append(trigger.getNotificationType() == Trigger.NotificationType.INFO ? "Blink" : "Vibrate")
+                .append(" when ");
+        if (trigger.getCondition() instanceof CpuThresholdCondition) {
+            CpuThresholdCondition condition = (CpuThresholdCondition) trigger.getCondition();
+            builder.append("CPU above ").append(condition.percentageLimit).append("%");
+        } else if (trigger.getCondition() instanceof MemoryThresholdCondition) {
+            MemoryThresholdCondition condition = (MemoryThresholdCondition) trigger.getCondition();
+            builder.append("Memory above ").append(condition.percentageLimit).append("%");
+        } else if (trigger.getCondition() instanceof StatusCondition) {
+            StatusCondition condition = (StatusCondition) trigger.getCondition();
+            builder.append("Status is ").append(condition.status.toString());
+        }
+        return builder.toString();
     }
 
     @ViewById
