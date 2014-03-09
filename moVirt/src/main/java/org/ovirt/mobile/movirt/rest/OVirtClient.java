@@ -49,7 +49,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         BigDecimal usedMemory = getStatisticValueByName(USED_MEMORY_STAT, statistics);
 
         vm.setCpuUsage(cpu.doubleValue());
-        vm.setMemoryUsage(usedMemory.divide(totalMemory).doubleValue());
+        vm.setMemoryUsage(100 * usedMemory.divide(totalMemory).doubleValue());
     }
 
     private BigDecimal getStatisticValueByName(String name, List<Statistic> statistics) {

@@ -25,7 +25,6 @@ import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.*;
-import org.ovirt.mobile.movirt.model.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 
@@ -35,7 +34,13 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
 
     private static final int SELECT_CLUSTER_CODE = 1;
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String[] PROJECTION = new String[]{OVirtContract.Vm.NAME, OVirtContract.Vm._ID};
+    private static final String[] PROJECTION = new String[] {
+            OVirtContract.Vm.NAME,
+            OVirtContract.Vm.STATUS,
+            OVirtContract.Vm.MEMORY_USAGE,
+            OVirtContract.Vm.CPU_USAGE,
+            OVirtContract.Vm._ID
+    };
 
     @App
     MoVirtApp app;
@@ -72,14 +77,28 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                                                 R.layout.vm_list_item,
                                                 null,
                                                 PROJECTION,
-                                                new int[] {R.id.vm_view});
+                                                new int[] {R.id.vm_name, R.id.vm_status, R.id.vm_memory, R.id.vm_cpu});
 
         vmListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-                TextView textView = (TextView) view;
-                String vmName = cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.NAME));
-                textView.setText(vmName);
+                if (columnIndex == cursor.getColumnIndex(OVirtContract.Vm.NAME)) {
+                    TextView textView = (TextView) view;
+                    String vmName = cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.NAME));
+                    textView.setText(vmName);
+                } else if (columnIndex == cursor.getColumnIndex(OVirtContract.Vm.STATUS)) {
+                    TextView textView = (TextView) view;
+                    String vmStatus = cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.STATUS));
+                    textView.setText(vmStatus);
+                } else if (columnIndex == cursor.getColumnIndex(OVirtContract.Vm.MEMORY_USAGE)) {
+                    TextView textView = (TextView) view;
+                    double vmMem = cursor.getDouble(cursor.getColumnIndex(OVirtContract.Vm.MEMORY_USAGE));
+                    textView.setText(String.format("Mem: %.2f%%", vmMem));
+                } else if (columnIndex == cursor.getColumnIndex(OVirtContract.Vm.CPU_USAGE)) {
+                    TextView textView = (TextView) view;
+                    double vmCpu = cursor.getDouble(cursor.getColumnIndex(OVirtContract.Vm.CPU_USAGE));
+                    textView.setText(String.format("CPU: %.2f%%", vmCpu));
+                }
 
                 return true;
             }
