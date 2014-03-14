@@ -27,6 +27,12 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders {
     @Post("/vms/{id}/start")
     void startVm(Action action, String id);
 
+    @Post("/vms/{id}/stop")
+    void stopVm(Action action, String id);
+
+    @Post("/vms/{id}/reboot")
+    void rebootVm(Action action, String id);
+
     @Get("/clusters")
     Clusters getClusters();
 }

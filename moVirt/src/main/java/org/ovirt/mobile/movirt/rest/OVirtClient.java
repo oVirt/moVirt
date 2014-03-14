@@ -28,6 +28,18 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     @RestService
     OVirtRestClient restClient;
 
+    public void startVm(Vm vm) {
+        restClient.startVm(new Action(), vm.getId());
+    }
+
+    public void stopVm(Vm vm) {
+        restClient.stopVm(new Action(), vm.getId());
+    }
+
+    public void rebootVm(Vm vm) {
+        restClient.rebootVm(new Action(), vm.getId());
+    }
+
     public List<Vm> getVms() {
      //   Log.d(TAG, "Getting VMs using " + prefs.username().get() + " and " + prefs.password().get());
         List<Vm> vms = mapRestWrappers(restClient.getVms().vm);

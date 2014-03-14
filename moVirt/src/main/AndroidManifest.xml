@@ -70,6 +70,11 @@
             android:name="org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_"
             android:label="@string/title_activity_edit_filters" >
         </activity>
+
+        <activity
+            android:name=".ui.VmDetailActivity_"
+            android:label="@string/title_activity_vm_details">
+        </activity>
     </application>
 
 </manifest>

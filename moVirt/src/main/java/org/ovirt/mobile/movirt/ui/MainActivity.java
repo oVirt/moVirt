@@ -20,6 +20,7 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
@@ -29,6 +30,7 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
+import org.ovirt.mobile.movirt.util.CursorHelper;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
@@ -36,13 +38,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
 
     private static final int SELECT_CLUSTER_CODE = 1;
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String[] PROJECTION = new String[] {
-            OVirtContract.Vm.NAME,
-            OVirtContract.Vm.STATUS,
-            OVirtContract.Vm.MEMORY_USAGE,
-            OVirtContract.Vm.CPU_USAGE,
-            OVirtContract.Vm._ID
-    };
+    private static final String[] PROJECTION = OVirtContract.Vm.ALL_COLUMNS;
 
     @App
     MoVirtApp app;
@@ -135,6 +131,14 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         final Intent intent = new Intent(this, EditTriggersActivity_.class);
         intent.putExtra(EditTriggersActivity.EXTRA_TARGET_ENTITY_ID, selectedClusterId);
         intent.putExtra(EditTriggersActivity.EXTRA_TARGET_ENTITY_NAME, selectedClusterName);
+        startActivity(intent);
+    }
+
+    @ItemClick
+    void vmListViewItemClicked(Cursor cursor) {
+        Intent intent = new Intent(this, VmDetailActivity_.class);
+        String vmId = new CursorHelper(cursor).getString(OVirtContract.Vm._ID);
+        intent.setData(OVirtContract.Vm.CONTENT_URI.buildUpon().appendPath(vmId).build());
         startActivity(intent);
     }
 

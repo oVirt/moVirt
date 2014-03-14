@@ -44,5 +44,9 @@
     <string name="above">Above:</string>
     <string name="percentage_sign">%</string>
     <string name="edit_trigger">Edit Trigger</string>
+    <string name="run">Run</string>
+    <string name="stop">Stop</string>
+    <string name="reboot">Reboot</string>
+    <string name="title_activity_vm_details">Vm Details</string>
 
 </resources>

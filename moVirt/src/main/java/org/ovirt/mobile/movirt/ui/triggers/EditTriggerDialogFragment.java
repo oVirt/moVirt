@@ -21,10 +21,11 @@ public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
 
     private final Trigger<Vm> trigger;
 
+    @SuppressWarnings("unchecked")
     public EditTriggerDialogFragment(Cursor cursor) {
         super(R.string.edit_trigger);
 
-        this.trigger = EntityMapper.forEntity(Trigger.class).fromCursor(cursor);
+        this.trigger = (Trigger<Vm>) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor);
     }
 
     @Override
