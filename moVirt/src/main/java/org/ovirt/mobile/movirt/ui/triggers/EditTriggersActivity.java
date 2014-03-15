@@ -35,6 +35,7 @@ import java.util.List;
 public class EditTriggersActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>, BaseTriggerDialogFragment.TriggerActivity {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
+    public static final String EXTRA_SCOPE = "scope";
 
     private static final String[] PROJECTION = new String[] {
             OVirtContract.Trigger._ID,
@@ -58,12 +59,16 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
     @StringRes(R.string.cluster_scope)
     String CLUSTER_SCOPE;
 
+    @StringRes(R.string.vm_scope)
+    String ITEM_SCOPE;
+
     @AfterViews
     void init() {
         targetEntityId = getIntent().getStringExtra(EXTRA_TARGET_ENTITY_ID);
         targetEntityName = getIntent().getStringExtra(EXTRA_TARGET_ENTITY_NAME);
+        triggerScope = (Trigger.Scope) getIntent().getSerializableExtra(EXTRA_SCOPE);
 
-        triggerScopeLabel.setText(targetEntityId == null ? GLOBAL_SCOPE : String.format(CLUSTER_SCOPE, targetEntityName));
+        triggerScopeLabel.setText(getTitleText());
 
         triggerAdapter = new SimpleCursorAdapter(this,
                                                  R.layout.trigger_item,
@@ -74,7 +79,7 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
                 TextView textView = (TextView) view;
-                textView.setText(getTriggerString(EntityMapper.forEntity(Trigger.class).fromCursor(cursor)));
+                textView.setText(getTriggerString((Trigger<Vm>) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor)));
                 return true;
             }
         });
@@ -83,6 +88,18 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
         triggersListView.setEmptyView(findViewById(android.R.id.empty));
 
         getLoaderManager().initLoader(0, null, this);
+    }
+
+    private String getTitleText() {
+        switch (triggerScope) {
+            case GLOBAL:
+                return GLOBAL_SCOPE;
+            case CLUSTER:
+                return String.format(CLUSTER_SCOPE, targetEntityName);
+            case ITEM:
+                return String.format(ITEM_SCOPE, targetEntityName);
+        }
+        return "unexpected title";
     }
 
     private String getTriggerString(Trigger<Vm> trigger) {
@@ -161,7 +178,7 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
     }
 
     public Trigger.Scope getScope() {
-        return targetEntityId == null ? Trigger.Scope.GLOBAL : Trigger.Scope.CLUSTER;
+        return triggerScope;
     }
 
     public String getTargetId() {

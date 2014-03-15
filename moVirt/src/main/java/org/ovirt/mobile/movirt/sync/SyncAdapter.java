@@ -92,7 +92,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 entityMap.remove(localEntity.getId());
                 if (!localEntity.equals(remoteEntity)) {
                     if (triggerResolver != null) {
-                        processEntityTriggers(triggerResolver.getTriggersForId(localEntity.getId()), localEntity, remoteEntity);
+                        processEntityTriggers(triggerResolver.getTriggersForId(contentClient, localEntity.getId()), localEntity, remoteEntity);
                     }
                     Uri existingUri = baseContentUri.buildUpon().appendPath(localEntity.getId()).build();
                     Log.i(TAG, "Scheduling update for URI: " + existingUri);

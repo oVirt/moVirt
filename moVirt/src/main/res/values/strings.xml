@@ -48,5 +48,6 @@
     <string name="stop">Stop</string>
     <string name="reboot">Reboot</string>
     <string name="title_activity_vm_details">Vm Details</string>
+    <string name="vm_scope">Vm %1$s</string>
 
 </resources>
