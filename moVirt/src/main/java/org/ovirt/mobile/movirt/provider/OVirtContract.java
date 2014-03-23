@@ -61,4 +61,22 @@ public final class OVirtContract {
         public static final String TARGET_ID = "target_id";
         public static final String ENTITY_TYPE = "entity_type";
     }
+
+    public static final String PATH_EVENTS = "events";
+    public static final String PATH_EVENT = "events/#";
+
+    public static class Event implements BaseColumns {
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_EVENTS).build();
+
+        public static final String TABLE = "events";
+
+        public static final String DESCRIPTION = "description";
+        public static final String SEVERITY = "severity";
+        public static final String TIME = "time";
+        public static final String VM_ID = "vm_id";
+        public static final String HOST_ID = "host_id";
+        public static final String CLUSTER_ID = "cluster_id";
+        public static final String STORAGE_DOMAIN_ID = "storage_domain_id";
+        public static final String DATA_CENTER_ID = "data_center_id";
+    }
 }

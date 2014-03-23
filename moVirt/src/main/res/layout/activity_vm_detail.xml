@@ -47,8 +47,50 @@
 
     </RelativeLayout>
 
-    <!-- display vm stats -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
 
-    <!-- list events -->
+        <TextView
+            android:id="@+id/statusLabel"
+            style="@style/VmStatsLabel"
+            android:text="@string/statusLabel" />
+
+        <TextView
+            android:id="@+id/statusTextView"
+            style="@style/VmStat"
+            android:layout_alignBaseline="@id/statusLabel" />
+
+        <TextView
+            android:id="@+id/cpuLabel"
+            style="@style/VmStatsLabel"
+            android:layout_below="@id/statusLabel"
+            android:text="@string/cpu"/>
+
+        <TextView
+            android:id="@+id/cpuTextView"
+            style="@style/VmStat"
+            android:layout_alignBaseline="@id/cpuLabel" />
+
+        <TextView
+            android:id="@+id/memLabel"
+            style="@style/VmStatsLabel"
+            android:text="@string/memory"
+            android:layout_below="@id/cpuLabel"/>
+
+        <TextView
+            android:id="@+id/memTextView"
+            style="@style/VmStat"
+            android:layout_alignBaseline="@id/memLabel" />
+
+
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/eventListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </ListView>
 
 </LinearLayout>

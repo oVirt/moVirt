@@ -23,7 +23,6 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders {
 
     @Get("/vms/{id}/statistics")
     Statistics getVmStatistics(String id);
-
     @Post("/vms/{id}/start")
     void startVm(Action action, String id);
 
@@ -35,4 +34,11 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders {
 
     @Get("/clusters")
     Clusters getClusters();
+
+    @Get("/events?from={lastEventId}")
+    Events getEventsSince(String lastEventId);
+
+    @Get("/events?search={query}")
+    Events getEvents(String query);
+
 }

@@ -10,9 +10,9 @@ import org.androidannotations.annotations.rest.RestService;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 import org.ovirt.mobile.movirt.AppPrefs_;
 import org.ovirt.mobile.movirt.MoVirtApp;
-import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.Cluster;
+import org.ovirt.mobile.movirt.model.Event;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -77,6 +77,24 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         return mapRestWrappers(restClient.getClusters().cluster);
     }
 
+    public List<Event> getVmEvents(String vmId) {
+        return mapRestWrappers(restClient.getEvents("Vms.id=" + vmId).event);
+    }
+
+    public List<Event> getEventsSince(Integer lastEventId) {
+        return filterLogEvents(mapRestWrappers(restClient.getEventsSince(lastEventId.toString()).event));
+    }
+
+    private static List<Event> filterLogEvents(List<Event> events) {
+        List<Event> result = new ArrayList<>();
+        for (Event e : events) {
+            if (e.getCode() != Event.Codes.USER_VDC_LOGIN && e.getCode() != Event.Codes.USER_VDC_LOGOUT) {
+                result.add(e);
+            }
+        }
+        return result;
+    }
+
     @Pref
     AppPrefs_ prefs;
 
@@ -112,7 +130,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         }
     }
 
-    private static <E extends OVirtEntity, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers) {
+    private static <E, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers) {
         List<E> entities = new ArrayList<>();
         for (R rest : wrappers) {
             entities.add(rest.toEntity());

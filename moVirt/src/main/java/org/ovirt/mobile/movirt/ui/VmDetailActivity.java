@@ -9,7 +9,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.AfterViews;
@@ -49,14 +52,61 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     @ViewById
     Button rebootButton;
 
+    @ViewById
+    ListView eventListView;
+
     Vm vm;
+
+    private SimpleCursorAdapter eventListAdapter;
+
+    private LoaderManager.LoaderCallbacks<Cursor> eventsLoader = new LoaderManager.LoaderCallbacks<Cursor>() {
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            Uri vmUri = args.getParcelable(VM_URI);
+            String vmId = vmUri.getLastPathSegment();
+            return new CursorLoader(VmDetailActivity.this,
+                                    OVirtContract.Event.CONTENT_URI,
+                                    null,
+                                    OVirtContract.Event.VM_ID + "= ?",
+                                    new String[] {vmId},
+                                    null);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+            eventListAdapter.swapCursor(cursor);
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+            eventListAdapter.swapCursor(null);
+        }
+    };
 
     @AfterViews
     void initLoader() {
+        initEventListAdapter();
+
         Uri vmUri = getIntent().getData();
         Bundle args = new Bundle();
         args.putParcelable(VM_URI, vmUri);
         getLoaderManager().initLoader(0, args, this);
+        getLoaderManager().initLoader(1, args, eventsLoader);
+    }
+
+    private void initEventListAdapter() {
+        eventListAdapter = new SimpleCursorAdapter(this,
+                                                   R.layout.event_list_item,
+                                                   null,
+                                                   new String[] {OVirtContract.Event.DESCRIPTION},
+                                                   new int[] {R.id.event_description});
+        eventListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+            @Override
+            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+                return false;
+            }
+        });
+        eventListView.setAdapter(eventListAdapter);
     }
 
     @Click(R.id.runButton)
@@ -95,6 +145,9 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (!data.moveToNext()) {
             Log.e(TAG, "Error loading Vm");
+            if (vm != null) {
+                titleView.setText(vm.getName()); // try to restore previous title
+            }
             return;
         }
         vm = EntityMapper.VM_MAPPER.fromCursor(data);
@@ -104,7 +157,9 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     }
 
     private void updateCommandButtons(Vm vm) {
-        // TODO:
+        runButton.setClickable(Vm.Command.RUN.canExecute(vm.getStatus()));
+        stopButton.setClickable(Vm.Command.POWEROFF.canExecute(vm.getStatus()));
+        rebootButton.setClickable(Vm.Command.REBOOT.canExecute(vm.getStatus()));
     }
 
     @Override

@@ -5,17 +5,54 @@ import android.content.ContentValues;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import org.ovirt.mobile.movirt.util.ObjectUtils;
+import java.util.Arrays;
+import java.util.List;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.*;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CLUSTER_ID;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.MEMORY_USAGE;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.TABLE;
 
 @DatabaseTable(tableName = TABLE)
 public class Vm extends OVirtEntity {
 
-    public static enum Status {
-        UP,
+    public enum Status {
+        UNASSIGNED,
         DOWN,
-        UNKNOWN
+        UP,
+        POWERING_UP,
+        PAUSED,
+        MIGRATING,
+        UNKNOWN,
+        NOT_RESPONDING,
+        WAIT_FOR_LAUNCH,
+        REBOOT_IN_PROGRESS,
+        SAVING_STATE,
+        SUSPENDED,
+        IMAGE_LOCKED,
+        POWERING_DOWN
+    }
+
+    public enum Command {
+        RUN(Status.DOWN, Status.PAUSED),
+        SHUTDOWN(Status.UP),
+        POWEROFF(Status.UP, Status.POWERING_UP, Status.POWERING_DOWN),
+        REBOOT(Status.UP);
+
+        private final List<Status> validStates;
+
+        public List<Status> getValidStates() {
+            return validStates;
+        }
+
+        Command(Status ...validStates) {
+            this.validStates = Arrays.asList(validStates);
+        }
+
+        public boolean canExecute(Status status) {
+            return validStates.contains(status);
+        }
     }
 
  //   @DatabaseField(columnName = STATUS, dataType = DataType.ENUM_INTEGER, canBeNull = false)

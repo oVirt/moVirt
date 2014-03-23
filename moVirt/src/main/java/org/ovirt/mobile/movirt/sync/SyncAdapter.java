@@ -20,6 +20,7 @@ import android.util.Log;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.model.Cluster;
+import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
@@ -29,6 +30,7 @@ import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.MainActivity;
+import org.ovirt.mobile.movirt.util.CursorHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,9 +46,24 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     ContentProviderClient contentClient;
 
+    Integer lastEventId;
+
     public SyncAdapter(Context context) {
         super(context, true);
         contentClient = context.getContentResolver().acquireContentProviderClient(OVirtContract.BASE_CONTENT_URI);
+        lastEventId = getLastEventId();
+    }
+
+    private Integer getLastEventId() {
+        try {
+            Cursor cursor = contentClient.query(OVirtContract.Event.CONTENT_URI, new String[]{OVirtContract.Event._ID}, "MAX(" + OVirtContract.Event._ID + ")", null, null);
+            if (cursor.moveToNext()) {
+                return new CursorHelper(cursor).getInt(OVirtContract.Event._ID);
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error determining last event id", e);
+        }
+        return null;
     }
 
     @Override
@@ -56,6 +73,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             final List<Vm> remoteVms = oVirtClient.getVms();
             final List<Cluster> remoteClusters = oVirtClient.getClusters();
+            final List<Event> newEvents = oVirtClient.getEventsSince(lastEventId);
 
             final ArrayList<ContentProviderOperation> batch = new ArrayList<>();
             batch.addAll(updateLocalEntities(OVirtContract.Cluster.CONTENT_URI, remoteClusters, Cluster.class));
