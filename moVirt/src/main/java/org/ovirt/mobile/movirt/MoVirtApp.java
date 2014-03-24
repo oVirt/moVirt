@@ -27,7 +27,7 @@ public class MoVirtApp extends Application {
     }
 
     public boolean endpointConfigured() {
-        return prefs.endpoint().exists();// &&
+        return true; //prefs.endpoint().exists();// &&
 //                prefs.username().exists() &&
 //                prefs.password().exists();
     }

@@ -17,4 +17,9 @@ public class CpuThresholdCondition extends Condition<Vm> {
     public boolean evaluate(Vm entity) {
         return entity.getCpuUsage() >= percentageLimit;
     }
+
+    @Override
+    public String toString() {
+        return "CPU usage over " + percentageLimit + "%";
+    }
 }

@@ -81,8 +81,8 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         return mapRestWrappers(restClient.getEvents("Vms.id=" + vmId).event);
     }
 
-    public List<Event> getEventsSince(Integer lastEventId) {
-        return filterLogEvents(mapRestWrappers(restClient.getEventsSince(lastEventId.toString()).event));
+    public List<Event> getEventsSince(int lastEventId) {
+        return filterLogEvents(mapRestWrappers(restClient.getEventsSince(Integer.toString(lastEventId)).event));
     }
 
     private static List<Event> filterLogEvents(List<Event> events) {

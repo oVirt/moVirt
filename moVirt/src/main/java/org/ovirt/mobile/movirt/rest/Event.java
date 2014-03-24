@@ -19,6 +19,7 @@ class Event implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Event> {
     public IdRef data_center;
     public IdRef storage_domain;
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     static class IdRef {
         public String id;
     }
@@ -31,11 +32,11 @@ class Event implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Event> {
         event.setDescription(description);
         event.setSeverity(org.ovirt.mobile.movirt.model.Event.Severity.valueOf(severity.toUpperCase()));
         event.setTime(new Timestamp(time));
-        event.setVmId(vm.id);
-        event.setHostId(host.id);
-        event.setClusterId(cluster.id);
-        event.setStorageDomainId(storage_domain.id);
-        event.setDataCenterId(data_center.id);
+        if (vm != null) event.setVmId(vm.id);
+        if (host != null) event.setHostId(host.id);
+        if (cluster != null) event.setClusterId(cluster.id);
+        if (storage_domain != null) event.setStorageDomainId(storage_domain.id);
+        if (data_center != null) event.setDataCenterId(data_center.id);
         return event;
     }
 }

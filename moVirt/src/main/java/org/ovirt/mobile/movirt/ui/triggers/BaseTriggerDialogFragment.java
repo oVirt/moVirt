@@ -3,6 +3,7 @@ package org.ovirt.mobile.movirt.ui.triggers;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.ContentProviderClient;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityType;
@@ -24,6 +26,7 @@ import org.w3c.dom.Text;
 
 public abstract class BaseTriggerDialogFragment extends DialogFragment {
     private final int titleResourceId;
+    private Context context;
     ContentProviderClient client;
     TriggerActivity triggerActivity;
 
@@ -89,6 +92,7 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
+        context = activity;
         client = activity.getContentResolver().acquireContentProviderClient(OVirtContract.BASE_CONTENT_URI);
         triggerActivity = (TriggerActivity) activity;
     }
@@ -97,10 +101,18 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
         String selectedConditionType = conditionTypeSpinner.getSelectedItem().toString();
         switch (selectedConditionType) {
             case "CPU": {
+                if (percentageEdit.getText().length() == 0) {
+                    Toast.makeText(getContext(), R.string.percentage_cannot_be_empty, Toast.LENGTH_LONG).show();
+                    return null;
+                }
                 int percentageLimit = Integer.parseInt(percentageEdit.getText().toString());
                 return new CpuThresholdCondition(percentageLimit);
             }
             case "Memory": {
+                if (percentageEdit.getText().length() == 0) {
+                    Toast.makeText(getContext(), R.string.percentage_cannot_be_empty, Toast.LENGTH_LONG).show();
+                    return null;
+                }
                 int percentageLimit = Integer.parseInt(percentageEdit.getText().toString());
                 return new MemoryThresholdCondition(percentageLimit);
             }
@@ -117,5 +129,9 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
         return notificationTypeSpinner.getSelectedItem().equals("Blink") ?
                 Trigger.NotificationType.INFO :
                 Trigger.NotificationType.CRITICAL;
+    }
+
+    protected Context getContext() {
+        return context;
     }
 }

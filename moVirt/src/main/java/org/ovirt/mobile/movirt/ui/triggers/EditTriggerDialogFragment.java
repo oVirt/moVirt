@@ -12,6 +12,7 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
@@ -82,7 +83,11 @@ public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
     }
 
     private void saveTrigger() {
-        trigger.setCondition(getCondition());
+        final Condition<Vm> condition = getCondition();
+        if (condition == null) {
+            return;
+        }
+        trigger.setCondition(condition);
         trigger.setNotificationType(getNotificationType());
         try {
             client.update(OVirtContract.Trigger.CONTENT_URI, trigger.toValues(),

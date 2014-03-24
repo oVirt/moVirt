@@ -33,6 +33,7 @@ import org.ovirt.mobile.movirt.ui.MainActivity;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     ContentProviderClient contentClient;
 
-    Integer lastEventId;
+    int lastEventId = 0;
 
     public SyncAdapter(Context context) {
         super(context, true);
@@ -56,14 +57,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private Integer getLastEventId() {
         try {
-            Cursor cursor = contentClient.query(OVirtContract.Event.CONTENT_URI, new String[]{OVirtContract.Event._ID}, "MAX(" + OVirtContract.Event._ID + ")", null, null);
+            Cursor cursor = contentClient.query(OVirtContract.Event.CONTENT_URI,
+                                                new String[]{"MAX(" + OVirtContract.Event._ID + ")"},
+                                                null,
+                                                null,
+                                                null);
             if (cursor.moveToNext()) {
-                return new CursorHelper(cursor).getInt(OVirtContract.Event._ID);
+                return cursor.getInt(0);
             }
         } catch (RemoteException e) {
             Log.e(TAG, "Error determining last event id", e);
         }
-        return null;
+        return 0;
     }
 
     @Override
@@ -78,6 +83,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             final ArrayList<ContentProviderOperation> batch = new ArrayList<>();
             batch.addAll(updateLocalEntities(OVirtContract.Cluster.CONTENT_URI, remoteClusters, Cluster.class));
             batch.addAll(updateLocalEntities(OVirtContract.Vm.CONTENT_URI, remoteVms, Vm.class));
+            batch.addAll(updateEvents(newEvents));
 
             if (batch.isEmpty()) {
                 Log.i(TAG, "No updates necessary");
@@ -122,6 +128,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         for (E entity : entityMap.values()) {
             Log.i(TAG, "Scheduling insert for entity: id = " + entity.getId());
             batch.add(ContentProviderOperation.newInsert(baseContentUri).withValues(entity.toValues()).build());
+        }
+
+        return batch;
+    }
+
+    private List<ContentProviderOperation> updateEvents(List<Event> newEvents) {
+        if (!newEvents.isEmpty()) {
+            lastEventId = newEvents.get(0).getId();
+        }
+        Log.i(TAG, "Fetched " + newEvents.size() + " new event(s)");
+
+        List<ContentProviderOperation> batch = new ArrayList<>();
+        for (Event event : newEvents) {
+            batch.add(ContentProviderOperation.newInsert(OVirtContract.Event.CONTENT_URI).withValues(event.toValues()).build());
         }
 
         return batch;

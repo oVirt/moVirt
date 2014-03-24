@@ -1,14 +1,21 @@
 package org.ovirt.mobile.movirt.model;
 
+import android.content.ContentValues;
+
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+
+import org.ovirt.mobile.movirt.provider.OVirtContract;
 
 import java.sql.Timestamp;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.*;
 
+@DatabaseTable(tableName = TABLE)
 public class Event {
 
     public static final class Codes {
+
         public static final int USER_VDC_LOGIN = 30;
         public static final int USER_VDC_LOGOUT = 31;
     }
@@ -17,7 +24,7 @@ public class Event {
         NORMAL,
         WARNING,
         ERROR,
-        ALERT
+        ALERT,
     }
 
     @DatabaseField(columnName = _ID, id = true)
@@ -127,5 +134,20 @@ public class Event {
 
     public void setCode(int code) {
         this.code = code;
+    }
+
+    public ContentValues toValues() {
+        ContentValues values = new ContentValues();
+        values.put(_ID, id);
+        values.put(DESCRIPTION, description);
+        values.put(SEVERITY, severity.toString());
+        values.put(TIME, time.toString());
+        values.put(VM_ID, vmId);
+        values.put(HOST_ID, hostId);
+        values.put(CLUSTER_ID, clusterId);
+        values.put(STORAGE_DOMAIN_ID, storageDomainId);
+        values.put(DATA_CENTER_ID, dataCenterId);
+
+        return values;
     }
 }

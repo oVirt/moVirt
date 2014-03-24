@@ -17,4 +17,9 @@ public class StatusCondition extends Condition<Vm> {
     public boolean evaluate(Vm entity) {
         return entity.getStatus() == status;
     }
+
+    @Override
+    public String toString() {
+        return "Status is " + status.toString();
+    }
 }

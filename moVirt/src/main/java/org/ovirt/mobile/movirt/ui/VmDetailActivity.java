@@ -53,6 +53,15 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     Button rebootButton;
 
     @ViewById
+    TextView statusView;
+
+    @ViewById
+    TextView cpuView;
+
+    @ViewById
+    TextView memView;
+
+    @ViewById
     ListView eventListView;
 
     Vm vm;
@@ -67,7 +76,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
             return new CursorLoader(VmDetailActivity.this,
                                     OVirtContract.Event.CONTENT_URI,
                                     null,
-                                    OVirtContract.Event.VM_ID + "= ?",
+                                    OVirtContract.Event.VM_ID + " = ?",
                                     new String[] {vmId},
                                     null);
         }
@@ -98,8 +107,8 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
         eventListAdapter = new SimpleCursorAdapter(this,
                                                    R.layout.event_list_item,
                                                    null,
-                                                   new String[] {OVirtContract.Event.DESCRIPTION},
-                                                   new int[] {R.id.event_description});
+                                                   new String[] {OVirtContract.Event.TIME, OVirtContract.Event.DESCRIPTION},
+                                                   new int[] {R.id.event_timestamp, R.id.event_description});
         eventListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
@@ -152,6 +161,9 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
         }
         vm = EntityMapper.VM_MAPPER.fromCursor(data);
         titleView.setText(vm.getName());
+        statusView.setText(vm.getStatus().toString());
+        cpuView.setText(String.format("%.2f%%", vm.getCpuUsage()));
+        memView.setText(String.format("%.2f%%", vm.getMemoryUsage()));
 
         updateCommandButtons(vm);
     }

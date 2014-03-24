@@ -17,4 +17,9 @@ public class MemoryThresholdCondition extends Condition<Vm> {
     public boolean evaluate(Vm entity) {
         return entity.getMemoryUsage() >= percentageLimit;
     }
+
+    @Override
+    public String toString() {
+        return "Memory usage over " + percentageLimit + "%";
+    }
 }
