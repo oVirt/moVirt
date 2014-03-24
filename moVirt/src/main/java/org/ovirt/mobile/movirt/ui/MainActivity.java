@@ -75,7 +75,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         vmListAdapter = new SimpleCursorAdapter(this,
                                                 R.layout.vm_list_item,
                                                 null,
-                                                PROJECTION,
+                                                new String[] {OVirtContract.Vm.NAME, OVirtContract.Vm.STATUS, OVirtContract.Vm.MEMORY_USAGE, OVirtContract.Vm.CPU_USAGE},
                                                 new int[] {R.id.vm_name, R.id.vm_status, R.id.vm_memory, R.id.vm_cpu});
 
         vmListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {

@@ -17,11 +17,14 @@ public abstract class EntityMapper<E> {
     public static final EntityMapper<Vm> VM_MAPPER = new EntityMapper<Vm>() {
         @Override
         public Vm fromCursor(Cursor cursor) {
+            CursorHelper cursorHelper = new CursorHelper(cursor);
             Vm vm = new Vm();
-            vm.setId(cursor.getString(cursor.getColumnIndex(OVirtContract.Vm._ID)));
-            vm.setName(cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.NAME)));
-            vm.setStatus(Vm.Status.valueOf(cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.STATUS))));
-            vm.setClusterId(cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.CLUSTER_ID)));
+            vm.setId(cursorHelper.getString(OVirtContract.Vm._ID));
+            vm.setName(cursorHelper.getString(OVirtContract.Vm.NAME));
+            vm.setStatus(cursorHelper.getEnum(OVirtContract.Vm.STATUS, Vm.Status.class));
+            vm.setClusterId(cursorHelper.getString(OVirtContract.Vm.CLUSTER_ID));
+            vm.setCpuUsage(cursorHelper.getDouble(OVirtContract.Vm.CPU_USAGE));
+            vm.setMemoryUsage(cursorHelper.getDouble(OVirtContract.Vm.MEMORY_USAGE));
             return vm;
         }
     };

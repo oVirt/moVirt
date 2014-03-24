@@ -30,6 +30,8 @@ import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.MainActivity;
+import org.ovirt.mobile.movirt.ui.VmDetailActivity;
+import org.ovirt.mobile.movirt.ui.VmDetailActivity_;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 
 import java.util.ArrayList;
@@ -153,22 +155,24 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         for (Trigger<E> trigger : triggers) {
             Log.d(TAG, "Displaying notification " + i);
             if (!trigger.getCondition().evaluate(localEntity) && trigger.getCondition().evaluate(remoteEntity)) {
-                displayNotification(i++, trigger.getCondition(), trigger.getNotificationType());
+                displayNotification(i++, trigger);
             }
         }
     }
 
-    private void displayNotification(int i, Condition<?> condition, Trigger.NotificationType notificationType) {
+    private void displayNotification(int i, Trigger<?> trigger) {
         final Context appContext = getContext().getApplicationContext();
+        final Intent intent = new Intent(appContext, VmDetailActivity_.class);
+        intent.setData(OVirtContract.Vm.CONTENT_URI.buildUpon().appendPath(trigger.getTargetId()).build());
         ((NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE))
                 .notify(i, new NotificationCompat.Builder(appContext)
                         .setAutoCancel(true)
                         .setDefaults(Notification.DEFAULT_ALL)
                         .setWhen(System.currentTimeMillis())
                         .setSmallIcon(org.ovirt.mobile.movirt.R.drawable.ic_launcher)
-                        .setContentTitle(notificationType == Trigger.NotificationType.INFO ? "oVirt event" : ">>> oVirt event <<<")
-                        .setContentText(condition.toString())
-                        .setContentIntent(PendingIntent.getActivity(appContext, 0, new Intent(appContext, MainActivity.class), 0))
+                        .setContentTitle(trigger.getNotificationType() == Trigger.NotificationType.INFO ? "oVirt event" : ">>> oVirt event <<<")
+                        .setContentText(trigger.getCondition().toString())
+                        .setContentIntent(PendingIntent.getActivity(appContext, 0, intent, Intent.FLAG_ACTIVITY_NEW_TASK))
                         .build());
     }
 

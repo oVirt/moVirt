@@ -18,6 +18,10 @@ public class CursorHelper {
         return cursor.getInt(cursor.getColumnIndexOrThrow(columnName));
     }
 
+    public double getDouble(String columnName) {
+        return cursor.getDouble(cursor.getColumnIndexOrThrow(columnName));
+    }
+
     public <E extends Enum<E>> E getEnum(String columnName, Class<E> clazz) {
         return E.valueOf(clazz, getString(columnName));
     }
