@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="horizontal"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
@@ -17,19 +17,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingLeft="5dp"
+        android:layout_toLeftOf="@+id/vm_memory"
         />
 
     <TextView
         android:id="@+id/vm_memory"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingLeft="5dp"/>
+        android:paddingLeft="5dp"
+        android:layout_toLeftOf="@+id/vm_cpu"/>
 
     <TextView
         android:id="@+id/vm_cpu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingLeft="5dp"
-        android:gravity="right"/>
+        android:gravity="right"
+        android:layout_alignParentRight="true"/>
 
-</LinearLayout>
+</RelativeLayout>
