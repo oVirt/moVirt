@@ -53,5 +53,6 @@
     <string name="memory">Memory usage:</string>
     <string name="statusLabel">Status:</string>
     <string name="percentage_cannot_be_empty">You must specify the percentage value!</string>
+    <string name="delete">Delete</string>
 
 </resources>

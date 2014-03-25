@@ -65,6 +65,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     ListView eventListView;
 
     Vm vm;
+    Bundle args;
 
     private SimpleCursorAdapter eventListAdapter;
 
@@ -97,10 +98,17 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
         initEventListAdapter();
 
         Uri vmUri = getIntent().getData();
-        Bundle args = new Bundle();
+        args = new Bundle();
         args.putParcelable(VM_URI, vmUri);
         getLoaderManager().initLoader(0, args, this);
         getLoaderManager().initLoader(1, args, eventsLoader);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getLoaderManager().restartLoader(0, args, this);
+        getLoaderManager().restartLoader(1, args, eventsLoader);
     }
 
     private void initEventListAdapter() {
@@ -154,9 +162,6 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (!data.moveToNext()) {
             Log.e(TAG, "Error loading Vm");
-            if (vm != null) {
-                titleView.setText(vm.getName()); // try to restore previous title
-            }
             return;
         }
         vm = EntityMapper.VM_MAPPER.fromCursor(data);

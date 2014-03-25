@@ -155,15 +155,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         for (Trigger<E> trigger : triggers) {
             Log.d(TAG, "Displaying notification " + i);
             if (!trigger.getCondition().evaluate(localEntity) && trigger.getCondition().evaluate(remoteEntity)) {
-                displayNotification(i++, trigger);
+                displayNotification(i++, trigger, remoteEntity);
             }
         }
     }
 
-    private void displayNotification(int i, Trigger<?> trigger) {
+    // TODO: generalize to multiple entity types
+    private <E extends OVirtEntity> void displayNotification(int i, Trigger<E> trigger, E entity) {
         final Context appContext = getContext().getApplicationContext();
         final Intent intent = new Intent(appContext, VmDetailActivity_.class);
-        intent.setData(OVirtContract.Vm.CONTENT_URI.buildUpon().appendPath(trigger.getTargetId()).build());
+        intent.setData(Vm.CONTENT_URI.buildUpon().appendPath(entity.getId()).build());
         ((NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE))
                 .notify(i, new NotificationCompat.Builder(appContext)
                         .setAutoCancel(true)

@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import org.ovirt.mobile.movirt.R;
@@ -20,6 +21,7 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 
 public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
 
+    private static final String TAG = EditTriggerDialogFragment.class.getSimpleName();
     private final Trigger<Vm> trigger;
 
     @SuppressWarnings("unchecked")
@@ -43,6 +45,12 @@ public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
                    @Override
                    public void onClick(DialogInterface dialog, int which) {
                        getDialog().cancel();
+                   }
+               })
+               .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
+                   @Override
+                   public void onClick(DialogInterface dialog, int which) {
+                       deleteTrigger();
                    }
                });
         mapExistingTrigger();
@@ -93,7 +101,15 @@ public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
             client.update(OVirtContract.Trigger.CONTENT_URI, trigger.toValues(),
                           OVirtContract.Trigger._ID + " = ?", new String[]{Integer.toString(trigger.getId())});
         } catch (RemoteException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error saving trigger", e);
+        }
+    }
+
+    private void deleteTrigger() {
+        try {
+            client.delete(OVirtContract.Trigger.CONTENT_URI.buildUpon().appendPath(Integer.toString(trigger.getId())).build(), null, null);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error deleting trigger", e);
         }
     }
 }

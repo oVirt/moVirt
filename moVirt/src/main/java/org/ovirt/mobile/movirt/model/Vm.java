@@ -5,6 +5,8 @@ import android.content.ContentValues;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import org.ovirt.mobile.movirt.provider.OVirtContract;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,7 +17,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Vm extends OVirtEntity {
+public class Vm extends OVirtEntity implements OVirtContract.Vm {
 
     public enum Status {
         UNASSIGNED,
