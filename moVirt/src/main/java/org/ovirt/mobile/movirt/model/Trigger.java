@@ -1,6 +1,7 @@
 package org.ovirt.mobile.movirt.model;
 
 import android.content.ContentValues;
+import android.net.Uri;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -12,16 +13,23 @@ import org.ovirt.mobile.movirt.util.JsonUtils;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.*;
 
 @DatabaseTable(tableName = TABLE)
-public class Trigger<E extends OVirtEntity>  {
+public class Trigger<E extends OVirtEntity> extends BaseEntity<Integer> {
+
+    @Override
+    public Uri getBaseUri() {
+        return CONTENT_URI;
+    }
+
     public enum Scope {
         GLOBAL,
         CLUSTER,
         ITEM
-    }
 
+    }
     public enum NotificationType {
         INFO,
         CRITICAL
+
     }
 
     @DatabaseField(columnName = _ID, generatedId = true, allowGeneratedIdInsert = true)
@@ -42,11 +50,11 @@ public class Trigger<E extends OVirtEntity>  {
     @DatabaseField(columnName = ENTITY_TYPE, canBeNull = false)
     private EntityType entityType;
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

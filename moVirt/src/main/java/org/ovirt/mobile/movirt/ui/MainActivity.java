@@ -26,16 +26,19 @@ import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.*;
+import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Trigger;
+import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
+import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MainActivity extends Activity {
 
     private static final int SELECT_CLUSTER_CODE = 1;
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -51,6 +54,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     Button selectCluster;
 
     private SimpleCursorAdapter vmListAdapter;
+    private CursorAdapterLoader cursorAdapterLoader;
     private String selectedClusterId;
     private String selectedClusterName;
 
@@ -77,6 +81,18 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                                                 null,
                                                 new String[] {OVirtContract.Vm.NAME, OVirtContract.Vm.STATUS, OVirtContract.Vm.MEMORY_USAGE, OVirtContract.Vm.CPU_USAGE},
                                                 new int[] {R.id.vm_name, R.id.vm_status, R.id.vm_memory, R.id.vm_cpu});
+
+        cursorAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
+            @Override
+            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                return new CursorLoader(MainActivity.this,
+                                        OVirtContract.Vm.CONTENT_URI,
+                                        PROJECTION,
+                                        getClusterSelection(),
+                                        getClusterSelectionArgs(),
+                                        OVirtContract.Vm.NAME + " asc");
+            }
+        };
 
         vmListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
@@ -139,8 +155,8 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     @ItemClick
     void vmListViewItemClicked(Cursor cursor) {
         Intent intent = new Intent(this, VmDetailActivity_.class);
-        String vmId = new CursorHelper(cursor).getString(OVirtContract.Vm._ID);
-        intent.setData(OVirtContract.Vm.CONTENT_URI.buildUpon().appendPath(vmId).build());
+        Vm vm = EntityMapper.VM_MAPPER.fromCursor(cursor);
+        intent.setData(vm.getUri());
         startActivity(intent);
     }
 
@@ -166,17 +182,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         selectCluster.setText(clusterName == null ? getString(R.string.all_clusters) : clusterName);
         selectedClusterId = clusterId;
         selectedClusterName = clusterName;
-        getLoaderManager().restartLoader(0, null, this);
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(this,
-                                OVirtContract.Vm.CONTENT_URI,
-                                PROJECTION,
-                                getClusterSelection(),
-                                getClusterSelectionArgs(),
-                                OVirtContract.Vm.NAME + " asc");
+        getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
     }
 
     private String getClusterSelection() {
@@ -191,15 +197,5 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
             return null;
         }
         return new String[] {selectedClusterId};
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        vmListAdapter.swapCursor(data);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        vmListAdapter.swapCursor(null);
     }
 }

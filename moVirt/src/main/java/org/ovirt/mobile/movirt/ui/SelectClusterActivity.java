@@ -24,15 +24,17 @@ import org.androidannotations.annotations.res.StringRes;
 import org.androidannotations.annotations.res.TextRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 @EActivity(R.layout.activity_cluster)
-public class SelectClusterActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class SelectClusterActivity extends ListActivity {
 
     public static String EXTRA_CLUSTER_ID = "cluster_id";
     public static String EXTRA_CLUSTER_NAME = "cluster_name";
 
     private static final String TAG = SelectClusterActivity.class.getSimpleName();
     private SimpleCursorAdapter clusterListAdapter;
+    private CursorAdapterLoader cursorAdapterLoader;
     private MatrixCursor emptyClusterCursor;
 
     @StringRes(R.string.all_clusters)
@@ -51,6 +53,24 @@ public class SelectClusterActivity extends ListActivity implements LoaderManager
                                                      null,
                                                      PROJECTION,
                                                      new int[] {R.id.cluster_view});
+
+        cursorAdapterLoader = new CursorAdapterLoader(clusterListAdapter) {
+            @Override
+            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                return new CursorLoader(SelectClusterActivity.this,
+                                        OVirtContract.Cluster.CONTENT_URI,
+                                        PROJECTION,
+                                        null,
+                                        null,
+                                        OVirtContract.Cluster.NAME + " asc");
+            }
+
+            @Override
+            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+                super.onLoadFinished(loader, new MergeCursor(new Cursor[] { emptyClusterCursor, data}));
+            }
+        };
+
         clusterListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
@@ -67,7 +87,7 @@ public class SelectClusterActivity extends ListActivity implements LoaderManager
         });
         setListAdapter(clusterListAdapter);
 
-        getLoaderManager().initLoader(0, null, this);
+        getLoaderManager().initLoader(0, null, cursorAdapterLoader);
 
     }
 
@@ -86,25 +106,5 @@ public class SelectClusterActivity extends ListActivity implements LoaderManager
         intent.putExtra(EXTRA_CLUSTER_NAME, clusterName);
         setResult(RESULT_OK, intent);
         finish();
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(this,
-                                OVirtContract.Cluster.CONTENT_URI,
-                                PROJECTION,
-                                null,
-                                null,
-                                OVirtContract.Cluster.NAME + " asc");
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        clusterListAdapter.swapCursor(new MergeCursor(new Cursor[] { emptyClusterCursor, data}));
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        clusterListAdapter.swapCursor(null);
     }
 }

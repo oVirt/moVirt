@@ -107,7 +107,7 @@ public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
 
     private void deleteTrigger() {
         try {
-            client.delete(OVirtContract.Trigger.CONTENT_URI.buildUpon().appendPath(Integer.toString(trigger.getId())).build(), null, null);
+            client.delete(trigger.getUri(), null, null);
         } catch (RemoteException e) {
             Log.e(TAG, "Error deleting trigger", e);
         }

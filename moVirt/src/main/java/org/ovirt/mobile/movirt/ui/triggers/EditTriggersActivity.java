@@ -27,12 +27,13 @@ import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @EActivity(R.layout.activity_edit_triggers)
-public class EditTriggersActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>, BaseTriggerDialogFragment.TriggerActivity {
+public class EditTriggersActivity extends Activity {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
     public static final String EXTRA_SCOPE = "scope";
@@ -52,6 +53,7 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
     private Trigger.Scope triggerScope;
 
     private SimpleCursorAdapter triggerAdapter;
+    private CursorAdapterLoader cursorAdapterLoader;
 
     @StringRes(R.string.whole_datacenter)
     String GLOBAL_SCOPE;
@@ -84,10 +86,22 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
             }
         });
 
+        cursorAdapterLoader = new CursorAdapterLoader(triggerAdapter) {
+            @Override
+            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                return new CursorLoader(EditTriggersActivity.this,
+                                        OVirtContract.Trigger.CONTENT_URI,
+                                        PROJECTION,
+                                        getTriggerSelection(),
+                                        getTriggerSelectionArgs(),
+                                        null);
+            }
+        };
+
         triggersListView.setAdapter(triggerAdapter);
         triggersListView.setEmptyView(findViewById(android.R.id.empty));
 
-        getLoaderManager().initLoader(0, null, this);
+        getLoaderManager().initLoader(0, null, cursorAdapterLoader);
     }
 
     private String getTitleText() {
@@ -135,26 +149,6 @@ public class EditTriggersActivity extends Activity implements LoaderManager.Load
     void triggersListViewItemClicked(Cursor cursor) {
         EditTriggerDialogFragment dialog = new EditTriggerDialogFragment(cursor);
         dialog.show(getFragmentManager(), "");
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(this,
-                                OVirtContract.Trigger.CONTENT_URI,
-                                PROJECTION,
-                                getTriggerSelection(),
-                                getTriggerSelectionArgs(),
-                                null);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        triggerAdapter.swapCursor(cursor);
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        triggerAdapter.swapCursor(null);
     }
 
     private String getTriggerSelection() {

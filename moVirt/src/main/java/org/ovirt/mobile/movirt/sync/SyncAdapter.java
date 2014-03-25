@@ -21,7 +21,6 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
-import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.Trigger;
@@ -29,13 +28,9 @@ import org.ovirt.mobile.movirt.model.TriggerResolver;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.ui.MainActivity;
-import org.ovirt.mobile.movirt.ui.VmDetailActivity;
 import org.ovirt.mobile.movirt.ui.VmDetailActivity_;
-import org.ovirt.mobile.movirt.util.CursorHelper;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,16 +106,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             E localEntity = mapper.fromCursor(cursor);
             E remoteEntity = entityMap.get(localEntity.getId());
             if (remoteEntity == null) { // local entity obsolete, schedule delete from db
-                Uri deleteUri = baseContentUri.buildUpon().appendPath(localEntity.getId()).build();
+                Uri deleteUri = localEntity.getUri();
                 Log.i(TAG, "Scheduling delete for URI: " + deleteUri);
                 batch.add(ContentProviderOperation.newDelete(deleteUri).build());
             } else { // existing entity, update stats if changed
                 entityMap.remove(localEntity.getId());
                 if (!localEntity.equals(remoteEntity)) {
                     if (triggerResolver != null) {
-                        processEntityTriggers(triggerResolver.getTriggersForId(contentClient, localEntity.getId()), localEntity, remoteEntity);
+                        final List<Trigger<E>> triggers = triggerResolver.getTriggersForEntity(contentClient, localEntity);
+                        processEntityTriggers(triggers, localEntity, remoteEntity);
                     }
-                    Uri existingUri = baseContentUri.buildUpon().appendPath(localEntity.getId()).build();
+                    Uri existingUri = localEntity.getUri();
                     Log.i(TAG, "Scheduling update for URI: " + existingUri);
                     batch.add(ContentProviderOperation.newUpdate(existingUri).withValues(remoteEntity.toValues()).build());
                 }
@@ -164,7 +160,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private <E extends OVirtEntity> void displayNotification(int i, Trigger<E> trigger, E entity) {
         final Context appContext = getContext().getApplicationContext();
         final Intent intent = new Intent(appContext, VmDetailActivity_.class);
-        intent.setData(Vm.CONTENT_URI.buildUpon().appendPath(entity.getId()).build());
+        intent.setData(entity.getUri());
         ((NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE))
                 .notify(i, new NotificationCompat.Builder(appContext)
                         .setAutoCancel(true)

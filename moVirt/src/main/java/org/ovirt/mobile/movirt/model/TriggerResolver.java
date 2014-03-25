@@ -17,38 +17,35 @@ public abstract class TriggerResolver<E extends OVirtEntity> {
 
     private static final String TAG = TriggerResolver.class.getSimpleName();
 
-    public abstract List<Trigger<E>> getTriggersForId(ContentProviderClient client, String id);
+    public abstract List<Trigger<E>> getTriggersForEntity(ContentProviderClient client, E entity);
 
     private static final Map<Class<?>, TriggerResolver<?>> resolvers = new HashMap<>();
 
     private static final TriggerResolver<Vm> VM_RESOLVER = new TriggerResolver<Vm>() {
         @Override
-        public List<Trigger<Vm>> getTriggersForId(ContentProviderClient client, String id) {
+        public List<Trigger<Vm>> getTriggersForEntity(ContentProviderClient client, Vm vm) {
             final ArrayList<Trigger<Vm>> triggers = new ArrayList<>();
             try {
-                triggers.addAll(getVmTriggers(client, id));
-                triggers.addAll(getClusterTriggers(client, id));
+                triggers.addAll(getVmTriggers(client, vm));
+                triggers.addAll(getClusterTriggers(client, vm));
                 triggers.addAll(getGlobalTriggers(client));
                 return triggers;
             } catch (RemoteException e) {
-                Log.e(TAG, "Error resolving triggers for vm: " + id);
+                Log.e(TAG, "Error resolving triggers for vm: " + vm.getId());
                 return Collections.emptyList();
             }
         }
 
-        private List<Trigger<Vm>> getVmTriggers(ContentProviderClient client, String vmId) throws RemoteException {
+        private List<Trigger<Vm>> getVmTriggers(ContentProviderClient client, Vm vm) throws RemoteException {
             Cursor cursor = client.query(OVirtContract.Trigger.CONTENT_URI,
                                          null,
                                          OVirtContract.Trigger.TARGET_ID + " = ?",
-                                         new String[] {vmId},
+                                         new String[] {vm.getId()},
                                          null);
             return collectCursorData(cursor);
         }
 
-        private List<Trigger<Vm>> getClusterTriggers(ContentProviderClient client, String vmId) throws RemoteException {
-            Cursor vmCursor = client.query(OVirtContract.Vm.CONTENT_URI.buildUpon().appendPath(vmId).build(), null, null, null, null, null);
-            vmCursor.moveToNext();
-            Vm vm = EntityMapper.VM_MAPPER.fromCursor(vmCursor);
+        private List<Trigger<Vm>> getClusterTriggers(ContentProviderClient client, Vm vm) throws RemoteException {
             Cursor cursor = client.query(OVirtContract.Trigger.CONTENT_URI, null, OVirtContract.Trigger.TARGET_ID + " = ?", new String[] {vm.getClusterId()}, null);
             return collectCursorData(cursor);
         }

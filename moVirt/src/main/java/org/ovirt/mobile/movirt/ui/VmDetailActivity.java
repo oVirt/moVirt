@@ -29,6 +29,7 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
+import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 
 @EActivity(R.layout.activity_vm_detail)
@@ -69,29 +70,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
 
     private SimpleCursorAdapter eventListAdapter;
 
-    private LoaderManager.LoaderCallbacks<Cursor> eventsLoader = new LoaderManager.LoaderCallbacks<Cursor>() {
-        @Override
-        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-            Uri vmUri = args.getParcelable(VM_URI);
-            String vmId = vmUri.getLastPathSegment();
-            return new CursorLoader(VmDetailActivity.this,
-                                    OVirtContract.Event.CONTENT_URI,
-                                    null,
-                                    OVirtContract.Event.VM_ID + " = ?",
-                                    new String[] {vmId},
-                                    OVirtContract.Event._ID + " desc");
-        }
-
-        @Override
-        public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-            eventListAdapter.swapCursor(cursor);
-        }
-
-        @Override
-        public void onLoaderReset(Loader<Cursor> loader) {
-            eventListAdapter.swapCursor(null);
-        }
-    };
+    private CursorAdapterLoader eventsLoader;
 
     @AfterViews
     void initLoader() {
@@ -117,6 +96,21 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
                                                    null,
                                                    new String[] {OVirtContract.Event.TIME, OVirtContract.Event.DESCRIPTION},
                                                    new int[] {R.id.event_timestamp, R.id.event_description});
+
+        eventsLoader = new CursorAdapterLoader(eventListAdapter) {
+            @Override
+            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                Uri vmUri = args.getParcelable(VM_URI);
+                String vmId = vmUri.getLastPathSegment();
+                return new CursorLoader(VmDetailActivity.this,
+                                        OVirtContract.Event.CONTENT_URI,
+                                        null,
+                                        OVirtContract.Event.VM_ID + " = ?",
+                                        new String[] {vmId},
+                                        OVirtContract.Event._ID + " desc");
+            }
+        };
+
         eventListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {

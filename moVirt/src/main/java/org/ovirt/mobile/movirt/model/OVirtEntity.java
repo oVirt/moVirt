@@ -10,7 +10,7 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 
-public abstract class OVirtEntity {
+public abstract class OVirtEntity extends BaseEntity<String> {
 
     public OVirtEntity() {
         id = "";

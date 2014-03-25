@@ -1,6 +1,7 @@
 package org.ovirt.mobile.movirt.model;
 
 import android.content.ContentValues;
+import android.net.Uri;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -18,6 +19,11 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.TABLE;
 
 @DatabaseTable(tableName = TABLE)
 public class Vm extends OVirtEntity implements OVirtContract.Vm {
+
+    @Override
+    public Uri getBaseUri() {
+        return CONTENT_URI;
+    }
 
     public enum Status {
         UNASSIGNED,
