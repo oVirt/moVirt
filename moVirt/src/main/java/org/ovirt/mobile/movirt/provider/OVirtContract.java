@@ -13,7 +13,11 @@ public interface OVirtContract {
     String PATH_VMS = "vms";
     String PATH_VM = "vms/*";
 
-    public interface NamedEntity extends BaseColumns {
+    public interface BaseEntity extends BaseColumns {
+        String ID = _ID;
+    }
+
+    public interface NamedEntity extends BaseEntity {
         String NAME = "name";
     }
 
@@ -28,7 +32,7 @@ public interface OVirtContract {
         String MEMORY_USAGE = "mem_usage";
 
         String[] ALL_COLUMNS = {
-                _ID,
+                ID,
                 NAME,
                 STATUS,
                 CLUSTER_ID,
@@ -49,7 +53,7 @@ public interface OVirtContract {
     String PATH_TRIGGERS = "triggers";
     String PATH_TRIGGER = "triggers/#";
 
-    public interface Trigger extends BaseColumns {
+    public interface Trigger extends BaseEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_TRIGGERS).build();
 
         String TABLE = "triggers";
@@ -64,7 +68,7 @@ public interface OVirtContract {
     String PATH_EVENTS = "events";
     String PATH_EVENT = "events/#";
 
-    public interface Event extends BaseColumns {
+    public interface Event extends BaseEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_EVENTS).build();
 
         String TABLE = "events";

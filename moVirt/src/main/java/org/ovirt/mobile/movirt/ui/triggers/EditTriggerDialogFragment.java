@@ -9,6 +9,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
+import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Trigger;
@@ -19,22 +20,17 @@ import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 
+@EFragment
 public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
 
     private static final String TAG = EditTriggerDialogFragment.class.getSimpleName();
-    private final Trigger<Vm> trigger;
 
-    @SuppressWarnings("unchecked")
-    public EditTriggerDialogFragment(Cursor cursor) {
-        super(R.string.edit_trigger);
-
-        this.trigger = (Trigger<Vm>) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor);
-    }
+    private Trigger<Vm> trigger;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setView(getDialogView())
+        builder.setView(getDialogView(R.string.edit_trigger))
                .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
                    @Override
                    public void onClick(DialogInterface dialog, int which) {
@@ -90,6 +86,14 @@ public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
         }
     }
 
+    public Trigger<Vm> getTrigger() {
+        return trigger;
+    }
+
+    public void setTrigger(Trigger<Vm> trigger) {
+        this.trigger = trigger;
+    }
+
     private void saveTrigger() {
         final Condition<Vm> condition = getCondition();
         if (condition == null) {
@@ -97,19 +101,11 @@ public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
         }
         trigger.setCondition(condition);
         trigger.setNotificationType(getNotificationType());
-        try {
-            client.update(OVirtContract.Trigger.CONTENT_URI, trigger.toValues(),
-                          OVirtContract.Trigger._ID + " = ?", new String[]{Integer.toString(trigger.getId())});
-        } catch (RemoteException e) {
-            Log.e(TAG, "Error saving trigger", e);
-        }
+
+        provider.update(trigger);
     }
 
     private void deleteTrigger() {
-        try {
-            client.delete(trigger.getUri(), null, null);
-        } catch (RemoteException e) {
-            Log.e(TAG, "Error deleting trigger", e);
-        }
+        provider.delete(trigger);
     }
 }

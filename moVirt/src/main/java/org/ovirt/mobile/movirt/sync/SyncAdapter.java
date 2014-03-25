@@ -55,7 +55,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private Integer getLastEventId() {
         try {
             Cursor cursor = contentClient.query(OVirtContract.Event.CONTENT_URI,
-                                                new String[]{"MAX(" + OVirtContract.Event._ID + ")"},
+                                                new String[]{"MAX(" + OVirtContract.Event.ID + ")"},
                                                 null,
                                                 null,
                                                 null);

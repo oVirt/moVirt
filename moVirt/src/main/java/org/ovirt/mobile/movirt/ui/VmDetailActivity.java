@@ -107,7 +107,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
                                         null,
                                         OVirtContract.Event.VM_ID + " = ?",
                                         new String[] {vmId},
-                                        OVirtContract.Event._ID + " desc");
+                                        OVirtContract.Event.ID + " desc");
             }
         };
 

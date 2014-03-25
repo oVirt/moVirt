@@ -1,23 +1,20 @@
 package org.ovirt.mobile.movirt.model;
 
 import android.content.ContentValues;
-import android.provider.BaseColumns;
 
 import com.j256.ormlite.field.DatabaseField;
 
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
-
-public abstract class OVirtEntity extends BaseEntity<String> {
+public abstract class OVirtEntity extends BaseEntity<String> implements OVirtContract.NamedEntity {
 
     public OVirtEntity() {
         id = "";
         name = "";
     }
 
-    @DatabaseField(columnName = BaseColumns._ID, id = true)
+    @DatabaseField(columnName = ID, id = true)
     private String id;
 
     @DatabaseField(columnName = NAME, canBeNull = false)
@@ -59,10 +56,11 @@ public abstract class OVirtEntity extends BaseEntity<String> {
         return result;
     }
 
+    @Override
     public ContentValues toValues() {
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(OVirtContract.NamedEntity._ID, getId());
-        contentValues.put(OVirtContract.NamedEntity.NAME, getName());
-        return contentValues;
+        ContentValues values = new ContentValues();
+        values.put(ID, getId());
+        values.put(NAME, getName());
+        return values;
     }
 }

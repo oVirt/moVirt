@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.ui.triggers;
 
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.content.ContentProviderClient;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +12,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityType;
 import org.ovirt.mobile.movirt.model.Trigger;
@@ -21,25 +23,22 @@ import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
-import org.w3c.dom.Text;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
 
+@EFragment
 public abstract class BaseTriggerDialogFragment extends DialogFragment {
-    private final int titleResourceId;
     private Context context;
-    ContentProviderClient client;
     TriggerActivity triggerActivity;
+
+    @Bean
+    ProviderFacade provider;
 
     protected Spinner conditionTypeSpinner;
     protected Spinner notificationTypeSpinner;
     protected Spinner statusSpinner;
     protected EditText percentageEdit;
 
-    protected BaseTriggerDialogFragment(int titleResourceId) {
-        this.titleResourceId = titleResourceId;
-    }
-
-    protected View getDialogView() {
+    protected View getDialogView(int titleResourceId) {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout.trigger_dialog, null);
         final ViewGroup rangePanel = (ViewGroup) view.findViewById(R.id.rangePanel);
@@ -93,7 +92,6 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
         super.onAttach(activity);
 
         context = activity;
-        client = activity.getContentResolver().acquireContentProviderClient(OVirtContract.BASE_CONTENT_URI);
         triggerActivity = (TriggerActivity) activity;
     }
 

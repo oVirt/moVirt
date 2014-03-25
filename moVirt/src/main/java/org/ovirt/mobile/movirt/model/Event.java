@@ -1,6 +1,7 @@
 package org.ovirt.mobile.movirt.model;
 
 import android.content.ContentValues;
+import android.net.Uri;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -12,7 +13,12 @@ import java.sql.Timestamp;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.*;
 
 @DatabaseTable(tableName = TABLE)
-public class Event {
+public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
+
+    @Override
+    public Uri getBaseUri() {
+        return CONTENT_URI;
+    }
 
     public static final class Codes {
 
@@ -27,7 +33,7 @@ public class Event {
         ALERT,
     }
 
-    @DatabaseField(columnName = _ID, id = true)
+    @DatabaseField(columnName = ID, id = true)
     private int id;
 
     @DatabaseField(columnName = DESCRIPTION, canBeNull = false)
@@ -56,11 +62,11 @@ public class Event {
 
     private transient int code;
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -138,7 +144,7 @@ public class Event {
 
     public ContentValues toValues() {
         ContentValues values = new ContentValues();
-        values.put(_ID, id);
+        values.put(ID, id);
         values.put(DESCRIPTION, description);
         values.put(SEVERITY, severity.toString());
         values.put(TIME, time.toString());

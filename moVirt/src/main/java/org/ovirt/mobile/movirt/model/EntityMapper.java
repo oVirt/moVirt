@@ -19,7 +19,7 @@ public abstract class EntityMapper<E> {
         public Vm fromCursor(Cursor cursor) {
             CursorHelper cursorHelper = new CursorHelper(cursor);
             Vm vm = new Vm();
-            vm.setId(cursorHelper.getString(OVirtContract.Vm._ID));
+            vm.setId(cursorHelper.getString(OVirtContract.Vm.ID));
             vm.setName(cursorHelper.getString(OVirtContract.Vm.NAME));
             vm.setStatus(cursorHelper.getEnum(OVirtContract.Vm.STATUS, Vm.Status.class));
             vm.setClusterId(cursorHelper.getString(OVirtContract.Vm.CLUSTER_ID));
@@ -33,7 +33,7 @@ public abstract class EntityMapper<E> {
         @Override
         public Cluster fromCursor(Cursor cursor) {
             Cluster cluster = new Cluster();
-            cluster.setId(cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster._ID)));
+            cluster.setId(cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster.ID)));
             cluster.setName(cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster.NAME)));
             return cluster;
         }
@@ -44,7 +44,7 @@ public abstract class EntityMapper<E> {
         public Trigger<?> fromCursor(Cursor cursor) {
             CursorHelper cursorHelper = new CursorHelper(cursor);
             Trigger<?> trigger = new Trigger<>();
-            trigger.setId(cursorHelper.getInt(OVirtContract.Trigger._ID));
+            trigger.setId(cursorHelper.getInt(OVirtContract.Trigger.ID));
             trigger.setNotificationType(cursorHelper.getEnum(OVirtContract.Trigger.NOTIFICATION, Trigger.NotificationType.class));
             trigger.setCondition(cursorHelper.getJson(OVirtContract.Trigger.CONDITION, Condition.class));
             trigger.setScope(cursorHelper.getEnum(OVirtContract.Trigger.SCOPE, Trigger.Scope.class));

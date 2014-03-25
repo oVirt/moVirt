@@ -8,12 +8,13 @@ import com.j256.ormlite.table.DatabaseTable;
 
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.ConditionPersister;
+import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.JsonUtils;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.*;
 
 @DatabaseTable(tableName = TABLE)
-public class Trigger<E extends OVirtEntity> extends BaseEntity<Integer> {
+public class Trigger<E extends OVirtEntity> extends BaseEntity<Integer> implements OVirtContract.Trigger {
 
     @Override
     public Uri getBaseUri() {
@@ -32,7 +33,7 @@ public class Trigger<E extends OVirtEntity> extends BaseEntity<Integer> {
 
     }
 
-    @DatabaseField(columnName = _ID, generatedId = true, allowGeneratedIdInsert = true)
+    @DatabaseField(columnName = ID, generatedId = true, allowGeneratedIdInsert = true)
     private int id;
 
     @DatabaseField(columnName = NOTIFICATION, canBeNull = false)
@@ -98,10 +99,11 @@ public class Trigger<E extends OVirtEntity> extends BaseEntity<Integer> {
         this.entityType = entityType;
     }
 
+    @Override
     public ContentValues toValues() {
         ContentValues contentValues = new ContentValues();
         if (id != 0) {
-            contentValues.put(_ID, id);
+            contentValues.put(ID, id);
         }
         contentValues.put(NOTIFICATION, notificationType.toString());
         contentValues.put(CONDITION, JsonUtils.objectToString(condition));

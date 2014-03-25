@@ -8,23 +8,21 @@ import android.os.RemoteException;
 import android.view.View;
 import android.widget.Toast;
 
+import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 
+@EFragment
 public class AddTriggerDialogFragment extends BaseTriggerDialogFragment {
     private static final String TAG = AddTriggerDialogFragment.class.getSimpleName();
-
-    protected AddTriggerDialogFragment() {
-        super(R.string.add_trigger);
-    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        final View view = getDialogView();
+        final View view = getDialogView(R.string.add_trigger);
         builder.setView(view)
                .setPositiveButton(R.string.add_trigger, new DialogInterface.OnClickListener() {
                    @Override
@@ -52,10 +50,7 @@ public class AddTriggerDialogFragment extends BaseTriggerDialogFragment {
         trigger.setCondition(condition);
         trigger.setScope(triggerActivity.getScope());
         trigger.setNotificationType(getNotificationType());
-        try {
-            client.insert(OVirtContract.Trigger.CONTENT_URI, trigger.toValues());
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
+
+        provider.insert(trigger);
     }
 }

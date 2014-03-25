@@ -33,13 +33,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @EActivity(R.layout.activity_edit_triggers)
-public class EditTriggersActivity extends Activity {
+public class EditTriggersActivity extends Activity implements BaseTriggerDialogFragment.TriggerActivity {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
     public static final String EXTRA_SCOPE = "scope";
 
     private static final String[] PROJECTION = new String[] {
-            OVirtContract.Trigger._ID,
+            OVirtContract.Trigger.ID,
             OVirtContract.Trigger.CONDITION,
             OVirtContract.Trigger.NOTIFICATION,
             OVirtContract.Trigger.SCOPE,
@@ -141,13 +141,14 @@ public class EditTriggersActivity extends Activity {
 
     @Click
     void addTrigger() {
-        AddTriggerDialogFragment dialog = new AddTriggerDialogFragment();
+        AddTriggerDialogFragment dialog = new AddTriggerDialogFragment_();
         dialog.show(getFragmentManager(), "");
     }
 
     @ItemClick
     void triggersListViewItemClicked(Cursor cursor) {
-        EditTriggerDialogFragment dialog = new EditTriggerDialogFragment(cursor);
+        EditTriggerDialogFragment dialog = new EditTriggerDialogFragment_();
+        dialog.setTrigger((Trigger<Vm>) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor));
         dialog.show(getFragmentManager(), "");
     }
 
@@ -167,14 +168,17 @@ public class EditTriggersActivity extends Activity {
         return args.toArray(new String[args.size()]);
     }
 
+    @Override
     public EntityType getEntityType() {
         return EntityType.VM;
     }
 
+    @Override
     public Trigger.Scope getScope() {
         return triggerScope;
     }
 
+    @Override
     public String getTargetId() {
         return targetEntityId;
     }

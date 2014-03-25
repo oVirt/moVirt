@@ -40,7 +40,7 @@ public class SelectClusterActivity extends ListActivity {
     @StringRes(R.string.all_clusters)
     String allClusters;
 
-    private static final String[] PROJECTION = new String[] {OVirtContract.Cluster.NAME, OVirtContract.Cluster._ID};
+    private static final String[] PROJECTION = new String[] {OVirtContract.Cluster.NAME, OVirtContract.Cluster.ID};
 
     @AfterViews
     void initListView() {
@@ -98,7 +98,7 @@ public class SelectClusterActivity extends ListActivity {
 
     @ItemClick(android.R.id.list)
     void selectClusterItemClicked(Cursor cursor) {
-        final String clusterId = cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster._ID));
+        final String clusterId = cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster.ID));
         final String clusterName = cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster.NAME));
         Log.i(TAG, "Cluster " + (clusterId == null ? "<ALL>" : clusterId) + " selected");
         Intent intent = getIntent();

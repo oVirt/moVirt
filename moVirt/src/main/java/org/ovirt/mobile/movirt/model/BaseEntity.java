@@ -1,8 +1,11 @@
 package org.ovirt.mobile.movirt.model;
 
+import android.content.ContentValues;
 import android.net.Uri;
 
-public abstract class BaseEntity<ID> {
+import org.ovirt.mobile.movirt.provider.OVirtContract;
+
+public abstract class BaseEntity<ID> implements OVirtContract.BaseEntity {
     public abstract ID getId();
     public abstract void setId(ID value);
 
@@ -11,4 +14,6 @@ public abstract class BaseEntity<ID> {
     public Uri getUri() {
         return getBaseUri().buildUpon().appendPath(getId().toString()).build();
     }
+
+    public abstract ContentValues toValues();
 }
