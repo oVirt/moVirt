@@ -4,16 +4,13 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.view.View;
-import android.widget.Toast;
 
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.Trigger;
+import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.condition.Condition;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 
 @EFragment
 public class AddTriggerDialogFragment extends BaseTriggerDialogFragment {

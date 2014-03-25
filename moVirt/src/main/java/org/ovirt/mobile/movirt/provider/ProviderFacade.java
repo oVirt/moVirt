@@ -2,6 +2,10 @@ package org.ovirt.mobile.movirt.provider;
 
 import android.content.ContentProviderClient;
 import android.content.Context;
+import android.content.CursorLoader;
+import android.content.Loader;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -9,6 +13,11 @@ import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.model.BaseEntity;
+import org.ovirt.mobile.movirt.model.EntityMapper;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @EBean
 public class ProviderFacade {
@@ -22,6 +31,87 @@ public class ProviderFacade {
     @AfterInject
     void initContentProviderClient() {
         contentClient = context.getContentResolver().acquireContentProviderClient(OVirtContract.BASE_CONTENT_URI);
+    }
+
+    public class QueryBuilder<E> {
+        private static final String URI_FIELD_NAME = "CONTENT_URI";
+
+        private final Class<E> clazz;
+        private final Uri baseUri;
+
+        StringBuilder selection = new StringBuilder();
+        List<String> selectionArgs = new ArrayList<>();
+        StringBuilder sortOrder = new StringBuilder();
+
+        public QueryBuilder(Class<E> clazz) {
+            this.clazz = clazz;
+            try {
+                this.baseUri = (Uri) clazz.getField(URI_FIELD_NAME).get(null);
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                throw new RuntimeException("Assertion error: Class: " + clazz + " does not define static field " + URI_FIELD_NAME, e);
+            }
+        }
+
+        public QueryBuilder where(String columnName, String value) {
+            assert !columnName.equals("") : "columnName cannot be empty or null";
+
+            if (selection.length() > 0) {
+                selection.append("AND ");
+            }
+            selection.append(columnName);
+            if (value == null) {
+                selection.append(" IS NULL ");
+            } else {
+                selection.append(" = ? ");
+                selectionArgs.add(value);
+            }
+
+            return this;
+        }
+
+        public QueryBuilder orderBy(String columnName, SortOrder order) {
+            assert !columnName.equals("") : "columnName cannot be empty or null";
+
+            sortOrder.append(columnName);
+            sortOrder.append(order == SortOrder.ASCENDING ? " ASC " : " DESC ");
+
+            return this;
+        }
+
+        public Cursor asCursor() {
+            try {
+                return contentClient.query(baseUri,
+                                           null,
+                                           selection.toString(),
+                                           selectionArgs.toArray(new String[selectionArgs.size()]),
+                                           sortOrder.toString());
+            } catch (RemoteException e) {
+                Log.e(TAG, "Error querying " + baseUri, e);
+                throw new RuntimeException(e);
+            }
+        }
+
+        public Loader<Cursor> asLoader() {
+            return new CursorLoader(context,
+                                    baseUri,
+                                    null,
+                                    selection.toString(),
+                                    selectionArgs.toArray(new String[selectionArgs.size()]),
+                                    sortOrder.toString());
+        }
+
+        public Collection<E> all() {
+            Cursor cursor = asCursor();
+            List<E> result = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                result.add(EntityMapper.forEntity(clazz).fromCursor(cursor));
+            }
+            return result;
+        }
+    }
+
+    public <E extends BaseEntity<?>> QueryBuilder<E> query(Class<E> clazz) {
+        return new QueryBuilder<>(clazz);
     }
 
     public <E extends BaseEntity<?>> void insert(E entity) {
@@ -46,5 +136,22 @@ public class ProviderFacade {
         } catch (RemoteException e) {
             Log.e(TAG, "Error deleting entity: " + entity.toString(), e);
         }
+    }
+
+    public int getLastEventId() {
+        try {
+            Cursor cursor = contentClient.query(OVirtContract.Event.CONTENT_URI,
+                                                new String[]{"MAX(" + OVirtContract.Event.ID + ")"},
+                                                null,
+                                                null,
+                                                null);
+            if (cursor.moveToNext()) {
+                return cursor.getInt(0);
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error determining last event id", e);
+            throw new RuntimeException(e);
+        }
+        return 0;
     }
 }

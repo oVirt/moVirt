@@ -23,7 +23,7 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
-import org.ovirt.mobile.movirt.model.Trigger;
+import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.rest.OVirtClient;

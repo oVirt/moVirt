@@ -17,16 +17,19 @@ import android.os.RemoteException;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
-import org.ovirt.mobile.movirt.model.Trigger;
-import org.ovirt.mobile.movirt.model.TriggerResolver;
+import org.ovirt.mobile.movirt.model.trigger.Trigger;
+import org.ovirt.mobile.movirt.model.trigger.TriggerResolver;
+import org.ovirt.mobile.movirt.model.trigger.TriggerResolverFactory;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.VmDetailActivity_;
 
@@ -44,28 +47,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     ContentProviderClient contentClient;
 
+    @Bean
+    ProviderFacade provider;
+
+    @Bean
+    TriggerResolverFactory triggerResolverFactory;
+
     int lastEventId = 0;
 
     public SyncAdapter(Context context) {
         super(context, true);
         contentClient = context.getContentResolver().acquireContentProviderClient(OVirtContract.BASE_CONTENT_URI);
-        lastEventId = getLastEventId();
     }
 
-    private Integer getLastEventId() {
-        try {
-            Cursor cursor = contentClient.query(OVirtContract.Event.CONTENT_URI,
-                                                new String[]{"MAX(" + OVirtContract.Event.ID + ")"},
-                                                null,
-                                                null,
-                                                null);
-            if (cursor.moveToNext()) {
-                return cursor.getInt(0);
-            }
-        } catch (RemoteException e) {
-            Log.e(TAG, "Error determining last event id", e);
-        }
-        return 0;
+    @AfterInject
+    void initLastEventId() {
+        lastEventId = provider.getLastEventId();
     }
 
     @Override
@@ -99,7 +96,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         final Map<String, E> entityMap = groupEntitiesById(remoteEntities);
         final EntityMapper<E> mapper = EntityMapper.forEntity(clazz);
-        final TriggerResolver<E> triggerResolver = TriggerResolver.forEntity(clazz);
+        final TriggerResolver<E> triggerResolver = triggerResolverFactory.getResolverForEntity(clazz);
 
         final Cursor cursor = contentClient.query(baseContentUri, null, null, null, null);
         while (cursor.moveToNext()) {
@@ -113,7 +110,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 entityMap.remove(localEntity.getId());
                 if (!localEntity.equals(remoteEntity)) {
                     if (triggerResolver != null) {
-                        final List<Trigger<E>> triggers = triggerResolver.getTriggersForEntity(contentClient, localEntity);
+                        final List<Trigger<E>> triggers = triggerResolver.getTriggersForEntity(localEntity);
                         processEntityTriggers(triggers, localEntity, remoteEntity);
                     }
                     Uri existingUri = localEntity.getUri();

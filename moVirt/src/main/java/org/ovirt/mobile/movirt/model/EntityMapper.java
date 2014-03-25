@@ -3,6 +3,7 @@ package org.ovirt.mobile.movirt.model;
 import android.database.Cursor;
 
 import org.ovirt.mobile.movirt.model.condition.Condition;
+import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 

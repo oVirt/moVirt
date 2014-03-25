@@ -1,7 +1,6 @@
 package org.ovirt.mobile.movirt.ui.triggers;
 
 import android.app.Activity;
-import android.app.LoaderManager;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
@@ -21,7 +20,7 @@ import org.androidannotations.annotations.ItemClick;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.EntityType;
-import org.ovirt.mobile.movirt.model.Trigger;
+import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
@@ -91,7 +90,7 @@ public class EditTriggersActivity extends Activity implements BaseTriggerDialogF
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 return new CursorLoader(EditTriggersActivity.this,
                                         OVirtContract.Trigger.CONTENT_URI,
-                                        PROJECTION,
+                                        null,
                                         getTriggerSelection(),
                                         getTriggerSelectionArgs(),
                                         null);

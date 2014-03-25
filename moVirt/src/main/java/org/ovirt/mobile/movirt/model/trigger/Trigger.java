@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.model;
+package org.ovirt.mobile.movirt.model.trigger;
 
 import android.content.ContentValues;
 import android.net.Uri;
@@ -6,6 +6,9 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import org.ovirt.mobile.movirt.model.BaseEntity;
+import org.ovirt.mobile.movirt.model.EntityType;
+import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.ConditionPersister;
 import org.ovirt.mobile.movirt.provider.OVirtContract;

@@ -23,6 +23,8 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.res.StringRes;
 import org.androidannotations.annotations.res.TextRes;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.model.Cluster;
+import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
@@ -59,7 +61,7 @@ public class SelectClusterActivity extends ListActivity {
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 return new CursorLoader(SelectClusterActivity.this,
                                         OVirtContract.Cluster.CONTENT_URI,
-                                        PROJECTION,
+                                        null,
                                         null,
                                         null,
                                         OVirtContract.Cluster.NAME + " asc");
@@ -98,12 +100,11 @@ public class SelectClusterActivity extends ListActivity {
 
     @ItemClick(android.R.id.list)
     void selectClusterItemClicked(Cursor cursor) {
-        final String clusterId = cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster.ID));
-        final String clusterName = cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster.NAME));
-        Log.i(TAG, "Cluster " + (clusterId == null ? "<ALL>" : clusterId) + " selected");
+        final Cluster cluster = EntityMapper.CLUSTER_MAPPER.fromCursor(cursor);
+        Log.i(TAG, "Cluster " + (cluster.getId() == null ? "<ALL>" : cluster.getId()) + " selected");
         Intent intent = getIntent();
-        intent.putExtra(EXTRA_CLUSTER_ID, clusterId);
-        intent.putExtra(EXTRA_CLUSTER_NAME, clusterName);
+        intent.putExtra(EXTRA_CLUSTER_ID, cluster.getId());
+        intent.putExtra(EXTRA_CLUSTER_NAME, cluster.getName());
         setResult(RESULT_OK, intent);
         finish();
     }

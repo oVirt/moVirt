@@ -2,14 +2,8 @@ package org.ovirt.mobile.movirt;
 
 import android.app.Application;
 
-import com.googlecode.androidannotations.annotations.OrmLiteDao;
-import com.j256.ormlite.dao.Dao;
-
 import org.androidannotations.annotations.EApplication;
 import org.androidannotations.annotations.sharedpreferences.Pref;
-import org.ovirt.mobile.movirt.model.Trigger;
-import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.provider.DatabaseHelper;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 
 @EApplication

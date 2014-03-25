@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.ui;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.LoaderManager;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -27,14 +26,13 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.*;
 import org.ovirt.mobile.movirt.model.EntityMapper;
-import org.ovirt.mobile.movirt.model.Trigger;
+import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
-import org.ovirt.mobile.movirt.util.CursorHelper;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
@@ -87,7 +85,7 @@ public class MainActivity extends Activity {
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 return new CursorLoader(MainActivity.this,
                                         OVirtContract.Vm.CONTENT_URI,
-                                        PROJECTION,
+                                        null,
                                         getClusterSelection(),
                                         getClusterSelectionArgs(),
                                         OVirtContract.Vm.NAME + " asc");

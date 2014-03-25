@@ -3,22 +3,17 @@ package org.ovirt.mobile.movirt.ui.triggers;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.os.RemoteException;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.EntityMapper;
-import org.ovirt.mobile.movirt.model.Trigger;
+import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 
 @EFragment
 public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
