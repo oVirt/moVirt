@@ -23,14 +23,17 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
+import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.*;
 
 @EActivity(R.layout.activity_vm_detail)
 public class VmDetailActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -40,6 +43,9 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
 
     @Bean
     OVirtClient client;
+
+    @Bean
+    ProviderFacade provider;
 
     @ViewById
     TextView titleView;
@@ -102,12 +108,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 Uri vmUri = args.getParcelable(VM_URI);
                 String vmId = vmUri.getLastPathSegment();
-                return new CursorLoader(VmDetailActivity.this,
-                                        OVirtContract.Event.CONTENT_URI,
-                                        null,
-                                        OVirtContract.Event.VM_ID + " = ?",
-                                        new String[] {vmId},
-                                        OVirtContract.Event.ID + " desc");
+                return provider.query(Event.class).where(VM_ID, vmId).orderByDescending(ID).asLoader();
             }
         };
 
@@ -149,7 +150,8 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(this, args.<Uri>getParcelable(VM_URI), PROJECTION, null, null, null);
+        String vmId = args.<Uri>getParcelable(VM_URI).getLastPathSegment();
+        return provider.query(Vm.class).id(vmId).asLoader();
     }
 
     @Override

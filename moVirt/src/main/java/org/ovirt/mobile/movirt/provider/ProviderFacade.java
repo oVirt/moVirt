@@ -52,7 +52,11 @@ public class ProviderFacade {
             }
         }
 
-        public QueryBuilder where(String columnName, String value) {
+        public QueryBuilder<E> id(String value) {
+            return where(OVirtContract.BaseEntity.ID, value);
+        }
+
+        public QueryBuilder<E> where(String columnName, String value) {
             assert !columnName.equals("") : "columnName cannot be empty or null";
 
             if (selection.length() > 0) {
@@ -69,7 +73,19 @@ public class ProviderFacade {
             return this;
         }
 
-        public QueryBuilder orderBy(String columnName, SortOrder order) {
+        public QueryBuilder<E> orderBy(String columnName) {
+            return orderBy(columnName, SortOrder.ASCENDING);
+        }
+
+        public QueryBuilder<E> orderByAscending(String columnName) {
+            return orderBy(columnName);
+        }
+
+        public QueryBuilder<E> orderByDescending(String columnName) {
+            return orderBy(columnName, SortOrder.DESCENDING);
+        }
+
+        public QueryBuilder<E> orderBy(String columnName, SortOrder order) {
             assert !columnName.equals("") : "columnName cannot be empty or null";
 
             sortOrder.append(columnName);
@@ -118,7 +134,7 @@ public class ProviderFacade {
         try {
             contentClient.insert(entity.getBaseUri(), entity.toValues());
         } catch (RemoteException e) {
-            Log.e(TAG, "Error inserting entity: " + entity.toString(), e);
+            Log.e(TAG, "Error inserting entity: " + entity, e);
         }
     }
 
@@ -126,7 +142,7 @@ public class ProviderFacade {
         try {
             contentClient.update(entity.getUri(), entity.toValues(), null, null);
         } catch (RemoteException e) {
-            Log.e(TAG, "Error updating entity: " + entity.toString(), e);
+            Log.e(TAG, "Error updating entity: " + entity, e);
         }
     }
 
@@ -134,7 +150,7 @@ public class ProviderFacade {
         try {
             contentClient.delete(entity.getUri(), null, null);
         } catch (RemoteException e) {
-            Log.e(TAG, "Error deleting entity: " + entity.toString(), e);
+            Log.e(TAG, "Error deleting entity: " + entity, e);
         }
     }
 

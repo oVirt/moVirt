@@ -1,8 +1,6 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.app.ListActivity;
-import android.app.LoaderManager;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
@@ -16,17 +14,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.Background;
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.res.StringRes;
-import org.androidannotations.annotations.res.TextRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
+
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Cluster.*;
 
 @EActivity(R.layout.activity_cluster)
 public class SelectClusterActivity extends ListActivity {
@@ -38,6 +38,9 @@ public class SelectClusterActivity extends ListActivity {
     private SimpleCursorAdapter clusterListAdapter;
     private CursorAdapterLoader cursorAdapterLoader;
     private MatrixCursor emptyClusterCursor;
+
+    @Bean
+    ProviderFacade provider;
 
     @StringRes(R.string.all_clusters)
     String allClusters;
@@ -59,12 +62,7 @@ public class SelectClusterActivity extends ListActivity {
         cursorAdapterLoader = new CursorAdapterLoader(clusterListAdapter) {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                return new CursorLoader(SelectClusterActivity.this,
-                                        OVirtContract.Cluster.CONTENT_URI,
-                                        null,
-                                        null,
-                                        null,
-                                        OVirtContract.Cluster.NAME + " asc");
+                return provider.query(Cluster.class).orderBy(NAME).asLoader();
             }
 
             @Override
@@ -81,7 +79,7 @@ public class SelectClusterActivity extends ListActivity {
                     return true;
                 }
                 TextView textView = (TextView) view;
-                String clusterName = cursor.getString(cursor.getColumnIndex(OVirtContract.Cluster.NAME)); // only names selected, thus only 1 column
+                String clusterName = cursor.getString(cursor.getColumnIndex(NAME)); // only names selected, thus only 1 column
                 textView.setText(clusterName);
 
                 return true;

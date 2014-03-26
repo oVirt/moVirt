@@ -11,6 +11,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
@@ -26,7 +27,10 @@ import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
+
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +57,9 @@ public class EditTriggersActivity extends Activity implements BaseTriggerDialogF
 
     private SimpleCursorAdapter triggerAdapter;
     private CursorAdapterLoader cursorAdapterLoader;
+
+    @Bean
+    ProviderFacade provider;
 
     @StringRes(R.string.whole_datacenter)
     String GLOBAL_SCOPE;
@@ -88,12 +95,12 @@ public class EditTriggersActivity extends Activity implements BaseTriggerDialogF
         cursorAdapterLoader = new CursorAdapterLoader(triggerAdapter) {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                return new CursorLoader(EditTriggersActivity.this,
-                                        OVirtContract.Trigger.CONTENT_URI,
-                                        null,
-                                        getTriggerSelection(),
-                                        getTriggerSelectionArgs(),
-                                        null);
+                return provider
+                        .query(Trigger.class)
+                        .where(ENTITY_TYPE, getEntityType().toString())
+                        .where(SCOPE, getScope().toString())
+                        .where(TARGET_ID, getTargetId())
+                        .asLoader();
             }
         };
 
@@ -149,22 +156,6 @@ public class EditTriggersActivity extends Activity implements BaseTriggerDialogF
         EditTriggerDialogFragment dialog = new EditTriggerDialogFragment_();
         dialog.setTrigger((Trigger<Vm>) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor));
         dialog.show(getFragmentManager(), "");
-    }
-
-    private String getTriggerSelection() {
-        return OVirtContract.Trigger.ENTITY_TYPE + " = ? AND " +
-               OVirtContract.Trigger.SCOPE + " = ? AND " +
-               OVirtContract.Trigger.TARGET_ID + (getTargetId() == null ? " IS NULL" : " = ?");
-    }
-
-    private String[] getTriggerSelectionArgs() {
-        List<String> args = new ArrayList<>();
-        args.add(getEntityType().toString());
-        args.add(getScope().toString());
-        if (getTargetId() != null) {
-            args.add(getTargetId());
-        }
-        return args.toArray(new String[args.size()]);
     }
 
     @Override

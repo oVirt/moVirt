@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ItemClick;
@@ -29,10 +30,14 @@ import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
+
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.*;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
@@ -50,6 +55,9 @@ public class MainActivity extends Activity {
 
     @ViewById
     Button selectCluster;
+
+    @Bean
+    ProviderFacade provider;
 
     private SimpleCursorAdapter vmListAdapter;
     private CursorAdapterLoader cursorAdapterLoader;
@@ -83,12 +91,11 @@ public class MainActivity extends Activity {
         cursorAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                return new CursorLoader(MainActivity.this,
-                                        OVirtContract.Vm.CONTENT_URI,
-                                        null,
-                                        getClusterSelection(),
-                                        getClusterSelectionArgs(),
-                                        OVirtContract.Vm.NAME + " asc");
+                ProviderFacade.QueryBuilder<Vm> query = provider.query(Vm.class);
+                if (selectedClusterId != null) {
+                    query.where(CLUSTER_ID, selectedClusterId);
+                }
+                return query.orderBy(NAME).asLoader();
             }
         };
 
@@ -181,19 +188,5 @@ public class MainActivity extends Activity {
         selectedClusterId = clusterId;
         selectedClusterName = clusterName;
         getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
-    }
-
-    private String getClusterSelection() {
-        if (selectedClusterId == null) {
-            return null;
-        }
-        return OVirtContract.Vm.CLUSTER_ID + " = ?";
-    }
-
-    private String[] getClusterSelectionArgs() {
-        if (selectedClusterId == null) {
-            return null;
-        }
-        return new String[] {selectedClusterId};
     }
 }

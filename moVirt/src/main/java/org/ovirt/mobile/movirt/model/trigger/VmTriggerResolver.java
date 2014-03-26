@@ -19,7 +19,6 @@ import java.util.List;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.*;
 
 @EBean
-@SuppressWarnings("unchecked")
 public class VmTriggerResolver implements TriggerResolver<Vm> {
 
     private static final String TAG = VmTriggerResolver.class.getSimpleName();
@@ -41,15 +40,18 @@ public class VmTriggerResolver implements TriggerResolver<Vm> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Collection<Trigger<Vm>> getVmTriggers(Vm vm) {
-        return provider.query(Trigger.class).where(TARGET_ID, vm.getId()).all();
+        return (Collection<Trigger<Vm>>) (Collection<?>) provider.query(Trigger.class).where(TARGET_ID, vm.getId()).all();
     }
 
+    @SuppressWarnings("unchecked")
     private Collection<Trigger<Vm>> getClusterTriggers(Vm vm) {
-        return provider.query(Trigger.class).where(TARGET_ID, vm.getClusterId()).all();
+        return (Collection<Trigger<Vm>>) (Collection<?>) provider.query(Trigger.class).where(TARGET_ID, vm.getClusterId()).all();
     }
 
+    @SuppressWarnings("unchecked")
     private Collection<Trigger<Vm>> getGlobalTriggers() {
-        return provider.query(Trigger.class).where(SCOPE, Trigger.Scope.GLOBAL.toString()).all();
+        return (Collection<Trigger<Vm>>) (Collection<?>) provider.query(Trigger.class).where(SCOPE, Trigger.Scope.GLOBAL.toString()).all();
     }
 }

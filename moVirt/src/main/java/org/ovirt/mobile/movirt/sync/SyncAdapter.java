@@ -98,7 +98,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final EntityMapper<E> mapper = EntityMapper.forEntity(clazz);
         final TriggerResolver<E> triggerResolver = triggerResolverFactory.getResolverForEntity(clazz);
 
-        final Cursor cursor = contentClient.query(baseContentUri, null, null, null, null);
+        final Cursor cursor = provider.query(clazz).asCursor();
         while (cursor.moveToNext()) {
             E localEntity = mapper.fromCursor(cursor);
             E remoteEntity = entityMap.get(localEntity.getId());
