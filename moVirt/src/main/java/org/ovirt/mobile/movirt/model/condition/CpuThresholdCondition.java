@@ -3,6 +3,7 @@ package org.ovirt.mobile.movirt.model.condition;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
 
 public class CpuThresholdCondition extends Condition<Vm> {
@@ -16,6 +17,11 @@ public class CpuThresholdCondition extends Condition<Vm> {
     @Override
     public boolean evaluate(Vm entity) {
         return entity.getCpuUsage() >= percentageLimit;
+    }
+
+    @Override
+    public String getMessage(Vm vm) {
+        return getResources().getString(R.string.vm_cpu_message, vm.getName(), percentageLimit, vm.getCpuUsage());
     }
 
     @Override

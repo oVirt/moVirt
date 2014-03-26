@@ -48,6 +48,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     TriggerResolverFactory triggerResolverFactory;
 
     int lastEventId = 0;
+    int notificationCount;
     ProviderFacade.BatchBuilder batch;
 
     public SyncAdapter(Context context) {
@@ -69,6 +70,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             final List<Event> newEvents = oVirtClient.getEventsSince(lastEventId);
 
             batch = provider.batch();
+            notificationCount = 0;
             updateLocalEntities(remoteClusters, Cluster.class);
             updateLocalEntities(remoteVms, Vm.class);
             updateEvents(newEvents);
@@ -129,29 +131,28 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private <E extends OVirtEntity> void processEntityTriggers(List<Trigger<E>> triggers, E localEntity, E remoteEntity) {
         Log.i(TAG, "Processing triggers for entity: " + remoteEntity.getId());
-        int i = 0;
         for (Trigger<E> trigger : triggers) {
-            Log.d(TAG, "Displaying notification " + i);
             if (!trigger.getCondition().evaluate(localEntity) && trigger.getCondition().evaluate(remoteEntity)) {
-                displayNotification(i++, trigger, remoteEntity);
+                displayNotification(trigger, remoteEntity);
             }
         }
     }
 
     // TODO: generalize to multiple entity types
-    private <E extends OVirtEntity> void displayNotification(int i, Trigger<E> trigger, E entity) {
+    private <E extends OVirtEntity> void displayNotification(Trigger<E> trigger, E entity) {
+        Log.d(TAG, "Displaying notification " + notificationCount);
         final Context appContext = getContext().getApplicationContext();
         final Intent intent = new Intent(appContext, VmDetailActivity_.class);
         intent.setData(entity.getUri());
         ((NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE))
-                .notify(i, new NotificationCompat.Builder(appContext)
+                .notify(notificationCount++, new NotificationCompat.Builder(appContext)
                         .setAutoCancel(true)
                         .setDefaults(Notification.DEFAULT_ALL)
                         .setWhen(System.currentTimeMillis())
                         .setSmallIcon(org.ovirt.mobile.movirt.R.drawable.ic_launcher)
                         .setContentTitle(trigger.getNotificationType() == Trigger.NotificationType.INFO ? "oVirt event" : ">>> oVirt event <<<")
-                        .setContentText(trigger.getCondition().toString())
-                        .setContentIntent(PendingIntent.getActivity(appContext, 0, intent, Intent.FLAG_ACTIVITY_NEW_TASK))
+                        .setContentText(trigger.getCondition().getMessage(entity))
+                        .setContentIntent(PendingIntent.getActivity(appContext, 0, intent, 0))
                         .build());
     }
 

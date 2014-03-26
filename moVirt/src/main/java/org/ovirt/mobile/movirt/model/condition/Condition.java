@@ -1,8 +1,11 @@
 package org.ovirt.mobile.movirt.model.condition;
 
+import android.content.res.Resources;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
@@ -11,4 +14,10 @@ import org.ovirt.mobile.movirt.model.OVirtEntity;
                @JsonSubTypes.Type(StatusCondition.class)})
 public abstract class Condition<T extends OVirtEntity> {
     public abstract boolean evaluate(T entity);
+
+    public abstract String getMessage(T entity);
+
+    protected Resources getResources() {
+        return MoVirtApp.getContext().getResources();
+    }
 }

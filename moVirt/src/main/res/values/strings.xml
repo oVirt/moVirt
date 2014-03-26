@@ -54,5 +54,8 @@
     <string name="statusLabel">Status:</string>
     <string name="percentage_cannot_be_empty">You must specify the percentage value!</string>
     <string name="delete">Delete</string>
+    <string name="vm_status_message">Status of VM \'%1$s\' is %2$s</string>
+    <string name="vm_cpu_message">CPU usage of VM \'%1$s\' is over %2$d%% (%3$s)</string>
+    <string name="vm_memory_message">Memory usage of VM \'%1$s\' is over %2$d%% (%3$s)</string>
 
 </resources>
