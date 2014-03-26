@@ -13,6 +13,7 @@ import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
+import org.ovirt.mobile.movirt.sync.SyncUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -30,14 +31,20 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
 
     public void startVm(Vm vm) {
         restClient.startVm(new Action(), vm.getId());
+
+        SyncUtils.triggerRefresh();
     }
 
     public void stopVm(Vm vm) {
         restClient.stopVm(new Action(), vm.getId());
+
+        SyncUtils.triggerRefresh();
     }
 
     public void rebootVm(Vm vm) {
         restClient.rebootVm(new Action(), vm.getId());
+
+        SyncUtils.triggerRefresh();
     }
 
     public List<Vm> getVms() {

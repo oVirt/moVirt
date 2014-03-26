@@ -1,9 +1,11 @@
 package org.ovirt.mobile.movirt.provider;
 
 import android.content.ContentProviderClient;
+import android.content.ContentProviderOperation;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
+import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
@@ -126,6 +128,37 @@ public class ProviderFacade {
         }
     }
 
+    public class BatchBuilder {
+        private ArrayList<ContentProviderOperation> batch = new ArrayList<>();
+
+        public <E extends BaseEntity<?>> BatchBuilder insert(E entity) {
+            batch.add(ContentProviderOperation.newInsert(entity.getBaseUri()).withValues(entity.toValues()).build());
+            return this;
+        }
+
+        public <E extends BaseEntity<?>> BatchBuilder update(E entity) {
+            batch.add(ContentProviderOperation.newUpdate(entity.getUri()).withValues(entity.toValues()).build());
+            return this;
+        }
+
+        public <E extends BaseEntity<?>> BatchBuilder delete(E entity) {
+            batch.add(ContentProviderOperation.newDelete(entity.getUri()).build());
+            return this;
+        }
+
+        public void apply() {
+            try {
+                contentClient.applyBatch(batch);
+            } catch (RemoteException | OperationApplicationException e) {
+                throw new RuntimeException("Batch apply failed", e);
+            }
+        }
+
+        public boolean isEmpty() {
+            return batch.isEmpty();
+        }
+    }
+
     public <E extends BaseEntity<?>> QueryBuilder<E> query(Class<E> clazz) {
         return new QueryBuilder<>(clazz);
     }
@@ -152,6 +185,10 @@ public class ProviderFacade {
         } catch (RemoteException e) {
             Log.e(TAG, "Error deleting entity: " + entity, e);
         }
+    }
+
+    public BatchBuilder batch() {
+        return new BatchBuilder();
     }
 
     public int getLastEventId() {
