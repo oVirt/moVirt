@@ -24,6 +24,7 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
@@ -49,7 +50,8 @@ public class MainActivity extends Activity {
 
     private static final int SELECT_CLUSTER_CODE = 1;
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String[] PROJECTION = OVirtContract.Vm.ALL_COLUMNS;
+    private static final String SELECTED_CLUSTER_ID = "selected_cluster_id";
+    private static final String SELECTED_CLUSTER_NAME = "selected_cluster_name";
 
     @App
     MoVirtApp app;
@@ -66,10 +68,13 @@ public class MainActivity extends Activity {
     @Bean
     ProviderFacade provider;
 
-    private SimpleCursorAdapter vmListAdapter;
+    @InstanceState
+    String selectedClusterId;
+
+    @InstanceState
+    String selectedClusterName;
+
     private CursorAdapterLoader cursorAdapterLoader;
-    private String selectedClusterId;
-    private String selectedClusterName;
 
     private final BroadcastReceiver connectionStatusReceiver = new BroadcastReceiver() {
         @Override
@@ -119,11 +124,11 @@ public class MainActivity extends Activity {
             return;
         }
 
-        vmListAdapter = new SimpleCursorAdapter(this,
-                                                R.layout.vm_list_item,
-                                                null,
-                                                new String[] {OVirtContract.Vm.NAME, OVirtContract.Vm.STATUS, OVirtContract.Vm.MEMORY_USAGE, OVirtContract.Vm.CPU_USAGE},
-                                                new int[] {R.id.vm_name, R.id.vm_status, R.id.vm_memory, R.id.vm_cpu});
+        SimpleCursorAdapter vmListAdapter = new SimpleCursorAdapter(this,
+                                                                    R.layout.vm_list_item,
+                                                                    null,
+                                                                    new String[]{OVirtContract.Vm.NAME, OVirtContract.Vm.STATUS, OVirtContract.Vm.MEMORY_USAGE, OVirtContract.Vm.CPU_USAGE},
+                                                                    new int[]{R.id.vm_name, R.id.vm_status, R.id.vm_memory, R.id.vm_cpu});
 
         cursorAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
             @Override
@@ -164,8 +169,7 @@ public class MainActivity extends Activity {
         listView.setEmptyView(findViewById(android.R.id.empty));
         listView.setTextFilterEnabled(true);
 
-        updateSelectedCluster(null, null);
-
+        updateSelectedCluster(selectedClusterId, selectedClusterName);
     }
 
     @Click
@@ -221,7 +225,7 @@ public class MainActivity extends Activity {
 
     private void updateSelectedCluster(String clusterId, String clusterName) {
         Log.d(TAG, "Updating selected cluster: id=" + clusterId + ", name=" + clusterName);
-        selectCluster.setText(clusterName == null ? getString(R.string.all_clusters) : clusterName);
+        selectCluster.setText(clusterName == null ? getString(R.string.whole_datacenter) : clusterName);
         selectedClusterId = clusterId;
         selectedClusterName = clusterName;
         getLoaderManager().restartLoader(0, null, cursorAdapterLoader);

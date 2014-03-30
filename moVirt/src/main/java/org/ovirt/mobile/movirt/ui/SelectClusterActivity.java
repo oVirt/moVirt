@@ -35,14 +35,12 @@ public class SelectClusterActivity extends ListActivity {
     public static String EXTRA_CLUSTER_NAME = "cluster_name";
 
     private static final String TAG = SelectClusterActivity.class.getSimpleName();
-    private SimpleCursorAdapter clusterListAdapter;
-    private CursorAdapterLoader cursorAdapterLoader;
     private MatrixCursor emptyClusterCursor;
 
     @Bean
     ProviderFacade provider;
 
-    @StringRes(R.string.all_clusters)
+    @StringRes(R.string.whole_datacenter)
     String allClusters;
 
     private static final String[] PROJECTION = new String[] {OVirtContract.Cluster.NAME, OVirtContract.Cluster.ID};
@@ -53,13 +51,13 @@ public class SelectClusterActivity extends ListActivity {
         emptyClusterCursor.addRow(new String[] {allClusters, null});
 
 
-        clusterListAdapter = new SimpleCursorAdapter(this,
-                                                     R.layout.cluster_list_item,
-                                                     null,
-                                                     PROJECTION,
-                                                     new int[] {R.id.cluster_view});
+        SimpleCursorAdapter clusterListAdapter = new SimpleCursorAdapter(this,
+                                                                         R.layout.cluster_list_item,
+                                                                         null,
+                                                                         PROJECTION,
+                                                                         new int[]{R.id.cluster_view});
 
-        cursorAdapterLoader = new CursorAdapterLoader(clusterListAdapter) {
+        CursorAdapterLoader cursorAdapterLoader = new CursorAdapterLoader(clusterListAdapter) {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 return provider.query(Cluster.class).orderBy(NAME).asLoader();
@@ -67,7 +65,7 @@ public class SelectClusterActivity extends ListActivity {
 
             @Override
             public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-                super.onLoadFinished(loader, new MergeCursor(new Cursor[] { emptyClusterCursor, data}));
+                super.onLoadFinished(loader, new MergeCursor(new Cursor[]{emptyClusterCursor, data}));
             }
         };
 
