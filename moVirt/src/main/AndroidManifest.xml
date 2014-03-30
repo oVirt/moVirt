@@ -55,8 +55,7 @@
         <service
             android:name="org.ovirt.mobile.movirt.sync.SyncService_"
             android:enabled="true"
-            android:exported="true"
-            android:process=":sync" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>

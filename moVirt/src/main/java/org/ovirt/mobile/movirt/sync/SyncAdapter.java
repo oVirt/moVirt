@@ -18,6 +18,8 @@ import android.util.Log;
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
+import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Event;
@@ -38,6 +40,9 @@ import java.util.Map;
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = SyncAdapter.class.getSimpleName();
 
+    @RootContext
+    Context context;
+
     @Bean
     OVirtClient oVirtClient;
 
@@ -50,6 +55,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     int lastEventId = 0;
     int notificationCount;
     ProviderFacade.BatchBuilder batch;
+
+    private boolean successfulConnection = false;
 
     public SyncAdapter(Context context) {
         super(context, true);
@@ -81,8 +88,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 Log.i(TAG, "Applying batch update");
                 batch.apply();
             }
+
+            if (!successfulConnection) {
+                successfulConnection = true;
+                context.sendBroadcast(new Intent(MoVirtApp.CONNECTION_SUCCESS));
+
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error updating data", e);
+            successfulConnection = false;
+            context.sendBroadcast(new Intent(MoVirtApp.CONNECTION_FAILURE));
         }
     }
 

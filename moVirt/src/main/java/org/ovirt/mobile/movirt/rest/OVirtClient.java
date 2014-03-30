@@ -1,7 +1,12 @@
 package org.ovirt.mobile.movirt.rest;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.App;
@@ -25,6 +30,9 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     private static final String CPU_PERCENTAGE_STAT = "cpu.current.total";
     private static final String TOTAL_MEMORY_STAT = "memory.installed";
     private static final String USED_MEMORY_STAT = "memory.used";
+    public static final String DEFAULT_ENDPOINT = "http://10.0.2.2:8080/ovirt-engine/api";
+    public static final String DEFAULT_USERNAME = "admin@internal";
+    public static final String DEFAULT_PASSWORD = "123456";
 
     @RestService
     OVirtRestClient restClient;
@@ -102,29 +110,38 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         return result;
     }
 
-    @Pref
-    AppPrefs_ prefs;
-
     @App
     MoVirtApp app;
 
     @AfterInject
     void initClient() {
-        updateRootUrlFromSettings();
-        updateAuthenticationFromSettings();
+        updateConnection();
         registerSharedPreferencesListener();
     }
 
+    private void updateConnection() {
+        updateRootUrlFromSettings();
+        updateAuthenticationFromSettings();
+        SyncUtils.triggerRefresh();
+    }
+
     private void updateRootUrlFromSettings() {
-        restClient.setRootUrl(prefs.endpoint().get());
+        String endpoint = PreferenceManager.getDefaultSharedPreferences(app).getString("endpoint", DEFAULT_ENDPOINT);
+        restClient.setRootUrl(endpoint);
+        Log.i(TAG, "Updating root url to: " + endpoint);
     }
 
     private void updateAuthenticationFromSettings() {
-        restClient.setHttpBasicAuth(prefs.username().get(), prefs.password().get());
+        String username = PreferenceManager.getDefaultSharedPreferences(app).getString("username", DEFAULT_USERNAME);
+        String password = PreferenceManager.getDefaultSharedPreferences(app).getString("password", DEFAULT_PASSWORD);
+        Log.i(TAG, "Updating username to: " + username);
+        Log.i(TAG, "Updating password to: " + password);
+        restClient.setHttpBasicAuth(username, password);
     }
 
     private void registerSharedPreferencesListener() {
         app.getSharedPreferences("MyPrefs", Context.MODE_MULTI_PROCESS).registerOnSharedPreferenceChangeListener(this);
+        PreferenceManager.getDefaultSharedPreferences(app).registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -135,6 +152,8 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         if (key.equals("username") || key.equals("password")) {
             updateAuthenticationFromSettings();
         }
+        Log.i(TAG, key + " changed");
+        SyncUtils.triggerRefresh();
     }
 
     private static <E, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers) {

@@ -2,8 +2,11 @@ package org.ovirt.mobile.movirt.ui;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -63,6 +66,36 @@ public class MainActivity extends Activity {
     private CursorAdapterLoader cursorAdapterLoader;
     private String selectedClusterId;
     private String selectedClusterName;
+
+    private final BroadcastReceiver connectionStatusReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()) {
+                case MoVirtApp.CONNECTION_SUCCESS:
+                    Toast.makeText(MainActivity.this, R.string.connected, Toast.LENGTH_LONG).show();
+                    break;
+                case MoVirtApp.CONNECTION_FAILURE:
+                    Toast.makeText(MainActivity.this, R.string.disconnected, Toast.LENGTH_LONG).show();
+            }
+        }
+    };
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(MoVirtApp.CONNECTION_SUCCESS);
+        intentFilter.addAction(MoVirtApp.CONNECTION_FAILURE);
+        registerReceiver(connectionStatusReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        unregisterReceiver(connectionStatusReceiver);
+    }
 
     @AfterViews
     void initAdapters() {
