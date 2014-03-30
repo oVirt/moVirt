@@ -19,6 +19,7 @@ import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
+import org.androidannotations.annotations.SystemService;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
@@ -42,6 +43,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @RootContext
     Context context;
+
+    @SystemService
+    NotificationManager notificationManager;
 
     @Bean
     OVirtClient oVirtClient;
@@ -159,8 +163,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final Context appContext = getContext().getApplicationContext();
         final Intent intent = new Intent(appContext, VmDetailActivity_.class);
         intent.setData(entity.getUri());
-        ((NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE))
-                .notify(notificationCount++, new NotificationCompat.Builder(appContext)
+        notificationManager.notify(notificationCount++, new NotificationCompat.Builder(appContext)
                         .setAutoCancel(true)
                         .setDefaults(Notification.DEFAULT_ALL)
                         .setWhen(System.currentTimeMillis())

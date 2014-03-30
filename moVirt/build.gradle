@@ -21,7 +21,7 @@ apply plugin: 'android-apt'
 ext.androidAnnottationVersion = '3.0+'
 
 dependencies {
-   // compile 'com.android.support:support-v4:+'
+    compile 'com.android.support:support-v4:+'
     compile 'com.j256.ormlite:ormlite-android:4.+'
     compile 'com.blandware.android.atleap:core:+@aar'
     compile 'com.googlecode.androidannotations:androidannotations:2.7.1'

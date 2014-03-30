@@ -5,13 +5,6 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/titleView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:gravity="center"/>
-
     <RelativeLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"

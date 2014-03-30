@@ -9,7 +9,8 @@
         android:id="@+id/cluster_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:paddingBottom="5dp" />
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:layout_margin="10dp"/>
 
 </LinearLayout>

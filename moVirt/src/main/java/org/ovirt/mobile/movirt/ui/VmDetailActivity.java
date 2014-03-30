@@ -22,6 +22,7 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Event;
@@ -39,7 +40,6 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.*;
 @EActivity(R.layout.activity_vm_detail)
 public class VmDetailActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String VM_URI = "vm_uri";
-    private static final String[] PROJECTION = OVirtContract.Vm.ALL_COLUMNS;
     private static final String TAG = VmDetailActivity.class.getSimpleName();
 
     @Bean
@@ -47,9 +47,6 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
 
     @Bean
     ProviderFacade provider;
-
-    @ViewById
-    TextView titleView;
 
     @ViewById
     Button runButton;
@@ -71,6 +68,9 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
 
     @FragmentById
     EventsFragment eventList;
+
+    @StringRes(R.string.details_for_vm)
+    String VM_DETAILS;
 
     Vm vm;
     Bundle args;
@@ -131,7 +131,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
             return;
         }
         vm = EntityMapper.VM_MAPPER.fromCursor(data);
-        titleView.setText(vm.getName());
+        setTitle(String.format(VM_DETAILS, vm.getName()));
         statusView.setText(vm.getStatus().toString());
         cpuView.setText(String.format("%.2f%%", vm.getCpuUsage()));
         memView.setText(String.format("%.2f%%", vm.getMemoryUsage()));

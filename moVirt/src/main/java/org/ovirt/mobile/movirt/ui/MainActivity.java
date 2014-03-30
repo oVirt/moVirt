@@ -4,13 +4,14 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -28,15 +29,15 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
-import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.*;
+import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
@@ -46,24 +47,27 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.*;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements ClusterDrawerFragment.ClusterSelectedListener {
 
-    private static final int SELECT_CLUSTER_CODE = 1;
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String SELECTED_CLUSTER_ID = "selected_cluster_id";
-    private static final String SELECTED_CLUSTER_NAME = "selected_cluster_name";
 
     @App
     MoVirtApp app;
 
     @ViewById
-    Button selectCluster;
+    DrawerLayout drawerLayout;
 
     @ViewById(R.id.vmListView)
     ListView listView;
 
     @FragmentById
     EventsFragment eventList;
+
+    @FragmentById
+    ClusterDrawerFragment clusterDrawer;
+
+    @StringRes(R.string.cluster_scope)
+    String CLUSTER_SCOPE;
 
     @Bean
     ProviderFacade provider;
@@ -104,6 +108,13 @@ public class MainActivity extends Activity {
         super.onPause();
 
         unregisterReceiver(connectionStatusReceiver);
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        super.setTitle(title);
+
+        getActionBar().setTitle(title);
     }
 
     @AfterViews
@@ -169,7 +180,9 @@ public class MainActivity extends Activity {
         listView.setEmptyView(findViewById(android.R.id.empty));
         listView.setTextFilterEnabled(true);
 
-        updateSelectedCluster(selectedClusterId, selectedClusterName);
+        onClusterSelected(new Cluster() {{ setId(selectedClusterId); setName(selectedClusterName); }});
+
+        clusterDrawer.initDrawerLayout(drawerLayout);
     }
 
     @OptionsItem(R.id.action_refresh)
@@ -184,12 +197,12 @@ public class MainActivity extends Activity {
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
-    @Click
-    void selectCluster() {
-        startActivityForResult(new Intent(this, SelectClusterActivity_.class), SELECT_CLUSTER_CODE);
-    }
+//    @Click
+//    void selectCluster() {
+//        startActivityForResult(new Intent(this, SelectClusterActivity_.class), SELECT_CLUSTER_CODE);
+//    }
 
-    @Click
+    @OptionsItem(R.id.action_edit_triggers)
     void editTriggers() {
         final Intent intent = new Intent(this, EditTriggersActivity_.class);
         intent.putExtra(EditTriggersActivity.EXTRA_TARGET_ENTITY_ID, selectedClusterId);
@@ -207,23 +220,30 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case SELECT_CLUSTER_CODE:
-                if (resultCode == RESULT_OK) {
-                    updateSelectedCluster(data.getStringExtra(SelectClusterActivity.EXTRA_CLUSTER_ID),
-                                          data.getStringExtra(SelectClusterActivity.EXTRA_CLUSTER_NAME));
-                }
-                break;
-        }
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+
+        clusterDrawer.getDrawerToggle().syncState();
     }
 
-    private void updateSelectedCluster(String clusterId, String clusterName) {
-        Log.d(TAG, "Updating selected cluster: id=" + clusterId + ", name=" + clusterName);
-        selectCluster.setText(clusterName == null ? getString(R.string.whole_datacenter) : clusterName);
-        selectedClusterId = clusterId;
-        selectedClusterName = clusterName;
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (clusterDrawer.getDrawerToggle().onOptionsItemSelected(item)) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onClusterSelected(Cluster cluster) {
+        Log.d(TAG, "Updating selected cluster: id=" + cluster.getId() + ", name=" + cluster.getName());
+        //selectCluster.setText(cluster.getName() == null ? getString(R.string.whole_datacenter) : cluster.getName());
+        setTitle(cluster.getId() == null ? getString(R.string.all_clusters) : String.format(CLUSTER_SCOPE, cluster.getName()));
+        selectedClusterId = cluster.getId();
+        selectedClusterName = cluster.getName();
         getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
         eventList.setFilterClusterId(selectedClusterId);
+        drawerLayout.closeDrawers();
     }
 }
