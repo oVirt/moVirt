@@ -23,6 +23,7 @@ import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
@@ -53,11 +54,14 @@ public class MainActivity extends Activity {
     @App
     MoVirtApp app;
 
+    @ViewById
+    Button selectCluster;
+
     @ViewById(R.id.vmListView)
     ListView listView;
 
-    @ViewById
-    Button selectCluster;
+    @FragmentById
+    EventsFragment eventList;
 
     @Bean
     ProviderFacade provider;
@@ -221,5 +225,6 @@ public class MainActivity extends Activity {
         selectedClusterId = clusterId;
         selectedClusterName = clusterName;
         getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
+        eventList.setFilterClusterId(selectedClusterId);
     }
 }

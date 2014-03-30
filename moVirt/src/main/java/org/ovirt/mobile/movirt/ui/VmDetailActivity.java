@@ -20,6 +20,7 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
@@ -68,57 +69,26 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     @ViewById
     TextView memView;
 
-    @ViewById
-    ListView eventListView;
+    @FragmentById
+    EventsFragment eventList;
 
     Vm vm;
     Bundle args;
 
-    private SimpleCursorAdapter eventListAdapter;
-
-    private CursorAdapterLoader eventsLoader;
-
     @AfterViews
     void initLoader() {
-        initEventListAdapter();
 
         Uri vmUri = getIntent().getData();
         args = new Bundle();
         args.putParcelable(VM_URI, vmUri);
         getLoaderManager().initLoader(0, args, this);
-        getLoaderManager().initLoader(1, args, eventsLoader);
+        eventList.setFilterVmId(vmUri.getLastPathSegment());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         getLoaderManager().restartLoader(0, args, this);
-        getLoaderManager().restartLoader(1, args, eventsLoader);
-    }
-
-    private void initEventListAdapter() {
-        eventListAdapter = new SimpleCursorAdapter(this,
-                                                   R.layout.event_list_item,
-                                                   null,
-                                                   new String[] {OVirtContract.Event.TIME, OVirtContract.Event.DESCRIPTION},
-                                                   new int[] {R.id.event_timestamp, R.id.event_description});
-
-        eventsLoader = new CursorAdapterLoader(eventListAdapter) {
-            @Override
-            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                Uri vmUri = args.getParcelable(VM_URI);
-                String vmId = vmUri.getLastPathSegment();
-                return provider.query(Event.class).where(VM_ID, vmId).orderByDescending(ID).asLoader();
-            }
-        };
-
-        eventListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-            @Override
-            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-                return false;
-            }
-        });
-        eventListView.setAdapter(eventListAdapter);
     }
 
     @Click(R.id.runButton)
