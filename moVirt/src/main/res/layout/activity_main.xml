@@ -29,12 +29,6 @@
             android:layout_alignParentRight="true"/>
     </RelativeLayout>
 
-    <Button
-        android:id="@+id/refresh"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/action_refresh" />
-
     <ListView
         android:id="@+id/vmListView"
         android:layout_width="match_parent"

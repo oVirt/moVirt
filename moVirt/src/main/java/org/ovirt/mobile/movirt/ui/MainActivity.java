@@ -172,16 +172,16 @@ public class MainActivity extends Activity {
         updateSelectedCluster(selectedClusterId, selectedClusterName);
     }
 
-    @Click
+    @OptionsItem(R.id.action_refresh)
     void refresh() {
         Log.d(TAG, "Refresh button clicked");
 
         SyncUtils.triggerRefresh();
     }
 
-    @UiThread
-    void showError(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+    @OptionsItem(R.id.action_settings)
+    void showSettings() {
+        startActivity(new Intent(this, SettingsActivity.class));
     }
 
     @Click
@@ -204,11 +204,6 @@ public class MainActivity extends Activity {
         Vm vm = EntityMapper.VM_MAPPER.fromCursor(cursor);
         intent.setData(vm.getUri());
         startActivity(intent);
-    }
-
-    @OptionsItem(R.id.action_settings)
-    void showSettings() {
-        startActivity(new Intent(this, SettingsActivity.class));
     }
 
     @Override
