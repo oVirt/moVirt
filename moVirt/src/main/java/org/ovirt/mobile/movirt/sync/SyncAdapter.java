@@ -12,6 +12,7 @@ import android.content.SyncResult;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -46,6 +47,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @SystemService
     NotificationManager notificationManager;
+
+    @SystemService
+    Vibrator vibrator;
 
     @Bean
     OVirtClient oVirtClient;
@@ -172,6 +176,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         .setContentText(trigger.getCondition().getMessage(entity))
                         .setContentIntent(PendingIntent.getActivity(appContext, 0, intent, 0))
                         .build());
+
+        if (trigger.getNotificationType() == Trigger.NotificationType.CRITICAL) {
+            vibrator.vibrate(1000);
+        }
     }
 
     private static <E extends OVirtEntity> Map<String, E> groupEntitiesById(List<E> entities) {
