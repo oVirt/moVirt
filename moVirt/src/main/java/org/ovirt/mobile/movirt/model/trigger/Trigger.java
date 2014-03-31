@@ -6,12 +6,14 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.BaseEntity;
 import org.ovirt.mobile.movirt.model.EntityType;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.ConditionPersister;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.util.HasDisplayResourceId;
 import org.ovirt.mobile.movirt.util.JsonUtils;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.*;
@@ -30,10 +32,20 @@ public class Trigger<E extends OVirtEntity> extends BaseEntity<Integer> implemen
         ITEM
 
     }
-    public enum NotificationType {
-        INFO,
-        CRITICAL
+    public enum NotificationType implements HasDisplayResourceId {
+        INFO(R.string.notification_type_info),
+        CRITICAL(R.string.notification_type_critical);
 
+        private int displayResource;
+
+        NotificationType(int displayResource) {
+            this.displayResource = displayResource;
+        }
+
+        @Override
+        public int getDisplayResourceId() {
+            return displayResource;
+        }
     }
 
     @DatabaseField(columnName = ID, generatedId = true, allowGeneratedIdInsert = true)

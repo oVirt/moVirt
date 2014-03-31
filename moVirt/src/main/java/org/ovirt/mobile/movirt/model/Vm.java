@@ -40,6 +40,8 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         SUSPENDED,
         IMAGE_LOCKED,
         POWERING_DOWN
+
+
     }
 
     public enum Command {

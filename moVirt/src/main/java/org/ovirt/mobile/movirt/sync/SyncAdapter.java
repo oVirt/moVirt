@@ -64,8 +64,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     int notificationCount;
     ProviderFacade.BatchBuilder batch;
 
-    private boolean successfulConnection = false;
-
     public SyncAdapter(Context context) {
         super(context, true);
     }
@@ -96,15 +94,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 Log.i(TAG, "Applying batch update");
                 batch.apply();
             }
-
-            if (!successfulConnection) {
-                successfulConnection = true;
-                context.sendBroadcast(new Intent(MoVirtApp.CONNECTION_SUCCESS));
-
-            }
         } catch (Exception e) {
             Log.e(TAG, "Error updating data", e);
-            successfulConnection = false;
             context.sendBroadcast(new Intent(MoVirtApp.CONNECTION_FAILURE));
         }
     }

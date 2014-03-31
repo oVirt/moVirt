@@ -31,13 +31,6 @@
             android:text="@string/reboot"
             android:layout_toRightOf="@id/stopButton"/>
 
-        <Button
-            android:id="@+id/triggerButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/edit_triggers"
-            android:layout_alignParentRight="true"/>
-
     </RelativeLayout>
 
     <RelativeLayout

@@ -1,7 +1,6 @@
 package org.ovirt.mobile.movirt.ui.triggers;
 
 import android.app.Activity;
-import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -12,8 +11,9 @@ import android.widget.TextView;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.OptionsItem;
+import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 
@@ -21,6 +21,7 @@ import org.androidannotations.annotations.ItemClick;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.EntityType;
+import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
@@ -32,31 +33,22 @@ import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @EActivity(R.layout.activity_edit_triggers)
+@OptionsMenu(R.menu.triggers)
 public class EditTriggersActivity extends Activity implements BaseTriggerDialogFragment.TriggerActivity {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
     public static final String EXTRA_SCOPE = "scope";
 
     private static final String[] PROJECTION = new String[] {
-            OVirtContract.Trigger.ID,
             OVirtContract.Trigger.CONDITION,
             OVirtContract.Trigger.NOTIFICATION,
-            OVirtContract.Trigger.SCOPE,
-            OVirtContract.Trigger.TARGET_ID,
-            OVirtContract.Trigger.ENTITY_TYPE,
     };
 
     private String targetEntityId;
     private String targetEntityName;
 
     private Trigger.Scope triggerScope;
-
-    private SimpleCursorAdapter triggerAdapter;
-    private CursorAdapterLoader cursorAdapterLoader;
 
     @Bean
     ProviderFacade provider;
@@ -70,29 +62,37 @@ public class EditTriggersActivity extends Activity implements BaseTriggerDialogF
     @StringRes(R.string.vm_scope)
     String ITEM_SCOPE;
 
+    @StringRes(R.string.trigger_title_format)
+    String TITLE_FORMAT;
+
     @AfterViews
     void init() {
         targetEntityId = getIntent().getStringExtra(EXTRA_TARGET_ENTITY_ID);
         targetEntityName = getIntent().getStringExtra(EXTRA_TARGET_ENTITY_NAME);
         triggerScope = (Trigger.Scope) getIntent().getSerializableExtra(EXTRA_SCOPE);
 
-        triggerScopeLabel.setText(getTitleText());
+        setTitle(String.format(TITLE_FORMAT, getScopeText()));
 
-        triggerAdapter = new SimpleCursorAdapter(this,
-                                                 R.layout.trigger_item,
-                                                 null,
-                                                 PROJECTION,
-                                                 new int[] {R.id.trigger_id});
+        SimpleCursorAdapter triggerAdapter = new SimpleCursorAdapter(this,
+                                                                     R.layout.trigger_item,
+                                                                     null,
+                                                                     PROJECTION,
+                                                                     new int[]{R.id.trigger_condition, R.id.trigger_notification});
         triggerAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
                 TextView textView = (TextView) view;
-                textView.setText(getTriggerString((Trigger<Vm>) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor)));
+                Trigger<Vm> trigger = (Trigger<Vm>) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor);
+                if (columnIndex == cursor.getColumnIndex(OVirtContract.Trigger.NOTIFICATION)) {
+                    textView.setText(trigger.getNotificationType().getDisplayResourceId());
+                } else if (columnIndex == cursor.getColumnIndex(OVirtContract.Trigger.CONDITION)) {
+                    textView.setText(getConditionString(trigger.getCondition()));
+                }
                 return true;
             }
         });
 
-        cursorAdapterLoader = new CursorAdapterLoader(triggerAdapter) {
+        CursorAdapterLoader cursorAdapterLoader = new CursorAdapterLoader(triggerAdapter) {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 return provider
@@ -110,7 +110,7 @@ public class EditTriggersActivity extends Activity implements BaseTriggerDialogF
         getLoaderManager().initLoader(0, null, cursorAdapterLoader);
     }
 
-    private String getTitleText() {
+    private String getScopeText() {
         switch (triggerScope) {
             case GLOBAL:
                 return GLOBAL_SCOPE;
@@ -119,33 +119,28 @@ public class EditTriggersActivity extends Activity implements BaseTriggerDialogF
             case ITEM:
                 return String.format(ITEM_SCOPE, targetEntityName);
         }
-        return "unexpected title";
+        return "unexpected scope";
     }
 
-    private String getTriggerString(Trigger<Vm> trigger) {
-        StringBuilder builder =  new StringBuilder()
-                .append(trigger.getNotificationType() == Trigger.NotificationType.INFO ? "Blink" : "Vibrate")
-                .append(" when ");
-        if (trigger.getCondition() instanceof CpuThresholdCondition) {
-            CpuThresholdCondition condition = (CpuThresholdCondition) trigger.getCondition();
+    private String getConditionString(Condition<Vm> triggerCondition) {
+        StringBuilder builder =  new StringBuilder();
+        if (triggerCondition instanceof CpuThresholdCondition) {
+            CpuThresholdCondition condition = (CpuThresholdCondition) triggerCondition;
             builder.append("CPU above ").append(condition.percentageLimit).append("%");
-        } else if (trigger.getCondition() instanceof MemoryThresholdCondition) {
-            MemoryThresholdCondition condition = (MemoryThresholdCondition) trigger.getCondition();
+        } else if (triggerCondition instanceof MemoryThresholdCondition) {
+            MemoryThresholdCondition condition = (MemoryThresholdCondition) triggerCondition;
             builder.append("Memory above ").append(condition.percentageLimit).append("%");
-        } else if (trigger.getCondition() instanceof StatusCondition) {
-            StatusCondition condition = (StatusCondition) trigger.getCondition();
+        } else if (triggerCondition instanceof StatusCondition) {
+            StatusCondition condition = (StatusCondition) triggerCondition;
             builder.append("Status is ").append(condition.status.toString());
         }
         return builder.toString();
     }
 
     @ViewById
-    TextView triggerScopeLabel;
-
-    @ViewById
     ListView triggersListView;
 
-    @Click
+    @OptionsItem(R.id.action_add_trigger)
     void addTrigger() {
         AddTriggerDialogFragment dialog = new AddTriggerDialogFragment_();
         dialog.show(getFragmentManager(), "");

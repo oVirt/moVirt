@@ -84,9 +84,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
-                case MoVirtApp.CONNECTION_SUCCESS:
-                    Toast.makeText(MainActivity.this, R.string.connected, Toast.LENGTH_LONG).show();
-                    break;
                 case MoVirtApp.CONNECTION_FAILURE:
                     Toast.makeText(MainActivity.this, R.string.disconnected, Toast.LENGTH_LONG).show();
             }
@@ -98,7 +95,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         super.onResume();
 
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(MoVirtApp.CONNECTION_SUCCESS);
         intentFilter.addAction(MoVirtApp.CONNECTION_FAILURE);
         registerReceiver(connectionStatusReceiver, intentFilter);
     }
@@ -196,11 +192,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     void showSettings() {
         startActivity(new Intent(this, SettingsActivity.class));
     }
-
-//    @Click
-//    void selectCluster() {
-//        startActivityForResult(new Intent(this, SelectClusterActivity_.class), SELECT_CLUSTER_CODE);
-//    }
 
     @OptionsItem(R.id.action_edit_triggers)
     void editTriggers() {

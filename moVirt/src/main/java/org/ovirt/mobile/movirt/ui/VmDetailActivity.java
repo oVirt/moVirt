@@ -21,6 +21,8 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
+import org.androidannotations.annotations.OptionsItem;
+import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
@@ -38,6 +40,7 @@ import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.*;
 
 @EActivity(R.layout.activity_vm_detail)
+@OptionsMenu(R.menu.vm)
 public class VmDetailActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String VM_URI = "vm_uri";
     private static final String TAG = VmDetailActivity.class.getSimpleName();
@@ -109,7 +112,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
         client.rebootVm(vm);
     }
 
-    @Click(R.id.triggerButton)
+    @OptionsItem(R.id.action_edit_triggers)
     void editTriggers() {
         final Intent intent = new Intent(this, EditTriggersActivity_.class);
         intent.putExtra(EditTriggersActivity.EXTRA_TARGET_ENTITY_ID, vm.getId());
