@@ -33,8 +33,9 @@ public class MoVirtApp extends Application {
     }
 
     public boolean endpointConfigured() {
-        return true; //prefs.endpoint().exists();// &&
-//                prefs.username().exists() &&
-//                prefs.password().exists();
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        return preferences.getString("endpoint", null) != null &&
+                preferences.getString("username", null) != null &&
+                preferences.getString("password", null) != null;
     }
 }

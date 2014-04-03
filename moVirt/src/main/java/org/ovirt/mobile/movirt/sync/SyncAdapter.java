@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
 import android.database.Cursor;
+import android.graphics.Movie;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.Vibrator;
@@ -17,6 +18,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.androidannotations.annotations.AfterInject;
+import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
@@ -60,6 +62,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Bean
     TriggerResolverFactory triggerResolverFactory;
 
+    @App
+    MoVirtApp app;
+
     int lastEventId = 0;
     int notificationCount;
     ProviderFacade.BatchBuilder batch;
@@ -75,6 +80,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient providerClient, SyncResult syncResult) {
+        if (!app.endpointConfigured()) {
+            Log.d(TAG, "Endpoint not configured, not performing sync");
+            return;
+        }
+
         Log.d(TAG, "Performing full sync for account[" + account.name + "]");
 
         try {

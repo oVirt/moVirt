@@ -97,6 +97,8 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(MoVirtApp.CONNECTION_FAILURE);
         registerReceiver(connectionStatusReceiver, intentFilter);
+
+        SyncUtils.triggerRefresh();
     }
 
     @Override
@@ -115,21 +117,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
     @AfterViews
     void initAdapters() {
-        if (!app.endpointConfigured()) {
-            final Dialog dialog = new Dialog(this);
-            dialog.setContentView(R.layout.settings_dialog);
-            dialog.setTitle(getString(R.string.configuration));
-            Button continueButton = (Button) dialog.findViewById(R.id.continueButton);
-            continueButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                    showSettings();
-                }
-            });
-            dialog.show();
-            return;
-        }
 
         SimpleCursorAdapter vmListAdapter = new SimpleCursorAdapter(this,
                                                                     R.layout.vm_list_item,
@@ -176,9 +163,25 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         listView.setEmptyView(findViewById(android.R.id.empty));
         listView.setTextFilterEnabled(true);
 
+        clusterDrawer.initDrawerLayout(drawerLayout);
+        clusterDrawer.getDrawerToggle().syncState();
+
         onClusterSelected(new Cluster() {{ setId(selectedClusterId); setName(selectedClusterName); }});
 
-        clusterDrawer.initDrawerLayout(drawerLayout);
+        if (!app.endpointConfigured()) {
+            final Dialog dialog = new Dialog(this);
+            dialog.setContentView(R.layout.settings_dialog);
+            dialog.setTitle(getString(R.string.configuration));
+            Button continueButton = (Button) dialog.findViewById(R.id.continueButton);
+            continueButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                    showSettings();
+                }
+            });
+            dialog.show();
+        }
     }
 
     @OptionsItem(R.id.action_refresh)
@@ -208,13 +211,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         Vm vm = EntityMapper.VM_MAPPER.fromCursor(cursor);
         intent.setData(vm.getUri());
         startActivity(intent);
-    }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-
-        clusterDrawer.getDrawerToggle().syncState();
     }
 
     @Override

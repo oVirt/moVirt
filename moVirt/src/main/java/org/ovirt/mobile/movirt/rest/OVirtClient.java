@@ -30,6 +30,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     private static final String CPU_PERCENTAGE_STAT = "cpu.current.total";
     private static final String TOTAL_MEMORY_STAT = "memory.installed";
     private static final String USED_MEMORY_STAT = "memory.used";
+    // for debugging purposes only
     public static final String DEFAULT_ENDPOINT = "http://10.0.2.2:8080/ovirt-engine/api";
     public static final String DEFAULT_USERNAME = "admin@internal";
     public static final String DEFAULT_PASSWORD = "123456";
@@ -76,7 +77,11 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         BigDecimal usedMemory = getStatisticValueByName(USED_MEMORY_STAT, statistics);
 
         vm.setCpuUsage(cpu.doubleValue());
-        vm.setMemoryUsage(100 * usedMemory.divide(totalMemory).doubleValue());
+        if (BigDecimal.ZERO.equals(totalMemory)) {
+            vm.setMemoryUsage(0);
+        } else {
+            vm.setMemoryUsage(100 * usedMemory.divide(totalMemory).doubleValue());
+        }
     }
 
     private BigDecimal getStatisticValueByName(String name, List<Statistic> statistics) {
