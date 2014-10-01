@@ -3,11 +3,11 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.9.+'
-        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.0'
+        classpath 'com.android.tools.build:gradle:0.13.2'
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:+'
     }
 }
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 repositories {
     mavenCentral()
@@ -24,32 +24,23 @@ dependencies {
     compile 'com.android.support:support-v4:+'
     compile 'com.j256.ormlite:ormlite-android:4.+'
     compile 'com.blandware.android.atleap:core:+@aar'
-    compile 'com.googlecode.androidannotations:androidannotations:2.7.1'
-    compile 'com.googlecode.androidannotations:androidannotations-api:2.7.1'
     compile 'org.springframework.android:spring-android-rest-template:+'
     compile 'com.fasterxml.jackson.core:jackson-core:+'
     compile 'com.fasterxml.jackson.core:jackson-databind:+'
     compile 'com.fasterxml.jackson.core:jackson-annotations:+'
-    compile 'com.android.support:appcompat-v7:+'
-    //    
-//    
+
     apt "org.androidannotations:androidannotations:$androidAnnottationVersion"
     compile "org.androidannotations:androidannotations-api:$androidAnnottationVersion"
-    
-    
-    
-    
-    
-//
+
 }
 
 android {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
-    compileSdkVersion 19
-    buildToolsVersion "19.0.3"
+    compileSdkVersion 20
+    buildToolsVersion "20.0.0"
 
     defaultConfig {
         minSdkVersion 11
-        targetSdkVersion 19
+        targetSdkVersion 20
     }
 
     compileOptions {
