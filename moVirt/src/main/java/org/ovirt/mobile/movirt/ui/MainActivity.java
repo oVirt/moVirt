@@ -13,6 +13,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -106,6 +107,13 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         super.onPause();
 
         unregisterReceiver(connectionStatusReceiver);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
     }
 
     @Override
