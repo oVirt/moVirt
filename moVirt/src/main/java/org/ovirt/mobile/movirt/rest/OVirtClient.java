@@ -1,5 +1,6 @@
 package org.ovirt.mobile.movirt.rest;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,7 +11,9 @@ import android.util.Log;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.App;
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.rest.RestService;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 import org.ovirt.mobile.movirt.AppPrefs_;
@@ -37,6 +40,9 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
 
     @RestService
     OVirtRestClient restClient;
+
+    @Bean
+    ErrorHandler restErrorHandler;
 
     public void startVm(Vm vm) {
         restClient.startVm(new Action(), vm.getId());
@@ -120,6 +126,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
 
     @AfterInject
     void initClient() {
+        restClient.setRestErrorHandler(restErrorHandler);
         updateConnection();
         registerSharedPreferencesListener();
     }
@@ -167,5 +174,9 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
             entities.add(rest.toEntity());
         }
         return entities;
+    }
+
+    public void setContext(Activity context) {
+        restErrorHandler.setContext(context);
     }
 }
