@@ -31,30 +31,27 @@ import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
-import org.ovirt.mobile.movirt.*;
+import org.ovirt.mobile.movirt.MoVirtApp;
+import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
-import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.*;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CLUSTER_ID;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
 public class MainActivity extends Activity implements ClusterDrawerFragment.ClusterSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-
-    // only for setting up the activity to post the errors to
-    @Bean
-    OVirtClient client;
 
     @App
     MoVirtApp app;
@@ -98,7 +95,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @Override
     protected void onResume() {
         super.onResume();
-        client.setContext(this);
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(MoVirtApp.CONNECTION_FAILURE);
@@ -110,7 +106,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @Override
     protected void onPause() {
         super.onPause();
-        client.setContext(null);
         unregisterReceiver(connectionStatusReceiver);
     }
 

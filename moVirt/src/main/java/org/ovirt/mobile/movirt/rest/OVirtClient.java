@@ -175,8 +175,4 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         }
         return entities;
     }
-
-    public void setContext(Activity context) {
-        restErrorHandler.setContext(context);
-    }
 }

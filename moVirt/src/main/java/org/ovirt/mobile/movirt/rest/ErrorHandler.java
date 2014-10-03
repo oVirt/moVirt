@@ -1,10 +1,14 @@
 package org.ovirt.mobile.movirt.rest;
 
 import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
 import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
+import org.androidannotations.annotations.UiThread;
+import org.androidannotations.annotations.res.StringRes;
 import org.androidannotations.api.rest.RestErrorHandler;
 import org.springframework.web.client.RestClientException;
 import org.ovirt.mobile.movirt.R;
@@ -14,27 +18,23 @@ public class ErrorHandler implements RestErrorHandler {
 
     private static final String TAG = ErrorHandler.class.getSimpleName();
 
-    private Activity context;
+    @StringRes(R.string.rest_request_failed)
+    String errorMsg;
+
+    @RootContext
+    Context context;
 
     @Override
     public void onRestClientExceptionThrown(RestClientException e) {
         Log.e(TAG, "Error during calling REST: '" + e.getMessage() + "'");
 
-        if (context == null) {
-            return;
-        }
-
-        final String msg = context.getResources().getString(R.string.rest_request_failed, e.getMessage());
-
-        context.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
-            }
-        });
+        final String msg = String.format(errorMsg, e.getMessage());
+        makeToast(msg);
     }
 
-    public void setContext(Activity context) {
-        this.context = context;
+    @UiThread
+    void makeToast(String msg) {
+        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
+
 }

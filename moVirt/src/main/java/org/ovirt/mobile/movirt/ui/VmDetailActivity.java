@@ -83,14 +83,12 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     @Override
     protected void onResume() {
         super.onResume();
-        client.setContext(this);
         getLoaderManager().restartLoader(0, args, this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        client.setContext(null);
     }
 
     @Click(R.id.runButton)
