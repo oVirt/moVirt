@@ -2,19 +2,16 @@ package org.ovirt.mobile.movirt.ui;
 
 import android.app.Activity;
 import android.app.LoaderManager;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
-import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
+import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
@@ -27,17 +24,12 @@ import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
-import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
-import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
-
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.*;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
@@ -92,6 +84,11 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     protected void onResume() {
         super.onResume();
         getLoaderManager().restartLoader(0, args, this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     @Click(R.id.runButton)

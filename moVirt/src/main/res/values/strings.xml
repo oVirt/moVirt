@@ -60,6 +60,7 @@
     <string name="vm_memory_message">Memory usage of VM \'%1$s\' is over %2$d%% (%3$s)</string>
     <string name="connected">Successfully connected to datacenter!</string>
     <string name="disconnected">Failed to connect to datacenter!</string>
+    <string name="rest_request_failed">REST request failed with \'%1$s\'! For more details please see server error log.</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="notification_type_info">Blink</string>
     <string name="notification_type_critical">Vibrate</string>

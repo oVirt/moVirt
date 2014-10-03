@@ -6,6 +6,7 @@ import org.androidannotations.annotations.rest.Post;
 import org.androidannotations.annotations.rest.RequiresAuthentication;
 import org.androidannotations.annotations.rest.Rest;
 import org.androidannotations.api.rest.MediaType;
+import org.androidannotations.api.rest.RestClientErrorHandling;
 import org.androidannotations.api.rest.RestClientHeaders;
 import org.androidannotations.api.rest.RestClientRootUrl;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -13,7 +14,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 @Rest(converters = MappingJackson2HttpMessageConverter.class)
 @Accept(MediaType.APPLICATION_JSON)
 @RequiresAuthentication
-public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders {
+public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, RestClientErrorHandling {
 
     @Get("/vms")
     Vms getVms();

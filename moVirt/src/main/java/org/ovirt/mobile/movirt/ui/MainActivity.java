@@ -23,7 +23,6 @@ import android.widget.Toast;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.InstanceState;
@@ -32,11 +31,12 @@ import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
-import org.ovirt.mobile.movirt.*;
+import org.ovirt.mobile.movirt.MoVirtApp;
+import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
-import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
@@ -44,7 +44,8 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.*;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CLUSTER_ID;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
@@ -105,7 +106,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @Override
     protected void onPause() {
         super.onPause();
-
         unregisterReceiver(connectionStatusReceiver);
     }
 

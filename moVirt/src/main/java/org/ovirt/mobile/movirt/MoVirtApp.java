@@ -15,7 +15,10 @@ import org.ovirt.mobile.movirt.sync.SyncUtils;
 @EApplication
 public class MoVirtApp extends Application {
     private static final String TAG = MoVirtApp.class.getSimpleName();
+
     public static final String CONNECTION_FAILURE = "org.ovirt.mobile.movirt.CONNECTION_FAILURE";
+
+    public static final String REST_REQUEST_FAILED = "org.ovirt.mobile.movirt.REST_REQUEST_FAILED";
 
     private static Context context;
 
