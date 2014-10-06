@@ -103,15 +103,6 @@ public class AuthenticatorService extends Service {
         }
 
         private Bundle getAuthenticatorActivityIntentBundle(AccountAuthenticatorResponse response, String accountType, String authTokenType, boolean newAccount) {
-//            final Intent intent = new Intent(context, AuthenticatorActivity.class);
-//            intent.putExtra(AuthenticatorActivity.EXTRA_ACCOUNT_TYPE, accountType);
-//            intent.putExtra(AuthenticatorActivity.EXTRA_AUTH_TOKEN_TYPE, authTokenType);
-//            intent.putExtra(AuthenticatorActivity.EXTRA_NEW_ACCOUNT, newAccount);
-//            intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
-
-//            final Bundle bundle = new Bundle();
-//            bundle.putParcelable(AccountManager.KEY_INTENT, intent);
-//            return bundle;
             return null;
         }
 
@@ -149,9 +140,6 @@ public class AuthenticatorService extends Service {
 
         @Override
         public Bundle hasFeatures(AccountAuthenticatorResponse response, Account account, String[] features) throws NetworkErrorException {
-    //        final Bundle result = new Bundle();
-    //        result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, false);
-    //        return result;
             return null;
         }
     }

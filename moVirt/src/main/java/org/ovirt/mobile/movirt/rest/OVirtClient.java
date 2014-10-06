@@ -170,6 +170,9 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
 
     private static <E, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers) {
         List<E> entities = new ArrayList<>();
+        if (wrappers == null) {
+            return entities;
+        }
         for (R rest : wrappers) {
             entities.add(rest.toEntity());
         }
