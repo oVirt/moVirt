@@ -16,6 +16,7 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.WindowFeature;
 import org.androidannotations.annotations.res.StringRes;
 
 import org.androidannotations.annotations.ItemClick;
@@ -36,6 +37,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.*;
 
 @EActivity(R.layout.activity_edit_triggers)
 @OptionsMenu(R.menu.triggers)
+@WindowFeature(Window.FEATURE_ACTION_BAR)
 public class EditTriggersActivity extends Activity implements BaseTriggerDialogFragment.TriggerActivity {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
@@ -109,12 +111,6 @@ public class EditTriggersActivity extends Activity implements BaseTriggerDialogF
         triggersListView.setEmptyView(findViewById(android.R.id.empty));
 
         getLoaderManager().initLoader(0, null, cursorAdapterLoader);
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
     }
 
     private String getScopeText() {

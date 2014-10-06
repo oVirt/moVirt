@@ -22,6 +22,7 @@ import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.WindowFeature;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
@@ -34,6 +35,7 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
+@WindowFeature(Window.FEATURE_ACTION_BAR)
 public class VmDetailActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String VM_URI = "vm_uri";
     private static final String TAG = VmDetailActivity.class.getSimpleName();
@@ -123,12 +125,6 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String vmId = args.<Uri>getParcelable(VM_URI).getLastPathSegment();
         return provider.query(Vm.class).id(vmId).asLoader();
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
     }
 
     @Override

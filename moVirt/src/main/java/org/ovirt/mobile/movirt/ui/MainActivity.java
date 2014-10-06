@@ -30,6 +30,7 @@ import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.WindowFeature;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
@@ -49,6 +50,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
+@WindowFeature(Window.FEATURE_ACTION_BAR)
 public class MainActivity extends Activity implements ClusterDrawerFragment.ClusterSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -107,13 +109,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     protected void onPause() {
         super.onPause();
         unregisterReceiver(connectionStatusReceiver);
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
     }
 
     @Override
