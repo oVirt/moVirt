@@ -56,12 +56,6 @@ public class EventsFragment extends Fragment {
             }
         };
 
-//        eventListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-//            @Override
-//            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-//                return false;
-//            }
-//        });
         list.setAdapter(eventListAdapter);
 
         getLoaderManager().initLoader(0, null, eventsLoader);

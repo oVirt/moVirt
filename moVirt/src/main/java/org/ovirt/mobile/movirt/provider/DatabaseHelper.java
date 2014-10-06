@@ -20,24 +20,4 @@ public class DatabaseHelper extends OrmLiteDatabaseHelper<UriMatcher> {
         return OrmLiteUriMatcher.getInstance(UriMatcher.class, OVirtContract.CONTENT_AUTHORITY);
     }
 
-//    @Override
-//    public void onCreate(SQLiteDatabase sqLiteDatabase, ConnectionSource connectionSource) {
-//        try {
-//            TableUtils.createTableIfNotExists(connectionSource, Vm.class);
-//        } catch (SQLException e) {
-//            Log.e(TAG, e.getMessage(), e);
-//        }
-//    }
-//
-//    @Override
-//    public void onUpgrade(SQLiteDatabase sqLiteDatabase, ConnectionSource connectionSource, int oldVersion, int newVersion) {
-//        try {
-//            TableUtils.dropTable(connectionSource, Vm.class, true);
-//            TableUtils.createTable(connectionSource, Vm.class);
-//        } catch (SQLException e) {
-//            Log.e(TAG, e.getMessage(), e);
-//        }
-//
-//    }
-
 }
