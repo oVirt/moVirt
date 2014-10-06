@@ -5,6 +5,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -108,6 +109,12 @@ public class EditTriggersActivity extends Activity implements BaseTriggerDialogF
         triggersListView.setEmptyView(findViewById(android.R.id.empty));
 
         getLoaderManager().initLoader(0, null, cursorAdapterLoader);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
     }
 
     private String getScopeText() {
