@@ -50,7 +50,6 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-@WindowFeature(Window.FEATURE_ACTION_BAR)
 public class MainActivity extends Activity implements ClusterDrawerFragment.ClusterSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();

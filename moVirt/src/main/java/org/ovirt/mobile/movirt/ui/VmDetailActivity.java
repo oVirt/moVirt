@@ -35,7 +35,6 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
-@WindowFeature(Window.FEATURE_ACTION_BAR)
 public class VmDetailActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String VM_URI = "vm_uri";
     private static final String TAG = VmDetailActivity.class.getSimpleName();

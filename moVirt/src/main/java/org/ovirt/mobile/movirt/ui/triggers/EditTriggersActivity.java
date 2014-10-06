@@ -37,7 +37,6 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.*;
 
 @EActivity(R.layout.activity_edit_triggers)
 @OptionsMenu(R.menu.triggers)
-@WindowFeature(Window.FEATURE_ACTION_BAR)
 public class EditTriggersActivity extends Activity implements BaseTriggerDialogFragment.TriggerActivity {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
