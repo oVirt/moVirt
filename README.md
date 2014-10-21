@@ -11,4 +11,4 @@ After install, you need to set the connection details up.
 * **Password**: your password
 
 Resources:     
-1. [Learning Videos](https://github.com/sphoorti/moVirt/tree/master/videos)
+* [Learning Videos](https://github.com/sphoorti/moVirt/tree/master/videos)
