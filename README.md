@@ -24,5 +24,6 @@ After install, you need to set the connection details up.
    This video tutroial shows the working of trigger with the android application. 'Blink when VM is down' is the     example condition that has been set and the status of the VM is changed accordingly to demonstrate this. 
 
 
-*Resources:*       
+**Resources:**    
+* [oVirt](http://www.ovirt.org)
 * [Learning Videos](https://github.com/sphoorti/moVirt/tree/master/videos)
