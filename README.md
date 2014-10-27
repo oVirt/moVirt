@@ -38,7 +38,7 @@ Once the installations are done, you can proceed to import the project into the 
    <img src = https://github.com/sphoorti/moVirt/blob/master/images/import_project.png align="center" height = "480px" width="640px">    
    After this, the prompt asks you to enter the path to the android sdk.  
    You can refer the following image for the complete SDK path.    
-   <img src = https://github.com/sphoorti/moVirt/blob/master/images/import_project.png align="center" height = "480px" width="640px">    
+   <img src = https://github.com/sphoorti/moVirt/blob/master/images/sdk_location.png align="center" height = "480px" width="640px">    
 3. Press OK. The build takes a while to complete. After it is done, the project is reloaded.  
 4. Run the android application on an emulator or a developer's device.  
     Run -> Run -> Select moVirt   
