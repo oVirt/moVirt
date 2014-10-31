@@ -31,6 +31,7 @@ To start contributing to moVirt, you will need to install the following things-
    3. Android API 20 is the required SDK. You can install additional SDK as per your needs.  
 * [Android Studio 0.8.11](http://tools.android.com/download/studio/canary/0-8-11)
 * [Gradle version 2.1](http://gvmtool.net/)  
+<<<<<<< HEAD
 
 Once the installations are done, you can proceed to import the project into the workspace.  
 1. File -> Open -> ~/" *path to moVirt project* "/moVirt/moVirt/build.gradle  
@@ -46,6 +47,23 @@ Once the installations are done, you can proceed to import the project into the 
       Click on the + icon -> Android application -> in right panel General tab select the moVirt module.  
       Click Apply. Click OK.  
 
+=======
+
+Once the installations are done, you can proceed to import the project into the workspace.  
+1. File -> Open -> ~/" *path to moVirt project* "/moVirt/moVirt/build.gradle  
+2. On the import dialog : Select local gradle distribution. Give the path to gradle version 2.1 .      
+   <img src = https://github.com/sphoorti/moVirt/blob/master/images/import_project.png align="center" height = "480px" width="640px">    
+   After this, the prompt asks you to enter the path to the android sdk.  
+   You can refer the following image for the complete SDK path.    
+   <img src = https://github.com/sphoorti/moVirt/blob/master/images/sdk_location.png align="center" height = "480px" width="640px">    
+3. Press OK. The build takes a while to complete. After it is done, the project is reloaded.  
+4. Run the android application on an emulator or a developer's device.  
+    Run -> Run -> Select moVirt   
+      *For the first time* Run -> Edit Configurations  
+      Click on the + icon -> Android application -> in right panel General tab select the moVirt module.  
+      Click Apply. Click OK.  
+
+>>>>>>> a88ba00942dc344658b6f9c5498a92e6ab8a137e
 **Resources:**    
 * [oVirt](http://www.ovirt.org)
 * [Learning Videos](https://github.com/sphoorti/moVirt/tree/master/videos)
