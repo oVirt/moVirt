@@ -17,6 +17,12 @@ After install, you need to set the connection details up.
 2. [Working with Trigger](https://github.com/sphoorti/moVirt/blob/master/videos/trigger.webm)    
    This video tutroial shows the working of trigger with the android application. 'Blink when VM is down' is the     example condition that has been set and the status of the VM is changed accordingly to demonstrate this. 
 
+###Get in Touch
+* Interested about news? Follow us on [Twitter](https://twitter.com/mobileOvirt)
+* Have user questions? Subscribe to [oVirt's users list](http://lists.ovirt.org/mailman/listinfo/users) and post a question with subject containing *[moVirt]*
+* Want to contribute? Have development oriented questions? Subscribe to [oVirt's devel list](http://lists.ovirt.org/mailman/listinfo/devel) and post a question with subject containing *[moVirt]*
+* Want to chat? We are usually hanging in *irc.oftc.net* in *#ovirt* - look for *sphoorti*, *mbetak* or *tjelinek*. Or anyone else, people are friendly there ;)
+
 ###Developer's guide:        
 To start contributing to moVirt, you will need to install the following things-
 * [Android SDK](http://developer.android.com/sdk/index.html)  
