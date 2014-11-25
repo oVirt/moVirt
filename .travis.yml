@@ -1,0 +1,12 @@
+language: android
+android:
+  components:
+    - build-tools-20.0.0
+    - android-20
+    - sys-img-armeabi-v7a-android-15
+    - sys-img-armeabi-v7a-android-16
+    - sys-img-armeabi-v7a-android-17
+    - sys-img-armeabi-v7a-android-18
+    - sys-img-armeabi-v7a-android-19
+    - sys-img-armeabi-v7a-android-wear-20
+    - sys-img-armeabi-v7a-android-21
