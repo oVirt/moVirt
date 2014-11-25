@@ -32,3 +32,4 @@ proguard/
 # Gradle files
 gradle/
 .gradle
+gradlew
