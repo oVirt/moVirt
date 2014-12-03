@@ -1,28 +1,19 @@
 package org.ovirt.mobile.movirt.rest;
 
-import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
-
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.rest.RestService;
-import org.androidannotations.annotations.sharedpreferences.Pref;
-import org.ovirt.mobile.movirt.AppPrefs_;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +28,16 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     public static final String DEFAULT_ENDPOINT = "http://10.0.2.2:8080/ovirt-engine/api";
     public static final String DEFAULT_USERNAME = "admin@internal";
     public static final String DEFAULT_PASSWORD = "123456";
+    public static final Boolean DEFAULT_HTTPS = false;
 
     @RestService
     OVirtRestClient restClient;
 
     @Bean
     ErrorHandler restErrorHandler;
+
+    @Bean
+    OvirtSimpleClientHttpRequestFactory requestFactory;
 
     public void startVm(Vm vm) {
         restClient.startVm(new Action(), vm.getId());
@@ -128,12 +123,14 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     void initClient() {
         restClient.setRestErrorHandler(restErrorHandler);
         updateConnection();
+        restClient.getRestTemplate().setRequestFactory(requestFactory);
         registerSharedPreferencesListener();
     }
 
     private void updateConnection() {
         updateRootUrlFromSettings();
         updateAuthenticationFromSettings();
+        updateDisableHttpsChecking();
         SyncUtils.triggerRefresh();
     }
 
@@ -151,6 +148,11 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         restClient.setHttpBasicAuth(username, password);
     }
 
+    private void updateDisableHttpsChecking() {
+        Boolean disableHttpsChecking = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("disableHttpsChecking",DEFAULT_HTTPS);
+        requestFactory.setIgnoreHttps(disableHttpsChecking);
+        Log.i(TAG, "Https Disabled updated: " + disableHttpsChecking);
+    }
     private void registerSharedPreferencesListener() {
         app.getSharedPreferences("MyPrefs", Context.MODE_MULTI_PROCESS).registerOnSharedPreferenceChangeListener(this);
         PreferenceManager.getDefaultSharedPreferences(app).registerOnSharedPreferenceChangeListener(this);
@@ -163,6 +165,9 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         }
         if (key.equals("username") || key.equals("password")) {
             updateAuthenticationFromSettings();
+        }
+        if (key.equals("disableHttpsChecking")) {
+            updateDisableHttpsChecking();
         }
         Log.i(TAG, key + " changed");
         SyncUtils.triggerRefresh();

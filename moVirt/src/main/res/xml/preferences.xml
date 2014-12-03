@@ -16,4 +16,9 @@
                         android:summary="@string/prefs_password_summary"
                         android:password="true"
                         android:persistent="true"/>
+
+    <CheckBoxPreference android:title="@string/prefs_disableHttpsChecking"
+                        android:key="disableHttpsChecking"
+                        android:summary="@string/prefs_disableHttpsChecking_summary"
+                        android:persistent="true"/>
 </PreferenceScreen>

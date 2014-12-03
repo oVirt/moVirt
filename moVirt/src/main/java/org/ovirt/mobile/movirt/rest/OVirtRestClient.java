@@ -9,12 +9,13 @@ import org.androidannotations.api.rest.MediaType;
 import org.androidannotations.api.rest.RestClientErrorHandling;
 import org.androidannotations.api.rest.RestClientHeaders;
 import org.androidannotations.api.rest.RestClientRootUrl;
+import org.androidannotations.api.rest.RestClientSupport;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 @Rest(converters = MappingJackson2HttpMessageConverter.class)
 @Accept(MediaType.APPLICATION_JSON)
 @RequiresAuthentication
-public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, RestClientErrorHandling {
+public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, RestClientErrorHandling, RestClientSupport {
 
     @Get("/vms")
     Vms getVms();
