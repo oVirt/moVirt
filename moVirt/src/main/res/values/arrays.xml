@@ -10,7 +10,20 @@
         <item>Vibrate</item>
     </string-array>
     <string-array name="statuses">
+        <item>UNASSIGNED</item>
         <item>DOWN</item>
+        <item>UP</item>
+        <item>POWERING_UP</item>
+        <item>PAUSED</item>
+        <item>MIGRATING</item>
         <item>UNKNOWN</item>
+        <item>NOT_RESPONDING</item>
+        <item>WAIT_FOR_LAUNCH</item>
+        <item>REBOOT_IN_PROGRESS</item>
+        <item>SAVING_STATE</item>
+        <item>SUSPENDED</item>
+        <item>IMAGE_LOCKED</item>
+        <item>POWERING_DOWN</item>
+
     </string-array>
 </resources>
