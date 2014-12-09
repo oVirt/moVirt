@@ -31,3 +31,4 @@ proguard/
 
 # Gradle files
 .gradle
+gradle/gradle*
