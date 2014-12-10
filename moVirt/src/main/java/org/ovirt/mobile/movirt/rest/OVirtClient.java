@@ -29,6 +29,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     public static final String DEFAULT_USERNAME = "admin@internal";
     public static final String DEFAULT_PASSWORD = "123456";
     public static final Boolean DEFAULT_HTTPS = false;
+    public static final Boolean DEFAULT_ADMIN_USER = false;
 
     @RestService
     OVirtRestClient restClient;
@@ -131,6 +132,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         updateRootUrlFromSettings();
         updateAuthenticationFromSettings();
         updateDisableHttpsChecking();
+        updateAdminUserStatus();
         SyncUtils.triggerRefresh();
     }
 
@@ -146,6 +148,17 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         Log.i(TAG, "Updating username to: " + username);
         Log.i(TAG, "Updating password to: " + password);
         restClient.setHttpBasicAuth(username, password);
+    }
+
+    private void updateAdminUserStatus(){
+        Boolean adminUserStatus = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("admin_user",DEFAULT_ADMIN_USER);
+        Log.i(TAG, "Updating admin user status to: " + adminUserStatus);
+        if(adminUserStatus) {
+            restClient.setHeader("Filter", PreferenceManager.getDefaultSharedPreferences(app).getString("filter_results", "true"));
+        }
+        else{
+            restClient.setHeader("Filter", PreferenceManager.getDefaultSharedPreferences(app).getString("filter_results", "false"));
+        }
     }
 
     private void updateDisableHttpsChecking() {
@@ -165,6 +178,9 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         }
         if (key.equals("username") || key.equals("password")) {
             updateAuthenticationFromSettings();
+        }
+        if (key.equals("admin_user")){
+                updateAdminUserStatus();
         }
         if (key.equals("disableHttpsChecking")) {
             updateDisableHttpsChecking();
