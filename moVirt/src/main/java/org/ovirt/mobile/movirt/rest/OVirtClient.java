@@ -29,7 +29,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     public static final String DEFAULT_USERNAME = "admin@internal";
     public static final String DEFAULT_PASSWORD = "123456";
     public static final Boolean DEFAULT_HTTPS = false;
-    public static final Boolean DEFAULT_ADMIN_USER = false;
+    public static final Boolean DEFAULT_ADMIN_PRIVILEGE = false;
 
     @RestService
     OVirtRestClient restClient;
@@ -64,7 +64,6 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         if (loadedVms == null) {
             return new ArrayList<>();
         }
-
         List<Vm> vms = mapRestWrappers(loadedVms.vm);
         updateVmsStatistics(vms);
 
@@ -151,7 +150,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         updateRootUrlFromSettings();
         updateAuthenticationFromSettings();
         updateDisableHttpsChecking();
-        updateAdminUserStatus();
+        updateAdminPrivilegeStatus();
         SyncUtils.triggerRefresh();
     }
 
@@ -169,15 +168,10 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         restClient.setHttpBasicAuth(username, password);
     }
 
-    private void updateAdminUserStatus(){
-        Boolean adminUserStatus = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("admin_user",DEFAULT_ADMIN_USER);
-        Log.i(TAG, "Updating admin user status to: " + adminUserStatus);
-        if(adminUserStatus) {
-            restClient.setHeader("Filter", PreferenceManager.getDefaultSharedPreferences(app).getString("filter_results", "true"));
-        }
-        else{
-            restClient.setHeader("Filter", PreferenceManager.getDefaultSharedPreferences(app).getString("filter_results", "false"));
-        }
+    private void updateAdminPrivilegeStatus() {
+        Boolean adminPrivilegeStatus = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("admin_privilege",DEFAULT_ADMIN_PRIVILEGE);
+        Log.i(TAG, "Updating admin privilege status to: " + adminPrivilegeStatus);
+        restClient.setHeader("Filter",String.valueOf(!adminPrivilegeStatus));
     }
 
     private void updateDisableHttpsChecking() {
@@ -198,8 +192,8 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         if (key.equals("username") || key.equals("password")) {
             updateAuthenticationFromSettings();
         }
-        if (key.equals("admin_user")){
-                updateAdminUserStatus();
+        if (key.equals("admin_privilege")){
+                updateAdminPrivilegeStatus();
         }
         if (key.equals("disableHttpsChecking")) {
             updateDisableHttpsChecking();

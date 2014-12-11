@@ -17,9 +17,9 @@
                         android:password="true"
                         android:persistent="true"/>
 
-    <CheckBoxPreference android:title="@string/prefs_admin_user"
-                        android:key="admin_user"
-                        android:summary="@string/prefs_admin_user_summary"
+    <CheckBoxPreference android:title="@string/prefs_admin_privilege"
+                        android:key="admin_privilege"
+                        android:summary="@string/prefs_admin_privilege_summary"
                         android:persistent="true"/>
 
     <CheckBoxPreference android:title="@string/prefs_disableHttpsChecking"

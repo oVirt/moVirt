@@ -11,8 +11,8 @@
     <string name="prefs_password">Password</string>
     <string name="prefs_username_summary">Username</string>
     <string name="prefs_password_summary">Password</string>
-    <string name="prefs_admin_user">Admin User</string>
-    <string name="prefs_admin_user_summary">Required to set admin privileges to connect to cloudspin.me</string>
+    <string name="prefs_admin_privilege">Admin Privilege</string>
+    <string name="prefs_admin_privilege_summary">Tells oVirt if the user has admin privileges.</string>
     <string name="prefs_disableHttpsChecking">Disable Https</string>
     <string name="prefs_disableHttpsChecking_summary">This method is dangerous and should not be used in production setup.</string>
     <string name="title_activity_select_cluster">SelectClusterActivity</string>
