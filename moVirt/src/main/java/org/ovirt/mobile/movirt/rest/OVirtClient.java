@@ -60,7 +60,12 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
 
     public List<Vm> getVms() {
      //   Log.d(TAG, "Getting VMs using " + prefs.username().get() + " and " + prefs.password().get());
-        List<Vm> vms = mapRestWrappers(restClient.getVms().vm);
+        Vms loadedVms = restClient.getVms();
+        if (loadedVms == null) {
+            return new ArrayList<>();
+        }
+
+        List<Vm> vms = mapRestWrappers(loadedVms.vm);
         updateVmsStatistics(vms);
 
         return vms;
@@ -96,15 +101,29 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     public List<Cluster> getClusters() {
-        return mapRestWrappers(restClient.getClusters().cluster);
+        Clusters loadedClusters = restClient.getClusters();
+        if (loadedClusters == null) {
+            return new ArrayList<>();
+        }
+
+        return mapRestWrappers(loadedClusters.cluster);
     }
 
     public List<Event> getVmEvents(String vmId) {
-        return mapRestWrappers(restClient.getEvents("Vms.id=" + vmId).event);
+        Events loadedEvents = restClient.getEvents("Vms.id=" + vmId);
+        if (loadedEvents == null) {
+            return new ArrayList<>();
+        }
+
+        return mapRestWrappers(loadedEvents.event);
     }
 
     public List<Event> getEventsSince(int lastEventId) {
-        return filterLogEvents(mapRestWrappers(restClient.getEventsSince(Integer.toString(lastEventId)).event));
+        Events loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId));
+        if (loadedEvents == null) {
+            return new ArrayList<>();
+        }
+        return filterLogEvents(mapRestWrappers(loadedEvents.event));
     }
 
     private static List<Event> filterLogEvents(List<Event> events) {
