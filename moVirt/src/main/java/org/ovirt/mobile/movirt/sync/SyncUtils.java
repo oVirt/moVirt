@@ -11,7 +11,7 @@ import org.ovirt.mobile.movirt.auth.AuthenticatorService;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 
 public final class SyncUtils {
-    private static final long SYNC_FREQUENCY = 5;  // 5 seconds
+    private static final long SYNC_FREQUENCY = 60;  // in seconds
     private static final String CONTENT_AUTHORITY = OVirtContract.CONTENT_AUTHORITY;
     private static final String PREF_SETUP_COMPLETE = "setup_complete";
 
@@ -70,5 +70,11 @@ public final class SyncUtils {
                 AuthenticatorService.DUMMY_ACCOUNT,      // Sync account
                 OVirtContract.CONTENT_AUTHORITY, // Content authority
                 b);                                      // Extras
+    }
+
+    public static void updatePollingInterval(int newInterval) {
+        Account account = AuthenticatorService.DUMMY_ACCOUNT;
+        ContentResolver.removePeriodicSync(account, CONTENT_AUTHORITY, new Bundle());
+        ContentResolver.addPeriodicSync(account, CONTENT_AUTHORITY, new Bundle(), newInterval);
     }
 }
