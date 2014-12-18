@@ -30,6 +30,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     public static final String DEFAULT_PASSWORD = "123456";
     public static final Boolean DEFAULT_HTTPS = false;
     public static final Boolean DEFAULT_ADMIN_PRIVILEGE = false;
+    public static final String DEFAULT_POLLING_INTERVAL = "60";
 
     @RestService
     OVirtRestClient restClient;
@@ -151,6 +152,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         updateAuthenticationFromSettings();
         updateDisableHttpsChecking();
         updateAdminPrivilegeStatus();
+        updatePollingInterval();
         SyncUtils.triggerRefresh();
     }
 
@@ -174,6 +176,12 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         restClient.setHeader("Filter",String.valueOf(!adminPrivilegeStatus));
     }
 
+    private void updatePollingInterval() {
+        int pollingInterval = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(app).getString("polling_interval",DEFAULT_POLLING_INTERVAL));
+        Log.i(TAG,"Updating Polling Interval to :" + Integer.toString(pollingInterval));
+        SyncUtils.updatePollingInterval(pollingInterval);
+    }
+
     private void updateDisableHttpsChecking() {
         Boolean disableHttpsChecking = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("disableHttpsChecking",DEFAULT_HTTPS);
         requestFactory.setIgnoreHttps(disableHttpsChecking);
@@ -194,6 +202,9 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         }
         if (key.equals("admin_privilege")){
                 updateAdminPrivilegeStatus();
+        }
+        if (key.equals("polling_interval")){
+            updatePollingInterval();
         }
         if (key.equals("disableHttpsChecking")) {
             updateDisableHttpsChecking();

@@ -22,6 +22,12 @@
                         android:summary="@string/prefs_admin_privilege_summary"
                         android:persistent="true"/>
 
+    <EditTextPreference android:title="@string/prefs_polling_interval"
+                        android:key="polling_interval"
+                        android:summary="@string/prefs_polling_interval_summary"
+                        android:inputType="number"
+                        android:persistent="true"/>
+
     <CheckBoxPreference android:title="@string/prefs_disableHttpsChecking"
                         android:key="disableHttpsChecking"
                         android:summary="@string/prefs_disableHttpsChecking_summary"
