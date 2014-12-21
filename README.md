@@ -12,7 +12,8 @@ After install, you need to set the connection details up.
 * **API URL**: http://host:port/ovirt-engine/api
 * **Username**: name@domain - e.g. admin@internal
 * **Password**: your password
-* **Admin User**: enable or disable the checkbox  
+* **Admin Privilege**: enable or disable the checkbox  
+* **Polling interval**: configure the polling interval in seconds.  
 * **Disable Https**: enable or disable the checkbox   
 
 **Video tutorials at a glance:**  
