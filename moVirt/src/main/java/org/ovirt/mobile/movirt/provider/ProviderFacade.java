@@ -44,6 +44,7 @@ public class ProviderFacade {
         StringBuilder selection = new StringBuilder();
         List<String> selectionArgs = new ArrayList<>();
         StringBuilder sortOrder = new StringBuilder();
+        String limitClause = "";
 
         public QueryBuilder(Class<E> clazz) {
             this.clazz = clazz;
@@ -87,6 +88,20 @@ public class ProviderFacade {
             return orderBy(columnName, SortOrder.DESCENDING);
         }
 
+        public QueryBuilder<E> limit(int limit) {
+            limitClause = "LIMIT " + Integer.toString(limit);
+            return this;
+        }
+
+        private String sortOrderWithLimit() {
+            StringBuilder res = new StringBuilder();
+            String sortOrderString = sortOrder.toString();
+            res.append(!"".equals(sortOrderString) ? sortOrderString : "ROWID");
+            res.append(limitClause);
+
+            return res.toString();
+        }
+
         public QueryBuilder<E> orderBy(String columnName, SortOrder order) {
             assert !columnName.equals("") : "columnName cannot be empty or null";
 
@@ -102,7 +117,7 @@ public class ProviderFacade {
                                            null,
                                            selection.toString(),
                                            selectionArgs.toArray(new String[selectionArgs.size()]),
-                                           sortOrder.toString());
+                                           sortOrderWithLimit());
             } catch (RemoteException e) {
                 Log.e(TAG, "Error querying " + baseUri, e);
                 throw new RuntimeException(e);
@@ -115,7 +130,7 @@ public class ProviderFacade {
                                     null,
                                     selection.toString(),
                                     selectionArgs.toArray(new String[selectionArgs.size()]),
-                                    sortOrder.toString());
+                                    sortOrderWithLimit());
         }
 
         public Collection<E> all() {

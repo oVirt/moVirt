@@ -15,6 +15,7 @@ import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,15 +80,18 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
 
     private void updateVmStatistics(Vm vm) {
         final List<Statistic> statistics = restClient.getVmStatistics(vm.getId()).statistic;
-        BigDecimal cpu = getStatisticValueByName(CPU_PERCENTAGE_STAT, statistics);
-        BigDecimal totalMemory = getStatisticValueByName(TOTAL_MEMORY_STAT, statistics);
-        BigDecimal usedMemory = getStatisticValueByName(USED_MEMORY_STAT, statistics);
 
-        vm.setCpuUsage(cpu.doubleValue());
-        if (BigDecimal.ZERO.equals(totalMemory)) {
-            vm.setMemoryUsage(0);
-        } else {
-            vm.setMemoryUsage(100 * usedMemory.divide(totalMemory).doubleValue());
+        if (statistics != null) {
+            BigDecimal cpu = getStatisticValueByName(CPU_PERCENTAGE_STAT, statistics);
+            BigDecimal totalMemory = getStatisticValueByName(TOTAL_MEMORY_STAT, statistics);
+            BigDecimal usedMemory = getStatisticValueByName(USED_MEMORY_STAT, statistics);
+
+            vm.setCpuUsage(cpu.doubleValue());
+            if (BigDecimal.ZERO.equals(totalMemory)) {
+                vm.setMemoryUsage(0);
+            } else {
+                vm.setMemoryUsage(100 * usedMemory.divide(totalMemory, 3, RoundingMode.HALF_UP).doubleValue());
+            }
         }
     }
 
@@ -97,7 +101,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
                 return new BigDecimal(statistic.values.value.get(0).datum);
             }
         }
-        return null;
+        return BigDecimal.ZERO;
     }
 
     public List<Cluster> getClusters() {
