@@ -24,7 +24,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.CLUSTER_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.VM_ID;
 
 @EFragment(R.layout.fragment_event_list)
-public class EventsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>{
+public class EventsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     @ViewById
     ListView list;
