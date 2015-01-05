@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.ui;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,7 +14,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -30,7 +30,6 @@ import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
-import org.androidannotations.annotations.WindowFeature;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
@@ -43,16 +42,18 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
-import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CLUSTER_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends Activity implements ClusterDrawerFragment.ClusterSelectedListener {
+public class MainActivity extends Activity implements ClusterDrawerFragment.ClusterSelectedListener,LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private int page = 1;
+    private static final int EVENTS_PER_PAGE = 20;
+    private SimpleCursorAdapter vmListAdapter;
 
     @App
     MoVirtApp app;
@@ -80,8 +81,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
     @InstanceState
     String selectedClusterName;
-
-    private CursorAdapterLoader cursorAdapterLoader;
 
     private final BroadcastReceiver connectionStatusReceiver = new BroadcastReceiver() {
         @Override
@@ -120,22 +119,11 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @AfterViews
     void initAdapters() {
 
-        SimpleCursorAdapter vmListAdapter = new SimpleCursorAdapter(this,
+        vmListAdapter = new SimpleCursorAdapter(this,
                                                                     R.layout.vm_list_item,
                                                                     null,
                                                                     new String[]{OVirtContract.Vm.NAME, OVirtContract.Vm.STATUS, OVirtContract.Vm.MEMORY_USAGE, OVirtContract.Vm.CPU_USAGE},
                                                                     new int[]{R.id.vm_name, R.id.vm_status, R.id.vm_memory, R.id.vm_cpu});
-
-        cursorAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
-            @Override
-            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                ProviderFacade.QueryBuilder<Vm> query = provider.query(Vm.class);
-                if (selectedClusterId != null) {
-                    query.where(CLUSTER_ID, selectedClusterId);
-                }
-                return query.orderBy(NAME).asLoader();
-            }
-        };
 
         vmListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
@@ -184,6 +172,49 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
             });
             dialog.show();
         }
+
+        getLoaderManager().initLoader(0, null, this);
+
+
+        listView.setOnScrollListener(new EndlessScrollListener(){
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                loadMoreData(page);
+            }
+        });
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        ProviderFacade.QueryBuilder<Vm> query = provider.query(Vm.class);
+        if (selectedClusterId != null) {
+            query.where(CLUSTER_ID, selectedClusterId);
+        }
+        return query.orderBy(NAME).limit(page * EVENTS_PER_PAGE).asLoader();
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader,Cursor cursor) {
+        if(vmListAdapter!=null && cursor!=null) {
+            vmListAdapter.swapCursor(cursor); //swap the new cursor in.
+        }
+        else {
+            Log.v(TAG, "OnLoadFinished: vmListAdapter is null");
+        }
+    }
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        if(vmListAdapter!=null) {
+            vmListAdapter.swapCursor(null);
+        }
+        else {
+            Log.v(TAG, "OnLoadFinished: vmListAdapter is null");
+        }
+    }
+
+    public void loadMoreData(int page) {
+        this.page = page;
+        getLoaderManager().restartLoader(0,null,this);
     }
 
     @OptionsItem(R.id.action_refresh)
@@ -231,7 +262,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         setTitle(cluster.getId() == null ? getString(R.string.all_clusters) : String.format(CLUSTER_SCOPE, cluster.getName()));
         selectedClusterId = cluster.getId();
         selectedClusterName = cluster.getName();
-        getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
         eventList.setFilterClusterId(selectedClusterId);
         drawerLayout.closeDrawers();
     }
