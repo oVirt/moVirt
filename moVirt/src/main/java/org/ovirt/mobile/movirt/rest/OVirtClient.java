@@ -113,20 +113,13 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         return mapRestWrappers(loadedClusters.cluster);
     }
 
-    public List<Event> getVmEvents(String vmId) {
-        Events loadedEvents = restClient.getEvents("Vms.id=" + vmId);
-        if (loadedEvents == null) {
-            return new ArrayList<>();
-        }
-
-        return mapRestWrappers(loadedEvents.event);
-    }
-
     public List<Event> getEventsSince(int lastEventId) {
         Events loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId));
         if (loadedEvents == null) {
             return new ArrayList<>();
         }
+
+        // TODO this could be optimized by not wrapping the events which are not actually needed (the old ones)
         return filterLogEvents(mapRestWrappers(loadedEvents.event));
     }
 

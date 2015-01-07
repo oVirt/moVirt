@@ -65,6 +65,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @App
     MoVirtApp app;
 
+    private static volatile boolean inSync = false;
+
     int lastEventId = 0;
     int notificationCount;
     ProviderFacade.BatchBuilder batch;
@@ -80,6 +82,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient providerClient, SyncResult syncResult) {
+        doPerformSync(account);
+    }
+
+    private synchronized void doPerformSync(Account account) {
+        if (inSync) {
+            return;
+        }
+
         if (!app.endpointConfigured()) {
             Log.d(TAG, "Endpoint not configured, not performing sync");
             return;
@@ -87,26 +97,45 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         Log.d(TAG, "Performing full sync for account[" + account.name + "]");
 
+        inSync = true;
         try {
-            final List<Vm> remoteVms = oVirtClient.getVms();
-            final List<Cluster> remoteClusters = oVirtClient.getClusters();
-            final List<Event> newEvents = oVirtClient.getEventsSince(lastEventId);
-
-            batch = provider.batch();
-            notificationCount = 0;
-            updateLocalEntities(remoteClusters, Cluster.class);
-            updateLocalEntities(remoteVms, Vm.class);
-            updateEvents(newEvents);
-
-            if (batch.isEmpty()) {
-                Log.i(TAG, "No updates necessary");
-            } else {
-                Log.i(TAG, "Applying batch update");
-                batch.apply();
-            }
+            // split to two methods so at least the quick entities can be already shown / used until the slow ones get processed (better ux)
+            updateQuickEntities();
+            updateSlowEntities();
         } catch (Exception e) {
             Log.e(TAG, "Error updating data", e);
             context.sendBroadcast(new Intent(MoVirtApp.CONNECTION_FAILURE));
+        } finally {
+            inSync = false;
+        }
+    }
+
+    private void updateSlowEntities() {
+        batch = provider.batch();
+        final List<Event> newEvents = oVirtClient.getEventsSince(lastEventId);
+        updateEvents(newEvents);
+        applyBatch();
+    }
+
+    private void updateQuickEntities() throws RemoteException {
+        batch = provider.batch();
+        notificationCount = 0;
+
+        final List<Vm> remoteVms = oVirtClient.getVms();
+        final List<Cluster> remoteClusters = oVirtClient.getClusters();
+
+        updateLocalEntities(remoteClusters, Cluster.class);
+        updateLocalEntities(remoteVms, Vm.class);
+
+        applyBatch();
+    }
+
+    private void applyBatch() {
+        if (batch.isEmpty()) {
+            Log.i(TAG, "No updates necessary");
+        } else {
+            Log.i(TAG, "Applying batch update");
+            batch.apply();
         }
     }
 
@@ -143,13 +172,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void updateEvents(List<Event> newEvents) {
-        if (!newEvents.isEmpty()) {
-            lastEventId = newEvents.get(0).getId();
-        }
         Log.i(TAG, "Fetched " + newEvents.size() + " new event(s)");
 
         for (Event event : newEvents) {
-            batch.insert(event);
+            // because the user api (filtered: true) returns all the events all the time
+            if (event.getId() > lastEventId) {
+                batch.insert(event);
+            }
+        }
+
+        if (!newEvents.isEmpty()) {
+            lastEventId = newEvents.get(0).getId();
         }
     }
 

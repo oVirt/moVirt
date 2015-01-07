@@ -6,6 +6,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
@@ -17,7 +18,6 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.BaseEntity.ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.CLUSTER_ID;
@@ -53,7 +53,7 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
 
         getLoaderManager().initLoader(0, null, this);
 
-        list.setOnScrollListener(new EndlessScrollListener(){
+        list.setOnScrollListener(new EndlessScrollListener() {
             @Override
             public void onLoadMore(int page, int totalItemsCount) {
                 loadMoreData(page);
