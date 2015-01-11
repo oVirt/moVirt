@@ -38,4 +38,11 @@
         <item name="android:layout_alignParentRight">true</item>
     </style>
 
+    <style name="ButtonBar">
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+        <item name="android:paddingTop">5dip</item>
+        <item name="android:paddingBottom">1dip</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
 </resources>
