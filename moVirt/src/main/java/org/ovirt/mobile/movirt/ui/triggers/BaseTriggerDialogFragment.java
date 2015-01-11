@@ -102,7 +102,7 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
                     Toast.makeText(getContext(), R.string.percentage_cannot_be_empty, Toast.LENGTH_LONG).show();
                     return null;
                 }
-                int percentageLimit = Integer.parseInt(percentageEdit.getText().toString());
+                int percentageLimit = asIntWithDefault(percentageEdit.getText().toString(), "0");
                 return new CpuThresholdCondition(percentageLimit);
             }
             case "Memory": {
@@ -110,7 +110,7 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
                     Toast.makeText(getContext(), R.string.percentage_cannot_be_empty, Toast.LENGTH_LONG).show();
                     return null;
                 }
-                int percentageLimit = Integer.parseInt(percentageEdit.getText().toString());
+                int percentageLimit = asIntWithDefault(percentageEdit.getText().toString(), "0");
                 return new MemoryThresholdCondition(percentageLimit);
             }
             case "Status": {
@@ -130,5 +130,13 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
 
     protected Context getContext() {
         return context;
+    }
+
+    private int asIntWithDefault(String toParse, String defaultResult) {
+        try {
+            return Integer.parseInt(toParse);
+        } catch (NumberFormatException e) {
+            return Integer.parseInt(defaultResult);
+        }
     }
 }

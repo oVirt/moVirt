@@ -5,15 +5,38 @@
     android:layout_height="match_parent"
     tools:context="org.ovirt.mobile.movirt.ui.EventsFragment">
 
+    <RelativeLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/ButtonBar">
+
+        <Button
+            android:id="@+id/downloadEvents"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/downloadEvents"/>
+
+        <Button
+            android:id="@+id/clearDb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/clearEvents"
+            android:layout_toRightOf="@+id/downloadEvents"/>
+
+        <ProgressBar
+            android:id="@+id/eventsProgress"
+            style="@style/eventsProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+        </ProgressBar>
+
+    </RelativeLayout>
+
     <ListView
         android:id="@android:id/list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <TextView
-        android:id="@android:id/empty"
-        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center" />
+        style="@style/EventsStyle"/>
 
 </FrameLayout>

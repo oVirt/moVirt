@@ -10,14 +10,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SyncResult;
 import android.database.Cursor;
-import android.graphics.Movie;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
@@ -26,7 +24,6 @@ import org.androidannotations.annotations.SystemService;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
-import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
@@ -62,22 +59,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Bean
     TriggerResolverFactory triggerResolverFactory;
 
+    @Bean
+    EventsHandler eventsHandler;
+
     @App
     MoVirtApp app;
 
     private static volatile boolean inSync = false;
 
-    int lastEventId = 0;
+    public static final int DEFAULT_MAX_EVENTS_STORED = 5000;
+
     int notificationCount;
     ProviderFacade.BatchBuilder batch;
 
     public SyncAdapter(Context context) {
         super(context, true);
-    }
-
-    @AfterInject
-    void initLastEventId() {
-        lastEventId = provider.getLastEventId();
     }
 
     @Override
@@ -101,20 +97,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             // split to two methods so at least the quick entities can be already shown / used until the slow ones get processed (better ux)
             updateQuickEntities();
-            updateSlowEntities();
+            eventsHandler.updateEvents(false);
         } catch (Exception e) {
             Log.e(TAG, "Error updating data", e);
             context.sendBroadcast(new Intent(MoVirtApp.CONNECTION_FAILURE));
         } finally {
             inSync = false;
         }
-    }
-
-    private void updateSlowEntities() {
-        batch = provider.batch();
-        final List<Event> newEvents = oVirtClient.getEventsSince(lastEventId);
-        updateEvents(newEvents);
-        applyBatch();
     }
 
     private void updateQuickEntities() throws RemoteException {
@@ -168,21 +157,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         for (E entity : entityMap.values()) {
             Log.i(TAG, "Scheduling insert for entity: id = " + entity.getId());
             batch.insert(entity);
-        }
-    }
-
-    private void updateEvents(List<Event> newEvents) {
-        Log.i(TAG, "Fetched " + newEvents.size() + " new event(s)");
-
-        for (Event event : newEvents) {
-            // because the user api (filtered: true) returns all the events all the time
-            if (event.getId() > lastEventId) {
-                batch.insert(event);
-            }
-        }
-
-        if (!newEvents.isEmpty()) {
-            lastEventId = newEvents.get(0).getId();
         }
     }
 

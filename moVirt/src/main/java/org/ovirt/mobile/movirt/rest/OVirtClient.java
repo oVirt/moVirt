@@ -13,7 +13,10 @@ import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
+import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -66,7 +69,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         if (loadedVms == null) {
             return new ArrayList<>();
         }
-        List<Vm> vms = mapRestWrappers(loadedVms.vm);
+        List<Vm> vms = mapRestWrappers(loadedVms.vm, null);
         updateVmsStatistics(vms);
 
         return vms;
@@ -110,17 +113,23 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
             return new ArrayList<>();
         }
 
-        return mapRestWrappers(loadedClusters.cluster);
+        return mapRestWrappers(loadedClusters.cluster, null);
     }
 
-    public List<Event> getEventsSince(int lastEventId) {
-        Events loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId));
+    public List<Event> getEventsSince(final int lastEventId) {
+        Boolean adminPrivilegeStatus = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("admin_privilege", DEFAULT_ADMIN_PRIVILEGE);
+
+        Events loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), adminPrivilegeStatus ? asIntWithDefault("max_events_stored", EventsHandler.MAX_EVENTS_LOCALLY) : -1);
         if (loadedEvents == null) {
             return new ArrayList<>();
         }
 
-        // TODO this could be optimized by not wrapping the events which are not actually needed (the old ones)
-        return filterLogEvents(mapRestWrappers(loadedEvents.event));
+        return filterLogEvents(mapRestWrappers(loadedEvents.event, new WrapPredicate<org.ovirt.mobile.movirt.rest.Event>() {
+            @Override
+            public boolean toWrap(org.ovirt.mobile.movirt.rest.Event entity) {
+                return entity.id > lastEventId;
+            }
+        }));
     }
 
     private static List<Event> filterLogEvents(List<Event> events) {
@@ -168,22 +177,23 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     private void updateAdminPrivilegeStatus() {
-        Boolean adminPrivilegeStatus = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("admin_privilege",DEFAULT_ADMIN_PRIVILEGE);
+        Boolean adminPrivilegeStatus = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("admin_privilege", DEFAULT_ADMIN_PRIVILEGE);
         Log.i(TAG, "Updating admin privilege status to: " + adminPrivilegeStatus);
-        restClient.setHeader("Filter",String.valueOf(!adminPrivilegeStatus));
+        restClient.setHeader("Filter", String.valueOf(!adminPrivilegeStatus));
     }
 
     private void updatePollingInterval() {
-        int pollingInterval = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(app).getString("polling_interval",DEFAULT_POLLING_INTERVAL));
-        Log.i(TAG,"Updating Polling Interval to :" + Integer.toString(pollingInterval));
+        int pollingInterval = asIntWithDefault("polling_interval", DEFAULT_POLLING_INTERVAL);
+        Log.i(TAG,"Updating Polling Interval to :" + pollingInterval);
         SyncUtils.updatePollingInterval(pollingInterval);
     }
 
     private void updateDisableHttpsChecking() {
-        Boolean disableHttpsChecking = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("disableHttpsChecking",DEFAULT_HTTPS);
+        Boolean disableHttpsChecking = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("disableHttpsChecking", DEFAULT_HTTPS);
         requestFactory.setIgnoreHttps(disableHttpsChecking);
         Log.i(TAG, "Https Disabled updated: " + disableHttpsChecking);
     }
+
     private void registerSharedPreferencesListener() {
         app.getSharedPreferences("MyPrefs", Context.MODE_MULTI_PROCESS).registerOnSharedPreferenceChangeListener(this);
         PreferenceManager.getDefaultSharedPreferences(app).registerOnSharedPreferenceChangeListener(this);
@@ -198,7 +208,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
             updateAuthenticationFromSettings();
         }
         if (key.equals("admin_privilege")){
-                updateAdminPrivilegeStatus();
+            updateAdminPrivilegeStatus();
         }
         if (key.equals("polling_interval")){
             updatePollingInterval();
@@ -206,18 +216,36 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         if (key.equals("disableHttpsChecking")) {
             updateDisableHttpsChecking();
         }
+
         Log.i(TAG, key + " changed");
         SyncUtils.triggerRefresh();
     }
 
-    private static <E, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers) {
+    private static interface WrapPredicate<E> {
+        boolean toWrap(E entity);
+
+
+    }
+
+    private static <E, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers, WrapPredicate<R> predicate) {
         List<E> entities = new ArrayList<>();
         if (wrappers == null) {
             return entities;
         }
         for (R rest : wrappers) {
-            entities.add(rest.toEntity());
+            if (predicate == null || predicate.toWrap(rest)) {
+                entities.add(rest.toEntity());
+            }
         }
         return entities;
+    }
+
+    private int asIntWithDefault(String key, String defaultResult) {
+        String maxEventsLocallyStr = PreferenceManager.getDefaultSharedPreferences(app).getString(key, defaultResult);
+        try {
+            return Integer.parseInt(maxEventsLocallyStr);
+        } catch (NumberFormatException e) {
+            return Integer.parseInt(defaultResult);
+        }
     }
 }

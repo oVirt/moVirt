@@ -45,4 +45,13 @@
         <item name="android:textSize">14sp</item>
     </style>
 
+    <style name="EventsStyle">
+        <item name="android:layout_marginTop">50sp</item>
+    </style>
+
+    <style name="eventsProgress">
+        <item name="android:layout_marginTop">50sp</item>
+        <item name="android:layout_centerHorizontal">true</item>
+    </style>
+
 </resources>
