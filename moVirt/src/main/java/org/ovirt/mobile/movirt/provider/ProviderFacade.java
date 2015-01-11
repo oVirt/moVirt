@@ -7,6 +7,7 @@ import android.content.CursorLoader;
 import android.content.Loader;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.util.Log;
@@ -195,15 +196,59 @@ public class ProviderFacade {
     }
 
     public <E extends BaseEntity<?>> void delete(E entity) {
+        deleteAll(entity.getUri());
+    }
+
+    public int deleteAll(Uri uri) {
         try {
-            contentClient.delete(entity.getUri(), null, null);
+            return contentClient.delete(uri, null, null);
         } catch (RemoteException e) {
-            Log.e(TAG, "Error deleting entity: " + entity, e);
+            Log.e(TAG, "Error deleting entities with uri: " + uri, e);
         }
+
+        return -1;
+    }
+
+    public void deleteEventsAndLetOnly(int leave) {
+        int id = getSmallestFrom(leave);
+        if (id != 0) {
+            try {
+                contentClient.delete(OVirtContract.Event.CONTENT_URI,
+                        OVirtContract.Event.ID + " < ?",
+                        new String[] {Integer.toString(id)}
+                        );
+            } catch (RemoteException e) {
+                Log.e(TAG, "Error deleting events", e);
+                throw new RuntimeException(e);
+            }
+        }
+
     }
 
     public BatchBuilder batch() {
         return new BatchBuilder();
+    }
+
+    public int deleteEvents() {
+        return deleteAll(OVirtContract.Event.CONTENT_URI);
+    }
+
+    private int getSmallestFrom(int from) {
+        try {
+            Cursor cursor = contentClient.query(OVirtContract.Event.CONTENT_URI,
+                    new String[]{OVirtContract.Event.ID},
+                    null,
+                    null,
+                    OVirtContract.Event.ID + " DESC LIMIT " + from);
+
+            if (cursor.moveToLast()) {
+                return cursor.getInt(0);
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error determining last event id", e);
+            throw new RuntimeException(e);
+        }
+        return 0;
     }
 
     public int getLastEventId() {
@@ -222,4 +267,6 @@ public class ProviderFacade {
         }
         return 0;
     }
+
+
 }

@@ -6,18 +6,24 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.sync.EventsHandler;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.BaseEntity.ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.CLUSTER_ID;
@@ -29,8 +35,20 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
     @ViewById
     ListView list;
 
+    @ViewById
+    Button downloadEvents;
+
+    @ViewById
+    Button clearDb;
+
+    @ViewById
+    ProgressBar eventsProgress;
+
     @Bean
     ProviderFacade provider;
+
+    @Bean
+    EventsHandler eventsHandler;
 
     private SimpleCursorAdapter eventListAdapter;
 
@@ -64,7 +82,6 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onResume() {
         super.onResume();
-
         getLoaderManager().restartLoader(0, null, this);
     }
 
@@ -86,6 +103,7 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        showProgress();
         final ProviderFacade.QueryBuilder<Event> query = provider.query(Event.class);
         if (filterClusterId != null) query.where(CLUSTER_ID, filterClusterId);
         if (filterVmId != null) query.where(VM_ID, filterVmId);
@@ -100,6 +118,7 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         else {
             Log.v(TAG, "OnLoadFinished: eventListAdapter is null");
         }
+        hideProgress();
     }
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
@@ -115,4 +134,33 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         this.page = page;
         getLoaderManager().restartLoader(0,null,this);
     }
+
+    @Click(R.id.downloadEvents)
+    @Background
+    void downloadEvents() {
+        showProgress();
+        eventsHandler.updateEvents(true);
+        hideProgress();
+    }
+
+    @Click(R.id.clearDb)
+    @Background
+    void clearDb() {
+        eventsHandler.deleteEvents();
+    }
+
+    @UiThread
+    void showProgress() {
+        downloadEvents.setClickable(false);
+        clearDb.setClickable(false);
+        eventsProgress.setVisibility(View.VISIBLE);
+    }
+
+    @UiThread
+    void hideProgress() {
+        downloadEvents.setClickable(true);
+        clearDb.setClickable(true);
+        eventsProgress.setVisibility(View.GONE);
+    }
+
 }

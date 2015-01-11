@@ -26,7 +26,21 @@
                         android:key="polling_interval"
                         android:summary="@string/prefs_polling_interval_summary"
                         android:inputType="number"
+                        android:defaultValue="60"
                         android:persistent="true"/>
+
+    <CheckBoxPreference android:title="@string/prefs_poll_events"
+                        android:key="poll_events"
+                        android:summary="@string/prefs_poll_events_summary"
+                        android:persistent="true"
+                        android:defaultValue="true"/>
+
+    <EditTextPreference android:title="@string/prefs_max_events_locally"
+                        android:key="max_events_stored"
+                        android:summary="@string/prefs_max_events_locally_summary"
+                        android:inputType="number"
+                        android:persistent="true"
+                        android:defaultValue="500"/>
 
     <CheckBoxPreference android:title="@string/prefs_disableHttpsChecking"
                         android:key="disableHttpsChecking"
