@@ -17,6 +17,8 @@
     <string name="prefs_polling_interval_summary">Configure the polling interval in seconds. Value greater than 1 second.</string>
     <string name="prefs_disableHttpsChecking">Disable Https</string>
     <string name="prefs_disableHttpsChecking_summary">This method is dangerous and should not be used in production setup.</string>
+    <string name="prefs_about_moVirt">About moVirt</string>
+    <string name="prefs_about_moVirt_summary">License, Version and Documentation.</string>
     <string name="title_activity_select_cluster">SelectClusterActivity</string>
     <string name="action_select_cluster">Select Cluster</string>
     <string name="refresh">Refresh</string>
@@ -72,5 +74,8 @@
     <string name="notification_type_critical">Vibrate</string>
     <string name="trigger_title_format">Triggers - %1$s</string>
     <string name="when">when</string>
+	<string name="moVirt_license">Apache License, Version 2.0</string>
+	<string name="moVirt_version">App Version 0.1</string>
+    <string name="moVirt_docs">https://github.com/matobet/moVirt/blob/master/README.md"</string>
 
 </resources>
