@@ -32,4 +32,9 @@
                         android:key="disableHttpsChecking"
                         android:summary="@string/prefs_disableHttpsChecking_summary"
                         android:persistent="true"/>
+
+    <Preference         android:title="@string/prefs_about_moVirt"
+                        android:key="about_button"
+                        android:summary="@string/prefs_about_moVirt_summary"/>
+
 </PreferenceScreen>
