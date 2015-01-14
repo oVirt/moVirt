@@ -16,7 +16,7 @@
     <string name="prefs_poll_events">Poll Events</string>
     <string name="prefs_poll_events_summary">If the events are part of regular poll or not.</string>
     <string name="prefs_max_events_locally">Max events locally</string>
-    <string name="prefs_max_events_locally_summary">Maximal amount of events stored locally.</string>
+    <string name="prefs_max_events_locally_summary">Maximal amount of events stored locally. For admin users also the max amount of events polled.</string>
     <string name="prefs_polling_interval">Polling interval</string>
     <string name="prefs_polling_interval_summary">Configure the polling interval in seconds. Value greater than 1 second.</string>
     <string name="prefs_disableHttpsChecking">Disable Https</string>
@@ -85,4 +85,10 @@
     <string name="clearEvents">Clear</string>
     <string name="searchInVms">Search</string>
     <string name="vmsOrderBy">Order</string>
+    <string name="prefs_max_max_vms_polled">Max VMs polled</string>
+    <string name="prefs_max_vms_polled_summary">Maximum amount of VMs returned from oVirt</string>
+    <string name="prefs_vm_search_query">VMs Search Query</string>
+    <string name="prefs_vm_search_query_summary">Poll only VMs which satisfy given query. Has effect for admin users only. (e.g. name = production*)</string>
+    <string name="prefs_events_search_query">Events Search Query</string>
+    <string name="prefs_events_search_query_summary">Poll only Events which satisfy given query. Has effect for admin users only. (e.g. severity > warning)</string>
 </resources>

@@ -19,11 +19,11 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 @RequiresHeader({"Filter", "Accept-Encoding"})
 public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, RestClientErrorHandling, RestClientSupport {
 
-    @Get("/vms")
-    Vms getVms();
+    @Get("/vms;max={maxToLoad}")
+    Vms getVms(int maxToLoad);
 
-    @Get("/vms?search={query}")
-    Vms getVms(String query);
+    @Get("/vms;max={maxToLoad}?search={query}")
+    Vms getVms(String query, int maxToLoad);
 
     @Get("/vms/{id}/statistics")
     Statistics getVmStatistics(String id);
@@ -43,4 +43,6 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/events;max={maxToLoad}?from={lastEventId}&search=sortby time desc")
     Events getEventsSince(String lastEventId, int maxToLoad);
 
+    @Get("/events;max={maxToLoad}?from={lastEventId}&search={query}")
+    Events getEventsSince(String lastEventId, String query, int maxToLoad);
 }

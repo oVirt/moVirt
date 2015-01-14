@@ -64,8 +64,20 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     public List<Vm> getVms() {
-     //   Log.d(TAG, "Getting VMs using " + prefs.username().get() + " and " + prefs.password().get());
-        Vms loadedVms = restClient.getVms();
+        Vms loadedVms = null;
+        if (hasAdminPrivilege()) {
+            int maxVms = asIntWithDefault("max_vms_polled", "-1");
+            String query = PreferenceManager.getDefaultSharedPreferences(app).getString("vms_search_query", "");
+            if (!"".equals(query)) {
+                loadedVms = restClient.getVms(query, maxVms);
+            } else {
+                loadedVms = restClient.getVms(maxVms);
+            }
+
+        } else {
+            loadedVms = restClient.getVms(-1);
+        }
+
         if (loadedVms == null) {
             return new ArrayList<>();
         }
@@ -117,9 +129,22 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     public List<Event> getEventsSince(final int lastEventId) {
-        Boolean adminPrivilegeStatus = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("admin_privilege", DEFAULT_ADMIN_PRIVILEGE);
+        Events loadedEvents = null;
 
-        Events loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), adminPrivilegeStatus ? asIntWithDefault("max_events_stored", EventsHandler.MAX_EVENTS_LOCALLY) : -1);
+        if (hasAdminPrivilege()) {
+            int maxEventsStored = asIntWithDefault("max_events_stored", EventsHandler.MAX_EVENTS_LOCALLY);
+
+            String query = PreferenceManager.getDefaultSharedPreferences(app).getString("events_search_query", "");
+            if (!"".equals(query)) {
+                loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), query, maxEventsStored);
+            } else {
+                loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), maxEventsStored);
+            }
+        } else {
+            loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), -1);
+        }
+
+
         if (loadedEvents == null) {
             return new ArrayList<>();
         }
@@ -178,7 +203,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     private void updateAdminPrivilegeStatus() {
-        Boolean adminPrivilegeStatus = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("admin_privilege", DEFAULT_ADMIN_PRIVILEGE);
+        Boolean adminPrivilegeStatus = hasAdminPrivilege();
         Log.i(TAG, "Updating admin privilege status to: " + adminPrivilegeStatus);
         restClient.setHeader("Filter", String.valueOf(!adminPrivilegeStatus));
     }
@@ -248,5 +273,9 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         } catch (NumberFormatException e) {
             return Integer.parseInt(defaultResult);
         }
+    }
+
+    private Boolean hasAdminPrivilege() {
+        return PreferenceManager.getDefaultSharedPreferences(app).getBoolean("admin_privilege", DEFAULT_ADMIN_PRIVILEGE);
     }
 }

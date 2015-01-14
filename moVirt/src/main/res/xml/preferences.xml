@@ -42,6 +42,25 @@
                         android:persistent="true"
                         android:defaultValue="500"/>
 
+    <EditTextPreference android:title="@string/prefs_events_search_query"
+                        android:key="events_search_query"
+                        android:summary="@string/prefs_events_search_query_summary"
+                        android:persistent="true"
+                        android:defaultValue=""/>
+
+    <EditTextPreference android:title="@string/prefs_max_max_vms_polled"
+                        android:key="max_vms_polled"
+                        android:summary="@string/prefs_max_vms_polled_summary"
+                        android:inputType="number"
+                        android:persistent="true"
+                        android:defaultValue="500"/>
+
+    <EditTextPreference android:title="@string/prefs_vm_search_query"
+                        android:key="vms_search_query"
+                        android:summary="@string/prefs_vm_search_query_summary"
+                        android:persistent="true"
+                        android:defaultValue=""/>
+
     <CheckBoxPreference android:title="@string/prefs_disableHttpsChecking"
                         android:key="disableHttpsChecking"
                         android:summary="@string/prefs_disableHttpsChecking_summary"
