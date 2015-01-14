@@ -1,8 +1,9 @@
 package org.ovirt.mobile.movirt.ui;
 
+import android.app.Dialog;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
-
 import org.ovirt.mobile.movirt.R;
 
 /**
@@ -22,5 +23,17 @@ public class SettingsActivity extends PreferenceActivity {
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.preferences);
+
+        Preference button = (Preference)findPreference("about_button");
+        button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                final Dialog dialog = new Dialog(SettingsActivity.this);
+                dialog.setContentView(R.layout.about_dialog);
+                dialog.setTitle(getString(R.string.prefs_about_moVirt));
+                dialog.show();
+                return true;
+            }
+        });
     }
 }
