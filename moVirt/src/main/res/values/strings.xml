@@ -6,7 +6,7 @@
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="prefs_endpoint">API URL</string>
-    <string name="prefs_endpoint_summary">URL of your running oVirt engine instance</string>
+    <string name="prefs_endpoint_summary">For example: https://my-instance:443/ovirt-engine/api</string>
     <string name="prefs_username">Username</string>
     <string name="prefs_password">Password</string>
     <string name="prefs_username_summary">Username</string>
