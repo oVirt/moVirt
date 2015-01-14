@@ -148,6 +148,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     @AfterInject
     void initClient() {
         restClient.setRestErrorHandler(restErrorHandler);
+        restClient.setHeader("Accept-Encoding", "gzip");
         updateConnection();
         restClient.getRestTemplate().setRequestFactory(requestFactory);
         registerSharedPreferencesListener();

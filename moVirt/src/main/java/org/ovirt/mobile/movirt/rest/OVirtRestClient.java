@@ -16,7 +16,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 @Rest(converters = MappingJackson2HttpMessageConverter.class)
 @Accept(MediaType.APPLICATION_JSON)
 @RequiresAuthentication
-@RequiresHeader("Filter")
+@RequiresHeader({"Filter", "Accept-Encoding"})
 public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, RestClientErrorHandling, RestClientSupport {
 
     @Get("/vms")
