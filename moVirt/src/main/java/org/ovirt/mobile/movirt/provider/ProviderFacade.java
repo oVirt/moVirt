@@ -60,7 +60,15 @@ public class ProviderFacade {
             return where(OVirtContract.BaseEntity.ID, value);
         }
 
+        public QueryBuilder<E> whereLike(String columnName, String value) {
+            return where(columnName, value, Relation.IS_LIKE);
+        }
+
         public QueryBuilder<E> where(String columnName, String value) {
+            return where(columnName, value, Relation.IS_EQUAL);
+        }
+
+        public QueryBuilder<E> where(String columnName, String value, Relation relation) {
             assert !columnName.equals("") : "columnName cannot be empty or null";
 
             if (selection.length() > 0) {
@@ -70,7 +78,7 @@ public class ProviderFacade {
             if (value == null) {
                 selection.append(" IS NULL ");
             } else {
-                selection.append(" = ? ");
+                selection.append(relation.getVal() + "? ");
                 selectionArgs.add(value);
             }
 

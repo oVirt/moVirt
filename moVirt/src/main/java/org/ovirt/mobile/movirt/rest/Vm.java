@@ -6,12 +6,14 @@ import android.os.Parcelable;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import static org.ovirt.mobile.movirt.model.Vm.Status.*;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties(ignoreUnknown = true, value = "asaa")
 class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     // public for json mapping
+
     public String id;
     public String name;
     public Status status;

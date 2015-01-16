@@ -24,6 +24,18 @@
         <item>SUSPENDED</item>
         <item>IMAGE_LOCKED</item>
         <item>POWERING_DOWN</item>
-
     </string-array>
+
+    <string-array name="vm_sort_by">
+        <item>name</item>
+        <item>cpu_usage</item>
+        <item>mem_usage</item>
+        <item>status</item>
+    </string-array>
+
+    <string-array name="asc_desc">
+        <item>ASC</item>
+        <item>DESC</item>
+    </string-array>
+
 </resources>

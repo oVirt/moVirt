@@ -27,6 +27,7 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
 
     @Get("/vms/{id}/statistics")
     Statistics getVmStatistics(String id);
+
     @Post("/vms/{id}/start")
     void startVm(Action action, String id);
 
@@ -39,7 +40,7 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/clusters")
     Clusters getClusters();
 
-    @Get("/events;max={maxToLoad}?from={lastEventId}")
+    @Get("/events;max={maxToLoad}?from={lastEventId}&search=sortby time desc")
     Events getEventsSince(String lastEventId, int maxToLoad);
 
 }

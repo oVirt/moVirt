@@ -15,6 +15,47 @@
         android:paddingBottom="@dimen/activity_vertical_margin"
         android:orientation="vertical">
 
+        <RelativeLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/ButtonBar">
+
+            <TextView
+                android:id="@+id/searchTextLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/searchInVms"
+                android:editable="true"
+                />
+
+            <EditText
+                android:id="@+id/searchText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="80dp"
+                android:gravity="right"
+                android:inputType="text"
+                android:layout_toRightOf="@+id/searchTextLabel"
+                />
+
+            <Spinner
+                android:id="@+id/orderBySpinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:entries="@array/vm_sort_by"
+                android:layout_toRightOf="@id/searchText"
+             />
+
+            <Spinner
+                android:id="@+id/orderSpinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:entries="@array/asc_desc"
+                android:layout_toRightOf="@+id/orderBySpinner"
+                />
+
+        </RelativeLayout>
         <ListView
             android:id="@+id/vmListView"
             android:layout_width="match_parent"

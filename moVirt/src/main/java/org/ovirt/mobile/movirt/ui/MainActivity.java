@@ -10,13 +10,20 @@ import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.text.method.CharacterPickerDialog;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +46,7 @@ import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
@@ -63,6 +71,15 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
     @ViewById(R.id.vmListView)
     ListView listView;
+
+    @ViewById
+    Spinner orderBySpinner;
+
+    @ViewById
+    Spinner orderSpinner;
+
+    @ViewById
+    EditText searchText;
 
     @FragmentById
     EventsFragment eventList;
@@ -118,7 +135,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
     @AfterViews
     void initAdapters() {
-
         vmListAdapter = new SimpleCursorAdapter(this,
                                                                     R.layout.vm_list_item,
                                                                     null,
@@ -171,6 +187,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
                 }
             });
             dialog.show();
+
         }
 
         getLoaderManager().initLoader(0, null, this);
@@ -182,7 +199,43 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
                 loadMoreData(page);
             }
         });
+
+        searchText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                restartLoader();
+            }
+        });
+
+        RestartOrderItemSelectedListener orderItemSelectedListener = new RestartOrderItemSelectedListener();
+
+        orderBySpinner.setOnItemSelectedListener(orderItemSelectedListener);
+        orderSpinner.setOnItemSelectedListener(orderItemSelectedListener);
     }
+
+    class RestartOrderItemSelectedListener implements AdapterView.OnItemSelectedListener {
+
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            restartLoader();
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
+
+        }
+    }
+
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -190,7 +243,20 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         if (selectedClusterId != null) {
             query.where(CLUSTER_ID, selectedClusterId);
         }
-        return query.orderBy(NAME).limit(page * EVENTS_PER_PAGE).asLoader();
+
+        String searchNameString = searchText.getText().toString();
+        if (!"".equals(searchNameString)) {
+            query.whereLike(NAME, "%" + searchNameString + "%");
+        }
+
+        String orderBy = (String) orderBySpinner.getSelectedItem();
+        if ("".equals(orderBy)) {
+            orderBy = NAME;
+        }
+
+        SortOrder order = SortOrder.from((String) orderSpinner.getSelectedItem());
+
+        return query.orderBy(orderBy, order).limit(page * EVENTS_PER_PAGE).asLoader();
     }
 
     @Override
@@ -214,6 +280,10 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
     public void loadMoreData(int page) {
         this.page = page;
+        restartLoader();
+    }
+
+    private void restartLoader() {
         getLoaderManager().restartLoader(0,null,this);
     }
 
