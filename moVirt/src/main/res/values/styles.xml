@@ -54,4 +54,9 @@
         <item name="android:layout_centerHorizontal">true</item>
     </style>
 
+    <style name="vmsProgress">
+        <item name="android:layout_centerHorizontal">true</item>
+    </style>
+
+
 </resources>

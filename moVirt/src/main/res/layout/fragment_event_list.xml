@@ -27,9 +27,10 @@
         <ProgressBar
             android:id="@+id/eventsProgress"
             style="@style/eventsProgress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-        </ProgressBar>
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            />
 
     </RelativeLayout>
 

@@ -20,6 +20,12 @@ public class MoVirtApp extends Application {
 
     public static final String REST_REQUEST_FAILED = "org.ovirt.mobile.movirt.REST_REQUEST_FAILED";
 
+    public static final String IN_SYNC = "org.ovirt.mobile.movirt.IN_SYNC";
+
+    public static final String EVENTS_IN_SYNC = "org.ovirt.mobile.movirt.EVENTS_IN_SYNC";
+
+    public static final String SYNCING = "org.ovirt.mobile.movirt.SYNCING";
+
     private static Context context;
 
     public static Context getContext() {

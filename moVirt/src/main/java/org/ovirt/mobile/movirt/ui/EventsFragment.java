@@ -2,6 +2,10 @@ package org.ovirt.mobile.movirt.ui;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -13,12 +17,14 @@ import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
+import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
@@ -50,6 +56,9 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
     @Bean
     EventsHandler eventsHandler;
 
+    @App
+    MoVirtApp application;
+
     private SimpleCursorAdapter eventListAdapter;
 
     private String filterClusterId;
@@ -57,6 +66,21 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
     private int page = 1;
     private static final int EVENTS_PER_PAGE = 20;
     private static final String TAG = EventsFragment.class.getSimpleName();
+
+    private final BroadcastReceiver eventsSyncingReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(MoVirtApp.EVENTS_IN_SYNC)) {
+                boolean syncing = intent.getExtras().getBoolean(MoVirtApp.SYNCING);
+                if (syncing) {
+                    showProgress();
+                } else {
+                    hideProgress();
+                }
+            }
+        }
+    };
+
 
     @AfterViews
     void init() {
@@ -82,7 +106,14 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onResume() {
         super.onResume();
+        application.getBaseContext().registerReceiver(eventsSyncingReceiver, new IntentFilter(MoVirtApp.EVENTS_IN_SYNC));
         getLoaderManager().restartLoader(0, null, this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        application.getBaseContext().unregisterReceiver(eventsSyncingReceiver);
     }
 
     public String getFilterClusterId() {
@@ -103,7 +134,6 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        showProgress();
         final ProviderFacade.QueryBuilder<Event> query = provider.query(Event.class);
         if (filterClusterId != null) query.where(CLUSTER_ID, filterClusterId);
         if (filterVmId != null) query.where(VM_ID, filterVmId);
@@ -118,7 +148,6 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         else {
             Log.v(TAG, "OnLoadFinished: eventListAdapter is null");
         }
-        hideProgress();
     }
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
@@ -138,9 +167,7 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
     @Click(R.id.downloadEvents)
     @Background
     void downloadEvents() {
-        showProgress();
         eventsHandler.updateEvents(true);
-        hideProgress();
     }
 
     @Click(R.id.clearDb)

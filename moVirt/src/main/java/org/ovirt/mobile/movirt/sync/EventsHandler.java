@@ -1,6 +1,8 @@
 package org.ovirt.mobile.movirt.sync;
 
 
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -9,6 +11,7 @@ import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -40,6 +43,9 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
     @Bean
     OVirtClient oVirtClient;
 
+    @RootContext
+    Context context;
+
     ProviderFacade.BatchBuilder batch;
 
     int lastEventId = 0;
@@ -60,6 +66,7 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
         }
 
         inSync = true;
+        sendSyncIntent(true);
         try {
             boolean configuredPoll = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("poll_events", DEFAULT_POLL_EVENTS);
 
@@ -73,6 +80,7 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
             }
         } finally {
             inSync = false;
+            sendSyncIntent(false);
         }
     }
 
@@ -144,4 +152,11 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
             return Integer.parseInt(MAX_EVENTS_LOCALLY);
         }
     }
+
+    private void sendSyncIntent(boolean syncing) {
+        Intent intent = new Intent(MoVirtApp.EVENTS_IN_SYNC);
+        intent.putExtra(MoVirtApp.SYNCING, syncing);
+        context.sendBroadcast(intent);
+    }
+
 }

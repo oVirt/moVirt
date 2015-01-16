@@ -31,6 +31,7 @@ import org.ovirt.mobile.movirt.model.trigger.TriggerResolver;
 import org.ovirt.mobile.movirt.model.trigger.TriggerResolverFactory;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.ui.MainActivity;
 import org.ovirt.mobile.movirt.ui.VmDetailActivity_;
 
 import java.util.HashMap;
@@ -94,6 +95,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         Log.d(TAG, "Performing full sync for account[" + account.name + "]");
 
         inSync = true;
+        sendSyncIntent(true);
         try {
             // split to two methods so at least the quick entities can be already shown / used until the slow ones get processed (better ux)
             updateQuickEntities();
@@ -103,6 +105,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             context.sendBroadcast(new Intent(MoVirtApp.CONNECTION_FAILURE));
         } finally {
             inSync = false;
+            sendSyncIntent(false);
         }
     }
 
@@ -196,6 +199,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             entityMap.put(entity.getId(), entity);
         }
         return entityMap;
+    }
+
+
+    private void sendSyncIntent(boolean syncing) {
+        Intent intent = new Intent(MoVirtApp.IN_SYNC);
+        intent.putExtra(MoVirtApp.SYNCING, syncing);
+        context.sendBroadcast(intent);
     }
 
 }

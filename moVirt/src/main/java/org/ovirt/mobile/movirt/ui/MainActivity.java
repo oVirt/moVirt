@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -22,6 +23,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -36,6 +38,7 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
+import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.MoVirtApp;
@@ -99,6 +102,19 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @InstanceState
     String selectedClusterName;
 
+    @ViewById
+    ProgressBar vmsProgress;
+
+    private final BroadcastReceiver inSyncReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(MoVirtApp.IN_SYNC)) {
+                boolean syncing = intent.getExtras().getBoolean(MoVirtApp.SYNCING);
+                syncingChanged(syncing);
+            }
+        }
+    };
+
     private final BroadcastReceiver connectionStatusReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -117,6 +133,8 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         intentFilter.addAction(MoVirtApp.CONNECTION_FAILURE);
         registerReceiver(connectionStatusReceiver, intentFilter);
 
+        registerReceiver(inSyncReceiver, new IntentFilter(MoVirtApp.IN_SYNC));
+
         SyncUtils.triggerRefresh();
     }
 
@@ -124,6 +142,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     protected void onPause() {
         super.onPause();
         unregisterReceiver(connectionStatusReceiver);
+        unregisterReceiver(inSyncReceiver);
     }
 
     @Override
@@ -284,7 +303,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     }
 
     private void restartLoader() {
-        getLoaderManager().restartLoader(0,null,this);
+        getLoaderManager().restartLoader(0, null, this);
     }
 
     @OptionsItem(R.id.action_refresh)
@@ -335,4 +354,11 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         eventList.setFilterClusterId(selectedClusterId);
         drawerLayout.closeDrawers();
     }
+
+
+    @UiThread
+    void syncingChanged(boolean syncing) {
+        vmsProgress.setVisibility(syncing ? View.VISIBLE : View.GONE);
+    }
+
 }
