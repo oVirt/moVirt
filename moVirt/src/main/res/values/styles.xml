@@ -58,5 +58,9 @@
         <item name="android:layout_centerHorizontal">true</item>
     </style>
 
+    <style name="vncProgress">
+        <item name="android:layout_marginTop">50sp</item>
+        <item name="android:layout_centerHorizontal">true</item>
+    </style>
 
 </resources>
