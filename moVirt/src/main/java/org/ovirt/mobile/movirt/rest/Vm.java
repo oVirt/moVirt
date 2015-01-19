@@ -10,12 +10,13 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import static org.ovirt.mobile.movirt.model.Vm.Status.*;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
+public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     // public for json mapping
     public String id;
     public String name;
     public Status status;
     public Cluster cluster;
+    public Display display;
 
     // status complex object in rest
     public static class Status {
@@ -27,6 +28,10 @@ class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
         public String id;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Display {
+        public String address, port, type;
+    }
     @Override
     public String toString() {
         return String.format("Vm: name=%s, id=%s, status=%s, clusterId=%s",
@@ -46,4 +51,5 @@ class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     private static org.ovirt.mobile.movirt.model.Vm.Status mapStatus(String status) {
         return org.ovirt.mobile.movirt.model.Vm.Status.valueOf(status.toUpperCase());
     }
+
 }

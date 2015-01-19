@@ -15,7 +15,6 @@ import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
-import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -61,6 +60,14 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         restClient.rebootVm(new Action(), vm.getId());
 
         SyncUtils.triggerRefresh();
+    }
+
+    public org.ovirt.mobile.movirt.rest.Vm  getVm(Vm vm) {
+        return restClient.getVm(vm.getId());
+    }
+
+    public ActionTicket getConsoleTicket(Vm vm) {
+        return restClient.getConsoleTicket(new Action(), vm.getId());
     }
 
     public List<Vm> getVms() {
