@@ -6,14 +6,17 @@ moVirt
 A mobile client for [oVirt](http://www.ovirt.org). 
 
 ###User's guide:    
-To install, please download the [moVirt build](https://github.com/matobet/moVirt/blob/master/moVirt/moVirt.apk?raw=true)
-from your android device and follow the instructions to install it.
-After install, you need to set the connection details up. 
+After successfully installing the application, you need to set the connection details up. 
 * **API URL**: http://host:port/ovirt-engine/api
 * **Username**: name@domain - e.g. admin@internal
 * **Password**: your password
 * **Admin Privilege**: enable or disable the checkbox  
-* **Polling interval**: configure the polling interval in seconds.  
+* **Polling interval**: configure the polling interval in seconds.
+* **Poll Events**: enable or disable the checkbox
+* **Max events locally**: the maximum number of events stored locally  
+* **Events Search Query**: poll events for the search query.Admin users only. - e.g. severity > warning  
+* **Max VMs polled**: maximum number of VMs polled.  
+* **VMs Search Query**: poll VMs for the search query.Admin users only. - e.g. name = "production"  
 * **Disable Https**: enable or disable the checkbox   
 
 **Video tutorials at a glance:**  
@@ -60,4 +63,5 @@ Once the installations are done, you can proceed to import the project into the 
 
 **Resources:**    
 * [oVirt](http://www.ovirt.org)
+* [moVirt wiki](http://www.ovirt.org/Project_moVirt)
 * [Learning Videos](https://github.com/sphoorti/moVirt/tree/master/videos)
