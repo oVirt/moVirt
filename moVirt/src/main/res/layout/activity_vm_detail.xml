@@ -31,6 +31,20 @@
             android:text="@string/reboot"
             android:layout_toRightOf="@id/stopButton"/>
 
+        <Button
+            android:id="@+id/vncButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/vnc"
+            android:layout_toRightOf="@id/rebootButton"/>
+
+        <ProgressBar
+            android:id="@+id/vncProgress"
+            style="@style/vncProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        </ProgressBar>
+
     </RelativeLayout>
 
     <RelativeLayout
