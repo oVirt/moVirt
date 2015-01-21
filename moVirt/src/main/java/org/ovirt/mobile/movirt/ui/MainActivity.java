@@ -4,18 +4,15 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
-import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.app.ShareCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.method.CharacterPickerDialog;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -351,8 +348,9 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         setTitle(cluster.getId() == null ? getString(R.string.all_clusters) : String.format(CLUSTER_SCOPE, cluster.getName()));
         selectedClusterId = cluster.getId();
         selectedClusterName = cluster.getName();
-        eventList.setFilterClusterId(selectedClusterId);
+        eventList.updateFilterClusterIdTo(selectedClusterId);
         drawerLayout.closeDrawers();
+        restartLoader();
     }
 
 
