@@ -156,22 +156,12 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
             return new ArrayList<>();
         }
 
-        return filterLogEvents(mapRestWrappers(loadedEvents.event, new WrapPredicate<org.ovirt.mobile.movirt.rest.Event>() {
+        return mapRestWrappers(loadedEvents.event, new WrapPredicate<org.ovirt.mobile.movirt.rest.Event>() {
             @Override
             public boolean toWrap(org.ovirt.mobile.movirt.rest.Event entity) {
                 return entity.id > lastEventId;
             }
-        }));
-    }
-
-    private static List<Event> filterLogEvents(List<Event> events) {
-        List<Event> result = new ArrayList<>();
-        for (Event e : events) {
-            if (e.getCode() != Event.Codes.USER_VDC_LOGIN && e.getCode() != Event.Codes.USER_VDC_LOGOUT) {
-                result.add(e);
-            }
-        }
-        return result;
+        });
     }
 
     @App
