@@ -107,7 +107,7 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
     public void onResume() {
         super.onResume();
         application.getBaseContext().registerReceiver(eventsSyncingReceiver, new IntentFilter(MoVirtApp.EVENTS_IN_SYNC));
-        getLoaderManager().restartLoader(0, null, this);
+        restartLoader();
     }
 
     @Override
@@ -120,8 +120,9 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         return filterClusterId;
     }
 
-    public void setFilterClusterId(String filterClusterId) {
+    public void updateFilterClusterIdTo(String filterClusterId) {
         this.filterClusterId = filterClusterId;
+        restartLoader();
     }
 
     public String getFilterVmId() {
@@ -161,7 +162,11 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
 
     public void loadMoreData(int page) {
         this.page = page;
-        getLoaderManager().restartLoader(0,null,this);
+        restartLoader();
+    }
+
+    public void restartLoader() {
+        getLoaderManager().restartLoader(0, null, this);
     }
 
     @Click(R.id.downloadEvents)
