@@ -50,4 +50,12 @@ public abstract class EndlessScrollListener implements AbsListView.OnScrollListe
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
     }
+
+    public void resetListener() {
+        visibleThreshold = 5;
+        currentPage = 0;
+        previousTotalItemCount = 0;
+        loading = true;
+        startingPageIndex = 0;
+    }
 }

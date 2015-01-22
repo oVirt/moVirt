@@ -123,6 +123,13 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         }
     };
 
+    private final EndlessScrollListener endlessScrollListener = new EndlessScrollListener() {
+        @Override
+        public void onLoadMore(int page, int totalItemsCount) {
+            loadMoreData(page);
+        }
+    };
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -207,13 +214,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
         getLoaderManager().initLoader(0, null, this);
 
-
-        listView.setOnScrollListener(new EndlessScrollListener(){
-            @Override
-            public void onLoadMore(int page, int totalItemsCount) {
-                loadMoreData(page);
-            }
-        });
+        listView.setOnScrollListener(endlessScrollListener);
 
         searchText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -347,6 +348,10 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         setTitle(cluster.getId() == null ? getString(R.string.all_clusters) : String.format(CLUSTER_SCOPE, cluster.getName()));
         selectedClusterId = cluster.getId();
         selectedClusterName = cluster.getName();
+        page = 1;
+        listView.setSelectionAfterHeaderView();
+        endlessScrollListener.resetListener();
+
         eventList.updateFilterClusterIdTo(selectedClusterId);
         drawerLayout.closeDrawers();
         restartLoader();

@@ -81,6 +81,12 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         }
     };
 
+    private EndlessScrollListener endlessScrollListener = new EndlessScrollListener() {
+        @Override
+        public void onLoadMore(int page, int totalItemsCount) {
+            loadMoreData(page);
+        }
+    };
 
     @AfterViews
     void init() {
@@ -95,12 +101,7 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
 
         getLoaderManager().initLoader(0, null, this);
 
-        list.setOnScrollListener(new EndlessScrollListener() {
-            @Override
-            public void onLoadMore(int page, int totalItemsCount) {
-                loadMoreData(page);
-            }
-        });
+        list.setOnScrollListener(endlessScrollListener);
     }
 
     @Override
@@ -122,6 +123,9 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
 
     public void updateFilterClusterIdTo(String filterClusterId) {
         this.filterClusterId = filterClusterId;
+        page = 1;
+        list.setSelectionAfterHeaderView();
+        endlessScrollListener.resetListener();
         restartLoader();
     }
 
