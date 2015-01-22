@@ -47,6 +47,7 @@ import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
+import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
@@ -138,6 +139,9 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         intentFilter.addAction(MoVirtApp.CONNECTION_FAILURE);
         registerReceiver(connectionStatusReceiver, intentFilter);
 
+        if (SyncAdapter.inSync) {
+            syncingChanged(true);
+        }
         registerReceiver(inSyncReceiver, new IntentFilter(MoVirtApp.IN_SYNC));
     }
 
@@ -146,6 +150,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         super.onPause();
         unregisterReceiver(connectionStatusReceiver);
         unregisterReceiver(inSyncReceiver);
+        syncingChanged(false);
     }
 
     @Override

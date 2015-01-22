@@ -66,7 +66,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @App
     MoVirtApp app;
 
-    private static volatile boolean inSync = false;
+    public static volatile boolean inSync = false;
 
     public static final int DEFAULT_MAX_EVENTS_STORED = 5000;
 

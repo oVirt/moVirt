@@ -107,6 +107,9 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onResume() {
         super.onResume();
+        if (EventsHandler.inSync) {
+            showProgress();
+        }
         application.getBaseContext().registerReceiver(eventsSyncingReceiver, new IntentFilter(MoVirtApp.EVENTS_IN_SYNC));
         restartLoader();
     }
@@ -115,6 +118,7 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
     public void onPause() {
         super.onPause();
         application.getBaseContext().unregisterReceiver(eventsSyncingReceiver);
+        hideProgress();
     }
 
     public String getFilterClusterId() {

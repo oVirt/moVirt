@@ -32,7 +32,7 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
 
     private boolean deleteEventsBeforeInsert = false;
 
-    private static volatile boolean inSync = false;
+    public static volatile boolean inSync = false;
 
     @App
     MoVirtApp app;
