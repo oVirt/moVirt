@@ -28,8 +28,6 @@
 
     <string-array name="vm_sort_by">
         <item>name</item>
-        <item>cpu_usage</item>
-        <item>mem_usage</item>
         <item>status</item>
     </string-array>
 

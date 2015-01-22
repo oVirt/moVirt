@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.ui;
 
 import android.app.Activity;
 import android.app.LoaderManager;
-import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
@@ -10,33 +9,30 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
-import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
-import org.androidannotations.annotations.WindowFeature;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
+import org.ovirt.mobile.movirt.model.VmStatistics;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.ActionTicket;
+import org.ovirt.mobile.movirt.rest.ExtendedVm;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
@@ -86,6 +82,9 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     Vm vm;
     Bundle args;
 
+    @Bean
+    OVirtClient oVirtClient;
+
     @AfterViews
     void initLoader() {
 
@@ -132,7 +131,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
         String address, port, type;
         Intent intent;
         showProgressBar();
-        org.ovirt.mobile.movirt.rest.Vm freshVm = client.getVm(vm);
+        ExtendedVm freshVm = client.getVm(vm);
         ActionTicket ticket = client.getConsoleTicket(vm);
         address = freshVm.display.address;
         port = freshVm.display.port;
@@ -195,10 +194,9 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
         vm = EntityMapper.VM_MAPPER.fromCursor(data);
         setTitle(String.format(VM_DETAILS, vm.getName()));
         statusView.setText(vm.getStatus().toString());
-        cpuView.setText(String.format("%.2f%%", vm.getCpuUsage()));
-        memView.setText(String.format("%.2f%%", vm.getMemoryUsage()));
 
         updateCommandButtons(vm);
+        loadAdditionalVmData(vm);
     }
 
     private void updateCommandButtons(Vm vm) {
@@ -210,5 +208,32 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         // do nothing
+    }
+
+    @UiThread
+    public void renderVm(org.ovirt.mobile.movirt.rest.Vm vm, VmStatistics statistics) {
+        setTitle(String.format(VM_DETAILS, vm.name));
+        statusView.setText(vm.status.state);
+        cpuView.setText(String.format("%.2f%%", statistics.getCpuUsage()));
+        memView.setText(String.format("%.2f%%", statistics.getMemoryUsage()));
+
+        updateCommandButtons(vm);
+    }
+
+    private void updateCommandButtons(org.ovirt.mobile.movirt.rest.Vm vm) {
+        Vm.Status status = Vm.Status.valueOf(vm.status.state.toUpperCase());
+        runButton.setClickable(Vm.Command.RUN.canExecute(status));
+        stopButton.setClickable(Vm.Command.POWEROFF.canExecute(status));
+        rebootButton.setClickable(Vm.Command.REBOOT.canExecute(status));
+    }
+
+    @Background
+    void loadAdditionalVmData(Vm vm) {
+        showProgressBar();
+        ExtendedVm loadedVm = oVirtClient.getVm(vm);
+        VmStatistics statistics = oVirtClient.getVmStatistics(vm);
+        hideProgressBar();
+
+        renderVm(loadedVm, statistics);
     }
 }

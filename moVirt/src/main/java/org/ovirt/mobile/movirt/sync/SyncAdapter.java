@@ -99,6 +99,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             // split to two methods so at least the quick entities can be already shown / used until the slow ones get processed (better ux)
             updateQuickEntities();
+            sendSyncIntent(false);
             eventsHandler.updateEvents(false);
         } catch (Exception e) {
             Log.e(TAG, "Error updating data", e);

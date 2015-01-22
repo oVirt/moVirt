@@ -65,8 +65,6 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         }
     }
 
- //   @DatabaseField(columnName = STATUS, dataType = DataType.ENUM_INTEGER, canBeNull = false)
- //   private Status status = Status.DOWN;
     @DatabaseField(columnName = STATUS, canBeNull = false)
     private Status status;
 

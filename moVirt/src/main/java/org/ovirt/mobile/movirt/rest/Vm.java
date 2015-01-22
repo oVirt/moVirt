@@ -18,9 +18,8 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     public String name;
     public Status status;
     public Cluster cluster;
-    public Display display;
 
-    // status complex object in rest
+    // status complex object in restLGHKit1S
     public static class Status {
         public String state;
     }
@@ -30,10 +29,6 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
         public String id;
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Display {
-        public String address, port, type;
-    }
     @Override
     public String toString() {
         return String.format("Vm: name=%s, id=%s, status=%s, clusterId=%s",

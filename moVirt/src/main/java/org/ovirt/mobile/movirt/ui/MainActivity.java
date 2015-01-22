@@ -131,8 +131,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         registerReceiver(connectionStatusReceiver, intentFilter);
 
         registerReceiver(inSyncReceiver, new IntentFilter(MoVirtApp.IN_SYNC));
-
-        SyncUtils.triggerRefresh();
     }
 
     @Override
@@ -154,8 +152,8 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         vmListAdapter = new SimpleCursorAdapter(this,
                                                                     R.layout.vm_list_item,
                                                                     null,
-                                                                    new String[]{OVirtContract.Vm.NAME, OVirtContract.Vm.STATUS, OVirtContract.Vm.MEMORY_USAGE, OVirtContract.Vm.CPU_USAGE},
-                                                                    new int[]{R.id.vm_name, R.id.vm_status, R.id.vm_memory, R.id.vm_cpu});
+                                                                    new String[]{OVirtContract.Vm.NAME, OVirtContract.Vm.STATUS},
+                                                                    new int[]{R.id.vm_name, R.id.vm_status});
 
         vmListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override

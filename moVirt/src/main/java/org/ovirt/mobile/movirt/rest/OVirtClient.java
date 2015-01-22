@@ -13,6 +13,9 @@ import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
+import org.ovirt.mobile.movirt.model.VmStatistics;
+import org.ovirt.mobile.movirt.model.trigger.TriggerResolver;
+import org.ovirt.mobile.movirt.model.trigger.TriggerResolverFactory;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 
@@ -44,6 +47,9 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     @Bean
     OvirtSimpleClientHttpRequestFactory requestFactory;
 
+    @Bean
+    TriggerResolverFactory triggerResolverFactory;
+
     public void startVm(Vm vm) {
         restClient.startVm(new Action(), vm.getId());
 
@@ -62,7 +68,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         SyncUtils.triggerRefresh();
     }
 
-    public org.ovirt.mobile.movirt.rest.Vm  getVm(Vm vm) {
+    public ExtendedVm  getVm(Vm vm) {
         return restClient.getVm(vm.getId());
     }
 
@@ -95,12 +101,15 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     private void updateVmsStatistics(List<Vm> vms) {
+        TriggerResolver<Vm> resolver = triggerResolverFactory.getResolverForEntity(Vm.class);
+
         for (Vm vm : vms) {
-            updateVmStatistics(vm);
+            updateVmStatistics(vm, resolver);
         }
     }
 
-    private void updateVmStatistics(Vm vm) {
+    public VmStatistics getVmStatistics(Vm vm) {
+        VmStatistics res = new VmStatistics();
         final List<Statistic> statistics = restClient.getVmStatistics(vm.getId()).statistic;
 
         if (statistics != null) {
@@ -108,12 +117,27 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
             BigDecimal totalMemory = getStatisticValueByName(TOTAL_MEMORY_STAT, statistics);
             BigDecimal usedMemory = getStatisticValueByName(USED_MEMORY_STAT, statistics);
 
-            vm.setCpuUsage(cpu.doubleValue());
+            res.setCpuUsage(cpu.doubleValue());
             if (BigDecimal.ZERO.equals(totalMemory)) {
-                vm.setMemoryUsage(0);
+                res.setMemoryUsage(0);
             } else {
-                vm.setMemoryUsage(100 * usedMemory.divide(totalMemory, 3, RoundingMode.HALF_UP).doubleValue());
+                res.setMemoryUsage(100 * usedMemory.divide(totalMemory, 3, RoundingMode.HALF_UP).doubleValue());
             }
+            return res;
+        }
+
+        return null;
+    }
+
+    private void updateVmStatistics(Vm vm, TriggerResolver<Vm> resolver) {
+        if (resolver.getTriggersForEntity(vm).isEmpty()) {
+            return;
+        }
+
+        VmStatistics statistics = getVmStatistics(vm);
+        if (statistics != null) {
+            vm.setCpuUsage(statistics.getCpuUsage());
+            vm.setMemoryUsage(statistics.getMemoryUsage());
         }
     }
 

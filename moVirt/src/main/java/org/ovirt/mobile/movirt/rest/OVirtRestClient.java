@@ -47,7 +47,7 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     Events getEventsSince(String lastEventId, String query, int maxToLoad);
 
     @Get("/vms/{id}")
-    Vm getVm(String id);
+    ExtendedVm getVm(String id);
 
     @Post("/vms/{id}/ticket")
     ActionTicket getConsoleTicket(Action action, String id);
