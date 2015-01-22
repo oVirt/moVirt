@@ -1,17 +1,16 @@
 package org.ovirt.mobile.movirt.rest;
 
-import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
-import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.res.StringRes;
 import org.androidannotations.api.rest.RestErrorHandler;
-import org.springframework.web.client.RestClientException;
+import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
+import org.springframework.web.client.RestClientException;
 
 @EBean
 public class ErrorHandler implements RestErrorHandler {
@@ -29,12 +28,10 @@ public class ErrorHandler implements RestErrorHandler {
         Log.e(TAG, "Error during calling REST: '" + e.getMessage() + "'");
 
         final String msg = String.format(errorMsg, e.getMessage());
-        makeToast(msg);
-    }
 
-    @UiThread
-    void makeToast(String msg) {
-        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+        Intent intent = new Intent(MoVirtApp.CONNECTION_FAILURE);
+        intent.putExtra(MoVirtApp.CONNECTION_FAILURE_REASON, msg);
+        context.sendBroadcast(intent);
     }
 
 }

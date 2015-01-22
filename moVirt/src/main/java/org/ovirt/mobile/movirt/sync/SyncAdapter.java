@@ -103,7 +103,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             eventsHandler.updateEvents(false);
         } catch (Exception e) {
             Log.e(TAG, "Error updating data", e);
-            context.sendBroadcast(new Intent(MoVirtApp.CONNECTION_FAILURE));
+            Intent intent = new Intent(MoVirtApp.CONNECTION_FAILURE);
+            intent.putExtra(MoVirtApp.CONNECTION_FAILURE_REASON, e.getMessage());
+            context.sendBroadcast(intent);
         } finally {
             inSync = false;
             sendSyncIntent(false);

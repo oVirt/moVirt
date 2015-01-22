@@ -117,7 +117,8 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
                 case MoVirtApp.CONNECTION_FAILURE:
-                    Toast.makeText(MainActivity.this, R.string.disconnected, Toast.LENGTH_LONG).show();
+                    String reason = intent.getStringExtra(MoVirtApp.CONNECTION_FAILURE_REASON);
+                    Toast.makeText(MainActivity.this, R.string.disconnected + " " + reason, Toast.LENGTH_LONG).show();
             }
         }
     };
