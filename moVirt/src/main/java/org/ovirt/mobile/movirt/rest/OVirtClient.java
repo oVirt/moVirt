@@ -14,6 +14,10 @@ import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.VmStatistics;
+import org.ovirt.mobile.movirt.model.condition.Condition;
+import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
+import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
+import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.trigger.TriggerResolver;
 import org.ovirt.mobile.movirt.model.trigger.TriggerResolverFactory;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
@@ -130,7 +134,21 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     private void updateVmStatistics(Vm vm, TriggerResolver<Vm> resolver) {
-        if (resolver.getTriggersForEntity(vm).isEmpty()) {
+        List<Trigger<Vm>> triggersForEntity = resolver.getTriggersForEntity(vm);
+        if (triggersForEntity.isEmpty()) {
+            return;
+        }
+
+        boolean needsUpdate = false;
+        for (Trigger<Vm> trigger : triggersForEntity) {
+            Condition<Vm> condition = trigger.getCondition();
+            if (condition instanceof CpuThresholdCondition || condition instanceof MemoryThresholdCondition) {
+                needsUpdate = true;
+                break;
+            }
+        }
+
+        if (!needsUpdate) {
             return;
         }
 
