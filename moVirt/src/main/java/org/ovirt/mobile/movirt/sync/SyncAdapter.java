@@ -94,11 +94,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         Log.d(TAG, "Performing full sync for account[" + account.name + "]");
 
-        inSync = true;
         sendSyncIntent(true);
         try {
             // split to two methods so at least the quick entities can be already shown / used until the slow ones get processed (better ux)
             updateQuickEntities();
+            // here the inSync was still true and in on resume it expected it to be false
             sendSyncIntent(false);
             eventsHandler.updateEvents(false);
         } catch (Exception e) {
@@ -107,7 +107,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             intent.putExtra(MoVirtApp.CONNECTION_FAILURE_REASON, e.getMessage());
             context.sendBroadcast(intent);
         } finally {
-            inSync = false;
             sendSyncIntent(false);
         }
     }
@@ -206,6 +205,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
 
     private void sendSyncIntent(boolean syncing) {
+        inSync = syncing;
         Intent intent = new Intent(MoVirtApp.IN_SYNC);
         intent.putExtra(MoVirtApp.SYNCING, syncing);
         context.sendBroadcast(intent);

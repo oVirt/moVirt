@@ -19,7 +19,7 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     public Status status;
     public Cluster cluster;
 
-    // status complex object in restLGHKit1S
+    // status complex object in rest
     public static class Status {
         public String state;
     }

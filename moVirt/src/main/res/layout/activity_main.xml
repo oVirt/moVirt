@@ -62,15 +62,13 @@
 
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_height="fill_parent"
             android:orientation="vertical">
-
+            <!--android:layout_weight="1"-->
             <TextView
                 android:id="@android:id/empty"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:text="@string/no_vms"
                 android:textAlignment="center"
                 android:textSize="20sp" />
@@ -78,23 +76,16 @@
             <ListView
                 android:id="@+id/vmListView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+                android:layout_height="wrap_content"
+                />
 
             <fragment
                 android:id="@+id/eventList"
                 class="org.ovirt.mobile.movirt.ui.EventsFragment_"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:layout_weight="1" />
+                />
         </LinearLayout>
     </LinearLayout>
 

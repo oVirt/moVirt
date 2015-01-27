@@ -139,9 +139,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         intentFilter.addAction(MoVirtApp.CONNECTION_FAILURE);
         registerReceiver(connectionStatusReceiver, intentFilter);
 
-        if (SyncAdapter.inSync) {
-            syncingChanged(true);
-        }
+        syncingChanged(SyncAdapter.inSync);
         registerReceiver(inSyncReceiver, new IntentFilter(MoVirtApp.IN_SYNC));
     }
 
@@ -179,14 +177,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
                     TextView textView = (TextView) view;
                     String vmStatus = cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.STATUS));
                     textView.setText(vmStatus);
-                } else if (columnIndex == cursor.getColumnIndex(OVirtContract.Vm.MEMORY_USAGE)) {
-                    TextView textView = (TextView) view;
-                    double vmMem = cursor.getDouble(cursor.getColumnIndex(OVirtContract.Vm.MEMORY_USAGE));
-                    textView.setText(String.format("Mem: %.2f%%", vmMem));
-                } else if (columnIndex == cursor.getColumnIndex(OVirtContract.Vm.CPU_USAGE)) {
-                    TextView textView = (TextView) view;
-                    double vmCpu = cursor.getDouble(cursor.getColumnIndex(OVirtContract.Vm.CPU_USAGE));
-                    textView.setText(String.format("CPU: %.2f%%", vmCpu));
                 }
 
                 return true;
@@ -234,6 +224,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
             @Override
             public void afterTextChanged(Editable editable) {
+                resetListViewPosition();
                 restartLoader();
             }
         });
@@ -248,6 +239,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            resetListViewPosition();
             restartLoader();
         }
 
@@ -349,17 +341,20 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @Override
     public void onClusterSelected(Cluster cluster) {
         Log.d(TAG, "Updating selected cluster: id=" + cluster.getId() + ", name=" + cluster.getName());
-        //selectCluster.setText(cluster.getName() == null ? getString(R.string.whole_datacenter) : cluster.getName());
         setTitle(cluster.getId() == null ? getString(R.string.all_clusters) : String.format(CLUSTER_SCOPE, cluster.getName()));
         selectedClusterId = cluster.getId();
         selectedClusterName = cluster.getName();
-        page = 1;
-        listView.setSelectionAfterHeaderView();
-        endlessScrollListener.resetListener();
+        resetListViewPosition();
 
         eventList.updateFilterClusterIdTo(selectedClusterId);
         drawerLayout.closeDrawers();
         restartLoader();
+    }
+
+    private void resetListViewPosition() {
+        page = 1;
+        listView.setSelectionAfterHeaderView();
+        endlessScrollListener.resetListener();
     }
 
 
