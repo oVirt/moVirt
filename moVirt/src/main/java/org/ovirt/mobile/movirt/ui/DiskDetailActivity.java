@@ -1,6 +1,7 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.app.Activity;
+import android.os.RemoteException;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -31,8 +32,6 @@ public class DiskDetailActivity extends Activity {
     @ViewById(R.id.diskProgress)
     ProgressBar diskProgress;
 
-    Disks disks;
-
     DiskListAdapter diskListAdapter;
 
     public static final String FILTER_VM_ID = "vmId";
@@ -54,7 +53,7 @@ public class DiskDetailActivity extends Activity {
     }
 
     @UiThread
-    void displayListView() {
+    void displayListView(Disks disks) {
         diskListAdapter = new DiskListAdapter(DiskDetailActivity.this,0,disks);
         listView.setAdapter(diskListAdapter);
         hideProgressBar();
@@ -62,8 +61,20 @@ public class DiskDetailActivity extends Activity {
 
     @Background
     void getDiskDetails() {
-        disks = oVirtClient.getDisks(getIntent().getStringExtra(FILTER_VM_ID));
-        displayListView();
+        oVirtClient.getDisks(getIntent().getStringExtra(FILTER_VM_ID), new OVirtClient.SimpleResponse<Disks>() {
+
+            @Override
+            public void onResponse(Disks disks) throws RemoteException {
+                displayListView(disks);
+            }
+
+            @Override
+            public void onError() {
+                super.onError();
+                hideProgressBar();
+            }
+        });
+
     }
 
 }

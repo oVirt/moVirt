@@ -4,6 +4,7 @@ package org.ovirt.mobile.movirt.sync;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -62,31 +63,48 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
     }
 
     public void updateEvents(boolean force) {
+        // it is not exactly thread safe - there is a small chance that two syncs will happen in parallel.
+        // but it does not cause anything worse than just that the same events will be downloaded twice
         if (inSync) {
             return;
         }
 
-        inSync = true;
-        sendSyncIntent(true);
         try {
             boolean configuredPoll = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("poll_events", DEFAULT_POLL_EVENTS);
 
             if (configuredPoll || force) {
                 batch = provider.batch();
-                final List<Event> newEvents = oVirtClient.getEventsSince(!deleteEventsBeforeInsert ? lastEventId : 0);
-                updateEvents(newEvents);
-                applyBatch();
+                oVirtClient.getEventsSince(!deleteEventsBeforeInsert ? lastEventId : 0, new OVirtClient.Response<List<Event>>() {
 
-                deleteOldEvents();
+                    @Override
+                    public void before() {
+                        inSync = true;
+                        sendSyncIntent(true);
+                    }
+
+                    @Override
+                    public void onResponse(List<Event> newEvents) throws RemoteException {
+                        updateEvents(newEvents);
+                        applyBatch();
+
+                        deleteOldEvents();
+                        inSync = false;
+                        sendSyncIntent(false);
+                    }
+
+                    @Override
+                    public void onError() {
+                        inSync = false;
+                        sendSyncIntent(false);
+                    }
+                });
+
             }
         } catch (Exception e) {
             Log.e(TAG, "Error loading events", e);
             Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
             intent.putExtra(Broadcasts.Extras.CONNECTION_FAILURE_REASON, e.getMessage());
             context.sendBroadcast(intent);
-        } finally {
-            inSync = false;
-            sendSyncIntent(false);
         }
     }
 

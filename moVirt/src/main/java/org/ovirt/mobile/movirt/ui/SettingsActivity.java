@@ -1,9 +1,14 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.R;
 
 /**
@@ -17,15 +22,17 @@ import org.ovirt.mobile.movirt.R;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
+@EActivity
 public class SettingsActivity extends PreferenceActivity {
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.preferences);
 
-        Preference button = (Preference)findPreference("about_button");
-        button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+        Preference aboutButton = (Preference)findPreference("about_button");
+        aboutButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 final Dialog dialog = new Dialog(SettingsActivity.this);
@@ -35,5 +42,16 @@ public class SettingsActivity extends PreferenceActivity {
                 return true;
             }
         });
+
+        Preference button = (Preference)findPreference("connection_button");
+        button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                final Intent intent = new Intent(getApplicationContext(), AuthenticatorActivity_.class);
+                startActivity(intent);
+                return true;
+            }
+        });
+
     }
 }

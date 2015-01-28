@@ -1,5 +1,6 @@
 package org.ovirt.mobile.movirt.ui;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.LoaderManager;
@@ -7,6 +8,7 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -26,6 +28,7 @@ import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
+import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
@@ -40,6 +43,7 @@ import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Vm;
@@ -47,6 +51,7 @@ import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
+import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
@@ -63,6 +68,14 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     private int page = 1;
     private static final int EVENTS_PER_PAGE = 20;
     private SimpleCursorAdapter vmListAdapter;
+
+    Dialog connectionNotConfiguredProperlyDialog;
+
+    @StringRes(R.string.needs_configuration)
+    String noAccMsg;
+
+    @StringRes(R.string.connection_not_correct)
+    String accIncorrectMsg;
 
     @App
     MoVirtApp app;
@@ -91,6 +104,12 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @StringRes(R.string.cluster_scope)
     String CLUSTER_SCOPE;
 
+    @Bean
+    ProviderFacade provider;
+
+    @Bean
+    OVirtClient client;
+
     @InstanceState
     String selectedClusterId;
 
@@ -101,10 +120,10 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     ProgressBar vmsProgress;
 
     @Bean
-    ProviderFacade provider;
+    SyncUtils syncUtils;
 
     @Bean
-    SyncUtils syncUtils;
+    MovirtAuthenticator authenticator;
 
     private final EndlessScrollListener endlessScrollListener = new EndlessScrollListener() {
         @Override
@@ -118,11 +137,15 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         super.onResume();
 
         syncingChanged(SyncAdapter.inSync);
+        refresh();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        if (connectionNotConfiguredProperlyDialog.isShowing()) {
+            connectionNotConfiguredProperlyDialog.dismiss();
+        }
         syncingChanged(false);
     }
 
@@ -135,6 +158,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
     @AfterViews
     void initAdapters() {
+        connectionNotConfiguredProperlyDialog = new Dialog(this);
         vmListAdapter = new SimpleCursorAdapter(this,
                                                                     R.layout.vm_list_item,
                                                                     null,
@@ -166,20 +190,8 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
         onClusterSelected(new Cluster() {{ setId(selectedClusterId); setName(selectedClusterName); }});
 
-        if (!app.endpointConfigured()) {
-            final Dialog dialog = new Dialog(this);
-            dialog.setContentView(R.layout.settings_dialog);
-            dialog.setTitle(getString(R.string.configuration));
-            Button continueButton = (Button) dialog.findViewById(R.id.continueButton);
-            continueButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                    showSettings();
-                }
-            });
-            dialog.show();
-
+        if (!authenticator.accountConfigured()) {
+            showDialogToOpenAccountSettings(noAccMsg, new Intent(this, AuthenticatorActivity_.class));
         }
 
         getLoaderManager().initLoader(0, null, this);
@@ -208,6 +220,37 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
         orderBySpinner.setOnItemSelectedListener(orderItemSelectedListener);
         orderSpinner.setOnItemSelectedListener(orderItemSelectedListener);
+    }
+
+    private void showDialogToOpenAccountSettings(String msg, final Intent intent) {
+        if (connectionNotConfiguredProperlyDialog.isShowing()) {
+            return;
+        }
+
+        connectionNotConfiguredProperlyDialog.setContentView(R.layout.settings_dialog);
+        connectionNotConfiguredProperlyDialog.setTitle(getString(R.string.configuration));
+
+        TextView label = (TextView) connectionNotConfiguredProperlyDialog.findViewById(R.id.text);
+        label.setText(msg);
+
+        Button continueButton = (Button) connectionNotConfiguredProperlyDialog.findViewById(R.id.continueButton);
+        continueButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                connectionNotConfiguredProperlyDialog.dismiss();
+                startActivity(intent);
+            }
+        });
+
+        Button ignoreButton = (Button) connectionNotConfiguredProperlyDialog.findViewById(R.id.ignoreButton);
+        ignoreButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                connectionNotConfiguredProperlyDialog.dismiss();
+            }
+        });
+
+        connectionNotConfiguredProperlyDialog.show();
     }
 
     class RestartOrderItemSelectedListener implements AdapterView.OnItemSelectedListener {
@@ -275,15 +318,15 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     }
 
     @OptionsItem(R.id.action_refresh)
+    @Background
     void refresh() {
         Log.d(TAG, "Refresh button clicked");
-
         syncUtils.triggerRefresh();
     }
 
     @OptionsItem(R.id.action_settings)
     void showSettings() {
-        startActivity(new Intent(this, SettingsActivity.class));
+        startActivity(new Intent(this, SettingsActivity_.class));
     }
 
     @OptionsItem(R.id.action_edit_triggers)
@@ -337,8 +380,13 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         vmsProgress.setVisibility(syncing ? View.VISIBLE : View.GONE);
     }
 
+    @Receiver(actions = Broadcasts.NO_CONNECTION_SPEFICIED, registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    void noConnection(@Receiver.Extra(AccountManager.KEY_INTENT) Parcelable toOpen) {
+        showDialogToOpenAccountSettings(accIncorrectMsg, (Intent) toOpen);
+    }
+
     @Receiver(actions = Broadcasts.CONNECTION_FAILURE, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void connectionFailure(@Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
-        Toast.makeText(MainActivity.this, R.string.disconnected + " " + reason, Toast.LENGTH_LONG).show();
+        Toast.makeText(MainActivity.this, R.string.rest_req_failed + " " + reason, Toast.LENGTH_LONG).show();
     }
 }

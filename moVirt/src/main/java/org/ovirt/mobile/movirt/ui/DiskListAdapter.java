@@ -51,7 +51,7 @@ public class DiskListAdapter extends ArrayAdapter<Disk> {
             }
             if(!diskSizeExceptionFlag) {
                 diskSizeMB = diskSizeMB / (1024 * 1024);
-                diskSize.setText("Memory : " + diskSizeMB + " MB");
+                diskSize.setText("Size : " + diskSizeMB + " MB");
             }
             else {
                 diskSize.setText("N/A");

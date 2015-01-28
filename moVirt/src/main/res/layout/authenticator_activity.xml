@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/txtEndpoint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/account_endpoint"
+        />
+
+    <EditText
+        android:id="@+id/txtUsername"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/account_username"
+        />
+
+    <EditText
+        android:id="@+id/txtPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/account_password"
+        android:inputType="textPassword"
+        />
+
+    <CheckBox
+        android:id="@+id/chkAdminPriv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/account_admin_privilege"
+        />
+
+    <CheckBox
+        android:id="@+id/chkDisableHttps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/account_disableHttpsChecking"
+        />
+
+    <CheckBox
+        android:id="@+id/enforceHttpBasicAuth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/account_enforceHttpBasicAuth"
+        />
+
+    <ProgressBar
+        android:id="@+id/authProgress"
+        style="@style/vmsProgress"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btnCreate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/save_acc"/>
+
+</LinearLayout>

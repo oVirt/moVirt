@@ -7,6 +7,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -21,9 +22,12 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
+import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
+import org.ovirt.mobile.movirt.Broadcasts;
+import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.VmStatistics;
@@ -106,6 +110,8 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
 
         hideProgressBar();
         Uri vmUri = getIntent().getData();
+
+
         args = new Bundle();
         args.putParcelable(VM_URI, vmUri);
         getLoaderManager().initLoader(0, args, this);
@@ -145,21 +151,39 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     @Background
     void openConsole() {
         showProgressBar();
-        ExtendedVm freshVm = client.getVm(vm);
-        ActionTicket ticket = client.getConsoleTicket(vm);
-        hideProgressBar();
 
-        ExtendedVm.Display display = freshVm.display;
-        try {
-            Intent intent = new Intent(Intent.ACTION_VIEW)
-                    .setType("application/vnd.vnc")
-                    .setData(Uri.parse(makeConsoleUrl(display, ticket)));
-            startActivity(intent);
-        } catch (IllegalArgumentException e) {
-            makeToast(e.getMessage());
-        } catch (Exception e) {
-            makeToast("Failed to open console client. Check if aSPICE/bVNC is installed.");
-        }
+        client.getVm(vm, new OVirtClient.SimpleResponse<ExtendedVm>() {
+            @Override
+            public void onResponse(final ExtendedVm freshVm) throws RemoteException {
+                showProgressBar();
+
+                client.getConsoleTicket(vm, new OVirtClient.SimpleResponse<ActionTicket>() {
+                    @Override
+                    public void onResponse(ActionTicket ticket) throws RemoteException {
+                        hideProgressBar();
+                        ExtendedVm.Display display = freshVm.display;
+                        try {
+                            Intent intent = new Intent(Intent.ACTION_VIEW)
+                                    .setType("application/vnd.vnc")
+                                    .setData(Uri.parse(makeConsoleUrl(display, ticket)));
+                            startActivity(intent);
+                        } catch (IllegalArgumentException e) {
+                            makeToast(e.getMessage());
+                        } catch (Exception e) {
+                            makeToast("Failed to open console client. Check if aSPICE/bVNC is installed.");
+                        }
+
+                    }
+                });
+            }
+
+            @Override
+            public void onError() {
+                super.onError();
+
+                hideProgressBar();
+            }
+        });
     }
 
     /**
@@ -308,13 +332,35 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
         rebootButton.setClickable(Vm.Command.REBOOT.canExecute(status));
     }
 
-    @Background
-    void loadAdditionalVmData(Vm vm) {
-        showProgressBar();
-        ExtendedVm loadedVm = client.getVm(vm);
-        VmStatistics statistics = client.getVmStatistics(vm);
-        hideProgressBar();
+    @Receiver(actions = Broadcasts.CONNECTION_FAILURE, registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    void connectionFailure(@Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
+        Toast.makeText(VmDetailActivity.this, R.string.rest_req_failed + " " + reason, Toast.LENGTH_LONG).show();
+    }
 
-        renderVm(loadedVm, statistics);
+    @Background
+    void loadAdditionalVmData(final Vm vm) {
+        showProgressBar();
+
+        client.getVm(vm, new OVirtClient.SimpleResponse<ExtendedVm>() {
+            @Override
+            public void onResponse(final ExtendedVm loadedVm) throws RemoteException {
+                client.getVmStatistics(vm, new OVirtClient.SimpleResponse<VmStatistics>() {
+                    @Override
+                    public void onResponse(VmStatistics vmStatistics) throws RemoteException {
+                        hideProgressBar();
+
+                        renderVm(loadedVm, vmStatistics);
+                    }
+                });
+            }
+
+            @Override
+            public void onError() {
+                super.onError();
+
+                hideProgressBar();
+            }
+        });
+
     }
 }

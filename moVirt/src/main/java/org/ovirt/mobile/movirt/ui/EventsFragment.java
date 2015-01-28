@@ -181,7 +181,7 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     @Receiver(actions = Broadcasts.EVENTS_IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    void eventsSyncing(@Receiver.Extra boolean syncing) {
+    void eventsSyncing(@Receiver.Extra((Broadcasts.Extras.SYNCING)) boolean syncing) {
         if (syncing) {
             showProgress();
         } else {

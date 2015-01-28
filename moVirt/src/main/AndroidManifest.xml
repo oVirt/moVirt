@@ -6,9 +6,13 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
-    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+
+    <!--not needed?-->
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
 
     <application
         android:name="org.ovirt.mobile.movirt.MoVirtApp_"
@@ -16,6 +20,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
         <activity
             android:name="org.ovirt.mobile.movirt.ui.MainActivity_"
             android:label="@string/app_name" >
@@ -25,9 +30,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
-            android:name="org.ovirt.mobile.movirt.ui.SettingsActivity"
+            android:name="org.ovirt.mobile.movirt.ui.SettingsActivity_"
             android:label="@string/title_activity_settings" >
+        </activity>
+
+        <activity
+            android:name="org.ovirt.mobile.movirt.ui.AuthenticatorActivity_"
+            android:label="@string/title_activity_settings">
         </activity>
 
         <provider
@@ -37,7 +48,7 @@
             android:exported="false" >
         </provider>
 
-        <service android:name="org.ovirt.mobile.movirt.auth.AuthenticatorService" >
+        <service android:name="org.ovirt.mobile.movirt.auth.AuthenticatorService_" >
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
@@ -46,10 +57,12 @@
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
+
         <service
             android:name="org.ovirt.mobile.movirt.sync.SyncService_"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false"
+            >
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>

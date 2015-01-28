@@ -13,19 +13,19 @@
         android:paddingBottom="5dp" />
 
     <TextView
-        android:id="@+id/disk_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:paddingBottom="5dp"
-        android:layout_alignParentRight="true"/>
-
-    <TextView
         android:id="@+id/disk_size"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="20sp"
         android:paddingBottom="5dp"
         android:layout_below="@id/disk_name"/>
+
+    <TextView
+        android:id="@+id/disk_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:paddingBottom="5dp"
+        android:layout_alignParentRight="true"/>
 
 </RelativeLayout>

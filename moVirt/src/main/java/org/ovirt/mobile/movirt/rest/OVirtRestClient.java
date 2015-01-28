@@ -4,20 +4,25 @@ import org.androidannotations.annotations.rest.Accept;
 import org.androidannotations.annotations.rest.Get;
 import org.androidannotations.annotations.rest.Post;
 import org.androidannotations.annotations.rest.RequiresAuthentication;
+import org.androidannotations.annotations.rest.RequiresCookie;
 import org.androidannotations.annotations.rest.RequiresHeader;
 import org.androidannotations.annotations.rest.Rest;
+import org.androidannotations.annotations.rest.SetsCookie;
 import org.androidannotations.api.rest.MediaType;
 import org.androidannotations.api.rest.RestClientErrorHandling;
 import org.androidannotations.api.rest.RestClientHeaders;
 import org.androidannotations.api.rest.RestClientRootUrl;
 import org.androidannotations.api.rest.RestClientSupport;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 @Rest(converters = MappingJackson2HttpMessageConverter.class)
 @Accept(MediaType.APPLICATION_JSON)
+@RequiresHeader({"Filter", "Accept-Encoding", "Session-TTL", "Prefer"})
+@SetsCookie({"JSESSIONID"})
+@RequiresCookie({"JSESSIONID"})
 @RequiresAuthentication
-@RequiresHeader({"Filter", "Accept-Encoding"})
-public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, RestClientErrorHandling, RestClientSupport {
+public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, RestClientSupport {
 
     @Get("/vms;max={maxToLoad}")
     Vms getVms(int maxToLoad);
@@ -54,4 +59,12 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
 
     @Get("/vms/{id}/disks")
     Disks getDisks(String id);
+
+    @Get("/")
+    EmptyResult login();
+
+    void setCookie(String name, String value);
+
+    String getCookie(String name);
+
 }
