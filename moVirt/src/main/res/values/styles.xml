@@ -24,7 +24,7 @@
         <item name="android:padding">16dp</item>
     </style>
 
-    <style name="VmTextView" parent="@android:style/TextAppearance.Large">
+    <style name="VmTextView" parent="@android:style/TextAppearance.Small">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_margin">5dp</item>

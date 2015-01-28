@@ -1,14 +1,6 @@
 package org.ovirt.mobile.movirt.rest;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
-
-import static org.ovirt.mobile.movirt.model.Vm.Status.*;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {

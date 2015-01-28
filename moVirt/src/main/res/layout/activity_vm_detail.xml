@@ -84,6 +84,61 @@
             style="@style/VmStat"
             android:layout_alignBaseline="@id/memLabel" />
 
+        <TextView
+            android:id="@+id/memoryLabel"
+            style="@style/VmStatsLabel"
+            android:text="@string/memoryMb"
+            android:layout_below="@id/memLabel"/>
+
+        <TextView
+            android:id="@+id/memoryView"
+            style="@style/VmStat"
+            android:layout_alignBaseline="@id/memoryLabel" />
+
+        <TextView
+            android:id="@+id/socketLabel"
+            style="@style/VmStatsLabel"
+            android:text="@string/sockets"
+            android:layout_below="@id/memoryLabel"/>
+
+        <TextView
+            android:id="@+id/socketView"
+            style="@style/VmStat"
+            android:layout_alignBaseline="@id/socketLabel" />
+
+        <TextView
+            android:id="@+id/coreLabel"
+            style="@style/VmStatsLabel"
+            android:text="@string/cores"
+            android:layout_below="@id/socketLabel"/>
+
+        <TextView
+            android:id="@+id/coreView"
+            style="@style/VmStat"
+            android:layout_alignBaseline="@id/coreLabel" />
+
+        <TextView
+            android:id="@+id/osLabel"
+            style="@style/VmStatsLabel"
+            android:text="@string/os"
+            android:layout_below="@id/coreLabel"/>
+
+        <TextView
+            android:id="@+id/osView"
+            style="@style/VmStat"
+            android:layout_alignBaseline="@id/osLabel" />
+
+        <TextView
+            android:id="@+id/displayLabel"
+            style="@style/VmStatsLabel"
+            android:text="@string/display"
+            android:layout_below="@id/osLabel"/>
+
+        <TextView
+            android:id="@+id/displayView"
+            style="@style/VmStat"
+            android:layout_alignBaseline="@id/displayLabel" />
+
 
     </RelativeLayout>
 

@@ -64,6 +64,11 @@
     <string name="vm_scope">Vm %1$s</string>
     <string name="cpu">CPU usage:</string>
     <string name="memory">Memory usage:</string>
+    <string name="memoryMb">Memory in Mb:</string>
+    <string name="sockets">Sockets:</string>
+    <string name="cores">Cores/Socket:</string>
+    <string name="os">OS Type:</string>
+    <string name="display">Display Type:</string>
     <string name="statusLabel">Status:</string>
     <string name="percentage_cannot_be_empty">You must specify the percentage value!</string>
     <string name="delete">Delete</string>

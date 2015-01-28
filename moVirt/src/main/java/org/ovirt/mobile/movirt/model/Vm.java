@@ -11,10 +11,6 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CLUSTER_ID;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.MEMORY_USAGE;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.TABLE;
 
 @DatabaseTable(tableName = TABLE)
@@ -40,8 +36,6 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         SUSPENDED,
         IMAGE_LOCKED,
         POWERING_DOWN
-
-
     }
 
     public enum Command {

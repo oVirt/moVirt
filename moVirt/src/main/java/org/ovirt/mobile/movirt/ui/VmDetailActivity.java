@@ -71,6 +71,21 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     TextView memView;
 
     @ViewById
+    TextView memoryView;
+
+    @ViewById
+    TextView socketView;
+
+    @ViewById
+    TextView coreView;
+
+    @ViewById
+    TextView osView;
+
+    @ViewById
+    TextView displayView;
+
+    @ViewById
     ProgressBar vncProgress;
 
     @FragmentById
@@ -80,6 +95,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     String VM_DETAILS;
 
     Vm vm;
+
     Bundle args;
 
     @Bean
@@ -194,6 +210,8 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
         vm = EntityMapper.VM_MAPPER.fromCursor(data);
         setTitle(String.format(VM_DETAILS, vm.getName()));
         statusView.setText(vm.getStatus().toString());
+        cpuView.setText(String.format("%.2f%%", vm.getCpuUsage()));
+        memView.setText(String.format("%.2f%%", vm.getMemoryUsage()));
 
         updateCommandButtons(vm);
         loadAdditionalVmData(vm);
@@ -211,11 +229,24 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     }
 
     @UiThread
-    public void renderVm(org.ovirt.mobile.movirt.rest.Vm vm, VmStatistics statistics) {
+    public void renderVm(ExtendedVm vm, VmStatistics statistics) {
+        int memoryMB;
         setTitle(String.format(VM_DETAILS, vm.name));
         statusView.setText(vm.status.state);
         cpuView.setText(String.format("%.2f%%", statistics.getCpuUsage()));
         memView.setText(String.format("%.2f%%", statistics.getMemoryUsage()));
+        memoryMB = Integer.parseInt(vm.memory);
+        memoryMB = memoryMB / 1000000;
+        memoryView.setText(memoryMB + " MB");
+        socketView.setText(vm.cpu.topology.sockets);
+        coreView.setText(vm.cpu.topology.cores);
+        osView.setText(vm.os.type);
+        if (vm.display != null && vm.display.type != null) {
+            displayView.setText(vm.display.type);
+        }
+        else {
+            displayView.setText("NA");
+        }
 
         updateCommandButtons(vm);
     }
