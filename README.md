@@ -5,6 +5,8 @@ moVirt
 
 A mobile client for [oVirt](http://www.ovirt.org). 
 
+The unsigned testing release is available at: [moVirt build](https://github.com/matobet/moVirt/blob/master/moVirt/moVirt-debug.apk?raw=true)
+
 ###User's guide:    
 After successfully installing the application, you need to set the connection details up. 
 * **API URL**: http://host:port/ovirt-engine/api
