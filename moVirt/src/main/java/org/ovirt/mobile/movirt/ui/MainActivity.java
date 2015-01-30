@@ -19,12 +19,15 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.fasterxml.jackson.databind.deser.std.DateDeserializers;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
@@ -51,6 +54,8 @@ import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
+
+import java.util.Calendar;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CLUSTER_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
@@ -174,9 +179,9 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
                     String vmName = cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.NAME));
                     textView.setText(vmName);
                 } else if (columnIndex == cursor.getColumnIndex(OVirtContract.Vm.STATUS)) {
-                    TextView textView = (TextView) view;
-                    String vmStatus = cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.STATUS));
-                    textView.setText(vmStatus);
+                    ImageView imageView = (ImageView) view;
+                    Vm.Status status = Vm.Status.valueOf(cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.STATUS)));
+                    imageView.setImageResource(status.getResource());
                 }
 
                 return true;

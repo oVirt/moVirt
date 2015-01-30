@@ -12,11 +12,12 @@
         android:textSize="20sp"
         android:paddingBottom="5dp" />
 
-    <TextView
+    <ImageView
         android:id="@+id/vm_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingLeft="5dp"
+        android:paddingTop="6dp"
+        android:paddingRight="10dp"
         android:gravity="right"
         android:layout_alignParentRight="true"/>
 
