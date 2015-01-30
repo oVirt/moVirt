@@ -12,6 +12,7 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     public Cluster cluster;
 
     // status complex object in rest
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Status {
         public String state;
     }
