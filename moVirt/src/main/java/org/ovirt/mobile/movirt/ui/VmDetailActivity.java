@@ -62,6 +62,12 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     Button vncButton;
 
     @ViewById
+    Button eventsButton;
+
+    @ViewById
+    Button disksButton;
+
+    @ViewById
     TextView statusView;
 
     @ViewById
@@ -88,9 +94,6 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     @ViewById
     ProgressBar vncProgress;
 
-    @FragmentById
-    EventsFragment eventList;
-
     @StringRes(R.string.details_for_vm)
     String VM_DETAILS;
 
@@ -109,7 +112,6 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
         args = new Bundle();
         args.putParcelable(VM_URI, vmUri);
         getLoaderManager().initLoader(0, args, this);
-        eventList.setFilterVmId(vmUri.getLastPathSegment());
     }
 
     @Override
@@ -184,6 +186,22 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     @UiThread
     void makeToast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+    }
+
+    @Click(R.id.eventsButton)
+    void openEventsActivity() {
+        final Intent intent = new Intent(this, EventsActivity_.class);
+        if(vm.getId() != null)
+            intent.putExtra(EventsActivity.FILTER_VM_ID,vm.getId());
+        startActivity(intent);
+
+    }
+
+    @Click(R.id.disksButton)
+    void openDiskDetailActivity() {
+        final Intent intent = new Intent(this, DiskDetailActivity_.class);
+        startActivity(intent);
+
     }
 
     @OptionsItem(R.id.action_edit_triggers)

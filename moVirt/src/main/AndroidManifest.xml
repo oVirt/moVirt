@@ -68,6 +68,17 @@
             android:name=".ui.VmDetailActivity_"
             android:label="@string/title_activity_vm_details">
         </activity>
+
+        <activity
+            android:name=".ui.EventsActivity_"
+            android:label="@string/title_activity_event_details">
+        </activity>
+
+        <activity
+            android:name=".ui.DiskDetailActivity_"
+            android:label="@string/title_activity_disk_details">
+        </activity>
+
     </application>
 
 </manifest>
