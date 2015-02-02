@@ -248,14 +248,25 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
 
     @UiThread
     public void renderVm(ExtendedVm vm, VmStatistics statistics) {
-        int memoryMB;
+        Long memoryMB = 0L;
+        boolean memoryExceptionFlag = false;
         setTitle(String.format(VM_DETAILS, vm.name));
         statusView.setText(vm.status.state);
         cpuView.setText(String.format("%.2f%%", statistics.getCpuUsage()));
         memView.setText(String.format("%.2f%%", statistics.getMemoryUsage()));
-        memoryMB = Integer.parseInt(vm.memory);
-        memoryMB = memoryMB / 1000000;
-        memoryView.setText(memoryMB + " MB");
+        try {
+            memoryMB = Long.parseLong(vm.memory);
+        }
+        catch (Exception e) {
+            memoryExceptionFlag = true;
+        }
+        if(!memoryExceptionFlag) {
+            memoryMB = memoryMB / (1024 * 1024);
+            memoryView.setText(memoryMB + " MB");
+        }
+        else {
+            memoryView.setText("N/A");
+        }
         socketView.setText(vm.cpu.topology.sockets);
         coreView.setText(vm.cpu.topology.cores);
         osView.setText(vm.os.type);
