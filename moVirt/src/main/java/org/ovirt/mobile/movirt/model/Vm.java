@@ -6,6 +6,7 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 
 import java.util.Arrays;
@@ -22,20 +23,31 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
     }
 
     public enum Status {
-        UNASSIGNED,
-        DOWN,
-        UP,
-        POWERING_UP,
-        PAUSED,
-        MIGRATING,
-        UNKNOWN,
-        NOT_RESPONDING,
-        WAIT_FOR_LAUNCH,
-        REBOOT_IN_PROGRESS,
-        SAVING_STATE,
-        SUSPENDED,
-        IMAGE_LOCKED,
-        POWERING_DOWN
+        UNASSIGNED(R.drawable.vm_question_mark),
+        DOWN(R.drawable.vm_down),
+        UP(R.drawable.vm_running),
+        POWERING_UP(R.drawable.vm_powering_up),
+        PAUSED(R.drawable.vm_paused),
+        MIGRATING(R.drawable.vm_migrating),
+        UNKNOWN(R.drawable.vm_question_mark),
+        NOT_RESPONDING(R.drawable.vm_question_mark),
+        WAIT_FOR_LAUNCH(R.drawable.vm_wait_for_launch),
+        REBOOT_IN_PROGRESS(R.drawable.vm_reboot_in_progress),
+        SAVING_STATE(R.drawable.vm_wait),
+        SUSPENDED(R.drawable.vm_suspened),
+        IMAGE_LOCKED(R.drawable.vm_wait),
+        POWERING_DOWN(R.drawable.vm_powering_down);
+
+        Status(int resource) {
+            this.resource = resource;
+        }
+
+        private final int resource;
+
+        public int getResource() {
+            return resource;
+        }
+
     }
 
     public enum Command {
