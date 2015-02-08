@@ -27,8 +27,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.fasterxml.jackson.databind.deser.std.DateDeserializers;
-
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
@@ -54,8 +52,6 @@ import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
-
-import java.util.Calendar;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CLUSTER_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;

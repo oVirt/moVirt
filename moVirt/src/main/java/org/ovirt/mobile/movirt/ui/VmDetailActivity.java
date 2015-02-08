@@ -32,6 +32,7 @@ import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.ActionTicket;
+import org.ovirt.mobile.movirt.rest.DiskData;
 import org.ovirt.mobile.movirt.rest.ExtendedVm;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
@@ -191,8 +192,9 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     @Click(R.id.eventsButton)
     void openEventsActivity() {
         final Intent intent = new Intent(this, EventsActivity_.class);
-        if(vm.getId() != null)
-            intent.putExtra(EventsActivity.FILTER_VM_ID,vm.getId());
+        if(vm.getId() != null) {
+            intent.putExtra(EventsActivity.FILTER_VM_ID, vm.getId());
+        }
         startActivity(intent);
 
     }
@@ -200,6 +202,9 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     @Click(R.id.disksButton)
     void openDiskDetailActivity() {
         final Intent intent = new Intent(this, DiskDetailActivity_.class);
+        if(vm.getId() != null) {
+            intent.putExtra(DiskDetailActivity.FILTER_VM_ID, vm.getId());
+        }
         startActivity(intent);
 
     }
@@ -274,7 +279,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
             displayView.setText(vm.display.type);
         }
         else {
-            displayView.setText("NA");
+            displayView.setText("N/A");
         }
 
         updateCommandButtons(vm);
