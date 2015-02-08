@@ -3,6 +3,13 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ProgressBar
+        android:id="@+id/diskProgress"
+        style="@style/vncProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </ProgressBar>
+
     <ListView
         android:id="@+id/diskListView"
         android:layout_width="match_parent"

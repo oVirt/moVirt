@@ -19,7 +19,6 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
@@ -191,8 +190,9 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     @Click(R.id.eventsButton)
     void openEventsActivity() {
         final Intent intent = new Intent(this, EventsActivity_.class);
-        if(vm.getId() != null)
-            intent.putExtra(EventsActivity.FILTER_VM_ID,vm.getId());
+        if(vm.getId() != null) {
+            intent.putExtra(EventsActivity.FILTER_VM_ID, vm.getId());
+        }
         startActivity(intent);
 
     }
@@ -200,6 +200,9 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     @Click(R.id.disksButton)
     void openDiskDetailActivity() {
         final Intent intent = new Intent(this, DiskDetailActivity_.class);
+        if(vm.getId() != null) {
+            intent.putExtra(DiskDetailActivity.FILTER_VM_ID, vm.getId());
+        }
         startActivity(intent);
 
     }
@@ -274,7 +277,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
             displayView.setText(vm.display.type);
         }
         else {
-            displayView.setText("NA");
+            displayView.setText("N/A");
         }
 
         updateCommandButtons(vm);
