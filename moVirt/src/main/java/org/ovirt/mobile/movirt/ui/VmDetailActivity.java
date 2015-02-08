@@ -19,7 +19,6 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.UiThread;
@@ -42,6 +41,7 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 public class VmDetailActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String VM_URI = "vm_uri";
     private static final String TAG = VmDetailActivity.class.getSimpleName();
+    public String vmId = null;
 
     @Bean
     OVirtClient client;
@@ -60,6 +60,12 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
 
     @ViewById
     Button vncButton;
+
+    @ViewById
+    Button eventsButton;
+
+    @ViewById
+    Button disksButton;
 
     @ViewById
     TextView statusView;
@@ -88,9 +94,6 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     @ViewById
     ProgressBar vncProgress;
 
-    @FragmentById
-    EventsFragment eventList;
-
     @StringRes(R.string.details_for_vm)
     String VM_DETAILS;
 
@@ -109,7 +112,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
         args = new Bundle();
         args.putParcelable(VM_URI, vmUri);
         getLoaderManager().initLoader(0, args, this);
-        eventList.setFilterVmId(vmUri.getLastPathSegment());
+        vmId = vmUri.getLastPathSegment();
     }
 
     @Override
@@ -186,6 +189,20 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }
 
+    @Click(R.id.eventsButton)
+    void openEventsActivity() {
+        final Intent intent = new Intent(this, EventsActivity_.class);
+        intent.putExtra(EventsActivity.FILTER_VM_ID, vmId);
+        startActivity(intent);
+    }
+
+    @Click(R.id.disksButton)
+    void openDiskDetailActivity() {
+        final Intent intent = new Intent(this, DiskDetailActivity_.class);
+        intent.putExtra(DiskDetailActivity.FILTER_VM_ID, vmId);
+        startActivity(intent);
+    }
+
     @OptionsItem(R.id.action_edit_triggers)
     void editTriggers() {
         final Intent intent = new Intent(this, EditTriggersActivity_.class);
@@ -256,7 +273,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
             displayView.setText(vm.display.type);
         }
         else {
-            displayView.setText("NA");
+            displayView.setText("N/A");
         }
 
         updateCommandButtons(vm);

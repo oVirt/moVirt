@@ -80,6 +80,10 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         return restClient.getConsoleTicket(new Action(), vm.getId());
     }
 
+    public Disks getDisks(String id) {
+        return restClient.getDisks(id);
+    }
+
     public List<Vm> getVms() {
         Vms loadedVms = null;
         if (hasAdminPrivilege()) {

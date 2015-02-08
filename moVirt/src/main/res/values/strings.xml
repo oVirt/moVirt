@@ -61,6 +61,8 @@
     <string name="stop">Stop</string>
     <string name="reboot">Reboot</string>
     <string name="title_activity_vm_details">Vm Details</string>
+    <string name="title_activity_event_details">Event Details</string>
+    <string name="title_activity_disk_details">Disk Details</string>
     <string name="vm_scope">Vm %1$s</string>
     <string name="cpu">CPU usage:</string>
     <string name="memory">Memory usage:</string>
@@ -69,6 +71,8 @@
     <string name="cores">Cores/Socket:</string>
     <string name="os">OS Type:</string>
     <string name="display">Display Type:</string>
+    <string name="events">Events</string>
+    <string name="disks">Disks</string>
     <string name="statusLabel">Status:</string>
     <string name="percentage_cannot_be_empty">You must specify the percentage value!</string>
     <string name="delete">Delete</string>
