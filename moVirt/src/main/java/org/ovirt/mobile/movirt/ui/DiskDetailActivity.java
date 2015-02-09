@@ -15,8 +15,11 @@ import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.rest.DiskData;
+import org.ovirt.mobile.movirt.rest.Disks;
 import org.ovirt.mobile.movirt.rest.ExtendedVm;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+
+import java.util.List;
 
 /**
  * Created by sphoorti on 30/1/15.
@@ -33,6 +36,8 @@ public class DiskDetailActivity extends Activity {
     @ViewById(R.id.diskProgress)
     ProgressBar diskProgress;
 
+    Disks disks;
+
     public static final String FILTER_VM_ID = "vmId";
 
     @AfterViews
@@ -40,6 +45,7 @@ public class DiskDetailActivity extends Activity {
         showProgressBar();
         getDiskDetails();
         hideProgressBar();
+        listView.setFilterText("hello" + getIntent().getStringExtra(FILTER_VM_ID) + disks.diskData.size());
     }
 
     @Override
@@ -59,8 +65,7 @@ public class DiskDetailActivity extends Activity {
 
     @Background
     void getDiskDetails() {
-        DiskData diskData = oVirtClient.getDiskData(getIntent().getStringExtra(FILTER_VM_ID));
-        listView.setFilterText("hello" + getIntent().getStringExtra(FILTER_VM_ID));
+        disks = oVirtClient.getDiskData(getIntent().getStringExtra(FILTER_VM_ID));
     }
 
 }
