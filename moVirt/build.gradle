@@ -18,7 +18,7 @@ repositories {
 }
 
 apply plugin: 'android-apt'
-ext.androidAnnottationVersion = '3.0+'
+ext.androidAnnottationVersion = '3.3+'
 
 dependencies {
     compile 'com.android.support:support-v4:20.0.0'

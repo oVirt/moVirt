@@ -10,6 +10,7 @@ import org.androidannotations.annotations.res.StringRes;
 import org.androidannotations.api.rest.RestErrorHandler;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
+import org.springframework.core.NestedRuntimeException;
 import org.springframework.web.client.RestClientException;
 
 @EBean
@@ -24,7 +25,7 @@ public class ErrorHandler implements RestErrorHandler {
     Context context;
 
     @Override
-    public void onRestClientExceptionThrown(RestClientException e) {
+    public void onRestClientExceptionThrown(NestedRuntimeException e) {
         Log.e(TAG, "Error during calling REST: '" + e.getMessage() + "'");
 
         final String msg = String.format(errorMsg, e.getMessage());

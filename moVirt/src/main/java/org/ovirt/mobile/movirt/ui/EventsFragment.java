@@ -2,10 +2,6 @@ package org.ovirt.mobile.movirt.ui;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -17,11 +13,11 @@ import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 
 import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.MoVirtApp;
@@ -56,9 +52,6 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
     @Bean
     EventsHandler eventsHandler;
 
-    @App
-    MoVirtApp application;
-
     private SimpleCursorAdapter eventListAdapter;
 
     private String filterClusterId;
@@ -66,20 +59,6 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
     private int page = 1;
     private static final int EVENTS_PER_PAGE = 20;
     private static final String TAG = EventsFragment.class.getSimpleName();
-
-    private final BroadcastReceiver eventsSyncingReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(MoVirtApp.EVENTS_IN_SYNC)) {
-                boolean syncing = intent.getExtras().getBoolean(MoVirtApp.SYNCING);
-                if (syncing) {
-                    showProgress();
-                } else {
-                    hideProgress();
-                }
-            }
-        }
-    };
 
     private EndlessScrollListener endlessScrollListener = new EndlessScrollListener() {
         @Override
@@ -110,14 +89,12 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         if (EventsHandler.inSync) {
             showProgress();
         }
-        application.getBaseContext().registerReceiver(eventsSyncingReceiver, new IntentFilter(MoVirtApp.EVENTS_IN_SYNC));
         restartLoader();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        application.getBaseContext().unregisterReceiver(eventsSyncingReceiver);
         hideProgress();
     }
 
@@ -151,7 +128,7 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader,Cursor cursor) {
-        if(eventListAdapter!=null && cursor!=null) {
+        if(eventListAdapter != null && cursor != null) {
             eventListAdapter.swapCursor(cursor); //swap the new cursor in.
         }
         else {
@@ -203,4 +180,12 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         eventsProgress.setVisibility(View.GONE);
     }
 
+    @Receiver(actions = MoVirtApp.EVENTS_IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    void eventsSyncing(@Receiver.Extra boolean syncing) {
+        if (syncing) {
+            showProgress();
+        } else {
+            hideProgress();
+        }
+    }
 }
