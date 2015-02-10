@@ -78,6 +78,11 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
 
                 deleteOldEvents();
             }
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading events", e);
+            Intent intent = new Intent(MoVirtApp.CONNECTION_FAILURE);
+            intent.putExtra(MoVirtApp.CONNECTION_FAILURE_REASON, e.getMessage());
+            context.sendBroadcast(intent);
         } finally {
             inSync = false;
             sendSyncIntent(false);
