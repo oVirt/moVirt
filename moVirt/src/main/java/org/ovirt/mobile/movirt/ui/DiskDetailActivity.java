@@ -1,10 +1,12 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.app.Activity;
+import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.widget.SimpleAdapter;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
@@ -13,19 +15,19 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.rest.DiskData;
 import org.ovirt.mobile.movirt.rest.Disks;
-import org.ovirt.mobile.movirt.rest.ExtendedVm;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by sphoorti on 30/1/15.
  */
 @EActivity(R.layout.activity_disk_detail)
 public class DiskDetailActivity extends Activity {
+    private static final String TAG = DiskDetailActivity.class.getSimpleName();
 
     @ViewById(R.id.diskListView)
     ListView listView;
@@ -38,14 +40,19 @@ public class DiskDetailActivity extends Activity {
 
     Disks disks;
 
+    List<String> diskList = new ArrayList<String>();
+
     public static final String FILTER_VM_ID = "vmId";
 
     @AfterViews
     void init() {
+        //Log.i(TAG, "SPH: value " + getIntent().getStringExtra(FILTER_VM_ID));
         showProgressBar();
         getDiskDetails();
         hideProgressBar();
-        listView.setFilterText("hello" + getIntent().getStringExtra(FILTER_VM_ID) + disks.diskData.size());
+        displayListView();
+
+        //listView.setFilterText("hello" + getIntent().getStringExtra(FILTER_VM_ID) );//+ disks.disk.size());
     }
 
     @Override
@@ -63,9 +70,19 @@ public class DiskDetailActivity extends Activity {
         diskProgress.setVisibility(View.GONE);
     }
 
+    @UiThread
+    void displayListView() {
+        diskList.add(disks.disk.get(0).name + disks.disk.get(0).size);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String> (this,
+                R.layout.activity_disk_detail,diskList);
+        listView.setAdapter(arrayAdapter);
+    }
+
     @Background
     void getDiskDetails() {
+        Log.i(TAG, "SPH: value " + getIntent().getStringExtra(FILTER_VM_ID));
         disks = oVirtClient.getDiskData(getIntent().getStringExtra(FILTER_VM_ID));
+        Log.i(TAG, "SPH: disks " + disks.disk.size());
     }
 
 }

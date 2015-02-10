@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonRootName;
  */
 @JsonRootName("disks")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DiskData {
+public class Disk {
     public String name;
     public String size;
     public Status status;
