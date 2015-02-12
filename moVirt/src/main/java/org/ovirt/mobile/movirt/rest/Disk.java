@@ -15,6 +15,6 @@ public class Disk {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public class Status {
-        String status;
+        public String status;
     }
 }
