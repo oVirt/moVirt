@@ -41,7 +41,7 @@ public class DiskDetailActivity extends Activity {
     @ViewById(R.id.diskProgress)
     ProgressBar diskProgress;
 
-    Disks disks;
+    List <Disk> disks;
 
     DiskListAdapter diskListAdapter;
 
@@ -84,7 +84,7 @@ public class DiskDetailActivity extends Activity {
     void getDiskDetails() {
         Log.i(TAG, "SPH: value " + getIntent().getStringExtra(FILTER_VM_ID));
         disks = oVirtClient.getDiskData(getIntent().getStringExtra(FILTER_VM_ID));
-        Log.i(TAG, "SPH: disks " + disks.disk.size());
+        Log.i(TAG, "SPH: disks " + disks.size());
         displayListView();
     }
 

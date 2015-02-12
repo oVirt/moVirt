@@ -9,26 +9,35 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.rest.Disk;
 import org.ovirt.mobile.movirt.rest.Disks;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by sphoorti on 11/2/15.
  */
 public class DiskListAdapter extends ArrayAdapter<Disk> {
     public int layoutResourceId;
-    Disks disks;
     private static final String TAG = DiskListAdapter.class.getSimpleName();
 
-    public  DiskListAdapter (Context context, int textViewResourceId,Disks ldisk) {
-        super(context, textViewResourceId);
+    //@ViewById (R.id.disk_name)
+    //TextView diskName;
+
+    //@ViewById (R.id.disk_status)
+    //TextView diskStatus;
+
+    //@ViewById (R.id.disk_size)
+    //TextView diskSize;
+
+
+    public  DiskListAdapter (Context context, int textViewResourceId, List<Disk> ldisk) {
+        super(context, textViewResourceId,ldisk);
         layoutResourceId = textViewResourceId;
-        disks = ldisk;
-
-
     }
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -46,7 +55,7 @@ public class DiskListAdapter extends ArrayAdapter<Disk> {
 
             TextView diskName = (TextView) v.findViewById(R.id.disk_name);
             TextView diskStatus = (TextView) v.findViewById(R.id.disk_status);
-            TextView diskSize = (TextView) v.findViewById(R.id.disk_size);
+             TextView diskSize = (TextView) v.findViewById(R.id.disk_size);
 
             diskName.setText(disk.name);
             diskStatus.setText(disk.status.status);
