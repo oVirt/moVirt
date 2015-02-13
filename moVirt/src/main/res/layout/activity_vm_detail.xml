@@ -32,10 +32,10 @@
             android:layout_toRightOf="@id/stopButton"/>
 
         <Button
-            android:id="@+id/vncButton"
+            android:id="@+id/consoleButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/vnc"
+            android:text="@string/console"
             android:layout_toRightOf="@id/rebootButton"/>
 
         <ProgressBar
