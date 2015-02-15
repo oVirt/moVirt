@@ -29,7 +29,6 @@ import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.util.NotificationDisplayer;
 
 import java.util.Collection;
@@ -107,9 +106,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    public synchronized void syncVm(final String id, final OVirtClient.Response<Vm> response) {
+    public synchronized void syncVm(final String id, final Response<Vm> response) {
+        Log.i(TAG, "Syncing VM: " + id);
         initBatch();
-        oVirtClient.getVm(id, new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<Vm>() {
+        oVirtClient.getVm(id, new CompositeResponse<>(new SimpleResponse<Vm>() {
             @Override
             public void onResponse(Vm vm) throws RemoteException {
                 updateLocalEntity(vm, Vm.class);
@@ -118,9 +118,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }, response));
     }
 
-    public synchronized void syncHost(String id, OVirtClient.Response<Host> response) {
+    public synchronized void syncHost(String id, Response<Host> response) {
+        Log.i(TAG, "Syncing Host: " + id);
         initBatch();
-        oVirtClient.getHost(id, new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<Host>() {
+        oVirtClient.getHost(id, new CompositeResponse<>(new SimpleResponse<Host>() {
             @Override
             public void onResponse(Host host) throws RemoteException {
                 updateLocalEntity(host, Host.class);
@@ -134,13 +135,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         // TODO: we really need promises here
         // TODO: ideally split each request and save vms, hosts, ... in separate batches
-        oVirtClient.getVms(new OVirtClient.SimpleResponse<List<Vm>>() {
+        oVirtClient.getVms(new SimpleResponse<List<Vm>>() {
             @Override
             public void onResponse(final List<Vm> remoteVms) throws RemoteException {
-                oVirtClient.getClusters(new OVirtClient.SimpleResponse<List<Cluster>>() {
+                oVirtClient.getClusters(new SimpleResponse<List<Cluster>>() {
                     @Override
                     public void onResponse(final List<Cluster> remoteClusters) throws RemoteException {
-                        oVirtClient.getHosts(new OVirtClient.SimpleResponse<List<Host>>() {
+                        oVirtClient.getHosts(new SimpleResponse<List<Host>>() {
                             @Override
                             public void onResponse(final List<Host> remoteHosts) throws RemoteException {
                                 updateLocalEntities(remoteClusters, Cluster.class);

@@ -1,10 +1,14 @@
 package org.ovirt.mobile.movirt.sync;
 
 import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
+import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 
@@ -13,6 +17,9 @@ public class SyncUtils {
 
     @Bean
     SyncAdapter syncAdapter;
+
+    @RootContext
+    Context context;
 
     /**
      * Helper method to trigger an immediate sync ("refresh").
@@ -26,6 +33,8 @@ public class SyncUtils {
      * the OS additional freedom in scheduling your sync request.
      */
     public void triggerRefresh() {
+        context.sendBroadcast(new Intent(Broadcasts.REFRESH_TRIGGERED));
+
         Bundle b = new Bundle();
         // Disable sync backoff and ignore sync preferences. In other words...perform sync NOW!
         b.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);

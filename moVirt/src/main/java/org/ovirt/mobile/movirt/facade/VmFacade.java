@@ -10,7 +10,7 @@ import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.trigger.VmTriggerResolver;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.sync.Response;
 import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.ui.vms.VmDetailActivity_;
 
@@ -43,7 +43,7 @@ public class VmFacade implements EntityFacade<Vm> {
     }
 
     @Override
-    public void sync(String id, OVirtClient.Response<Vm> response) {
+    public void sync(String id, Response<Vm> response) {
         syncAdapter.syncVm(id, response);
     }
 }

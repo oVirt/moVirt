@@ -108,6 +108,9 @@
     <string name="account_disableHttpsChecking">Disable Https certificate checking</string>
     <string name="account_enforceHttpBasicAuth">Enforce HTTP Basic Authentication</string>
     <string name="account_disableHttpsChecking_summary">This method is dangerous and should not be used in production setup.</string>
+    <string name="account_useDoctorRest">Use Doctor Rest Proxy</string>
+    <string name="account_doctorRestUrl">Doctor Rest URL</string>
+    <string name="account_doctorMqttUrl">Doctor MQTT broker URL</string>
     <string name="name">Name</string>
 
     <string name="nic_para">Linked : %1$b&#160;&#160;&#160;&#160;plugged : %2$b</string>

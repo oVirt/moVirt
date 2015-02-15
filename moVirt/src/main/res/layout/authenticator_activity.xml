@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <EditText
@@ -8,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/account_endpoint"
+        android:inputType="textUri"
         />
 
     <EditText
@@ -45,6 +47,27 @@
         android:layout_height="wrap_content"
         android:text="@string/account_enforceHttpBasicAuth"
         />
+
+    <CheckBox
+        android:id="@+id/chkUseDoctorRest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/account_useDoctorRest"
+        />
+
+    <EditText
+        android:id="@+id/txtDoctorRestUrl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/account_doctorRestUrl"
+        android:inputType="textUri" />
+
+    <EditText
+        android:id="@+id/txtDoctorMqttUrl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/account_doctorMqttUrl"
+        android:inputType="textUri" />
 
     <ProgressBar
         android:id="@+id/authProgress"

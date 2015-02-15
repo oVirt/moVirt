@@ -11,8 +11,8 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.rest.Disks;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.sync.rest.Disks;
+import org.ovirt.mobile.movirt.sync.OVirtClient;
 
 @EFragment(R.layout.fragment_disk_detail)
 public class DiskDetailFragment extends RefreshableFragment {

@@ -10,8 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.rest.Nic;
-import org.ovirt.mobile.movirt.rest.Nics;
+import org.ovirt.mobile.movirt.sync.rest.Nic;
+import org.ovirt.mobile.movirt.sync.rest.Nics;
 
 /**
  * Created by yixin on 11/2/15.

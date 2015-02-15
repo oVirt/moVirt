@@ -50,7 +50,7 @@ import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.sync.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.hosts.HostsFragment_;
@@ -345,5 +345,16 @@ public class MainActivity extends ActionBarActivity{
     @Receiver(actions = Broadcasts.CONNECTION_FAILURE, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void connectionFailure(@Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
         Toast.makeText(MainActivity.this, R.string.rest_req_failed + " " + reason, Toast.LENGTH_LONG).show();
+    }
+
+
+    @Receiver(actions = Broadcasts.MQTT_CONNECTED)
+    void mqttConnected() {
+        Toast.makeText(this, "Doctor REST Connected!", Toast.LENGTH_LONG).show();
+    }
+
+    @Receiver(actions = Broadcasts.MQTT_DISCONNECTED)
+    void mqttDisconnected() {
+        Toast.makeText(this, "Doctor REST Disconnected!", Toast.LENGTH_LONG).show();
     }
 }

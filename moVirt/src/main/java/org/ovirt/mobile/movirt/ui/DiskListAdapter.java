@@ -9,8 +9,8 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.rest.Disk;
-import org.ovirt.mobile.movirt.rest.Disks;
+import org.ovirt.mobile.movirt.sync.rest.Disk;
+import org.ovirt.mobile.movirt.sync.rest.Disks;
 
 /**
  * Created by sphoorti on 11/2/15.

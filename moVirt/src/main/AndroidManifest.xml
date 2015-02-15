@@ -71,6 +71,17 @@
                 android:resource="@xml/sync_adapter" />
         </service>
 
+        <service
+            android:name=".mqtt.MqttService_"
+            android:enabled="true"
+            android:exported="true">
+
+        </service>
+        
+        <receiver android:name=".mqtt.MqttReceiver_">
+
+        </receiver>
+
         <activity
             android:name="org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_"
             android:label="@string/title_activity_edit_filters" >

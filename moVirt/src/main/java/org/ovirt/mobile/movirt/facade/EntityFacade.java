@@ -6,7 +6,8 @@ import android.database.Cursor;
 
 import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.trigger.TriggerResolver;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.sync.OVirtClient;
+import org.ovirt.mobile.movirt.sync.Response;
 
 /**
  * Provides uniform interface for various services dependant on entity type
@@ -18,5 +19,5 @@ public interface EntityFacade<E extends OVirtEntity> extends TriggerResolver<E> 
 
     Intent getDetailIntent(E entity, Context context);
 
-    void sync(String id, OVirtClient.Response<E> response);
+    void sync(String id, Response<E> response);
 }

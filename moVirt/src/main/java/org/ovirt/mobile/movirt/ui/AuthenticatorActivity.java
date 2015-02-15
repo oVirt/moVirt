@@ -15,6 +15,7 @@ import android.widget.Toast;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.CheckedChange;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Receiver;
@@ -24,8 +25,9 @@ import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
+import org.ovirt.mobile.movirt.mqtt.MqttService_;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.sync.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 
@@ -57,6 +59,15 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     CheckBox enforceHttpBasicAuth;
 
     @ViewById
+    CheckBox chkUseDoctorRest;
+
+    @ViewById
+    EditText txtDoctorRestUrl;
+
+    @ViewById
+    EditText txtDoctorMqttUrl;
+
+    @ViewById
     ProgressBar authProgress;
 
     @Bean
@@ -78,6 +89,10 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         chkDisableHttps.setChecked(authenticator.disableHttps());
         enforceHttpBasicAuth.setChecked(authenticator.enforceBasicAuth());
 
+        chkUseDoctorRest.setChecked(authenticator.useDoctorRest());
+        txtDoctorRestUrl.setText(authenticator.getDoctorRestUrl());
+        txtDoctorMqttUrl.setText(authenticator.getDoctorMqttUrl());
+        useDoctorChanged(chkUseDoctorRest.isChecked());
     }
 
     @Click(R.id.btnCreate)
@@ -90,11 +105,16 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         Boolean disableHttps = chkDisableHttps.isChecked();
         Boolean enforceHttpBasic = enforceHttpBasicAuth.isChecked();
 
-        finishLogin(endpoint, username, password, adminPriv, disableHttps, enforceHttpBasic);
+        Boolean useDoctorRest = chkUseDoctorRest.isChecked();
+        String doctorRestUrl = txtDoctorRestUrl.getText().toString();
+        String doctorMqttUrl = txtDoctorMqttUrl.getText().toString();
+
+        finishLogin(endpoint, username, password, adminPriv, disableHttps, enforceHttpBasic, useDoctorRest, doctorRestUrl, doctorMqttUrl);
     }
 
     @Background
-    void finishLogin(String apiUrl, String name, String password, Boolean hasAdminPermissions, Boolean disableHttps, Boolean enforceHttpBasic) {
+    void finishLogin(String apiUrl, String name, String password, Boolean hasAdminPermissions, Boolean disableHttps, Boolean enforceHttpBasic,
+                     Boolean useDoctorRest, String doctorRestUrl, String doctorMqttUrl) {
         boolean endpointChanged = false;
         if (!TextUtils.equals(apiUrl, authenticator.getApiUrl()) ||
                 !TextUtils.equals(name, authenticator.getUserName())) {
@@ -108,13 +128,16 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         ContentResolver.setSyncAutomatically(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
         ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
 
-        setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, apiUrl, name, password, hasAdminPermissions, disableHttps, enforceHttpBasic);
+        setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, apiUrl, name, password, hasAdminPermissions, disableHttps, enforceHttpBasic, useDoctorRest, doctorRestUrl, doctorMqttUrl);
 
         changeProgressVisibilityTo(View.VISIBLE);
         String token = "";
         boolean success = true;
         try {
             token = client.login(apiUrl, name, password, disableHttps, hasAdminPermissions);
+            if (useDoctorRest) {
+                MqttService_.intent(getApplication()).start();
+            }
         } catch (Exception e) {
             showToast("Error logging in: " + e.getMessage());
             success = false;
@@ -151,6 +174,12 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         finish();
     }
 
+    @CheckedChange(R.id.chkUseDoctorRest)
+    void useDoctorChanged(boolean checked) {
+        txtDoctorRestUrl.setVisibility(checked ? View.VISIBLE : View.GONE);
+        txtDoctorMqttUrl.setVisibility(checked ? View.VISIBLE : View.GONE);
+    }
+
     @UiThread
     void changeProgressVisibilityTo(int visibility) {
         authProgress.setVisibility(visibility);
@@ -161,12 +190,17 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }
 
-    private void setUserData(Account account, String apiUrl, String name, String password, Boolean hasAdminPermissions, Boolean disableHttps, Boolean enforceHttpBasic) {
+    private void setUserData(Account account, String apiUrl, String name, String password,
+                             Boolean hasAdminPermissions, Boolean disableHttps, Boolean enforceHttpBasic, Boolean useDoctorRest,
+                             String doctorRestUrl, String doctorMqttUrl) {
         accountManager.setUserData(account, MovirtAuthenticator.API_URL, apiUrl);
         accountManager.setUserData(account, MovirtAuthenticator.USER_NAME, name);
         accountManager.setUserData(account, MovirtAuthenticator.HAS_ADMIN_PERMISSIONS, Boolean.toString(hasAdminPermissions));
         accountManager.setUserData(account, MovirtAuthenticator.DISABLE_HTTPS, Boolean.toString(disableHttps));
         accountManager.setUserData(account, MovirtAuthenticator.ENFORCE_HTTP_BASIC, Boolean.toString(enforceHttpBasic));
+        accountManager.setUserData(account, MovirtAuthenticator.USE_DOCTOR_REST, Boolean.toString(useDoctorRest));
+        accountManager.setUserData(account, MovirtAuthenticator.DOCTOR_REST_URL, doctorRestUrl);
+        accountManager.setUserData(account, MovirtAuthenticator.DOCTOR_MQTT_URL, doctorMqttUrl);
         accountManager.setPassword(account, password);
     }
 

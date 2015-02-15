@@ -21,7 +21,6 @@ import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.trigger.EventTriggerResolver;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationDisplayer;
 
@@ -86,7 +85,7 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
 
             if (configuredPoll || force) {
                 batch = provider.batch();
-                oVirtClient.getEventsSince(!deleteEventsBeforeInsert ? lastEventId : 0, new OVirtClient.SimpleResponse<List<Event>>() {
+                oVirtClient.getEventsSince(!deleteEventsBeforeInsert ? lastEventId : 0, new SimpleResponse<List<Event>>() {
 
                     @Override
                     public void before() {

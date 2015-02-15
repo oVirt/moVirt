@@ -20,5 +20,4 @@ public class MoVirtApp extends Application {
         super.onCreate();
         context = this;
     }
-
 }

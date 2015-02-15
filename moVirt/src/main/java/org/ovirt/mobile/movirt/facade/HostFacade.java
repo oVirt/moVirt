@@ -10,7 +10,8 @@ import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.trigger.HostTriggerResolver;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.sync.OVirtClient;
+import org.ovirt.mobile.movirt.sync.Response;
 import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.ui.hosts.HostDetailActivity_;
 
@@ -43,7 +44,7 @@ public class HostFacade implements EntityFacade<Host> {
     }
 
     @Override
-    public void sync(String id, OVirtClient.Response<Host> response) {
+    public void sync(String id, Response<Host> response) {
         syncAdapter.syncHost(id, response);
     }
 }

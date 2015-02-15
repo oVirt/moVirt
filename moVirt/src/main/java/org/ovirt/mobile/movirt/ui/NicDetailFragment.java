@@ -17,8 +17,8 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.rest.Nics;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.sync.rest.Nics;
+import org.ovirt.mobile.movirt.sync.OVirtClient;
 
 @EFragment(R.layout.fragment_nic_detail)
 public class NicDetailFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, HasProgressBar {

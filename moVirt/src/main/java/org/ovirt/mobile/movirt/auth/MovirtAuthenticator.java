@@ -15,7 +15,7 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.UiThread;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.sync.OVirtClient;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 
 
@@ -37,6 +37,12 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     public static final String DISABLE_HTTPS = "org.ovirt.mobile.movirt.disablehttps";
 
     public static final String ENFORCE_HTTP_BASIC = "org.ovirt.mobile.movirt.enforceHttpBasic";
+
+    public static final String USE_DOCTOR_REST = "org.ovirt.mobile.movirt.useDoctorRest";
+
+    public static final String DOCTOR_REST_URL = "org.ovirt.mobile.movirt.doctorRestUrl";
+
+    public static final String DOCTOR_MQTT_URL = "org.ovirt.mobile.movirt.doctorMqttUrl";
 
     public static final Account MOVIRT_ACCOUNT = new Account(MovirtAuthenticator.ACCOUNT_NAME, MovirtAuthenticator.ACCOUNT_TYPE);
 
@@ -149,6 +155,18 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     public Boolean enforceBasicAuth() {
         return read(ENFORCE_HTTP_BASIC, false);
+    }
+
+    public Boolean useDoctorRest() {
+        return read(USE_DOCTOR_REST, false);
+    }
+
+    public String getDoctorRestUrl() {
+        return read(DOCTOR_REST_URL);
+    }
+
+    public String getDoctorMqttUrl() {
+        return read(DOCTOR_MQTT_URL);
     }
 
     public boolean accountConfigured() {
