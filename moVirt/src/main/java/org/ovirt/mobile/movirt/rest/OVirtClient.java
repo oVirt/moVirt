@@ -54,22 +54,25 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     @Bean
     TriggerResolverFactory triggerResolverFactory;
 
+    @Bean
+    SyncUtils syncUtils;
+
     public void startVm(Vm vm) {
         restClient.startVm(new Action(), vm.getId());
 
-        SyncUtils.triggerRefresh();
+        syncUtils.triggerRefresh();
     }
 
     public void stopVm(Vm vm) {
         restClient.stopVm(new Action(), vm.getId());
 
-        SyncUtils.triggerRefresh();
+        syncUtils.triggerRefresh();
     }
 
     public void rebootVm(Vm vm) {
         restClient.rebootVm(new Action(), vm.getId());
 
-        SyncUtils.triggerRefresh();
+        syncUtils.triggerRefresh();
     }
 
     public ExtendedVm  getVm(Vm vm) {
@@ -224,7 +227,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         updateDisableHttpsChecking();
         updateAdminPrivilegeStatus();
         updatePollingInterval();
-        SyncUtils.triggerRefresh();
+        syncUtils.triggerRefresh();
     }
 
     private void updateRootUrlFromSettings() {
@@ -250,7 +253,7 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
     private void updatePollingInterval() {
         int pollingInterval = asIntWithDefault("polling_interval", DEFAULT_POLLING_INTERVAL);
         Log.i(TAG,"Updating Polling Interval to :" + pollingInterval);
-        SyncUtils.updatePollingInterval(pollingInterval);
+        syncUtils.updatePollingInterval(pollingInterval);
     }
 
     private void updateDisableHttpsChecking() {
@@ -283,13 +286,11 @@ public class OVirtClient implements SharedPreferences.OnSharedPreferenceChangeLi
         }
 
         Log.i(TAG, key + " changed");
-        SyncUtils.triggerRefresh();
+        syncUtils.triggerRefresh();
     }
 
     private static interface WrapPredicate<E> {
         boolean toWrap(E entity);
-
-
     }
 
     private static <E, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers, WrapPredicate<R> predicate) {

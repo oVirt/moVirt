@@ -7,20 +7,24 @@ import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
+import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.auth.AuthenticatorService;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 
-public final class SyncUtils {
+@EBean
+public class SyncUtils {
     private static final long SYNC_FREQUENCY = 60;  // in seconds
     private static final String CONTENT_AUTHORITY = OVirtContract.CONTENT_AUTHORITY;
     private static final String PREF_SETUP_COMPLETE = "setup_complete";
 
+    @RootContext
+    Context context;
+
     /**
      * Create an entry for this application in the system account list, if it isn't already there.
-     *
-     * @param context Context
      */
-    public static void createSyncAccount(Context context) {
+    public void createSyncAccount() {
         boolean newAccount = false;
         boolean setupComplete = PreferenceManager
                 .getDefaultSharedPreferences(context).getBoolean(PREF_SETUP_COMPLETE, false);
@@ -61,7 +65,7 @@ public final class SyncUtils {
      * but the user is not actively waiting for that data, you should omit this flag; this will give
      * the OS additional freedom in scheduling your sync request.
      */
-    public static void triggerRefresh() {
+    public void triggerRefresh() {
         Bundle b = new Bundle();
         // Disable sync backoff and ignore sync preferences. In other words...perform sync NOW!
         b.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
@@ -72,7 +76,7 @@ public final class SyncUtils {
                 b);                                      // Extras
     }
 
-    public static void updatePollingInterval(int newInterval) {
+    public void updatePollingInterval(int newInterval) {
         Account account = AuthenticatorService.DUMMY_ACCOUNT;
         ContentResolver.removePeriodicSync(account, CONTENT_AUTHORITY, new Bundle());
         ContentResolver.addPeriodicSync(account, CONTENT_AUTHORITY, new Bundle(), newInterval);

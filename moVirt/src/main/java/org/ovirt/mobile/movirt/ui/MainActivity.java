@@ -91,9 +91,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @StringRes(R.string.cluster_scope)
     String CLUSTER_SCOPE;
 
-    @Bean
-    ProviderFacade provider;
-
     @InstanceState
     String selectedClusterId;
 
@@ -102,6 +99,12 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
     @ViewById
     ProgressBar vmsProgress;
+
+    @Bean
+    ProviderFacade provider;
+
+    @Bean
+    SyncUtils syncUtils;
 
     private final EndlessScrollListener endlessScrollListener = new EndlessScrollListener() {
         @Override
@@ -275,7 +278,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     void refresh() {
         Log.d(TAG, "Refresh button clicked");
 
-        SyncUtils.triggerRefresh();
+        syncUtils.triggerRefresh();
     }
 
     @OptionsItem(R.id.action_settings)

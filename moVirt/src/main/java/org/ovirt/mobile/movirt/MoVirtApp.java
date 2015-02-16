@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EApplication;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 
@@ -18,13 +19,16 @@ public class MoVirtApp extends Application {
         return context;
     }
 
+    @Bean
+    SyncUtils syncUtils;
+
     @Override
     public void onCreate() {
         super.onCreate();
 
         context = this;
 
-        SyncUtils.createSyncAccount(this);
+        syncUtils.createSyncAccount();
     }
 
     public boolean endpointConfigured() {
