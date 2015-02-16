@@ -37,6 +37,7 @@ import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
+import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Cluster;
@@ -328,13 +329,13 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     }
 
     @UiThread
-    @Receiver(actions = MoVirtApp.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    void syncingChanged(@Receiver.Extra(MoVirtApp.SYNCING) boolean syncing) {
+    @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
         vmsProgress.setVisibility(syncing ? View.VISIBLE : View.GONE);
     }
 
-    @Receiver(actions = MoVirtApp.CONNECTION_FAILURE, registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    void connectionFailure(@Receiver.Extra(MoVirtApp.CONNECTION_FAILURE_REASON) String reason) {
+    @Receiver(actions = Broadcasts.CONNECTION_FAILURE, registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    void connectionFailure(@Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
         Toast.makeText(MainActivity.this, R.string.disconnected + " " + reason, Toast.LENGTH_LONG).show();
     }
 }

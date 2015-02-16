@@ -12,6 +12,7 @@ import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
+import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -80,8 +81,8 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
             }
         } catch (Exception e) {
             Log.e(TAG, "Error loading events", e);
-            Intent intent = new Intent(MoVirtApp.CONNECTION_FAILURE);
-            intent.putExtra(MoVirtApp.CONNECTION_FAILURE_REASON, e.getMessage());
+            Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
+            intent.putExtra(Broadcasts.Extras.CONNECTION_FAILURE_REASON, e.getMessage());
             context.sendBroadcast(intent);
         } finally {
             inSync = false;
@@ -159,8 +160,8 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
     }
 
     private void sendSyncIntent(boolean syncing) {
-        Intent intent = new Intent(MoVirtApp.EVENTS_IN_SYNC);
-        intent.putExtra(MoVirtApp.SYNCING, syncing);
+        Intent intent = new Intent(Broadcasts.EVENTS_IN_SYNC);
+        intent.putExtra(Broadcasts.Extras.SYNCING, syncing);
         context.sendBroadcast(intent);
     }
 

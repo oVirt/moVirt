@@ -20,7 +20,7 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
-import org.ovirt.mobile.movirt.MoVirtApp;
+import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
@@ -180,7 +180,7 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         eventsProgress.setVisibility(View.GONE);
     }
 
-    @Receiver(actions = MoVirtApp.EVENTS_IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    @Receiver(actions = Broadcasts.EVENTS_IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void eventsSyncing(@Receiver.Extra boolean syncing) {
         if (syncing) {
             showProgress();

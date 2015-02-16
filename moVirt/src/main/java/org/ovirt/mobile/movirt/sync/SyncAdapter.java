@@ -21,6 +21,7 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
+import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
@@ -31,7 +32,6 @@ import org.ovirt.mobile.movirt.model.trigger.TriggerResolver;
 import org.ovirt.mobile.movirt.model.trigger.TriggerResolverFactory;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.ui.MainActivity;
 import org.ovirt.mobile.movirt.ui.VmDetailActivity_;
 
 import java.util.HashMap;
@@ -103,8 +103,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             eventsHandler.updateEvents(false);
         } catch (Exception e) {
             Log.e(TAG, "Error updating data", e);
-            Intent intent = new Intent(MoVirtApp.CONNECTION_FAILURE);
-            intent.putExtra(MoVirtApp.CONNECTION_FAILURE_REASON, e.getMessage());
+            Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
+            intent.putExtra(Broadcasts.Extras.CONNECTION_FAILURE_REASON, e.getMessage());
             context.sendBroadcast(intent);
         } finally {
             sendSyncIntent(false);
@@ -206,8 +206,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private void sendSyncIntent(boolean syncing) {
         inSync = syncing;
-        Intent intent = new Intent(MoVirtApp.IN_SYNC);
-        intent.putExtra(MoVirtApp.SYNCING, syncing);
+        Intent intent = new Intent(Broadcasts.IN_SYNC);
+        intent.putExtra(Broadcasts.Extras.SYNCING, syncing);
         context.sendBroadcast(intent);
     }
 

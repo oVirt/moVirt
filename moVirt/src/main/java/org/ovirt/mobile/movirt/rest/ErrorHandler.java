@@ -8,10 +8,9 @@ import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.res.StringRes;
 import org.androidannotations.api.rest.RestErrorHandler;
-import org.ovirt.mobile.movirt.MoVirtApp;
+import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.springframework.core.NestedRuntimeException;
-import org.springframework.web.client.RestClientException;
 
 @EBean
 public class ErrorHandler implements RestErrorHandler {
@@ -30,8 +29,8 @@ public class ErrorHandler implements RestErrorHandler {
 
         final String msg = String.format(errorMsg, e.getMessage());
 
-        Intent intent = new Intent(MoVirtApp.CONNECTION_FAILURE);
-        intent.putExtra(MoVirtApp.CONNECTION_FAILURE_REASON, msg);
+        Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
+        intent.putExtra(Broadcasts.Extras.CONNECTION_FAILURE_REASON, msg);
         context.sendBroadcast(intent);
     }
 
