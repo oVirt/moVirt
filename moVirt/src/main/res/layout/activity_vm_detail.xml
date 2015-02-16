@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <RelativeLayout
         android:orientation="horizontal"
@@ -139,14 +139,27 @@
             style="@style/VmStat"
             android:layout_alignBaseline="@id/displayLabel" />
 
-
     </RelativeLayout>
 
-    <fragment
-        android:id="@+id/eventList"
+    <RelativeLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/ButtonBar">
 
-        class="org.ovirt.mobile.movirt.ui.EventsFragment_" />
+        <Button
+            android:id="@+id/eventsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/events"/>
+
+        <Button
+            android:id="@+id/disksButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/disks"
+            android:layout_toRightOf="@+id/eventsButton"/>
+
+    </RelativeLayout>
 
 </LinearLayout>
