@@ -59,7 +59,7 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     Button rebootButton;
 
     @ViewById
-    Button vncButton;
+    Button consoleButton;
 
     @ViewById
     Button eventsButton;
@@ -101,9 +101,6 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
 
     Bundle args;
 
-    @Bean
-    OVirtClient oVirtClient;
-
     @AfterViews
     void initLoader() {
 
@@ -144,43 +141,68 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
         client.rebootVm(vm);
     }
 
-    @Click(R.id.vncButton)
+    @Click(R.id.consoleButton)
     @Background
-    void openVncConsole() {
-        String address, port, type;
-        Intent intent;
+    void openConsole() {
         showProgressBar();
         ExtendedVm freshVm = client.getVm(vm);
         ActionTicket ticket = client.getConsoleTicket(vm);
-        address = freshVm.display.address;
-        port = freshVm.display.port;
-        type = freshVm.display.type;
         hideProgressBar();
-        if ("vnc".equals(type)) {
-            try {
-                intent = new Intent(Intent.ACTION_VIEW).setType("application/vnd.vnc").setData(Uri.parse(type + "://" + address + ":" + port + "?VncPassword=" + ticket.ticket.value));
-                startActivity(intent);
-            }
-            catch (Exception e) {
-                String msg = "moVirt failed to open bVnc. Check if bVnc is installed.";
-                makeToast(msg);
-            }
+
+        ExtendedVm.Display display = freshVm.display;
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW)
+                    .setType("application/vnd.vnc")
+                    .setData(Uri.parse(makeConsoleUrl(display, ticket)));
+            startActivity(intent);
+        } catch (IllegalArgumentException e) {
+            makeToast(e.getMessage());
+        } catch (Exception e) {
+            makeToast("Failed to open console client. Check if aSPICE/bVNC is installed.");
         }
-        else {
-            String msg = "The console is not a VNC console. Check the type of console.";
-            makeToast(msg);
+    }
+
+    /**
+     * Returns URL for running console intent.
+     * @throws java.lang.IllegalArgumentException with description
+     *   if the URL can't be created from input.
+     */
+    private String makeConsoleUrl(ExtendedVm.Display display, ActionTicket ticket)
+            throws IllegalArgumentException
+    {
+        if (display == null) {
+            throw new IllegalArgumentException("Illegal parameters for creating console intent URL.");
         }
-    };
+        if (!"vnc".equals(display.type) && !"spice".equals(display.type)) {
+            throw new IllegalArgumentException("Unknown console type: " + display.type);
+        }
+
+        String passwordPart = "";
+        if (ticket != null && ticket.ticket != null && ticket.ticket.value != null
+                && !ticket.ticket.value.isEmpty()) {
+            switch (display.type) {
+                case "vnc":
+                    passwordPart = "VncPassword";
+                    break;
+                case "spice":
+                    passwordPart = "SpicePassword";
+                    break;
+            }
+            passwordPart += "=" + ticket.ticket.value;
+        }
+
+        return display.type + "://" + display.address + ":" + display.port + "?" + passwordPart;
+    }
 
     @UiThread
     void showProgressBar() {
-        vncButton.setClickable(false);
+        consoleButton.setClickable(false);
         vncProgress.setVisibility(View.VISIBLE);
     }
 
     @UiThread
     void hideProgressBar() {
-        vncButton.setClickable(true);
+        consoleButton.setClickable(true);
         vncProgress.setVisibility(View.GONE);
     }
 
@@ -289,8 +311,8 @@ public class VmDetailActivity extends Activity implements LoaderManager.LoaderCa
     @Background
     void loadAdditionalVmData(Vm vm) {
         showProgressBar();
-        ExtendedVm loadedVm = oVirtClient.getVm(vm);
-        VmStatistics statistics = oVirtClient.getVmStatistics(vm);
+        ExtendedVm loadedVm = client.getVm(vm);
+        VmStatistics statistics = client.getVmStatistics(vm);
         hideProgressBar();
 
         renderVm(loadedVm, statistics);

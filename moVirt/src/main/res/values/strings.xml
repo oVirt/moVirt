@@ -100,5 +100,5 @@
     <string name="prefs_vm_search_query_summary">Poll only VMs which satisfy given query. Has effect for admin users only. (e.g. name = production*)</string>
     <string name="prefs_events_search_query">Events Search Query</string>
     <string name="prefs_events_search_query_summary">Poll only Events which satisfy given query. Has effect for admin users only. (e.g. severity > warning)</string>
-    <string name="vnc">VNC console</string>
+    <string name="console">Console</string>
 </resources>
