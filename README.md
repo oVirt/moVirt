@@ -27,6 +27,18 @@ After successfully installing the application, you need to set the connection de
 2. [Working with Trigger](https://github.com/sphoorti/moVirt/blob/master/videos/trigger.webm)    
    This video tutroial shows the working of trigger with the android application. 'Blink when VM is down' is the     example condition that has been set and the status of the VM is changed accordingly to demonstrate this. 
 
+####Remote console
+Follow these steps to connect to remote console:
+
+#####VNC
+* Install bVNC from Google Play
+* Click console button in VM Detail view
+
+#####SPICE
+* Install aSPICE from https://github.com/iiordanov/remote-desktop-clients/releases/download/v3.7.7/freeaSPICE-3.7.7-final.apk
+* Click console button in VM Detail view
+* **Note** moVirt/aSPICE does not support SPICE secured connections at the moment!
+
 ###Get in Touch
 * Interested about news? Follow us on [Twitter](https://twitter.com/mobileOvirt)
 * Have user questions? Subscribe to [oVirt's users list](http://lists.ovirt.org/mailman/listinfo/users) and post a question with subject containing *[moVirt]*
