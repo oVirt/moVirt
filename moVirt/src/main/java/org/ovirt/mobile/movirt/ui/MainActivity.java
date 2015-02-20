@@ -1,29 +1,17 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.accounts.AccountManager;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.LoaderManager;
+import android.app.FragmentTransaction;
 import android.content.Intent;
-import android.content.Loader;
-import android.database.Cursor;
-import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.SimpleCursorAdapter;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,11 +22,9 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.InstanceState;
-import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.Receiver;
-import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.Broadcasts;
@@ -46,29 +32,17 @@ import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Cluster;
-import org.ovirt.mobile.movirt.model.EntityMapper;
-import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
-import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CLUSTER_ID;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
-
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends Activity implements ClusterDrawerFragment.ClusterSelectedListener, LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
+public class MainActivity extends Activity implements ClusterDrawerFragment.ClusterSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private int page = 1;
-    private static final int EVENTS_PER_PAGE = 20;
-    private SimpleCursorAdapter vmListAdapter;
 
     Dialog connectionNotConfiguredProperlyDialog;
 
@@ -84,29 +58,23 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @ViewById
     DrawerLayout drawerLayout;
 
-    @ViewById(R.id.vmListView)
-    ListView listView;
-
-    @ViewById
-    Spinner orderBySpinner;
-
-    @ViewById
-    Spinner orderSpinner;
-
-    @ViewById
-    EditText searchText;
-
     @FragmentById
     EventsFragment eventList;
+
+    @FragmentById
+    VmsFragment vmsList;
+
+    @ViewById
+    View vmsLayout;
+
+    @ViewById
+    View eventsLayout;
 
     @FragmentById
     ClusterDrawerFragment clusterDrawer;
 
     @StringRes(R.string.cluster_scope)
     String CLUSTER_SCOPE;
-
-    @Bean
-    ProviderFacade provider;
 
     @Bean
     OVirtClient client;
@@ -117,8 +85,8 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @InstanceState
     String selectedClusterName;
 
-    @ViewById
-    ProgressBar vmsProgress;
+    @InstanceState
+    CurrentlyShown currentlyShown = CurrentlyShown.VMS;
 
     @Bean
     SyncUtils syncUtils;
@@ -126,31 +94,12 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @Bean
     MovirtAuthenticator authenticator;
 
-    @ViewById
-    SwipeRefreshLayout swipeVmContainer;
-
-    private final EndlessScrollListener endlessScrollListener = new EndlessScrollListener() {
-        @Override
-        public void onLoadMore(int page, int totalItemsCount) {
-            loadMoreData(page);
-        }
-    };
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        syncingChanged(SyncAdapter.inSync);
-        onRefresh();
-    }
-
     @Override
     protected void onPause() {
         super.onPause();
         if (connectionNotConfiguredProperlyDialog.isShowing()) {
             connectionNotConfiguredProperlyDialog.dismiss();
         }
-        syncingChanged(false);
     }
 
     @Override
@@ -162,32 +111,9 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
     @AfterViews
     void initAdapters() {
+
         connectionNotConfiguredProperlyDialog = new Dialog(this);
-        vmListAdapter = new SimpleCursorAdapter(this,
-                                                                    R.layout.vm_list_item,
-                                                                    null,
-                                                                    new String[]{OVirtContract.Vm.NAME, OVirtContract.Vm.STATUS},
-                                                                    new int[]{R.id.vm_name, R.id.vm_status});
 
-        vmListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-            @Override
-            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-                if (columnIndex == cursor.getColumnIndex(OVirtContract.Vm.NAME)) {
-                    TextView textView = (TextView) view;
-                    String vmName = cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.NAME));
-                    textView.setText(vmName);
-                } else if (columnIndex == cursor.getColumnIndex(OVirtContract.Vm.STATUS)) {
-                    ImageView imageView = (ImageView) view;
-                    Vm.Status status = Vm.Status.valueOf(cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.STATUS)));
-                    imageView.setImageResource(status.getResource());
-                }
-
-                return true;
-            }
-        });
-        listView.setAdapter(vmListAdapter);
-        listView.setEmptyView(findViewById(android.R.id.empty));
-        listView.setTextFilterEnabled(true);
 
         clusterDrawer.initDrawerLayout(drawerLayout);
         clusterDrawer.getDrawerToggle().syncState();
@@ -198,34 +124,61 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
             showDialogToOpenAccountSettings(noAccMsg, new Intent(this, AuthenticatorActivity_.class));
         }
 
-        getLoaderManager().initLoader(0, null, this);
+        initTabs();
+    }
 
-        listView.setOnScrollListener(endlessScrollListener);
+    class TabChangedListener implements ActionBar.TabListener {
 
-        searchText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+        private View view;
+        private CurrentlyShown shown;
 
-            }
+        TabChangedListener(View view, CurrentlyShown shown) {
+            this.view = view;
+            this.shown = shown;
+        }
 
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+        @Override
+        public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
+            view.setVisibility(View.VISIBLE);
+            currentlyShown = shown;
+        }
 
-            }
+        @Override
+        public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
+            view.setVisibility(View.GONE);
+        }
 
-            @Override
-            public void afterTextChanged(Editable editable) {
-                resetListViewPosition();
-                restartLoader();
-            }
-        });
+        @Override
+        public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
 
-        RestartOrderItemSelectedListener orderItemSelectedListener = new RestartOrderItemSelectedListener();
+        }
+    }
 
-        orderBySpinner.setOnItemSelectedListener(orderItemSelectedListener);
-        orderSpinner.setOnItemSelectedListener(orderItemSelectedListener);
+    private void initTabs() {
+        vmsLayout.setVisibility(currentlyShown == CurrentlyShown.VMS ? View.VISIBLE : View.GONE);
+        eventsLayout.setVisibility(currentlyShown == CurrentlyShown.EVENTS ? View.VISIBLE : View.GONE);
 
-        swipeVmContainer.setOnRefreshListener(this);
+        CurrentlyShown tmpCurrentlyShown = currentlyShown;
+
+        getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+        ActionBar.Tab vmsTab = getActionBar().newTab()
+                .setText("VMs")
+                .setTabListener(new TabChangedListener(vmsLayout, CurrentlyShown.VMS));
+
+        getActionBar().addTab(vmsTab);
+
+        ActionBar.Tab eventsTab = getActionBar().newTab()
+                .setText("Events")
+                .setTabListener(new TabChangedListener(eventsLayout, CurrentlyShown.EVENTS));
+
+        getActionBar().addTab(eventsTab);
+
+        if (tmpCurrentlyShown == CurrentlyShown.EVENTS) {
+            eventsTab.select();
+        } else {
+            vmsTab.select();
+        }
     }
 
     private void showDialogToOpenAccountSettings(String msg, final Intent intent) {
@@ -259,71 +212,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         connectionNotConfiguredProperlyDialog.show();
     }
 
-    class RestartOrderItemSelectedListener implements AdapterView.OnItemSelectedListener {
-
-        @Override
-        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-            resetListViewPosition();
-            restartLoader();
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> adapterView) {
-
-        }
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        ProviderFacade.QueryBuilder<Vm> query = provider.query(Vm.class);
-        if (selectedClusterId != null) {
-            query.where(CLUSTER_ID, selectedClusterId);
-        }
-
-        String searchNameString = searchText.getText().toString();
-        if (!"".equals(searchNameString)) {
-            query.whereLike(NAME, "%" + searchNameString + "%");
-        }
-
-        String orderBy = (String) orderBySpinner.getSelectedItem();
-        if ("".equals(orderBy)) {
-            orderBy = NAME;
-        }
-
-        SortOrder order = SortOrder.from((String) orderSpinner.getSelectedItem());
-
-        return query.orderBy(orderBy, order).limit(page * EVENTS_PER_PAGE).asLoader();
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader,Cursor cursor) {
-        if(vmListAdapter!=null && cursor!=null) {
-            vmListAdapter.swapCursor(cursor); //swap the new cursor in.
-        }
-        else {
-            Log.v(TAG, "OnLoadFinished: vmListAdapter is null");
-        }
-    }
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        if(vmListAdapter!=null) {
-            vmListAdapter.swapCursor(null);
-        }
-        else {
-            Log.v(TAG, "OnLoadFinished: vmListAdapter is null");
-        }
-    }
-
-    public void loadMoreData(int page) {
-        this.page = page;
-        restartLoader();
-    }
-
-    private void restartLoader() {
-        getLoaderManager().restartLoader(0, null, this);
-    }
-
-    @Override
     @OptionsItem(R.id.action_refresh)
     @Background
     public void onRefresh() {
@@ -345,14 +233,6 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         startActivity(intent);
     }
 
-    @ItemClick
-    void vmListViewItemClicked(Cursor cursor) {
-        Intent intent = new Intent(this, VmDetailActivity_.class);
-        Vm vm = EntityMapper.VM_MAPPER.fromCursor(cursor);
-        intent.setData(vm.getUri());
-        startActivity(intent);
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (clusterDrawer.getDrawerToggle().onOptionsItemSelected(item)) {
@@ -368,25 +248,19 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         setTitle(cluster.getId() == null ? getString(R.string.all_clusters) : String.format(CLUSTER_SCOPE, cluster.getName()));
         selectedClusterId = cluster.getId();
         selectedClusterName = cluster.getName();
-        resetListViewPosition();
 
-        eventList.updateFilterClusterIdTo(selectedClusterId);
+
+        if (eventList != null) {
+            eventList.updateFilterClusterIdTo(selectedClusterId);
+        }
+
+        if (vmsList != null) {
+            vmsList.updateFilterClusterIdTo(selectedClusterId);
+        }
+
         drawerLayout.closeDrawers();
-        restartLoader();
     }
 
-    private void resetListViewPosition() {
-        page = 1;
-        listView.setSelectionAfterHeaderView();
-        endlessScrollListener.resetListener();
-    }
-
-    @UiThread
-    @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
-        vmsProgress.setVisibility(syncing ? View.VISIBLE : View.GONE);
-        swipeVmContainer.setRefreshing(syncing);
-    }
 
     @Receiver(actions = Broadcasts.NO_CONNECTION_SPEFICIED, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void noConnection(@Receiver.Extra(AccountManager.KEY_INTENT) Parcelable toOpen) {
@@ -396,5 +270,9 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @Receiver(actions = Broadcasts.CONNECTION_FAILURE, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void connectionFailure(@Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
         Toast.makeText(MainActivity.this, R.string.rest_req_failed + " " + reason, Toast.LENGTH_LONG).show();
+    }
+
+    enum CurrentlyShown {
+        VMS, EVENTS
     }
 }

@@ -17,6 +17,7 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
@@ -54,8 +55,12 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
 
     private SimpleCursorAdapter eventListAdapter;
 
-    private String filterClusterId;
-    private String filterVmId;
+    @InstanceState
+    String filterClusterId;
+
+    @InstanceState
+    String filterVmId;
+
     private int page = 1;
     private static final int EVENTS_PER_PAGE = 20;
     private static final String TAG = EventsFragment.class.getSimpleName();
@@ -98,10 +103,6 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         hideProgress();
     }
 
-    public String getFilterClusterId() {
-        return filterClusterId;
-    }
-
     public void updateFilterClusterIdTo(String filterClusterId) {
         this.filterClusterId = filterClusterId;
         page = 1;
@@ -110,16 +111,12 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         restartLoader();
     }
 
-    public String getFilterVmId() {
-        return filterVmId;
-    }
-
     public void setFilterVmId(String filterVmId) {
         this.filterVmId = filterVmId;
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+    public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
         final ProviderFacade.QueryBuilder<Event> query = provider.query(Event.class);
         if (filterClusterId != null) query.where(CLUSTER_ID, filterClusterId);
         if (filterVmId != null) query.where(VM_ID, filterVmId);
