@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -62,7 +63,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends Activity implements ClusterDrawerFragment.ClusterSelectedListener,LoaderManager.LoaderCallbacks<Cursor> {
+public class MainActivity extends Activity implements ClusterDrawerFragment.ClusterSelectedListener, LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private int page = 1;
@@ -125,6 +126,9 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @Bean
     MovirtAuthenticator authenticator;
 
+    @ViewById
+    SwipeRefreshLayout swipeVmContainer;
+
     private final EndlessScrollListener endlessScrollListener = new EndlessScrollListener() {
         @Override
         public void onLoadMore(int page, int totalItemsCount) {
@@ -137,7 +141,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         super.onResume();
 
         syncingChanged(SyncAdapter.inSync);
-        refresh();
+        onRefresh();
     }
 
     @Override
@@ -220,6 +224,8 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
         orderBySpinner.setOnItemSelectedListener(orderItemSelectedListener);
         orderSpinner.setOnItemSelectedListener(orderItemSelectedListener);
+
+        swipeVmContainer.setOnRefreshListener(this);
     }
 
     private void showDialogToOpenAccountSettings(String msg, final Intent intent) {
@@ -317,9 +323,10 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         getLoaderManager().restartLoader(0, null, this);
     }
 
+    @Override
     @OptionsItem(R.id.action_refresh)
     @Background
-    void refresh() {
+    public void onRefresh() {
         Log.d(TAG, "Refresh button clicked");
         syncUtils.triggerRefresh();
     }
@@ -378,6 +385,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
         vmsProgress.setVisibility(syncing ? View.VISIBLE : View.GONE);
+        swipeVmContainer.setRefreshing(syncing);
     }
 
     @Receiver(actions = Broadcasts.NO_CONNECTION_SPEFICIED, registerAt = Receiver.RegisterAt.OnResumeOnPause)

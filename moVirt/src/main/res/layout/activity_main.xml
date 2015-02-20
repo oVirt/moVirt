@@ -73,11 +73,16 @@
                 android:textAlignment="center"
                 android:textSize="20sp" />
 
-            <ListView
-                android:id="@+id/vmListView"
+            <android.support.v4.widget.SwipeRefreshLayout
+                android:id="@+id/swipeVmContainer"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                />
+                android:layout_height="match_parent">
+                <ListView
+                    android:id="@+id/vmListView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    />
+            </android.support.v4.widget.SwipeRefreshLayout>
 
             <fragment
                 android:id="@+id/eventList"
@@ -94,5 +99,5 @@
         android:name="org.ovirt.mobile.movirt.ui.ClusterDrawerFragment_"
         android:layout_width="@dimen/navigation_drawer_width"
         android:layout_height="match_parent"
-        android:layout_gravity="left" />
+        android:layout_gravity="start" />
 </android.support.v4.widget.DrawerLayout>
