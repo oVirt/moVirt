@@ -1,6 +1,8 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.os.Bundle;
 import android.os.RemoteException;
 import android.view.View;
 import android.widget.ListView;
@@ -10,18 +12,16 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.rest.Disks;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 
-/**
- * Created by sphoorti on 30/1/15.
- */
-@EActivity(R.layout.activity_disk_detail)
-public class DiskDetailActivity extends Activity {
-    private static final String TAG = DiskDetailActivity.class.getSimpleName();
+@EFragment(R.layout.fragment_disk_detail)
+public class DiskDetailFragment extends Fragment {
+    private static final String TAG = DiskDetailFragment.class.getSimpleName();
 
     @ViewById(R.id.diskListView)
     ListView listView;
@@ -34,10 +34,11 @@ public class DiskDetailActivity extends Activity {
 
     DiskListAdapter diskListAdapter;
 
-    public static final String FILTER_VM_ID = "vmId";
+    String vmId = "";
 
-    @AfterViews
-    void init() {
+    @Override
+    public void onResume() {
+        super.onResume();
         showProgressBar();
         getDiskDetails();
     }
@@ -54,14 +55,14 @@ public class DiskDetailActivity extends Activity {
 
     @UiThread
     void displayListView(Disks disks) {
-        diskListAdapter = new DiskListAdapter(DiskDetailActivity.this,0,disks);
+        diskListAdapter = new DiskListAdapter(getActivity(), 0, disks);
         listView.setAdapter(diskListAdapter);
         hideProgressBar();
     }
 
     @Background
     void getDiskDetails() {
-        oVirtClient.getDisks(getIntent().getStringExtra(FILTER_VM_ID), new OVirtClient.SimpleResponse<Disks>() {
+        oVirtClient.getDisks(vmId, new OVirtClient.SimpleResponse<Disks>() {
 
             @Override
             public void onResponse(Disks disks) throws RemoteException {
@@ -77,4 +78,10 @@ public class DiskDetailActivity extends Activity {
 
     }
 
+    public void setVmId(String vmId) {
+        this.vmId = vmId;
+        
+        showProgressBar();
+        getDiskDetails();
+    }
 }

@@ -40,7 +40,7 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends Activity implements ClusterDrawerFragment.ClusterSelectedListener {
+public class MainActivity extends Activity implements ClusterDrawerFragment.ClusterSelectedListener, TabChangedListener.HasCurrentlyShown {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -86,7 +86,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     String selectedClusterName;
 
     @InstanceState
-    CurrentlyShown currentlyShown = CurrentlyShown.VMS;
+    TabChangedListener.CurrentlyShown currentlyShown = TabChangedListener.CurrentlyShown.VMS;
 
     @Bean
     SyncUtils syncUtils;
@@ -127,54 +127,27 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         initTabs();
     }
 
-    class TabChangedListener implements ActionBar.TabListener {
-
-        private View view;
-        private CurrentlyShown shown;
-
-        TabChangedListener(View view, CurrentlyShown shown) {
-            this.view = view;
-            this.shown = shown;
-        }
-
-        @Override
-        public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
-            view.setVisibility(View.VISIBLE);
-            currentlyShown = shown;
-        }
-
-        @Override
-        public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
-            view.setVisibility(View.GONE);
-        }
-
-        @Override
-        public void onTabReselected(ActionBar.Tab tab, FragmentTransaction ft) {
-
-        }
-    }
-
     private void initTabs() {
-        vmsLayout.setVisibility(currentlyShown == CurrentlyShown.VMS ? View.VISIBLE : View.GONE);
-        eventsLayout.setVisibility(currentlyShown == CurrentlyShown.EVENTS ? View.VISIBLE : View.GONE);
+        vmsLayout.setVisibility(currentlyShown == TabChangedListener.CurrentlyShown.VMS ? View.VISIBLE : View.GONE);
+        eventsLayout.setVisibility(currentlyShown == TabChangedListener.CurrentlyShown.EVENTS ? View.VISIBLE : View.GONE);
 
-        CurrentlyShown tmpCurrentlyShown = currentlyShown;
+        TabChangedListener.CurrentlyShown tmpCurrentlyShown = currentlyShown;
 
         getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
         ActionBar.Tab vmsTab = getActionBar().newTab()
                 .setText("VMs")
-                .setTabListener(new TabChangedListener(vmsLayout, CurrentlyShown.VMS));
+                .setTabListener(new TabChangedListener(vmsLayout, TabChangedListener.CurrentlyShown.VMS, this));
 
         getActionBar().addTab(vmsTab);
 
         ActionBar.Tab eventsTab = getActionBar().newTab()
                 .setText("Events")
-                .setTabListener(new TabChangedListener(eventsLayout, CurrentlyShown.EVENTS));
+                .setTabListener(new TabChangedListener(eventsLayout, TabChangedListener.CurrentlyShown.EVENTS, this));
 
         getActionBar().addTab(eventsTab);
 
-        if (tmpCurrentlyShown == CurrentlyShown.EVENTS) {
+        if (tmpCurrentlyShown == TabChangedListener.CurrentlyShown.EVENTS) {
             eventsTab.select();
         } else {
             vmsTab.select();
@@ -272,7 +245,8 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         Toast.makeText(MainActivity.this, R.string.rest_req_failed + " " + reason, Toast.LENGTH_LONG).show();
     }
 
-    enum CurrentlyShown {
-        VMS, EVENTS
+    @Override
+    public void setCurrentlyShown(TabChangedListener.CurrentlyShown currentlyShown) {
+        this.currentlyShown = currentlyShown;
     }
 }
