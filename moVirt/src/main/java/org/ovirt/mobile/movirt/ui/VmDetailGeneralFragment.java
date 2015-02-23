@@ -48,18 +48,6 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
     private String vmId = null;
 
     @ViewById
-    Button runButton;
-
-    @ViewById
-    Button stopButton;
-
-    @ViewById
-    Button rebootButton;
-
-    @ViewById
-    Button consoleButton;
-
-    @ViewById
     TextView statusView;
 
     @ViewById
@@ -120,13 +108,11 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
 
     @UiThread
     void showProgressBar() {
-        consoleButton.setClickable(false);
         vncProgress.setVisibility(View.VISIBLE);
     }
 
     @UiThread
     void hideProgressBar() {
-        consoleButton.setClickable(true);
         vncProgress.setVisibility(View.GONE);
     }
 
@@ -148,15 +134,15 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
         cpuView.setText(String.format("%.2f%%", vm.getCpuUsage()));
         memView.setText(String.format("%.2f%%", vm.getMemoryUsage()));
 
-        updateCommandButtons(vm);
         loadAdditionalVmData(vm);
     }
 
-    private void updateCommandButtons(Vm vm) {
-        runButton.setClickable(Vm.Command.RUN.canExecute(vm.getStatus()));
-        stopButton.setClickable(Vm.Command.POWEROFF.canExecute(vm.getStatus()));
-        rebootButton.setClickable(Vm.Command.REBOOT.canExecute(vm.getStatus()));
-    }
+    // todo move to activity somehow
+//    private void updateCommandButtons(Vm vm) {
+//        runButton.setClickable(Vm.Command.RUN.canExecute(vm.getStatus()));
+//        stopButton.setClickable(Vm.Command.POWEROFF.canExecute(vm.getStatus()));
+//        rebootButton.setClickable(Vm.Command.REBOOT.canExecute(vm.getStatus()));
+//    }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
@@ -194,21 +180,22 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
             displayView.setText("N/A");
         }
 
-        updateCommandButtons(vm);
     }
 
-    private void updateCommandButtons(org.ovirt.mobile.movirt.rest.Vm vm) {
-        Vm.Status status = Vm.Status.valueOf(vm.status.state.toUpperCase());
-        runButton.setClickable(Vm.Command.RUN.canExecute(status));
-        stopButton.setClickable(Vm.Command.POWEROFF.canExecute(status));
-        rebootButton.setClickable(Vm.Command.REBOOT.canExecute(status));
-    }
+
+    // todo move to activity somehow
+//    private void updateCommandButtons(org.ovirt.mobile.movirt.rest.Vm vm) {
+//        Vm.Status status = Vm.Status.valueOf(vm.status.state.toUpperCase());
+//        runButton.setClickable(Vm.Command.RUN.canExecute(status));
+//        stopButton.setClickable(Vm.Command.POWEROFF.canExecute(status));
+//        rebootButton.setClickable(Vm.Command.REBOOT.canExecute(status));
+//    }
 
     @Background
     void loadAdditionalVmData(final Vm vm) {
         showProgressBar();
 
-        client.getVm(vm, new OVirtClient.SimpleResponse<ExtendedVm>() {
+        client.getVm(vmId, new OVirtClient.SimpleResponse<ExtendedVm>() {
             @Override
             public void onResponse(final ExtendedVm loadedVm) throws RemoteException {
                 client.getVmStatistics(vm, new OVirtClient.SimpleResponse<VmStatistics>() {
@@ -236,99 +223,5 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
         super.onPause();
     }
 
-    @Click(R.id.runButton)
-    @Background
-    void start() {
-        client.startVm(vm);
-    }
 
-    @Click(R.id.stopButton)
-    @Background
-    void stop() {
-        client.stopVm(vm);
-    }
-
-    @Click(R.id.rebootButton)
-    @Background
-    void reboot() {
-        client.rebootVm(vm);
-    }
-
-    @Click(R.id.consoleButton)
-    @Background
-    void openConsole() {
-        showProgressBar();
-
-        client.getVm(vm, new OVirtClient.SimpleResponse<ExtendedVm>() {
-            @Override
-            public void onResponse(final ExtendedVm freshVm) throws RemoteException {
-                showProgressBar();
-
-                client.getConsoleTicket(vm, new OVirtClient.SimpleResponse<ActionTicket>() {
-                    @Override
-                    public void onResponse(ActionTicket ticket) throws RemoteException {
-                        hideProgressBar();
-                        ExtendedVm.Display display = freshVm.display;
-                        try {
-                            Intent intent = new Intent(Intent.ACTION_VIEW)
-                                    .setType("application/vnd.vnc")
-                                    .setData(Uri.parse(makeConsoleUrl(display, ticket)));
-                            startActivity(intent);
-                        } catch (IllegalArgumentException e) {
-                            makeToast(e.getMessage());
-                        } catch (Exception e) {
-                            makeToast("Failed to open console client. Check if aSPICE/bVNC is installed.");
-                        }
-
-                    }
-                });
-            }
-
-            @Override
-            public void onError() {
-                super.onError();
-
-                hideProgressBar();
-            }
-        });
-    }
-
-    /**
-     * Returns URL for running console intent.
-     * @throws java.lang.IllegalArgumentException with description
-     *   if the URL can't be created from input.
-     */
-    private String makeConsoleUrl(ExtendedVm.Display display, ActionTicket ticket)
-            throws IllegalArgumentException
-    {
-        if (display == null) {
-            throw new IllegalArgumentException("Illegal parameters for creating console intent URL.");
-        }
-        if (!"vnc".equals(display.type) && !"spice".equals(display.type)) {
-            throw new IllegalArgumentException("Unknown console type: " + display.type);
-        }
-
-        String passwordPart = "";
-        if (ticket != null && ticket.ticket != null && ticket.ticket.value != null
-                && !ticket.ticket.value.isEmpty()) {
-            switch (display.type) {
-                case "vnc":
-                    passwordPart = "VncPassword";
-                    break;
-                case "spice":
-                    passwordPart = "SpicePassword";
-                    break;
-            }
-            passwordPart += "=" + ticket.ticket.value;
-        }
-
-        return display.type + "://" + display.address + ":" + display.port + "?" + passwordPart;
-    }
-
-
-
-    @UiThread
-    void makeToast(String msg) {
-        Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG).show();
-    }
 }

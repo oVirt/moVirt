@@ -17,33 +17,6 @@
             android:layout_height="wrap_content"
             style="@style/ButtonBar">
 
-            <Button
-                android:id="@+id/runButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/run"/>
-
-            <Button
-                android:id="@+id/stopButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/stop"
-                android:layout_toRightOf="@+id/runButton"/>
-
-            <Button
-                android:id="@+id/rebootButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/reboot"
-                android:layout_toRightOf="@id/stopButton"/>
-
-            <Button
-                android:id="@+id/consoleButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/console"
-                android:layout_toRightOf="@id/rebootButton"/>
-
             <ProgressBar
                 android:id="@+id/vncProgress"
                 style="@style/vncProgress"

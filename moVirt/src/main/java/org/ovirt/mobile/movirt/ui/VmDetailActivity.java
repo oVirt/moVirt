@@ -70,6 +70,12 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
     @FragmentById
     EventsFragment eventsList;
 
+    @Bean
+    OVirtClient client;
+
+    @ViewById
+    ProgressBar progress;
+
     @AfterViews
     void init() {
         Uri vmUri = getIntent().getData();
@@ -79,6 +85,7 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
         eventsList.setFilterVmId(vmId);
 
         initTabs();
+        hideProgressBar();
     }
 
     private void initTabs() {
@@ -130,8 +137,112 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
         startActivity(intent);
     }
 
+    @OptionsItem(R.id.action_run)
+    @Background
+    void start() {
+        client.startVm(vmId);
+    }
+
+    @OptionsItem(R.id.action_stop)
+    @Background
+    void stop() {
+        client.stopVm(vmId);
+    }
+
+    @OptionsItem(R.id.action_reboot)
+    @Background
+    void reboot() {
+        client.rebootVm(vmId);
+    }
+
     @Override
     public void setCurrentlyShown(TabChangedListener.CurrentlyShown currentlyShown) {
         this.currentlyShown = currentlyShown;
+    }
+
+    @OptionsItem(R.id.action_console)
+    @Background
+    void openConsole() {
+        showProgressBar();
+
+        client.getVm(vmId, new OVirtClient.SimpleResponse<ExtendedVm>() {
+            @Override
+            public void onResponse(final ExtendedVm freshVm) throws RemoteException {
+                showProgressBar();
+
+                client.getConsoleTicket(vmId, new OVirtClient.SimpleResponse<ActionTicket>() {
+                    @Override
+                    public void onResponse(ActionTicket ticket) throws RemoteException {
+                        hideProgressBar();
+                        ExtendedVm.Display display = freshVm.display;
+                        try {
+                            Intent intent = new Intent(Intent.ACTION_VIEW)
+                                    .setType("application/vnd.vnc")
+                                    .setData(Uri.parse(makeConsoleUrl(display, ticket)));
+                            startActivity(intent);
+                        } catch (IllegalArgumentException e) {
+                            makeToast(e.getMessage());
+                        } catch (Exception e) {
+                            makeToast("Failed to open console client. Check if aSPICE/bVNC is installed.");
+                        }
+
+                    }
+                });
+            }
+
+            @Override
+            public void onError() {
+                super.onError();
+
+                hideProgressBar();
+            }
+        });
+    }
+
+    /**
+     * Returns URL for running console intent.
+     * @throws java.lang.IllegalArgumentException with description
+     *   if the URL can't be created from input.
+     */
+    private String makeConsoleUrl(ExtendedVm.Display display, ActionTicket ticket)
+            throws IllegalArgumentException
+    {
+        if (display == null) {
+            throw new IllegalArgumentException("Illegal parameters for creating console intent URL.");
+        }
+        if (!"vnc".equals(display.type) && !"spice".equals(display.type)) {
+            throw new IllegalArgumentException("Unknown console type: " + display.type);
+        }
+
+        String passwordPart = "";
+        if (ticket != null && ticket.ticket != null && ticket.ticket.value != null
+                && !ticket.ticket.value.isEmpty()) {
+            switch (display.type) {
+                case "vnc":
+                    passwordPart = "VncPassword";
+                    break;
+                case "spice":
+                    passwordPart = "SpicePassword";
+                    break;
+            }
+            passwordPart += "=" + ticket.ticket.value;
+        }
+
+        return display.type + "://" + display.address + ":" + display.port + "?" + passwordPart;
+    }
+
+    @UiThread
+    void makeToast(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+    }
+
+    @UiThread
+    void showProgressBar() {
+        progress.setVisibility(View.VISIBLE);
+    }
+
+    @UiThread
+    void hideProgressBar() {
+        progress.setVisibility(View.GONE);
     }
 }

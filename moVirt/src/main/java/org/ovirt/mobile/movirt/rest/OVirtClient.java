@@ -78,51 +78,51 @@ public class OVirtClient {
     @StringRes(R.string.rest_request_failed)
     String errorMsg;
 
-    public void startVm(final Vm vm) {
+    public void startVm(final String vmId) {
         fireRestRequest(new Request<Object>() {
             @Override
             public Object fire() {
-                restClient.startVm(new Action(), vm.getId());
+                restClient.startVm(new Action(), vmId);
                 return null;
             }
         }, null);
     }
 
-    public void stopVm(final Vm vm) {
+    public void stopVm(final String vmId) {
         fireRestRequest(new Request<Object>() {
             @Override
             public Object fire() {
-                restClient.stopVm(new Action(), vm.getId());
+                restClient.stopVm(new Action(), vmId);
                 return null;
             }
         }, null);
 
     }
 
-    public void rebootVm(final Vm vm) {
+    public void rebootVm(final String vmId) {
         fireRestRequest(new Request<Object>() {
             @Override
             public Object fire() {
-                restClient.rebootVm(new Action(), vm.getId());
+                restClient.rebootVm(new Action(), vmId);
                 return null;
             }
         }, null);
     }
 
-    public void getVm(final Vm vm, Response<ExtendedVm> response) {
+    public void getVm(final String vmId, Response<ExtendedVm> response) {
         fireRestRequest(new Request<ExtendedVm>() {
             @Override
             public ExtendedVm fire() {
-                return restClient.getVm(vm.getId());
+                return restClient.getVm(vmId);
             }
         }, response);
     }
 
-    public void getConsoleTicket(final Vm vm, Response<ActionTicket> response) {
+    public void getConsoleTicket(final String vmId, Response<ActionTicket> response) {
         fireRestRequest(new Request<ActionTicket>() {
             @Override
             public ActionTicket fire() {
-                return restClient.getConsoleTicket(new Action(), vm.getId());
+                return restClient.getConsoleTicket(new Action(), vmId);
             }
         }, response);
     }

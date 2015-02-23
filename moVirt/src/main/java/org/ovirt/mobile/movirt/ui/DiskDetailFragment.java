@@ -80,7 +80,7 @@ public class DiskDetailFragment extends Fragment {
 
     public void setVmId(String vmId) {
         this.vmId = vmId;
-        
+
         showProgressBar();
         getDiskDetails();
     }
