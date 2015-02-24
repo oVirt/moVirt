@@ -11,19 +11,6 @@
         android:layout_height="wrap_content"
         style="@style/ButtonBar">
 
-        <Button
-            android:id="@+id/downloadEvents"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/downloadEvents"/>
-
-        <Button
-            android:id="@+id/clearDb"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/clearEvents"
-            android:layout_toRightOf="@+id/downloadEvents"/>
-
         <ProgressBar
             android:id="@+id/eventsProgress"
             style="@style/eventsProgress"
@@ -34,10 +21,15 @@
 
     </RelativeLayout>
 
-    <ListView
-        android:id="@android:id/list"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeEventsContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        style="@style/EventsStyle"/>
+        android:layout_height="match_parent">
+        <ListView
+            android:id="@android:id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            style="@style/EventsStyle"/>
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </FrameLayout>

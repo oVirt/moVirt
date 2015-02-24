@@ -168,7 +168,6 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
         client.getVm(vmId, new OVirtClient.SimpleResponse<ExtendedVm>() {
             @Override
             public void onResponse(final ExtendedVm freshVm) throws RemoteException {
-                showProgressBar();
 
                 client.getConsoleTicket(vmId, new OVirtClient.SimpleResponse<ActionTicket>() {
                     @Override
@@ -186,6 +185,13 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
                             makeToast("Failed to open console client. Check if aSPICE/bVNC is installed.");
                         }
 
+                    }
+
+                    @Override
+                    public void onError() {
+                        super.onError();
+
+                        hideProgressBar();
                     }
                 });
             }

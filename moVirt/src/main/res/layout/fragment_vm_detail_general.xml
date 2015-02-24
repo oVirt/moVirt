@@ -19,127 +19,112 @@
 
             <ProgressBar
                 android:id="@+id/vncProgress"
-                style="@style/vncProgress"
+                style="@style/commonProgressStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
             </ProgressBar>
 
         </RelativeLayout>
 
-        <RelativeLayout
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipeGeneralContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="12dp">
+            android:layout_height="match_parent">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp">
 
-            <TextView
-                android:id="@+id/statusLabel"
-                style="@style/VmStatsLabel"
-                android:text="@string/statusLabel" />
+                <TextView
+                    android:id="@+id/statusLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/statusLabel" />
 
-            <TextView
-                android:id="@+id/statusView"
-                style="@style/VmStat"
-                android:layout_alignBaseline="@id/statusLabel" />
+                <TextView
+                    android:id="@+id/statusView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/statusLabel" />
 
-            <TextView
-                android:id="@+id/cpuLabel"
-                style="@style/VmStatsLabel"
-                android:layout_below="@id/statusLabel"
-                android:text="@string/cpu"/>
+                <TextView
+                    android:id="@+id/cpuLabel"
+                    style="@style/VmStatsLabel"
+                    android:layout_below="@id/statusLabel"
+                    android:text="@string/cpu"/>
 
-            <TextView
-                android:id="@+id/cpuView"
-                style="@style/VmStat"
-                android:layout_alignBaseline="@id/cpuLabel" />
+                <TextView
+                    android:id="@+id/cpuView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/cpuLabel" />
 
-            <TextView
-                android:id="@+id/memLabel"
-                style="@style/VmStatsLabel"
-                android:text="@string/memory"
-                android:layout_below="@id/cpuLabel"/>
+                <TextView
+                    android:id="@+id/memLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/memory"
+                    android:layout_below="@id/cpuLabel"/>
 
-            <TextView
-                android:id="@+id/memView"
-                style="@style/VmStat"
-                android:layout_alignBaseline="@id/memLabel" />
+                <TextView
+                    android:id="@+id/memView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/memLabel" />
 
-            <TextView
-                android:id="@+id/memoryLabel"
-                style="@style/VmStatsLabel"
-                android:text="@string/memoryMb"
-                android:layout_below="@id/memLabel"/>
+                <TextView
+                    android:id="@+id/memoryLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/memoryMb"
+                    android:layout_below="@id/memLabel"/>
 
-            <TextView
-                android:id="@+id/memoryView"
-                style="@style/VmStat"
-                android:layout_alignBaseline="@id/memoryLabel" />
+                <TextView
+                    android:id="@+id/memoryView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/memoryLabel" />
 
-            <TextView
-                android:id="@+id/socketLabel"
-                style="@style/VmStatsLabel"
-                android:text="@string/sockets"
-                android:layout_below="@id/memoryLabel"/>
+                <TextView
+                    android:id="@+id/socketLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/sockets"
+                    android:layout_below="@id/memoryLabel"/>
 
-            <TextView
-                android:id="@+id/socketView"
-                style="@style/VmStat"
-                android:layout_alignBaseline="@id/socketLabel" />
+                <TextView
+                    android:id="@+id/socketView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/socketLabel" />
 
-            <TextView
-                android:id="@+id/coreLabel"
-                style="@style/VmStatsLabel"
-                android:text="@string/cores"
-                android:layout_below="@id/socketLabel"/>
+                <TextView
+                    android:id="@+id/coreLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/cores"
+                    android:layout_below="@id/socketLabel"/>
 
-            <TextView
-                android:id="@+id/coreView"
-                style="@style/VmStat"
-                android:layout_alignBaseline="@id/coreLabel" />
+                <TextView
+                    android:id="@+id/coreView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/coreLabel" />
 
-            <TextView
-                android:id="@+id/osLabel"
-                style="@style/VmStatsLabel"
-                android:text="@string/os"
-                android:layout_below="@id/coreLabel"/>
+                <TextView
+                    android:id="@+id/osLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/os"
+                    android:layout_below="@id/coreLabel"/>
 
-            <TextView
-                android:id="@+id/osView"
-                style="@style/VmStat"
-                android:layout_alignBaseline="@id/osLabel" />
+                <TextView
+                    android:id="@+id/osView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/osLabel" />
 
-            <TextView
-                android:id="@+id/displayLabel"
-                style="@style/VmStatsLabel"
-                android:text="@string/display"
-                android:layout_below="@id/osLabel"/>
+                <TextView
+                    android:id="@+id/displayLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/display"
+                    android:layout_below="@id/osLabel"/>
 
-            <TextView
-                android:id="@+id/displayView"
-                style="@style/VmStat"
-                android:layout_alignBaseline="@id/displayLabel" />
+                <TextView
+                    android:id="@+id/displayView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/displayLabel" />
 
-        </RelativeLayout>
+            </RelativeLayout>
 
-        <!--<RelativeLayout-->
-            <!--android:orientation="horizontal"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--style="@style/ButtonBar">-->
-
-            <!--<Button-->
-                <!--android:id="@+id/eventsButton"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:text="@string/events"/>-->
-
-            <!--<Button-->
-                <!--android:id="@+id/disksButton"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:text="@string/disks"-->
-                <!--android:layout_toRightOf="@+id/eventsButton"/>-->
-
-        <!--</RelativeLayout>-->
+         </android.support.v4.widget.SwipeRefreshLayout>
 
     </LinearLayout>
 

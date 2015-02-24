@@ -24,6 +24,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:editable="true"
+                style="@style/searchText"
                 android:text="@string/searchInVms" />
 
             <EditText

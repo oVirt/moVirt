@@ -5,9 +5,9 @@ import android.app.LoaderManager;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
@@ -15,7 +15,6 @@ import android.widget.SimpleCursorAdapter;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.Receiver;
@@ -27,22 +26,17 @@ import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
+import org.ovirt.mobile.movirt.sync.SyncUtils;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.BaseEntity.ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.CLUSTER_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.VM_ID;
 
 @EFragment(R.layout.fragment_event_list)
-public class EventsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class EventsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
 
     @ViewById
     ListView list;
-
-    @ViewById
-    Button downloadEvents;
-
-    @ViewById
-    Button clearDb;
 
     @ViewById
     ProgressBar eventsProgress;
@@ -61,6 +55,12 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
     @InstanceState
     String filterVmId;
 
+    @Bean
+    SyncUtils syncUtils;
+
+    @ViewById
+    SwipeRefreshLayout swipeEventsContainer;
+
     private int page = 1;
     private static final int EVENTS_PER_PAGE = 20;
     private static final String TAG = EventsFragment.class.getSimpleName();
@@ -74,6 +74,7 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
 
     @AfterViews
     void init() {
+        swipeEventsContainer.setOnRefreshListener(this);
 
         eventListAdapter = new SimpleCursorAdapter(getActivity(),
                                                    R.layout.event_list_item,
@@ -151,29 +152,13 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         getLoaderManager().restartLoader(0, null, this);
     }
 
-    @Click(R.id.downloadEvents)
-    @Background
-    void downloadEvents() {
-        eventsHandler.updateEvents(true);
-    }
-
-    @Click(R.id.clearDb)
-    @Background
-    void clearDb() {
-        eventsHandler.deleteEvents();
-    }
-
     @UiThread
     void showProgress() {
-        downloadEvents.setClickable(false);
-        clearDb.setClickable(false);
         eventsProgress.setVisibility(View.VISIBLE);
     }
 
     @UiThread
     void hideProgress() {
-        downloadEvents.setClickable(true);
-        clearDb.setClickable(true);
         eventsProgress.setVisibility(View.GONE);
     }
 
@@ -184,5 +169,12 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         } else {
             hideProgress();
         }
+    }
+
+    @Background
+    @Override
+    public void onRefresh() {
+//        eventsHandler.deleteEvents();
+        eventsHandler.updateEvents(true);
     }
 }

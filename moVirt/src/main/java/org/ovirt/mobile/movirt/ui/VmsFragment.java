@@ -58,7 +58,7 @@ public class VmsFragment extends Fragment implements LoaderManager.LoaderCallbac
     ProgressBar vmsProgress;
 
     @Bean
-    SyncUtils syncUtils;
+    SyncAdapter syncAdapter;
 
     @ViewById(R.id.vmListView)
     ListView listView;
@@ -120,7 +120,7 @@ public class VmsFragment extends Fragment implements LoaderManager.LoaderCallbac
         super.onResume();
 
         syncingChanged(SyncAdapter.inSync);
-        syncUtils.triggerRefresh();
+        performRefresh();
     }
 
     @Override
@@ -176,7 +176,7 @@ public class VmsFragment extends Fragment implements LoaderManager.LoaderCallbac
 
     private void resetListViewPosition() {
         page = 1;
-        listView.setSelectionAfterHeaderView();
+        listView.smoothScrollToPosition(0);
         endlessScrollListener.resetListener();
     }
 
@@ -186,11 +186,9 @@ public class VmsFragment extends Fragment implements LoaderManager.LoaderCallbac
         restartLoader();
     }
 
-    @Background
     @Override
     public void onRefresh() {
-        Log.d(TAG, "Refresh button clicked");
-        syncUtils.triggerRefresh();
+        performRefresh();
     }
 
     class RestartOrderItemSelectedListener implements AdapterView.OnItemSelectedListener {
@@ -265,5 +263,10 @@ public class VmsFragment extends Fragment implements LoaderManager.LoaderCallbac
     void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
         vmsProgress.setVisibility(syncing ? View.VISIBLE : View.GONE);
         swipeVmContainer.setRefreshing(syncing);
+    }
+
+    @Background
+    void performRefresh() {
+        syncAdapter.doPerformSync(false);
     }
 }

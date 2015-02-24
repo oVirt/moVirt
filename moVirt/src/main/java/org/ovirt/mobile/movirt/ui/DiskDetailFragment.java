@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -20,7 +21,7 @@ import org.ovirt.mobile.movirt.rest.Disks;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 
 @EFragment(R.layout.fragment_disk_detail)
-public class DiskDetailFragment extends Fragment {
+public class DiskDetailFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = DiskDetailFragment.class.getSimpleName();
 
     @ViewById(R.id.diskListView)
@@ -36,11 +37,19 @@ public class DiskDetailFragment extends Fragment {
 
     String vmId = "";
 
+    @ViewById
+    SwipeRefreshLayout swipeDisksContainer;
+
+    @AfterViews
+    void init() {
+        swipeDisksContainer.setOnRefreshListener(this);
+    }
+
     @Override
     public void onResume() {
         super.onResume();
         showProgressBar();
-        getDiskDetails();
+        loadDiskDetails();
     }
 
     @UiThread
@@ -61,7 +70,8 @@ public class DiskDetailFragment extends Fragment {
     }
 
     @Background
-    void getDiskDetails() {
+    void loadDiskDetails() {
+        showProgressBar();
         oVirtClient.getDisks(vmId, new OVirtClient.SimpleResponse<Disks>() {
 
             @Override
@@ -81,7 +91,11 @@ public class DiskDetailFragment extends Fragment {
     public void setVmId(String vmId) {
         this.vmId = vmId;
 
-        showProgressBar();
-        getDiskDetails();
+        loadDiskDetails();
+    }
+
+    @Override
+    public void onRefresh() {
+        loadDiskDetails();
     }
 }

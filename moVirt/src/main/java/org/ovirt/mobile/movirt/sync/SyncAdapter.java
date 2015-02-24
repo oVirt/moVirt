@@ -17,6 +17,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.androidannotations.annotations.App;
+import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
@@ -80,10 +81,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient providerClient, SyncResult syncResult) {
-        doPerformSync(account);
+        doPerformSync(true);
     }
 
-    private synchronized void doPerformSync(Account account) {
+    public synchronized void doPerformSync(boolean tryEvents) {
         if (inSync) {
             return;
         }
@@ -93,13 +94,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             return;
         }
 
-        Log.d(TAG, "Performing full sync for account[" + account.name + "]");
-
         sendSyncIntent(true);
         try {
             // split to two methods so at least the quick entities can be already shown / used until the slow ones get processed (better ux)
             updateQuickEntities();
-            eventsHandler.updateEvents(false);
+            if (tryEvents) {
+                eventsHandler.updateEvents(false);
+            }
         } catch (Exception e) {
             Log.e(TAG, "Error updating data", e);
             Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);

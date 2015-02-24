@@ -58,9 +58,14 @@
         <item name="android:layout_centerHorizontal">true</item>
     </style>
 
-    <style name="vncProgress">
+    <style name="commonProgressStyle">
         <item name="android:layout_marginTop">50sp</item>
         <item name="android:layout_centerHorizontal">true</item>
     </style>
+
+    <style name="searchText">
+        <item name="android:layout_marginTop">15sp</item>
+    </style>
+
 
 </resources>

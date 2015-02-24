@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -39,7 +40,7 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
 @EFragment(R.layout.fragment_vm_detail_general)
-public class VmDetailGeneralFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class VmDetailGeneralFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
 
     private static final String TAG = VmDetailGeneralFragment.class.getSimpleName();
 
@@ -87,12 +88,15 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
 
     Vm vm;
 
+    @ViewById
+    SwipeRefreshLayout swipeGeneralContainer;
+
     @AfterViews
     void initLoader() {
+        swipeGeneralContainer.setOnRefreshListener(this);
 
         hideProgressBar();
         Uri vmUri = getActivity().getIntent().getData();
-
 
         args = new Bundle();
         args.putParcelable(VM_URI, vmUri);
@@ -137,13 +141,6 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
         loadAdditionalVmData(vm);
     }
 
-    // todo move to activity somehow
-//    private void updateCommandButtons(Vm vm) {
-//        runButton.setClickable(Vm.Command.RUN.canExecute(vm.getStatus()));
-//        stopButton.setClickable(Vm.Command.POWEROFF.canExecute(vm.getStatus()));
-//        rebootButton.setClickable(Vm.Command.REBOOT.canExecute(vm.getStatus()));
-//    }
-
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         // do nothing
@@ -182,15 +179,6 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
 
     }
 
-
-    // todo move to activity somehow
-//    private void updateCommandButtons(org.ovirt.mobile.movirt.rest.Vm vm) {
-//        Vm.Status status = Vm.Status.valueOf(vm.status.state.toUpperCase());
-//        runButton.setClickable(Vm.Command.RUN.canExecute(status));
-//        stopButton.setClickable(Vm.Command.POWEROFF.canExecute(status));
-//        rebootButton.setClickable(Vm.Command.REBOOT.canExecute(status));
-//    }
-
     @Background
     void loadAdditionalVmData(final Vm vm) {
         showProgressBar();
@@ -224,4 +212,8 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
     }
 
 
+    @Override
+    public void onRefresh() {
+        loadAdditionalVmData(vm);
+    }
 }
