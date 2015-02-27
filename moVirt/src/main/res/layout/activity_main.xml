@@ -4,6 +4,7 @@
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/black"
     tools:context=".MainActivity">
 
     <RelativeLayout
@@ -35,13 +36,14 @@
                 android:layout_marginTop="10dp"
                 />
         </FrameLayout>
-        </RelativeLayout>
+    </RelativeLayout>
 
     <fragment
         android:id="@+id/clusterDrawer"
         android:name="org.ovirt.mobile.movirt.ui.ClusterDrawerFragment_"
         android:layout_width="@dimen/navigation_drawer_width"
         android:layout_height="match_parent"
+        android:background="@android:color/black"
         android:layout_gravity="start" />
 
 </android.support.v4.widget.DrawerLayout>

@@ -120,7 +120,6 @@ public class VmsFragment extends Fragment implements LoaderManager.LoaderCallbac
         super.onResume();
 
         syncingChanged(SyncAdapter.inSync);
-        performRefresh();
     }
 
     @Override

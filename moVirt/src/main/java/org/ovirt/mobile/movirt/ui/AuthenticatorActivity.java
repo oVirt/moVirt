@@ -23,12 +23,12 @@ import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
-import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.w3c.dom.Text;
+import org.ovirt.mobile.movirt.sync.EventsHandler;
+import org.ovirt.mobile.movirt.sync.SyncUtils;
 
 @EActivity(R.layout.authenticator_activity)
 public class AuthenticatorActivity extends AccountAuthenticatorActivity {
@@ -63,6 +63,12 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     @Bean
     MovirtAuthenticator authenticator;
 
+    @Bean
+    SyncUtils syncUtils;
+
+    @Bean
+    EventsHandler eventsHandler;
+
     @AfterViews
     void init() {
         txtEndpoint.setText(authenticator.getApiUrl());
@@ -90,6 +96,12 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
     @Background
     void finishLogin(String apiUrl, String name, String password, Boolean hasAdminPermissions, Boolean disableHttps, Boolean enforceHttpBasic) {
+        boolean endpointChanged = false;
+        if (!TextUtils.equals(apiUrl, authenticator.getApiUrl()) ||
+                !TextUtils.equals(name, authenticator.getUserName())) {
+            endpointChanged = true;
+        }
+
         accountManager.addAccountExplicitly(MovirtAuthenticator.MOVIRT_ACCOUNT, password, null);
         ContentResolver.setSyncAutomatically(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
 
@@ -112,6 +124,12 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                     return;
                 } else {
                     showToast("Login successful");
+                    if (endpointChanged) {
+                        // there is a different set of events and since we are counting only the increments, this ones are not needed anymore
+                        eventsHandler.deleteEvents();
+                    }
+
+                    syncUtils.triggerRefresh();
                 }
             } else {
                 return;

@@ -8,6 +8,9 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
@@ -33,11 +36,13 @@ import org.ovirt.mobile.movirt.model.trigger.TriggerResolverFactory;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.http.HttpAuthentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -53,6 +58,8 @@ public class OVirtClient {
     public static final String JSESSIONID = "JSESSIONID";
     public static final String FILTER = "Filter";
     public static final String PREFER = "Prefer";
+
+    ObjectMapper mapper = new ObjectMapper();
 
     @RestService
     OVirtRestClient restClient;
@@ -516,7 +523,23 @@ public class OVirtClient {
     }
 
     private void fireConnectionError(Exception e) {
-        fireConnectionError(String.format(errorMsg, e.getMessage()));
+        String msg = e.getMessage();
+        if (e instanceof HttpClientErrorException) {
+
+            String responseBody = ((HttpClientErrorException) e).getResponseBodyAsString();
+            if (!TextUtils.isEmpty(responseBody)) {
+
+                try {
+                    ErrorBody errorBody = mapper.readValue(((HttpClientErrorException) e).getResponseBodyAsByteArray(), ErrorBody.class);
+                    msg = msg + " " + errorBody.fault.reason + " " + errorBody.fault.detail;
+                } catch (IOException e1) {
+                    msg = msg + ": " + responseBody;
+                }
+
+            }
+        }
+
+        fireConnectionError(String.format(errorMsg, msg));
     }
 
     private void fireConnectionError(String msg) {

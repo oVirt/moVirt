@@ -4,6 +4,7 @@
     <string name="app_name">moVirt</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="action_settings">Settings</string>
+    <string name="action_clear_events">Clear Local Events</string>
     <string name="prefs_poll_events">Poll Events</string>
     <string name="prefs_poll_events_summary">If the events are part of regular poll or not.</string>
     <string name="prefs_max_events_locally">Max events locally</string>

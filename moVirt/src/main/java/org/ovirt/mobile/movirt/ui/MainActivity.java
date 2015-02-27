@@ -3,8 +3,10 @@ package org.ovirt.mobile.movirt.ui;
 import android.accounts.AccountManager;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Parcelable;
 import android.support.v4.widget.DrawerLayout;
@@ -34,6 +36,7 @@ import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
@@ -93,6 +96,9 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
     @Bean
     MovirtAuthenticator authenticator;
+
+    @Bean
+    EventsHandler eventsHandler;
 
     @Override
     protected void onPause() {
@@ -195,6 +201,27 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     @OptionsItem(R.id.action_settings)
     void showSettings() {
         startActivity(new Intent(this, SettingsActivity_.class));
+    }
+
+    @OptionsItem(R.id.action_clear_events)
+    void clearEvents() {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        eventsHandler.deleteEvents();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure you want to delete all the events stored locally?").setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener).show();
     }
 
     @OptionsItem(R.id.action_edit_triggers)
