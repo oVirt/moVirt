@@ -78,7 +78,7 @@ public class ProviderFacade {
             if (value == null) {
                 selection.append(" IS NULL ");
             } else {
-                selection.append(relation.getVal() + "? ");
+                selection.append(relation.getVal()).append("? ");
                 selectionArgs.add(value);
             }
 

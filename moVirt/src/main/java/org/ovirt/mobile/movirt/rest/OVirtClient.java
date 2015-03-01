@@ -26,25 +26,15 @@ import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
-import org.ovirt.mobile.movirt.model.VmStatistics;
-import org.ovirt.mobile.movirt.model.condition.Condition;
-import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
-import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
-import org.ovirt.mobile.movirt.model.trigger.Trigger;
-import org.ovirt.mobile.movirt.model.trigger.TriggerResolver;
 import org.ovirt.mobile.movirt.model.trigger.TriggerResolverFactory;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
-import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
-import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.http.HttpAuthentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,9 +42,6 @@ import java.util.List;
 public class OVirtClient {
     private static final String TAG = OVirtClient.class.getSimpleName();
 
-    private static final String CPU_PERCENTAGE_STAT = "cpu.current.total";
-    private static final String TOTAL_MEMORY_STAT = "memory.installed";
-    private static final String USED_MEMORY_STAT = "memory.used";
     public static final String JSESSIONID = "JSESSIONID";
     public static final String FILTER = "Filter";
     public static final String PREFER = "Prefer";
@@ -165,86 +152,10 @@ public class OVirtClient {
                 if (loadedVms == null) {
                     return new ArrayList<>();
                 }
-                List<Vm> vms = mapRestWrappers(loadedVms.vm, null);
-                updateVmsStatistics(vms);
 
-                return vms;
+                return mapRestWrappers(loadedVms.vm, null);
             }
         }, response);
-    }
-
-    private void updateVmsStatistics(List<Vm> vms) {
-        TriggerResolver<Vm> resolver = triggerResolverFactory.getResolverForEntity(Vm.class);
-
-        for (Vm vm : vms) {
-            updateVmStatistics(vm, resolver);
-        }
-    }
-
-    public void getVmStatistics(final Vm vm, Response<VmStatistics> response) {
-        fireRestRequest(new Request<VmStatistics>() {
-            @Override
-            public VmStatistics fire() {
-                VmStatistics res = new VmStatistics();
-                final List<Statistic> statistics = restClient.getVmStatistics(vm.getId()).statistic;
-
-                if (statistics != null) {
-                    BigDecimal cpu = getStatisticValueByName(CPU_PERCENTAGE_STAT, statistics);
-                    BigDecimal totalMemory = getStatisticValueByName(TOTAL_MEMORY_STAT, statistics);
-                    BigDecimal usedMemory = getStatisticValueByName(USED_MEMORY_STAT, statistics);
-
-                    res.setCpuUsage(cpu.doubleValue());
-                    if (BigDecimal.ZERO.equals(totalMemory)) {
-                        res.setMemoryUsage(0);
-                    } else {
-                        res.setMemoryUsage(100 * usedMemory.divide(totalMemory, 3, RoundingMode.HALF_UP).doubleValue());
-                    }
-                    return res;
-                }
-
-                return null;
-            }
-        }, response);
-
-    }
-
-    private void updateVmStatistics(final Vm vm, TriggerResolver<Vm> resolver) {
-        List<Trigger<Vm>> triggersForEntity = resolver.getTriggersForEntity(vm);
-        if (triggersForEntity.isEmpty()) {
-            return;
-        }
-
-        boolean needsUpdate = false;
-        for (Trigger<Vm> trigger : triggersForEntity) {
-            Condition<Vm> condition = trigger.getCondition();
-            if (condition instanceof CpuThresholdCondition || condition instanceof MemoryThresholdCondition) {
-                needsUpdate = true;
-                break;
-            }
-        }
-
-        if (!needsUpdate) {
-            return;
-        }
-
-        getVmStatistics(vm, new SimpleResponse<VmStatistics>() {
-            @Override
-            public void onResponse(VmStatistics statistics) throws RemoteException {
-                if (statistics != null) {
-                    vm.setCpuUsage(statistics.getCpuUsage());
-                    vm.setMemoryUsage(statistics.getMemoryUsage());
-                }
-            }
-        });
-    }
-
-    private BigDecimal getStatisticValueByName(String name, List<Statistic> statistics) {
-        for (Statistic statistic : statistics) {
-            if (name.equals(statistic.name)) {
-                return new BigDecimal(statistic.values.value.get(0).datum);
-            }
-        }
-        return BigDecimal.ZERO;
     }
 
     public void getClusters(Response<List<Cluster>> response) {

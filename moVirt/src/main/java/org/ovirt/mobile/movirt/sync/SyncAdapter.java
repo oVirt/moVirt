@@ -70,8 +70,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static volatile boolean inSync = false;
 
-    public static final int DEFAULT_MAX_EVENTS_STORED = 5000;
-
     int notificationCount;
     ProviderFacade.BatchBuilder batch;
 

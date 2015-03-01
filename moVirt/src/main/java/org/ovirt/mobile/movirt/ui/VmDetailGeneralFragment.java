@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.ui;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
-import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -11,33 +10,22 @@ import android.os.RemoteException;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.OptionsItem;
-import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
-import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.model.VmStatistics;
-import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.ActionTicket;
 import org.ovirt.mobile.movirt.rest.ExtendedVm;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
-import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
 @EFragment(R.layout.fragment_vm_detail_general)
 public class VmDetailGeneralFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
@@ -138,7 +126,7 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
         cpuView.setText(String.format("%.2f%%", vm.getCpuUsage()));
         memView.setText(String.format("%.2f%%", vm.getMemoryUsage()));
 
-        loadAdditionalVmData(vm);
+        loadAdditionalVmData();
     }
 
     @Override
@@ -147,13 +135,14 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
     }
 
     @UiThread
-    public void renderVm(ExtendedVm vm, VmStatistics statistics) {
+    public void renderVm(ExtendedVm vm) {
         Long memoryMB = 0L;
         boolean memoryExceptionFlag = false;
         getActivity().setTitle(String.format(VM_DETAILS, vm.name));
         statusView.setText(vm.status.state);
-        cpuView.setText(String.format("%.2f%%", statistics.getCpuUsage()));
-        memView.setText(String.format("%.2f%%", statistics.getMemoryUsage()));
+        Vm entity = vm.toEntity();
+        cpuView.setText(String.format("%.2f%%", entity.getCpuUsage()));
+        memView.setText(String.format("%.2f%%", entity.getMemoryUsage()));
         try {
             memoryMB = Long.parseLong(vm.memory);
         }
@@ -180,20 +169,15 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
     }
 
     @Background
-    void loadAdditionalVmData(final Vm vm) {
+    void loadAdditionalVmData() {
         showProgressBar();
 
         client.getVm(vmId, new OVirtClient.SimpleResponse<ExtendedVm>() {
             @Override
             public void onResponse(final ExtendedVm loadedVm) throws RemoteException {
-                client.getVmStatistics(vm, new OVirtClient.SimpleResponse<VmStatistics>() {
-                    @Override
-                    public void onResponse(VmStatistics vmStatistics) throws RemoteException {
-                        hideProgressBar();
+                hideProgressBar();
 
-                        renderVm(loadedVm, vmStatistics);
-                    }
-                });
+                renderVm(loadedVm);
             }
 
             @Override
@@ -214,6 +198,6 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
 
     @Override
     public void onRefresh() {
-        loadAdditionalVmData(vm);
+        loadAdditionalVmData();
     }
 }

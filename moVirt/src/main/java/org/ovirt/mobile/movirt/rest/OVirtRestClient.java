@@ -9,18 +9,16 @@ import org.androidannotations.annotations.rest.RequiresHeader;
 import org.androidannotations.annotations.rest.Rest;
 import org.androidannotations.annotations.rest.SetsCookie;
 import org.androidannotations.api.rest.MediaType;
-import org.androidannotations.api.rest.RestClientErrorHandling;
 import org.androidannotations.api.rest.RestClientHeaders;
 import org.androidannotations.api.rest.RestClientRootUrl;
 import org.androidannotations.api.rest.RestClientSupport;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 @Rest(converters = MappingJackson2HttpMessageConverter.class)
-@Accept(MediaType.APPLICATION_JSON)
+@Accept(MediaType.APPLICATION_JSON + "; detail=statistics")
 @RequiresHeader({"Filter", "Accept-Encoding", "Session-TTL", "Prefer"})
-@SetsCookie({"JSESSIONID"})
-@RequiresCookie({"JSESSIONID"})
+@SetsCookie("JSESSIONID")
+@RequiresCookie("JSESSIONID")
 @RequiresAuthentication
 public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, RestClientSupport {
 
