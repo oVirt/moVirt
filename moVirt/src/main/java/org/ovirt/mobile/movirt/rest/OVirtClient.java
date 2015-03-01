@@ -29,6 +29,7 @@ import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.trigger.TriggerResolverFactory;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
+import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.http.HttpAuthentication;
 import org.springframework.http.HttpStatus;

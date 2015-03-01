@@ -31,7 +31,7 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
-public class VmDetailActivity extends Activity implements TabChangedListener.HasCurrentlyShown {
+public class VmDetailActivity extends Activity implements TabChangedListener.HasCurrentlyShown, HasProgressBar {
 
     private static final String TAG = VmDetailActivity.class.getSimpleName();
 
@@ -148,17 +148,12 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
     @OptionsItem(R.id.action_console)
     @Background
     void openConsole() {
-        client.getVm(vmId, new OVirtClient.SimpleResponse<ExtendedVm>() {
-
-            @Override
-            public void before() {
-                showProgressBar();
-            }
+        client.getVm(vmId, new ProgressBarResponse<ExtendedVm>(this) {
 
             @Override
             public void onResponse(final ExtendedVm freshVm) throws RemoteException {
 
-                client.getConsoleTicket(vmId, new OVirtClient.SimpleResponse<ActionTicket>() {
+                client.getConsoleTicket(vmId, new ProgressBarResponse<ActionTicket>(VmDetailActivity.this) {
                     @Override
                     public void onResponse(ActionTicket ticket) throws RemoteException {
                         ExtendedVm.Display display = freshVm.display;
@@ -172,19 +167,8 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
                         } catch (Exception e) {
                             makeToast("Failed to open console client. Check if aSPICE/bVNC is installed.");
                         }
-
-                    }
-
-                    @Override
-                    public void after() {
-                        hideProgressBar();
                     }
                 });
-            }
-
-            @Override
-            public void after() {
-                hideProgressBar();
             }
         });
     }
@@ -227,12 +211,14 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
     }
 
     @UiThread
-    void showProgressBar() {
+    @Override
+    public void showProgressBar() {
         progress.setVisibility(View.VISIBLE);
     }
 
     @UiThread
-    void hideProgressBar() {
+    @Override
+    public void hideProgressBar() {
         progress.setVisibility(View.GONE);
     }
 }

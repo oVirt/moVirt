@@ -28,7 +28,7 @@ import org.ovirt.mobile.movirt.rest.ExtendedVm;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 
 @EFragment(R.layout.fragment_vm_detail_general)
-public class VmDetailGeneralFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
+public class VmDetailGeneralFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener, HasProgressBar {
 
     private static final String TAG = VmDetailGeneralFragment.class.getSimpleName();
 
@@ -99,12 +99,14 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
     }
 
     @UiThread
-    void showProgressBar() {
+    @Background
+    public void showProgressBar() {
         vncProgress.setVisibility(View.VISIBLE);
     }
 
     @UiThread
-    void hideProgressBar() {
+    @Background
+    public void hideProgressBar() {
         vncProgress.setVisibility(View.GONE);
     }
 
@@ -170,21 +172,11 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
 
     @Background
     void loadAdditionalVmData() {
-        client.getVm(vmId, new OVirtClient.SimpleResponse<ExtendedVm>() {
-
-            @Override
-            public void before() {
-                showProgressBar();
-            }
+        client.getVm(vmId, new ProgressBarResponse<ExtendedVm>(this) {
 
             @Override
             public void onResponse(final ExtendedVm loadedVm) throws RemoteException {
                 renderVm(loadedVm);
-            }
-
-            @Override
-            public void after() {
-                hideProgressBar();
             }
         });
 
