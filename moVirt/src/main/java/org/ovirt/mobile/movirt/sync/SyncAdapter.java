@@ -121,15 +121,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         updateLocalEntities(remoteVms, Vm.class);
 
                         applyBatch();
-
-                        sendSyncIntent(false);
                     }
                 });
             }
 
             @Override
-            public void onError() {
-                super.onError();
+            public void after() {
 
                 sendSyncIntent(false);
             }

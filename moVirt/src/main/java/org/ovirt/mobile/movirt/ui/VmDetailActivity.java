@@ -148,16 +148,19 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
     @OptionsItem(R.id.action_console)
     @Background
     void openConsole() {
-        showProgressBar();
-
         client.getVm(vmId, new OVirtClient.SimpleResponse<ExtendedVm>() {
+
+            @Override
+            public void before() {
+                showProgressBar();
+            }
+
             @Override
             public void onResponse(final ExtendedVm freshVm) throws RemoteException {
 
                 client.getConsoleTicket(vmId, new OVirtClient.SimpleResponse<ActionTicket>() {
                     @Override
                     public void onResponse(ActionTicket ticket) throws RemoteException {
-                        hideProgressBar();
                         ExtendedVm.Display display = freshVm.display;
                         try {
                             Intent intent = new Intent(Intent.ACTION_VIEW)
@@ -173,18 +176,14 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
                     }
 
                     @Override
-                    public void onError() {
-                        super.onError();
-
+                    public void after() {
                         hideProgressBar();
                     }
                 });
             }
 
             @Override
-            public void onError() {
-                super.onError();
-
+            public void after() {
                 hideProgressBar();
             }
         });

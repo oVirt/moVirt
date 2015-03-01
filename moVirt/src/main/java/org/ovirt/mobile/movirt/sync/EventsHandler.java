@@ -74,7 +74,7 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
 
             if (configuredPoll || force) {
                 batch = provider.batch();
-                oVirtClient.getEventsSince(!deleteEventsBeforeInsert ? lastEventId : 0, new OVirtClient.Response<List<Event>>() {
+                oVirtClient.getEventsSince(!deleteEventsBeforeInsert ? lastEventId : 0, new OVirtClient.SimpleResponse<List<Event>>() {
 
                     @Override
                     public void before() {
@@ -88,12 +88,10 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
                         applyBatch();
 
                         deleteOldEvents();
-                        inSync = false;
-                        sendSyncIntent(false);
                     }
 
                     @Override
-                    public void onError() {
+                    public void after() {
                         inSync = false;
                         sendSyncIntent(false);
                     }

@@ -170,20 +170,20 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
 
     @Background
     void loadAdditionalVmData() {
-        showProgressBar();
-
         client.getVm(vmId, new OVirtClient.SimpleResponse<ExtendedVm>() {
+
+            @Override
+            public void before() {
+                showProgressBar();
+            }
+
             @Override
             public void onResponse(final ExtendedVm loadedVm) throws RemoteException {
-                hideProgressBar();
-
                 renderVm(loadedVm);
             }
 
             @Override
-            public void onError() {
-                super.onError();
-
+            public void after() {
                 hideProgressBar();
             }
         });

@@ -66,13 +66,16 @@ public class DiskDetailFragment extends Fragment implements SwipeRefreshLayout.O
     void displayListView(Disks disks) {
         diskListAdapter = new DiskListAdapter(getActivity(), 0, disks);
         listView.setAdapter(diskListAdapter);
-        hideProgressBar();
     }
 
     @Background
     void loadDiskDetails() {
-        showProgressBar();
         oVirtClient.getDisks(vmId, new OVirtClient.SimpleResponse<Disks>() {
+
+            @Override
+            public void before() {
+                showProgressBar();
+            }
 
             @Override
             public void onResponse(Disks disks) throws RemoteException {
@@ -80,8 +83,7 @@ public class DiskDetailFragment extends Fragment implements SwipeRefreshLayout.O
             }
 
             @Override
-            public void onError() {
-                super.onError();
+            public void after() {
                 hideProgressBar();
             }
         });

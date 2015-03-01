@@ -270,6 +270,9 @@ public class OVirtClient {
                 if (!success && response != null) {
                     response.onError();
                 }
+                if (response != null) {
+                    response.after();
+                }
             }
 
         }
@@ -290,6 +293,10 @@ public class OVirtClient {
 
         if (result != RestCallResult.SUCCESS && response != null) {
             response.onError();
+        }
+
+        if (response != null) {
+            response.after();
         }
     }
 
@@ -392,6 +399,8 @@ public class OVirtClient {
         void onResponse(T t) throws RemoteException;
 
         void onError();
+
+        void after();
     }
 
     public static abstract class SimpleResponse<T> implements Response<T> {
@@ -403,6 +412,11 @@ public class OVirtClient {
 
         @Override
         public void onError() {
+            // do nothing
+        }
+
+        @Override
+        public void after() {
             // do nothing
         }
     }
