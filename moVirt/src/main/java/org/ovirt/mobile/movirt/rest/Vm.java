@@ -19,6 +19,10 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     public Status status;
     public Cluster cluster;
     public Statistics statistics;
+    public String memory;
+    public Display display;
+    public Os os;
+    public Cpu cpu;
 
     // status complex object in rest
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -29,6 +33,21 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Cluster {
         public String id;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Display {
+        public String address, port, type;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Os {
+        public String type;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Cpu {
+        public Topology topology;
     }
 
     @Override
@@ -57,11 +76,34 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
             }
         }
 
+        try {
+            vm.setMemorySizeMb(Long.parseLong(memory) / (1024 * 1024));
+        } catch (Exception e) {
+            vm.setMemorySizeMb(-1);
+        }
+
+        vm.setSockets(Integer.parseInt(cpu.topology.sockets));
+        vm.setCoresPerSocket(Integer.parseInt(cpu.topology.cores));
+
+        vm.setOsType(os.type);
+
+        vm.setDisplayType(mapDisplay(display.type));
+        vm.setDisplayAddress(display.address);
+        try {
+            vm.setDisplayPort(Integer.parseInt(display.port));
+        } catch (Exception e) {
+            vm.setDisplayPort(-1);
+        }
+
         return vm;
     }
 
     private static org.ovirt.mobile.movirt.model.Vm.Status mapStatus(String status) {
         return org.ovirt.mobile.movirt.model.Vm.Status.valueOf(status.toUpperCase());
+    }
+
+    private static org.ovirt.mobile.movirt.model.Vm.Display mapDisplay(String display) {
+        return org.ovirt.mobile.movirt.model.Vm.Display.valueOf(display.toUpperCase());
     }
 
     private static BigDecimal getStatisticValueByName(String name, List<Statistic> statistics) {
@@ -72,5 +114,4 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
         }
         return BigDecimal.ZERO;
     }
-
 }

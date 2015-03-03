@@ -30,6 +30,13 @@ public interface OVirtContract {
         String CLUSTER_ID = "cluster_id";
         String CPU_USAGE = "cpu_usage";
         String MEMORY_USAGE = "mem_usage";
+        String MEMORY_SIZE_MB = "mem_size_mb";
+        String SOCKETS = "sockets";
+        String CORES_PER_SOCKET = "cores_per_socket";
+        String OS_TYPE = "os_type";
+        String DISPLAY_TYPE = "display_type";
+        String DISPLAY_ADDRESS = "display_address";
+        String DISPLAY_PORT = "display_port";
 
         String[] ALL_COLUMNS = {
                 ID,
@@ -37,7 +44,14 @@ public interface OVirtContract {
                 STATUS,
                 CLUSTER_ID,
                 CPU_USAGE,
-                MEMORY_USAGE
+                MEMORY_USAGE,
+                MEMORY_SIZE_MB,
+                SOCKETS,
+                CORES_PER_SOCKET,
+                OS_TYPE,
+                DISPLAY_TYPE,
+                DISPLAY_ADDRESS,
+                DISPLAY_PORT
         };
     }
 

@@ -24,8 +24,8 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.ExtendedVm;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.sync.SyncAdapter;
 
 @EFragment(R.layout.fragment_vm_detail_general)
 public class VmDetailGeneralFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener, HasProgressBar {
@@ -70,6 +70,9 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
 
     @Bean
     ProviderFacade provider;
+
+    @Bean
+    SyncAdapter syncAdapter;
 
     @StringRes(R.string.details_for_vm)
     String VM_DETAILS;
@@ -123,12 +126,8 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
             return;
         }
         vm = EntityMapper.VM_MAPPER.fromCursor(data);
-        getActivity().setTitle(String.format(VM_DETAILS, vm.getName()));
-        statusView.setText(vm.getStatus().toString());
-        cpuView.setText(String.format("%.2f%%", vm.getCpuUsage()));
-        memView.setText(String.format("%.2f%%", vm.getMemoryUsage()));
+        renderVm(vm);
 
-        loadAdditionalVmData();
     }
 
     @Override
@@ -137,32 +136,22 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
     }
 
     @UiThread
-    public void renderVm(ExtendedVm vm) {
-        Long memoryMB = 0L;
-        boolean memoryExceptionFlag = false;
-        getActivity().setTitle(String.format(VM_DETAILS, vm.name));
-        statusView.setText(vm.status.state);
-        Vm entity = vm.toEntity();
-        cpuView.setText(String.format("%.2f%%", entity.getCpuUsage()));
-        memView.setText(String.format("%.2f%%", entity.getMemoryUsage()));
-        try {
-            memoryMB = Long.parseLong(vm.memory);
-        }
-        catch (Exception e) {
-            memoryExceptionFlag = true;
-        }
-        if(!memoryExceptionFlag) {
-            memoryMB = memoryMB / (1024 * 1024);
-            memoryView.setText(memoryMB + " MB");
+    public void renderVm(Vm vm) {
+        getActivity().setTitle(String.format(VM_DETAILS, vm.getName()));
+        statusView.setText(vm.getStatus().toString().toLowerCase());
+        cpuView.setText(String.format("%.2f%%", vm.getCpuUsage()));
+        memView.setText(String.format("%.2f%%", vm.getMemoryUsage()));
+        if(vm.getMemorySizeMb() != -1) {
+            memoryView.setText(vm.getMemorySizeMb() + " MB");
         }
         else {
             memoryView.setText("N/A");
         }
-        socketView.setText(vm.cpu.topology.sockets);
-        coreView.setText(vm.cpu.topology.cores);
-        osView.setText(vm.os.type);
-        if (vm.display != null && vm.display.type != null) {
-            displayView.setText(vm.display.type);
+        socketView.setText(String.valueOf(vm.getSockets()));
+        coreView.setText(String.valueOf(vm.getCoresPerSocket()));
+        osView.setText(vm.getOsType());
+        if (vm.getDisplayType() != null) {
+            displayView.setText(vm.getDisplayType().toString());
         }
         else {
             displayView.setText("N/A");
@@ -170,26 +159,9 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
 
     }
 
+    @Override
     @Background
-    void loadAdditionalVmData() {
-        client.getVm(vmId, new ProgressBarResponse<ExtendedVm>(this) {
-
-            @Override
-            public void onResponse(final ExtendedVm loadedVm) throws RemoteException {
-                renderVm(loadedVm);
-            }
-        });
-
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
-
-
-    @Override
     public void onRefresh() {
-        loadAdditionalVmData();
+        syncAdapter.syncVm(vmId, new ProgressBarResponse<Vm>(this));
     }
 }

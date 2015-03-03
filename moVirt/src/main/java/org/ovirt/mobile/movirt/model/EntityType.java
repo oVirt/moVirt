@@ -9,4 +9,8 @@ public enum EntityType {
     EntityType(Class<? extends OVirtEntity> entityClass) {
         this.entityClass = entityClass;
     }
+
+    public Class<? extends OVirtEntity> getEntityClass() {
+        return entityClass;
+    }
 }

@@ -22,10 +22,11 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.rest.ActionTicket;
-import org.ovirt.mobile.movirt.rest.ExtendedVm;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
@@ -60,6 +61,9 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
 
     @ViewById
     ProgressBar progress;
+
+    @Bean
+    SyncAdapter syncAdapter;
 
     @AfterViews
     void init() {
@@ -126,18 +130,21 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
     @Background
     void start() {
         client.startVm(vmId);
+        syncVm();
     }
 
     @OptionsItem(R.id.action_stop)
     @Background
     void stop() {
         client.stopVm(vmId);
+        syncVm();
     }
 
     @OptionsItem(R.id.action_reboot)
     @Background
     void reboot() {
         client.rebootVm(vmId);
+        syncVm();
     }
 
     @Override
@@ -148,19 +155,18 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
     @OptionsItem(R.id.action_console)
     @Background
     void openConsole() {
-        client.getVm(vmId, new ProgressBarResponse<ExtendedVm>(this) {
+        syncAdapter.syncVm(vmId, new ProgressBarResponse<Vm>(this) {
 
             @Override
-            public void onResponse(final ExtendedVm freshVm) throws RemoteException {
+            public void onResponse(final Vm freshVm) throws RemoteException {
 
                 client.getConsoleTicket(vmId, new ProgressBarResponse<ActionTicket>(VmDetailActivity.this) {
                     @Override
                     public void onResponse(ActionTicket ticket) throws RemoteException {
-                        ExtendedVm.Display display = freshVm.display;
                         try {
                             Intent intent = new Intent(Intent.ACTION_VIEW)
                                     .setType("application/vnd.vnc")
-                                    .setData(Uri.parse(makeConsoleUrl(display, ticket)));
+                                    .setData(Uri.parse(makeConsoleUrl(freshVm, ticket)));
                             startActivity(intent);
                         } catch (IllegalArgumentException e) {
                             makeToast(e.getMessage());
@@ -173,36 +179,37 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
         });
     }
 
+    private void syncVm() {
+        syncAdapter.syncVm(vmId, new ProgressBarResponse<Vm>(this));
+    }
+
     /**
      * Returns URL for running console intent.
      * @throws java.lang.IllegalArgumentException with description
      *   if the URL can't be created from input.
      */
-    private String makeConsoleUrl(ExtendedVm.Display display, ActionTicket ticket)
-            throws IllegalArgumentException
-    {
-        if (display == null) {
-            throw new IllegalArgumentException("Illegal parameters for creating console intent URL.");
-        }
-        if (!"vnc".equals(display.type) && !"spice".equals(display.type)) {
-            throw new IllegalArgumentException("Unknown console type: " + display.type);
+    private String makeConsoleUrl(Vm vm, ActionTicket ticket)
+            throws IllegalArgumentException {
+
+        if (vm.getDisplayType() == null) {
+            throw new IllegalArgumentException("Vm's display type cannot be null");
         }
 
         String passwordPart = "";
         if (ticket != null && ticket.ticket != null && ticket.ticket.value != null
                 && !ticket.ticket.value.isEmpty()) {
-            switch (display.type) {
-                case "vnc":
+            switch (vm.getDisplayType()) {
+                case VNC:
                     passwordPart = "VncPassword";
                     break;
-                case "spice":
+                case SPICE:
                     passwordPart = "SpicePassword";
                     break;
             }
             passwordPart += "=" + ticket.ticket.value;
         }
 
-        return display.type + "://" + display.address + ":" + display.port + "?" + passwordPart;
+        return vm.getDisplayType().getProtocol() + "://" + vm.getDisplayAddress() + ":" + vm.getDisplayPort() + "?" + passwordPart;
     }
 
     @UiThread

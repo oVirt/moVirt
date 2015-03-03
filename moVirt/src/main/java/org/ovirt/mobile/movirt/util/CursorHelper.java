@@ -20,6 +20,10 @@ public class CursorHelper {
         return cursor.getInt(cursor.getColumnIndexOrThrow(columnName));
     }
 
+    public long getLong(String columnName) {
+        return cursor.getLong(cursor.getColumnIndexOrThrow(columnName));
+    }
+
     public double getDouble(String columnName) {
         return cursor.getDouble(cursor.getColumnIndexOrThrow(columnName));
     }

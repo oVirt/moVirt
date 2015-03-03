@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
+import org.ovirt.mobile.movirt.model.EntityType;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 
 @EBean
@@ -31,5 +32,4 @@ public class SyncUtils {
                 OVirtContract.CONTENT_AUTHORITY, // Content authority
                 b);                                      // Extras
     }
-
 }

@@ -16,14 +16,11 @@ import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import org.androidannotations.annotations.App;
-import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
 import org.ovirt.mobile.movirt.Broadcasts;
-import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
@@ -36,6 +33,7 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.VmDetailActivity_;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +69,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public static volatile boolean inSync = false;
 
     int notificationCount;
+
+    /** access to the {@code batch} field should be always under synchronized(this) */
     ProviderFacade.BatchBuilder batch;
 
     public SyncAdapter(Context context) {
@@ -107,8 +107,19 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
+    public synchronized void syncVm(final String id, final OVirtClient.Response<Vm> response) {
+        initBatch();
+        oVirtClient.getVm(id, new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<Vm>() {
+            @Override
+            public void onResponse(Vm vm) throws RemoteException {
+                updateLocalEntity(vm, Vm.class);
+                applyBatch();
+            }
+        }, response));
+    }
+
     private void updateQuickEntities() throws RemoteException {
-        batch = provider.batch();
+        initBatch();
         notificationCount = 0;
 
         oVirtClient.getVms(new OVirtClient.SimpleResponse<List<Vm>>() {
@@ -127,11 +138,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             @Override
             public void after() {
-
                 sendSyncIntent(false);
             }
         });
 
+    }
+
+    private void initBatch() {
+        batch = provider.batch();
     }
 
     private void applyBatch() {
@@ -158,20 +172,37 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 batch.delete(localEntity);
             } else { // existing entity, update stats if changed
                 entityMap.remove(localEntity.getId());
-                if (!localEntity.equals(remoteEntity)) {
-                    if (triggerResolver != null) {
-                        final List<Trigger<E>> triggers = triggerResolver.getTriggersForEntity(localEntity);
-                        processEntityTriggers(triggers, localEntity, remoteEntity);
-                    }
-                    Log.i(TAG, "Scheduling update for URI: " + localEntity.getUri());
-                    batch.update(remoteEntity);
-                }
+                checkEntityChanged(localEntity, remoteEntity, triggerResolver);
             }
         }
 
         for (E entity : entityMap.values()) {
             Log.i(TAG, "Scheduling insert for entity: id = " + entity.getId());
             batch.insert(entity);
+        }
+    }
+
+    private <E extends OVirtEntity> void updateLocalEntity(E remoteEntity, Class<E> clazz) {
+        final TriggerResolver<E> triggerResolver = triggerResolverFactory.getResolverForEntity(clazz);
+
+        Collection<E> localEntities = provider.query(clazz).id(remoteEntity.getId()).all();
+        if (localEntities.isEmpty()) {
+            Log.i(TAG, "Scheduling insert for entity: id = " + remoteEntity.getId());
+            batch.insert(remoteEntity);
+        } else {
+            E localEntity = localEntities.iterator().next();
+            checkEntityChanged(localEntity, remoteEntity, triggerResolver);
+        }
+    }
+
+    private <E extends OVirtEntity> void checkEntityChanged(E localEntity, E remoteEntity, TriggerResolver<E> triggerResolver) {
+        if (!localEntity.equals(remoteEntity)) {
+            if (triggerResolver != null) {
+                final List<Trigger<E>> triggers = triggerResolver.getTriggersForEntity(localEntity);
+                processEntityTriggers(triggers, localEntity, remoteEntity);
+            }
+            Log.i(TAG, "Scheduling update for URI: " + localEntity.getUri());
+            batch.update(remoteEntity);
         }
     }
 

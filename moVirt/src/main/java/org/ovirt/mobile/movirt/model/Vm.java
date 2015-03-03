@@ -51,6 +51,15 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
 
     }
 
+    public enum Display {
+        VNC,
+        SPICE;
+
+        public String getProtocol() {
+            return toString().toLowerCase();
+        }
+    }
+
     public enum Command {
         RUN(Status.DOWN, Status.PAUSED),
         SHUTDOWN(Status.UP),
@@ -84,6 +93,27 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
     @DatabaseField(columnName = MEMORY_USAGE)
     private double memoryUsage;
 
+    @DatabaseField(columnName = MEMORY_SIZE_MB)
+    private long memorySizeMb;
+
+    @DatabaseField(columnName = SOCKETS)
+    private int sockets;
+
+    @DatabaseField(columnName = CORES_PER_SOCKET)
+    private int coresPerSocket;
+
+    @DatabaseField(columnName = OS_TYPE)
+    private String osType;
+
+    @DatabaseField(columnName = DISPLAY_TYPE)
+    private Display displayType;
+
+    @DatabaseField(columnName = DISPLAY_ADDRESS)
+    private String displayAddress;
+
+    @DatabaseField(columnName = DISPLAY_PORT)
+    private int displayPort;
+
     public Status getStatus() {
         return status;
     }
@@ -116,17 +146,81 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         this.memoryUsage = memoryUsage;
     }
 
+    public long getMemorySizeMb() {
+        return memorySizeMb;
+    }
+
+    public void setMemorySizeMb(long memorySizeMb) {
+        this.memorySizeMb = memorySizeMb;
+    }
+
+    public int getSockets() {
+        return sockets;
+    }
+
+    public void setSockets(int sockets) {
+        this.sockets = sockets;
+    }
+
+    public int getCoresPerSocket() {
+        return coresPerSocket;
+    }
+
+    public void setCoresPerSocket(int coresPerSocket) {
+        this.coresPerSocket = coresPerSocket;
+    }
+
+    public String getOsType() {
+        return osType;
+    }
+
+    public void setOsType(String osType) {
+        this.osType = osType;
+    }
+
+    public Display getDisplayType() {
+        return displayType;
+    }
+
+    public void setDisplayType(Display displayType) {
+        this.displayType = displayType;
+    }
+
+    public String getDisplayAddress() {
+        return displayAddress;
+    }
+
+    public void setDisplayAddress(String displayAddress) {
+        this.displayAddress = displayAddress;
+    }
+
+    public int getDisplayPort() {
+        return displayPort;
+    }
+
+    public void setDisplayPort(int displayPort) {
+        this.displayPort = displayPort;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Vm)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
         Vm vm = (Vm) o;
 
+        if (coresPerSocket != vm.coresPerSocket) return false;
         if (Double.compare(vm.cpuUsage, cpuUsage) != 0) return false;
+        if (displayPort != vm.displayPort) return false;
+        if (memorySizeMb != vm.memorySizeMb) return false;
         if (Double.compare(vm.memoryUsage, memoryUsage) != 0) return false;
+        if (sockets != vm.sockets) return false;
         if (!clusterId.equals(vm.clusterId)) return false;
+        if (displayAddress != null ? !displayAddress.equals(vm.displayAddress) : vm.displayAddress != null)
+            return false;
+        if (displayType != vm.displayType) return false;
+        if (!osType.equals(vm.osType)) return false;
         if (status != vm.status) return false;
 
         return true;
@@ -142,6 +236,13 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(memoryUsage);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + (int) (memorySizeMb ^ (memorySizeMb >>> 32));
+        result = 31 * result + sockets;
+        result = 31 * result + coresPerSocket;
+        result = 31 * result + osType.hashCode();
+        result = 31 * result + (displayType != null ? displayType.hashCode() : 0);
+        result = 31 * result + (displayAddress != null ? displayAddress.hashCode() : 0);
+        result = 31 * result + displayPort;
         return result;
     }
 
@@ -152,6 +253,13 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         contentValues.put(CLUSTER_ID, getClusterId());
         contentValues.put(CPU_USAGE, getCpuUsage());
         contentValues.put(MEMORY_USAGE, getMemoryUsage());
+        contentValues.put(MEMORY_SIZE_MB, getMemorySizeMb());
+        contentValues.put(SOCKETS, getSockets());
+        contentValues.put(CORES_PER_SOCKET, getCoresPerSocket());
+        contentValues.put(OS_TYPE, getOsType());
+        contentValues.put(DISPLAY_TYPE, getDisplayType().toString());
+        contentValues.put(DISPLAY_ADDRESS, getDisplayAddress());
+        contentValues.put(DISPLAY_PORT, getDisplayPort());
         return contentValues;
     }
 
@@ -163,5 +271,12 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         setClusterId(cursorHelper.getString(CLUSTER_ID));
         setCpuUsage(cursorHelper.getDouble(CPU_USAGE));
         setMemoryUsage(cursorHelper.getDouble(MEMORY_USAGE));
+        setMemorySizeMb(cursorHelper.getLong(MEMORY_SIZE_MB));
+        setSockets(cursorHelper.getInt(SOCKETS));
+        setCoresPerSocket(cursorHelper.getInt(CORES_PER_SOCKET));
+        setOsType(cursorHelper.getString(OS_TYPE));
+        setDisplayType(cursorHelper.getEnum(DISPLAY_TYPE, Display.class));
+        setDisplayAddress(cursorHelper.getString(DISPLAY_ADDRESS));
+        setDisplayPort(cursorHelper.getInt(DISPLAY_PORT));
     }
 }

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -23,6 +24,7 @@ import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
+import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
@@ -74,9 +76,9 @@ public class OVirtClient {
     String errorMsg;
 
     public void startVm(final String vmId) {
-        fireRestRequest(new Request<Object>() {
+        fireRestRequest(new Request<Void>() {
             @Override
-            public Object fire() {
+            public Void fire() {
                 restClient.startVm(new Action(), vmId);
                 return null;
             }
@@ -84,9 +86,9 @@ public class OVirtClient {
     }
 
     public void stopVm(final String vmId) {
-        fireRestRequest(new Request<Object>() {
+        fireRestRequest(new Request<Void>() {
             @Override
-            public Object fire() {
+            public Void fire() {
                 restClient.stopVm(new Action(), vmId);
                 return null;
             }
@@ -95,20 +97,20 @@ public class OVirtClient {
     }
 
     public void rebootVm(final String vmId) {
-        fireRestRequest(new Request<Object>() {
+        fireRestRequest(new Request<Void>() {
             @Override
-            public Object fire() {
+            public Void fire() {
                 restClient.rebootVm(new Action(), vmId);
                 return null;
             }
         }, null);
     }
 
-    public void getVm(final String vmId, Response<ExtendedVm> response) {
-        fireRestRequest(new Request<ExtendedVm>() {
+    public void getVm(final String vmId, Response<Vm> response) {
+        fireRestRequest(new Request<Vm>() {
             @Override
-            public ExtendedVm fire() {
-                return restClient.getVm(vmId);
+            public Vm fire() {
+                return restClient.getVm(vmId).toEntity();
             }
         }, response);
     }
@@ -412,6 +414,11 @@ public class OVirtClient {
         }
 
         @Override
+        public void onResponse(T t) throws RemoteException {
+            // do nothing
+        }
+
+        @Override
         public void onError() {
             // do nothing
         }
@@ -419,6 +426,53 @@ public class OVirtClient {
         @Override
         public void after() {
             // do nothing
+        }
+    }
+
+    /** Composes multiple {@link Response} objects and invokes their callbacks in specified order */
+    public static class CompositeResponse<T> implements Response<T> {
+
+        private final Response<T>[] responses;
+
+        @SafeVarargs
+        public CompositeResponse(Response<T> ...responses) {
+            this.responses = responses;
+        }
+
+        @Override
+        public void before() {
+            for (Response<T> response : responses) {
+                if (response != null) {
+                    response.before();
+                }
+            }
+        }
+
+        @Override
+        public void onResponse(T t) throws RemoteException {
+            for (Response<T> response : responses) {
+                if (response != null) {
+                    response.onResponse(t);
+                }
+            }
+        }
+
+        @Override
+        public void onError() {
+            for (Response<T> response : responses) {
+                if (response != null) {
+                    response.onError();
+                }
+            }
+        }
+
+        @Override
+        public void after() {
+            for (Response<T> response : responses) {
+                if (response != null) {
+                    response.after();
+                }
+            }
         }
     }
 
