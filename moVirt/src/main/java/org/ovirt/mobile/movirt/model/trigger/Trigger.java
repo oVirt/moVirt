@@ -13,6 +13,7 @@ import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.ConditionPersister;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.HasDisplayResourceId;
 import org.ovirt.mobile.movirt.util.JsonUtils;
 
@@ -126,5 +127,15 @@ public class Trigger<E extends OVirtEntity> extends BaseEntity<Integer> implemen
         contentValues.put(TARGET_ID, targetId);
         contentValues.put(ENTITY_TYPE, entityType.toString());
         return contentValues;
+    }
+
+    @Override
+    public void initFromCursorHelper(CursorHelper cursorHelper) {
+        setId(cursorHelper.getInt(OVirtContract.Trigger.ID));
+        setNotificationType(cursorHelper.getEnum(OVirtContract.Trigger.NOTIFICATION, Trigger.NotificationType.class));
+        setCondition(cursorHelper.getJson(OVirtContract.Trigger.CONDITION, Condition.class));
+        setScope(cursorHelper.getEnum(OVirtContract.Trigger.SCOPE, Trigger.Scope.class));
+        setTargetId(cursorHelper.getString(OVirtContract.Trigger.TARGET_ID));
+        setEntityType(cursorHelper.getEnum(OVirtContract.Trigger.ENTITY_TYPE, EntityType.class));
     }
 }

@@ -7,6 +7,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.util.CursorHelper;
 
 import java.sql.Timestamp;
 
@@ -155,5 +156,18 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
         values.put(DATA_CENTER_ID, dataCenterId);
 
         return values;
+    }
+
+    @Override
+    protected void initFromCursorHelper(CursorHelper cursorHelper) {
+        setId(cursorHelper.getInt(ID));
+        setDescription(cursorHelper.getString(DESCRIPTION));
+        setSeverity(cursorHelper.getEnum(SEVERITY, Severity.class));
+        setTime(cursorHelper.getTimestamp(TIME));
+        setVmId(cursorHelper.getString(VM_ID));
+        setHostId(cursorHelper.getString(HOST_ID));
+        setClusterId(cursorHelper.getString(CLUSTER_ID));
+        setStorageDomainId(cursorHelper.getString(STORAGE_DOMAIN_ID));
+        setDataCenterId(cursorHelper.getString(DATA_CENTER_ID));
     }
 }

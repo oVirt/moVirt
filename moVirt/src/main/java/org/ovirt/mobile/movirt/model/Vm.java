@@ -8,6 +8,7 @@ import com.j256.ormlite.table.DatabaseTable;
 
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.util.CursorHelper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -152,5 +153,15 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         contentValues.put(CPU_USAGE, getCpuUsage());
         contentValues.put(MEMORY_USAGE, getMemoryUsage());
         return contentValues;
+    }
+
+    @Override
+    public void initFromCursorHelper(CursorHelper cursorHelper) {
+        super.initFromCursorHelper(cursorHelper);
+
+        setStatus(cursorHelper.getEnum(STATUS, Vm.Status.class));
+        setClusterId(cursorHelper.getString(CLUSTER_ID));
+        setCpuUsage(cursorHelper.getDouble(CPU_USAGE));
+        setMemoryUsage(cursorHelper.getDouble(MEMORY_USAGE));
     }
 }

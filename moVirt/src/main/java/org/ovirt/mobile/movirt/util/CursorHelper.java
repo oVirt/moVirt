@@ -2,6 +2,8 @@ package org.ovirt.mobile.movirt.util;
 
 import android.database.Cursor;
 
+import java.sql.Timestamp;
+
 public class CursorHelper {
 
     private final Cursor cursor;
@@ -28,5 +30,9 @@ public class CursorHelper {
 
     public <T> T getJson(String columnName, Class<T> clazz) {
         return JsonUtils.stringToObject(getString(columnName), clazz);
+    }
+
+    public Timestamp getTimestamp(String columnName) {
+        return Timestamp.valueOf(getString(columnName));
     }
 }

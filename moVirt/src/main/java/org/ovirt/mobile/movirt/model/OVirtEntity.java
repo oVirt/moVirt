@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import com.j256.ormlite.field.DatabaseField;
 
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 public abstract class OVirtEntity extends BaseEntity<String> implements OVirtContract.NamedEntity {
@@ -62,5 +63,11 @@ public abstract class OVirtEntity extends BaseEntity<String> implements OVirtCon
         values.put(ID, getId());
         values.put(NAME, getName());
         return values;
+    }
+
+    @Override
+    public void initFromCursorHelper(CursorHelper cursorHelper) {
+        setId(cursorHelper.getString(ID));
+        setName(cursorHelper.getString(NAME));
     }
 }

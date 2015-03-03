@@ -36,7 +36,7 @@ public class ProviderFacade {
         contentClient = context.getContentResolver().acquireContentProviderClient(OVirtContract.BASE_CONTENT_URI);
     }
 
-    public class QueryBuilder<E> {
+    public class QueryBuilder<E extends BaseEntity<?>> {
         private static final String URI_FIELD_NAME = "CONTENT_URI";
 
         private final Class<E> clazz;
