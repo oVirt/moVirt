@@ -79,3 +79,4 @@ Once the installations are done, you can proceed to import the project into the 
 * [oVirt](http://www.ovirt.org)
 * [moVirt wiki](http://www.ovirt.org/Project_moVirt)
 * [Learning Videos](https://github.com/sphoorti/moVirt/tree/master/videos)
+* [Tutorials](https://github.com/sphoorti/moVirt/tree/master/tutorials)
