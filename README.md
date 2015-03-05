@@ -22,9 +22,9 @@ After successfully installing the application, you need to set the connection de
 * **Disable Https**: enable or disable the checkbox   
 
 **Video tutorials at a glance:**  
-1. [Interaction between the moVirt and ovirt-engine](https://github.com/sphoorti/moVirt/blob/master/videos/liveSetup.webm)  
+1. [Interaction between the moVirt and ovirt-engine](https://github.com/matobet/moVirt/blob/master/videos/liveSetup.webm)  
    This video tutorial assumes you have an ovirt-engine running with a few VMS. It gives a demonstration of the basic    configuraton of VM using the ovirt-engine and filling up connection details in the android application.  
-2. [Working with Trigger](https://github.com/sphoorti/moVirt/blob/master/videos/trigger.webm)    
+2. [Working with Trigger](https://github.com/matobet/moVirt/blob/master/videos/trigger.webm)    
    This video tutroial shows the working of trigger with the android application. 'Blink when VM is down' is the     example condition that has been set and the status of the VM is changed accordingly to demonstrate this. 
 
 ####Remote console
@@ -64,10 +64,10 @@ To start contributing to moVirt, you will need to install the following things-
 Once the installations are done, you can proceed to import the project into the workspace.  
 1. File -> Open -> ~/" *path to moVirt project* "/moVirt/build.gradle  
 2. On the import dialog : Select local gradle distribution. Give the path to gradle version 2.2.1 .      
-   <img src = https://github.com/sphoorti/moVirt/blob/master/images/import_project.png align="center" height = "480px" width="640px">    
+   <img src = https://github.com/matobet/moVirt/blob/master/images/import_project.png align="center" height = "480px" width="640px">    
    After this, the prompt asks you to enter the path to the android sdk.  
    You can refer the following image for the complete SDK path.    
-   <img src = https://github.com/sphoorti/moVirt/blob/master/images/sdk_location.png align="center" height = "480px" width="640px">    
+   <img src = https://github.com/matobet/moVirt/blob/master/images/sdk_location.png align="center" height = "480px" width="640px">    
 3. Press OK. The build takes a while to complete. After it is done, the project is reloaded.  
 4. Run the android application on an emulator or a developer's device.  
     Run -> Run -> Select moVirt-moVirt   
@@ -78,5 +78,5 @@ Once the installations are done, you can proceed to import the project into the 
 **Resources:**    
 * [oVirt](http://www.ovirt.org)
 * [moVirt wiki](http://www.ovirt.org/Project_moVirt)
-* [Learning Videos](https://github.com/sphoorti/moVirt/tree/master/videos)
-* [Tutorials](https://github.com/sphoorti/moVirt/tree/master/tutorials)
+* [Learning Videos](https://github.com/matobet/moVirt/tree/master/videos)
+* [Tutorials](https://github.com/matobet/moVirt/tree/master/tutorials/README.md)
