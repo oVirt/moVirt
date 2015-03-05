@@ -1,4 +1,4 @@
-# Configuring certificate and settings in movirt.  
+# Configuring CA certificate in Android for moVirt  
 
 ##### Getting the ovirt-engine CA on Android:  
 1. Get the ovirt-engine CA certificate on your machine using the following command.  
