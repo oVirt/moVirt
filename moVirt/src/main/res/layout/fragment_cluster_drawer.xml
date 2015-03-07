@@ -2,13 +2,11 @@
     android:background="@android:color/black"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:alpha="1"
     android:layout_height="match_parent"
     tools:context="org.ovirt.mobile.movirt.ui.ClusterDrawerFragment">
 
     <ListView android:id="@android:id/list"
               android:background="@android:color/black"
-              android:alpha="1"
               android:layout_height="fill_parent"
               android:layout_width="fill_parent" />
 

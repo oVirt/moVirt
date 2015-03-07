@@ -1,14 +1,10 @@
 package org.ovirt.mobile.movirt.model.trigger;
 
-import android.database.Cursor;
-import android.os.RemoteException;
 import android.util.Log;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 
 import java.util.ArrayList;
@@ -16,7 +12,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.*;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.SCOPE;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.TARGET_ID;
 
 @EBean
 public class VmTriggerResolver implements TriggerResolver<Vm> {

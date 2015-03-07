@@ -5,18 +5,6 @@
     android:layout_height="match_parent"
     tools:context="org.ovirt.mobile.movirt.ui.DiskDetailFragment">
 
-    <RelativeLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <ProgressBar
-            android:id="@+id/diskProgress"
-            style="@style/commonProgressStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-        </ProgressBar>
-    </RelativeLayout>
-
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipeDisksContainer"
         android:layout_width="match_parent"

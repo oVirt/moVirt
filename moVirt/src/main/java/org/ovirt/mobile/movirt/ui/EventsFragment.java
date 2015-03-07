@@ -1,15 +1,11 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.app.Fragment;
-import android.app.LoaderManager;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
-import android.view.View;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 
 import org.androidannotations.annotations.AfterViews;
@@ -27,27 +23,23 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
+import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.BaseEntity.ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.CLUSTER_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.VM_ID;
 
 @EFragment(R.layout.fragment_event_list)
-public class EventsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
+public class EventsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     @ViewById
     ListView list;
-
-    @ViewById
-    ProgressBar eventsProgress;
 
     @Bean
     ProviderFacade provider;
 
     @Bean
     EventsHandler eventsHandler;
-
-    private SimpleCursorAdapter eventListAdapter;
 
     @InstanceState
     String filterClusterId;
@@ -72,19 +64,31 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         }
     };
 
+    private CursorAdapterLoader cursorAdapterLoader;
+
     @AfterViews
     void init() {
         swipeEventsContainer.setOnRefreshListener(this);
 
-        eventListAdapter = new SimpleCursorAdapter(getActivity(),
-                                                   R.layout.event_list_item,
-                                                   null,
-                                                   new String[] {OVirtContract.Event.TIME, OVirtContract.Event.DESCRIPTION},
-                                                   new int[] {R.id.event_timestamp, R.id.event_description});
+        SimpleCursorAdapter eventListAdapter = new SimpleCursorAdapter(getActivity(),
+                R.layout.event_list_item,
+                null,
+                new String[]{OVirtContract.Event.TIME, OVirtContract.Event.DESCRIPTION},
+                new int[]{R.id.event_timestamp, R.id.event_description}, 0);
 
         list.setAdapter(eventListAdapter);
 
-        getLoaderManager().initLoader(0, null, this);
+        cursorAdapterLoader = new CursorAdapterLoader(eventListAdapter) {
+            @Override
+            public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                final ProviderFacade.QueryBuilder<Event> query = provider.query(Event.class);
+                if (filterClusterId != null) query.where(CLUSTER_ID, filterClusterId);
+                if (filterVmId != null) query.where(VM_ID, filterVmId);
+                return query.orderByDescending(ID).limit(page * EVENTS_PER_PAGE).asLoader();
+            }
+        };
+
+        getLoaderManager().initLoader(0, null, cursorAdapterLoader);
 
         list.setOnScrollListener(endlessScrollListener);
     }
@@ -116,59 +120,28 @@ public class EventsFragment extends Fragment implements LoaderManager.LoaderCall
         this.filterVmId = filterVmId;
     }
 
-    @Override
-    public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        final ProviderFacade.QueryBuilder<Event> query = provider.query(Event.class);
-        if (filterClusterId != null) query.where(CLUSTER_ID, filterClusterId);
-        if (filterVmId != null) query.where(VM_ID, filterVmId);
-        return query.orderByDescending(ID).limit(page * EVENTS_PER_PAGE).asLoader();
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader,Cursor cursor) {
-        if(eventListAdapter != null && cursor != null) {
-            eventListAdapter.swapCursor(cursor); //swap the new cursor in.
-        }
-        else {
-            Log.v(TAG, "OnLoadFinished: eventListAdapter is null");
-        }
-    }
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        if(eventListAdapter!=null) {
-            eventListAdapter.swapCursor(null);
-        }
-        else {
-            Log.v(TAG, "OnLoadFinished: eventListAdapter is null");
-        }
-    }
-
     public void loadMoreData(int page) {
         this.page = page;
         restartLoader();
     }
 
     public void restartLoader() {
-        getLoaderManager().restartLoader(0, null, this);
+        getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
     }
 
     @UiThread
     void showProgress() {
-        eventsProgress.setVisibility(View.VISIBLE);
+        swipeEventsContainer.setRefreshing(true);
     }
 
     @UiThread
     void hideProgress() {
-        eventsProgress.setVisibility(View.GONE);
+        swipeEventsContainer.setRefreshing(false);
     }
 
     @Receiver(actions = Broadcasts.EVENTS_IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void eventsSyncing(@Receiver.Extra((Broadcasts.Extras.SYNCING)) boolean syncing) {
-        if (syncing) {
-            showProgress();
-        } else {
-            hideProgress();
-        }
+        swipeEventsContainer.setRefreshing(syncing);
     }
 
     @Background

@@ -1,14 +1,12 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 
 import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.R;
 
 /**

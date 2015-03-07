@@ -8,11 +8,11 @@ import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.database.MergeCursor;
 import android.os.Bundle;
-import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
@@ -20,7 +20,6 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ItemClick;
-import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Cluster;
@@ -43,7 +42,6 @@ public class ClusterDrawerFragment extends ListFragment {
 
     private static final String[] PROJECTION = new String[] {OVirtContract.Cluster.NAME, OVirtContract.Cluster.ID};
     private MatrixCursor emptyClusterCursor;
-    private DrawerLayout drawerLayout;
 
     public interface ClusterSelectedListener {
         void onClusterSelected(Cluster cluster);
@@ -69,7 +67,7 @@ public class ClusterDrawerFragment extends ListFragment {
                                                                          R.layout.cluster_list_item,
                                                                          null,
                                                                          PROJECTION,
-                                                                         new int[]{R.id.cluster_view});
+                                                                         new int[]{R.id.cluster_view}, 0);
 
         CursorAdapterLoader cursorAdapterLoader = new CursorAdapterLoader(clusterListAdapter) {
             @Override
@@ -103,27 +101,16 @@ public class ClusterDrawerFragment extends ListFragment {
 
     }
 
-    public void initDrawerLayout(DrawerLayout drawerLayout) {
-        this.drawerLayout = drawerLayout;
+    public void initDrawerLayout(DrawerLayout drawerLayout, final ActionBarActivity activity) {
 
         drawerToggle = new ActionBarDrawerToggle(getActivity(), drawerLayout,
-                                                 R.drawable.ic_drawer,
                                                  R.string.navigation_drawer_open,
-                                                 R.string.navigation_drawer_close) {
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                getActivity().getActionBar().setTitle(getActivity().getTitle());
-            }
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                getActivity().getActionBar().setTitle(getActivity().getTitle());
-            }
-        };
+                                                 R.string.navigation_drawer_close);
 
         drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         drawerLayout.setDrawerListener(drawerToggle);
-        getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+        activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        activity.getSupportActionBar().setHomeButtonEnabled(true);
 
         drawerToggle.syncState();
 

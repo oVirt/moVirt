@@ -1,11 +1,10 @@
 package org.ovirt.mobile.movirt.ui.triggers;
 
-import android.app.Activity;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.View;
-import android.view.Window;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -13,31 +12,31 @@ import android.widget.TextView;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
-import org.androidannotations.annotations.WindowFeature;
 import org.androidannotations.annotations.res.StringRes;
-
-import org.androidannotations.annotations.ItemClick;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.EntityType;
-import org.ovirt.mobile.movirt.model.condition.Condition;
-import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
+import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.*;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.ENTITY_TYPE;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.SCOPE;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.TARGET_ID;
 
 @EActivity(R.layout.activity_edit_triggers)
 @OptionsMenu(R.menu.triggers)
-public class EditTriggersActivity extends Activity implements BaseTriggerDialogFragment.TriggerActivity {
+public class EditTriggersActivity extends ActionBarActivity implements BaseTriggerDialogFragment.TriggerActivity {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
     public static final String EXTRA_SCOPE = "scope";
@@ -79,7 +78,7 @@ public class EditTriggersActivity extends Activity implements BaseTriggerDialogF
                                                                      R.layout.trigger_item,
                                                                      null,
                                                                      PROJECTION,
-                                                                     new int[]{R.id.trigger_condition, R.id.trigger_notification});
+                                                                     new int[]{R.id.trigger_condition, R.id.trigger_notification}, 0);
         triggerAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {

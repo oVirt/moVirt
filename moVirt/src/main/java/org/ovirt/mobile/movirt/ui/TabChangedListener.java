@@ -1,7 +1,7 @@
 package org.ovirt.mobile.movirt.ui;
 
-import android.app.ActionBar;
-import android.app.FragmentTransaction;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
 import android.view.View;
 
 public class TabChangedListener implements ActionBar.TabListener  {

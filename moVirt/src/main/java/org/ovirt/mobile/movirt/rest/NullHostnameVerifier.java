@@ -1,7 +1,9 @@
 package org.ovirt.mobile.movirt.rest;
 
 import android.util.Log;
+
 import org.androidannotations.annotations.EBean;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 

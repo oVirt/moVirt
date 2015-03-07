@@ -6,11 +6,8 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
-import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.AfterViews;
@@ -60,9 +57,6 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
     @ViewById
     TextView displayView;
 
-    @ViewById
-    ProgressBar vncProgress;
-
     Bundle args;
 
     @Bean
@@ -104,13 +98,13 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
     @UiThread
     @Background
     public void showProgressBar() {
-        vncProgress.setVisibility(View.VISIBLE);
+        swipeGeneralContainer.setRefreshing(true);
     }
 
     @UiThread
     @Background
     public void hideProgressBar() {
-        vncProgress.setVisibility(View.GONE);
+        swipeGeneralContainer.setRefreshing(false);
     }
 
     @Override

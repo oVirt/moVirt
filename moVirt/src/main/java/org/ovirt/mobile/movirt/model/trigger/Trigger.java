@@ -17,7 +17,7 @@ import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.HasDisplayResourceId;
 import org.ovirt.mobile.movirt.util.JsonUtils;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.*;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.TABLE;
 
 @DatabaseTable(tableName = TABLE)
 public class Trigger<E extends OVirtEntity> extends BaseEntity<Integer> implements OVirtContract.Trigger {

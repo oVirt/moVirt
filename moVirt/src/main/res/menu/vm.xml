@@ -1,32 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/action_edit_triggers"
-          android:title="@string/edit_triggers"
-          android:orderInCategory="100"
-          android:showAsAction="always|withText" />
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item android:id="@+id/action_run"
         android:title="@string/run"
         android:orderInCategory="100"
         android:icon="@drawable/icn_play"
-        android:showAsAction="always|withText" />
+        app:showAsAction="always|withText" />
 
     <item android:id="@+id/action_stop"
         android:title="@string/stop"
         android:orderInCategory="100"
         android:icon="@drawable/icn_stop"
-        android:showAsAction="always|withText" />
+        app:showAsAction="always|withText" />
 
     <item android:id="@+id/action_reboot"
         android:title="@string/reboot"
         android:orderInCategory="100"
         android:icon="@drawable/icn_reboot"
-        android:showAsAction="always|withText" />
+        app:showAsAction="always|withText" />
 
     <item android:id="@+id/action_console"
         android:title="@string/console"
         android:orderInCategory="100"
         android:icon="@drawable/icn_console"
-        android:showAsAction="always|withText" />
+        app:showAsAction="always|withText" />
+
+    <item android:id="@+id/action_edit_triggers"
+        android:title="@string/edit_triggers"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom|withText" />
 </menu>

@@ -8,9 +8,9 @@ import android.view.View;
 
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.condition.Condition;
+import org.ovirt.mobile.movirt.model.trigger.Trigger;
 
 @EFragment
 public class AddTriggerDialogFragment extends BaseTriggerDialogFragment {

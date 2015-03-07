@@ -3,7 +3,6 @@ package org.ovirt.mobile.movirt.rest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.sql.Timestamp;
-import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 class Event implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Event> {

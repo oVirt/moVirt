@@ -11,7 +11,7 @@ import org.ovirt.mobile.movirt.util.CursorHelper;
 
 import java.sql.Timestamp;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.*;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.TABLE;
 
 @DatabaseTable(tableName = TABLE)
 public class Event extends BaseEntity<Integer> implements OVirtContract.Event {

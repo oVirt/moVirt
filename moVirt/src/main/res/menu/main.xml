@@ -1,23 +1,20 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item android:id="@+id/action_refresh"
           android:title="@string/refresh"
           android:icon="@drawable/ic_menu_refresh"
-          android:orderInCategory="100"
-          android:showAsAction="always" />
+          app:showAsAction="always" />
 
     <item android:id="@+id/action_edit_triggers"
           android:title="@string/edit_triggers"
-          android:orderInCategory="150"
-          android:showAsAction="always|withText" />
+          app:showAsAction="ifRoom|withText" />
 
     <item android:id="@+id/action_settings"
           android:title="@string/action_settings"
-          android:orderInCategory="200"
-          android:showAsAction="ifRoom|withText" />
+          app:showAsAction="ifRoom|withText" />
 
     <item android:id="@+id/action_clear_events"
         android:title="@string/action_clear_events"
-        android:orderInCategory="250"
-        android:showAsAction="never" />
+        app:showAsAction="never" />
 </menu>

@@ -1,15 +1,14 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.accounts.AccountManager;
-import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Parcelable;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,7 +42,7 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends Activity implements ClusterDrawerFragment.ClusterSelectedListener, TabChangedListener.HasCurrentlyShown {
+public class MainActivity extends ActionBarActivity implements ClusterDrawerFragment.ClusterSelectedListener, TabChangedListener.HasCurrentlyShown {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -112,7 +111,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
     public void setTitle(CharSequence title) {
         super.setTitle(title);
 
-        getActionBar().setTitle(title);
+        getSupportActionBar().setTitle(title);
     }
 
     @AfterViews
@@ -121,7 +120,7 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
         connectionNotConfiguredProperlyDialog = new Dialog(this);
 
 
-        clusterDrawer.initDrawerLayout(drawerLayout);
+        clusterDrawer.initDrawerLayout(drawerLayout, this);
         clusterDrawer.getDrawerToggle().syncState();
 
         onClusterSelected(new Cluster() {{ setId(selectedClusterId); setName(selectedClusterName); }});
@@ -139,19 +138,19 @@ public class MainActivity extends Activity implements ClusterDrawerFragment.Clus
 
         TabChangedListener.CurrentlyShown tmpCurrentlyShown = currentlyShown;
 
-        getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-        ActionBar.Tab vmsTab = getActionBar().newTab()
+        ActionBar.Tab vmsTab = getSupportActionBar().newTab()
                 .setText("VMs")
                 .setTabListener(new TabChangedListener(vmsLayout, TabChangedListener.CurrentlyShown.VMS, this));
 
-        getActionBar().addTab(vmsTab);
+        getSupportActionBar().addTab(vmsTab);
 
-        ActionBar.Tab eventsTab = getActionBar().newTab()
+        ActionBar.Tab eventsTab = getSupportActionBar().newTab()
                 .setText("Events")
                 .setTabListener(new TabChangedListener(eventsLayout, TabChangedListener.CurrentlyShown.EVENTS, this));
 
-        getActionBar().addTab(eventsTab);
+        getSupportActionBar().addTab(eventsTab);
 
         if (tmpCurrentlyShown == TabChangedListener.CurrentlyShown.EVENTS) {
             eventsTab.select();

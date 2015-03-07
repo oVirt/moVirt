@@ -1,10 +1,10 @@
 package org.ovirt.mobile.movirt.ui;
 
-import android.app.ActionBar;
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.RemoteException;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -32,7 +32,7 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
-public class VmDetailActivity extends Activity implements TabChangedListener.HasCurrentlyShown, HasProgressBar {
+public class VmDetailActivity extends ActionBarActivity implements TabChangedListener.HasCurrentlyShown, HasProgressBar {
 
     private static final String TAG = VmDetailActivity.class.getSimpleName();
 
@@ -84,23 +84,23 @@ public class VmDetailActivity extends Activity implements TabChangedListener.Has
 
         TabChangedListener.CurrentlyShown tmpCurrentlyShown = currentlyShown;
 
-        getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
-        ActionBar.Tab generalTab = getActionBar().newTab()
+        ActionBar.Tab generalTab = getSupportActionBar().newTab()
                 .setText("General")
                 .setTabListener(new TabChangedListener(generalFragment, TabChangedListener.CurrentlyShown.VM_DETAIL_GENERAL, this));
 
-        ActionBar.Tab eventsTab = getActionBar().newTab()
+        ActionBar.Tab eventsTab = getSupportActionBar().newTab()
                 .setText("Events")
                 .setTabListener(new TabChangedListener(eventsFragment, TabChangedListener.CurrentlyShown.EVENTS, this));
 
-        ActionBar.Tab disksTab = getActionBar().newTab()
+        ActionBar.Tab disksTab = getSupportActionBar().newTab()
                 .setText("Disks")
                 .setTabListener(new TabChangedListener(disksFragment, TabChangedListener.CurrentlyShown.DISKS, this));
 
-        getActionBar().addTab(generalTab);
-        getActionBar().addTab(disksTab);
-        getActionBar().addTab(eventsTab);
+        getSupportActionBar().addTab(generalTab);
+        getSupportActionBar().addTab(disksTab);
+        getSupportActionBar().addTab(eventsTab);
 
         if (tmpCurrentlyShown == TabChangedListener.CurrentlyShown.EVENTS) {
             eventsTab.select();

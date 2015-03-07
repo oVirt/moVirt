@@ -52,13 +52,6 @@
 
         </RelativeLayout>
 
-        <ProgressBar
-            android:id="@+id/vmsProgress"
-            style="@style/vmsProgress"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone" />
-
 
         <android.support.v4.widget.SwipeRefreshLayout
             android:id="@+id/swipeVmContainer"

@@ -27,9 +27,6 @@ public class DiskDetailFragment extends Fragment implements SwipeRefreshLayout.O
     @Bean
     OVirtClient oVirtClient;
 
-    @ViewById(R.id.diskProgress)
-    ProgressBar diskProgress;
-
     DiskListAdapter diskListAdapter;
 
     String vmId = "";
@@ -45,20 +42,19 @@ public class DiskDetailFragment extends Fragment implements SwipeRefreshLayout.O
     @Override
     public void onResume() {
         super.onResume();
-        showProgressBar();
         loadDiskDetails();
     }
 
     @UiThread
     @Override
     public void showProgressBar() {
-        diskProgress.setVisibility(View.VISIBLE);
+        swipeDisksContainer.setRefreshing(true);
     }
 
     @UiThread
     @Override
     public void hideProgressBar() {
-        diskProgress.setVisibility(View.GONE);
+        swipeDisksContainer.setRefreshing(false);
     }
 
     @UiThread

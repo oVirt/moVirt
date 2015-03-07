@@ -5,22 +5,6 @@
     android:layout_height="match_parent"
     tools:context="org.ovirt.mobile.movirt.ui.EventsFragment">
 
-    <RelativeLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/ButtonBar">
-
-        <ProgressBar
-            android:id="@+id/eventsProgress"
-            style="@style/eventsProgress"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            />
-
-    </RelativeLayout>
-
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipeEventsContainer"
         android:layout_width="match_parent"
