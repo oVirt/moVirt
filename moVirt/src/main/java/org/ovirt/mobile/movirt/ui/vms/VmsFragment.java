@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.vms;
 
 import android.support.v4.app.Fragment;
 import android.content.Intent;
@@ -34,6 +34,8 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.sync.SyncAdapter;
+import org.ovirt.mobile.movirt.ui.EndlessScrollListener;
+import org.ovirt.mobile.movirt.ui.VmDetailActivity_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;

@@ -4,6 +4,7 @@ import com.blandware.android.atleap.provider.ormlite.OrmLiteUriMatcher;
 
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
+import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 
@@ -25,5 +26,8 @@ public class UriMatcher extends OrmLiteUriMatcher {
 
         addClass(OVirtContract.PATH_EVENTS, Event.class);
         addClass(OVirtContract.PATH_EVENT, Event.class);
+
+        addClass(OVirtContract.PATH_HOSTS, Host.class);
+        addClass(OVirtContract.PATH_HOST, Host.class);
     }
 }

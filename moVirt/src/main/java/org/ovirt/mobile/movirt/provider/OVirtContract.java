@@ -10,9 +10,6 @@ public interface OVirtContract {
 
     Uri BASE_CONTENT_URI = new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(CONTENT_AUTHORITY).build();
 
-    String PATH_VMS = "vms";
-    String PATH_VM = "vms/*";
-
     public interface BaseEntity extends BaseColumns {
         String ID = _ID;
     }
@@ -21,13 +18,22 @@ public interface OVirtContract {
         String NAME = "name";
     }
 
-    public interface Vm extends NamedEntity {
+    public interface HasStatus {
+        String STATUS = "status";
+    }
+
+    public interface HasCluster {
+        String CLUSTER_ID = "cluster_id";
+    }
+
+    String PATH_VMS = "vms";
+    String PATH_VM = "vms/*";
+
+    public interface Vm extends NamedEntity, HasStatus, HasCluster {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_VMS).build();
 
         String TABLE = "vms";
 
-        String STATUS = "status";
-        String CLUSTER_ID = "cluster_id";
         String CPU_USAGE = "cpu_usage";
         String MEMORY_USAGE = "mem_usage";
         String MEMORY_SIZE_MB = "mem_size_mb";
@@ -37,22 +43,13 @@ public interface OVirtContract {
         String DISPLAY_TYPE = "display_type";
         String DISPLAY_ADDRESS = "display_address";
         String DISPLAY_PORT = "display_port";
+    }
 
-        String[] ALL_COLUMNS = {
-                ID,
-                NAME,
-                STATUS,
-                CLUSTER_ID,
-                CPU_USAGE,
-                MEMORY_USAGE,
-                MEMORY_SIZE_MB,
-                SOCKETS,
-                CORES_PER_SOCKET,
-                OS_TYPE,
-                DISPLAY_TYPE,
-                DISPLAY_ADDRESS,
-                DISPLAY_PORT
-        };
+    String PATH_HOSTS = "hosts";
+    String PATH_HOST = "host/*";
+
+    public interface Host extends NamedEntity, HasStatus, HasCluster {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_HOSTS).build();
     }
 
     String PATH_CLUSTERS = "clusters";
@@ -82,7 +79,7 @@ public interface OVirtContract {
     String PATH_EVENTS = "events";
     String PATH_EVENT = "events/#";
 
-    public interface Event extends BaseEntity {
+    public interface Event extends BaseEntity, HasCluster {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_EVENTS).build();
 
         String TABLE = "events";
@@ -92,7 +89,6 @@ public interface OVirtContract {
         String TIME = "time";
         String VM_ID = "vm_id";
         String HOST_ID = "host_id";
-        String CLUSTER_ID = "cluster_id";
         String STORAGE_DOMAIN_ID = "storage_domain_id";
         String DATA_CENTER_ID = "data_center_id";
     }
