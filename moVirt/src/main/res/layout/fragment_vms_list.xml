@@ -13,45 +13,47 @@
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin">
 
-        <RelativeLayout
+        <LinearLayout
             style="@style/ButtonBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/activity_vertical_margin">
 
             <TextView
                 android:id="@+id/searchTextLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:editable="true"
+                android:hint="@string/name"
                 style="@style/searchText"
-                android:text="@string/searchInVms" />
+                android:layout_gravity="bottom"
+                android:text="@string/searchInVms"
+                android:textSize="@dimen/abc_text_size_caption_material"/>
 
             <EditText
                 android:id="@+id/searchText"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_toRightOf="@+id/searchTextLabel"
-                android:gravity="right"
+                android:layout_gravity="bottom"
+                android:layout_weight="1"
                 android:inputType="text"
-                android:minWidth="80dp" />
+                android:minWidth="80dp"/>
 
             <Spinner
                 android:id="@+id/orderBySpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toRightOf="@id/searchText"
+                android:layout_gravity="bottom"
                 android:entries="@array/vm_sort_by" />
 
             <Spinner
                 android:id="@+id/orderSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toRightOf="@+id/orderBySpinner"
+                android:layout_gravity="bottom"
                 android:entries="@array/asc_desc" />
 
-        </RelativeLayout>
-
+        </LinearLayout>
 
         <android.support.v4.widget.SwipeRefreshLayout
             android:id="@+id/swipeVmContainer"

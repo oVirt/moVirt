@@ -105,4 +105,5 @@
     <string name="account_disableHttpsChecking">Disable Https</string>
     <string name="account_enforceHttpBasicAuth">Enforce HTTP Basic Authentication</string>
     <string name="account_disableHttpsChecking_summary">This method is dangerous and should not be used in production setup.</string>
+    <string name="name">Name</string>
 </resources>
