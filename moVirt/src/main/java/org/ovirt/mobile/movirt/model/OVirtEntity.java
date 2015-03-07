@@ -10,9 +10,14 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 public abstract class OVirtEntity extends BaseEntity<String> implements OVirtContract.NamedEntity {
 
-    public OVirtEntity() {
+    protected OVirtEntity() {
         id = "";
         name = "";
+    }
+
+    protected OVirtEntity(String id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
     @DatabaseField(columnName = ID, id = true)

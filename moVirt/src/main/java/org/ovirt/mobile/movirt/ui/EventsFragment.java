@@ -141,7 +141,11 @@ public class EventsFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     @Receiver(actions = Broadcasts.EVENTS_IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void eventsSyncing(@Receiver.Extra((Broadcasts.Extras.SYNCING)) boolean syncing) {
-        swipeEventsContainer.setRefreshing(syncing);
+        if (syncing) {
+            showProgress();
+        } else {
+            hideProgress();
+        }
     }
 
     @Background

@@ -5,14 +5,24 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.Loader;
+import android.content.res.Configuration;
+import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.database.MergeCursor;
+import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +33,7 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.InstanceState;
+import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.Receiver;
@@ -33,16 +44,22 @@ import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Cluster;
+import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
+import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
+import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
+
+import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends ActionBarActivity implements ClusterDrawerFragment.ClusterSelectedListener, TabChangedListener.HasCurrentlyShown {
+public class MainActivity extends ActionBarActivity implements TabChangedListener.HasCurrentlyShown {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -56,6 +73,9 @@ public class MainActivity extends ActionBarActivity implements ClusterDrawerFrag
 
     @App
     MoVirtApp app;
+
+    @Bean
+    ProviderFacade provider;
 
     @ViewById
     DrawerLayout drawerLayout;
@@ -72,8 +92,8 @@ public class MainActivity extends ActionBarActivity implements ClusterDrawerFrag
     @ViewById
     View eventsLayout;
 
-    @FragmentById
-    ClusterDrawerFragment clusterDrawer;
+    @ViewById
+    ListView clusterDrawer;
 
     @StringRes(R.string.cluster_scope)
     String CLUSTER_SCOPE;
@@ -99,6 +119,8 @@ public class MainActivity extends ActionBarActivity implements ClusterDrawerFrag
     @Bean
     EventsHandler eventsHandler;
 
+    private ActionBarDrawerToggle drawerToggle;
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -115,15 +137,13 @@ public class MainActivity extends ActionBarActivity implements ClusterDrawerFrag
     }
 
     @AfterViews
-    void initAdapters() {
+    void init() {
 
         connectionNotConfiguredProperlyDialog = new Dialog(this);
 
+        initClusterDrawer();
 
-        clusterDrawer.initDrawerLayout(drawerLayout, this);
-        clusterDrawer.getDrawerToggle().syncState();
-
-        onClusterSelected(new Cluster() {{ setId(selectedClusterId); setName(selectedClusterName); }});
+        selectCluster(new Cluster(selectedClusterId, selectedClusterName));
 
         if (!authenticator.accountConfigured()) {
             showDialogToOpenAccountSettings(noAccMsg, new Intent(this, AuthenticatorActivity_.class));
@@ -157,6 +177,66 @@ public class MainActivity extends ActionBarActivity implements ClusterDrawerFrag
         } else {
             vmsTab.select();
         }
+    }
+
+    @StringRes(R.string.all_clusters)
+    String allClusters;
+
+    private static final String[] CLUSTER_PROJECTION = new String[] {OVirtContract.Cluster.NAME, OVirtContract.Cluster.ID};
+    private MatrixCursor emptyClusterCursor;
+
+    private void initClusterDrawer() {
+        emptyClusterCursor = new MatrixCursor(CLUSTER_PROJECTION);
+        emptyClusterCursor.addRow(new String[]{allClusters, null});
+
+
+        SimpleCursorAdapter clusterListAdapter = new SimpleCursorAdapter(this,
+                R.layout.cluster_list_item,
+                null,
+                CLUSTER_PROJECTION,
+                new int[]{R.id.cluster_view}, 0);
+
+        CursorAdapterLoader clusterAdapterLoader = new CursorAdapterLoader(clusterListAdapter) {
+            @Override
+            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                return provider.query(Cluster.class).orderBy(NAME).asLoader();
+            }
+
+            @Override
+            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+                super.onLoadFinished(loader, new MergeCursor(new Cursor[]{emptyClusterCursor, data}));
+            }
+        };
+
+        clusterListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+            @Override
+            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+                if (columnIndex != 0) {
+                    // do not display id column
+                    return true;
+                }
+                TextView textView = (TextView) view;
+                String clusterName = cursor.getString(cursor.getColumnIndex(NAME)); // only names selected, thus only 1 column
+                textView.setText(clusterName);
+
+                return true;
+            }
+        });
+        clusterDrawer.setAdapter(clusterListAdapter);
+
+        getLoaderManager().initLoader(0, null, clusterAdapterLoader);
+
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close);
+
+        drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+        drawerLayout.setDrawerListener(drawerToggle);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
+        drawerToggle.syncState();
+
     }
 
     private void showDialogToOpenAccountSettings(String msg, final Intent intent) {
@@ -233,16 +313,28 @@ public class MainActivity extends ActionBarActivity implements ClusterDrawerFrag
     }
 
     @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (clusterDrawer.getDrawerToggle().onOptionsItemSelected(item)) {
+        if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onClusterSelected(Cluster cluster) {
+    @ItemClick
+    void clusterDrawerItemClicked(Cursor cursor) {
+        Cluster cluster = EntityMapper.CLUSTER_MAPPER.fromCursor(cursor);
+        selectCluster(cluster);
+    }
+
+    private void selectCluster(Cluster cluster) {
         Log.d(TAG, "Updating selected cluster: id=" + cluster.getId() + ", name=" + cluster.getName());
         setTitle(cluster.getId() == null ? getString(R.string.all_clusters) : String.format(CLUSTER_SCOPE, cluster.getName()));
         selectedClusterId = cluster.getId();

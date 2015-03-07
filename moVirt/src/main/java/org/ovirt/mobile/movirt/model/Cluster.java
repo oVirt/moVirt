@@ -15,4 +15,11 @@ public class Cluster extends OVirtEntity implements OVirtContract.Cluster {
     public Uri getBaseUri() {
         return CONTENT_URI;
     }
+
+    public Cluster() {
+    }
+
+    public Cluster(String id, String name) {
+        super(id, name);
+    }
 }

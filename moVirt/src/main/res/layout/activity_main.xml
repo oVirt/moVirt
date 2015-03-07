@@ -37,14 +37,12 @@
         </FrameLayout>
     </RelativeLayout>
 
-    <fragment
+    <ListView
         android:id="@+id/clusterDrawer"
-        android:name="org.ovirt.mobile.movirt.ui.ClusterDrawerFragment_"
         android:layout_width="@dimen/navigation_drawer_width"
         android:layout_height="match_parent"
-        android:background="#111"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="0dp"
-        android:layout_gravity="start" />
+        android:layout_gravity="start"
+        android:choiceMode="singleChoice"
+        android:background="@color/primary_dark_material_dark" />
 
 </android.support.v4.widget.DrawerLayout>
