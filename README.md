@@ -62,7 +62,8 @@ To start contributing to moVirt, you will need to install the following things-
 * [Gradle version 2.2.1](http://gvmtool.net/)  
 
 Once the installations are done, you can proceed to import the project into the workspace.  
-1. File -> Open -> ~/" *path to moVirt project* "/moVirt/build.gradle  
+(On Windows: Before importing you need to change symlink. To do this run CMD with admin rights, change directory to moVirt's root with 'cd' command, and run symlink.bat).  
+1. File -> Open -> ~/" *path to moVirt project* "/build.gradle. Or select "Import project" from Welcome page.  
 2. On the import dialog : Select local gradle distribution. Give the path to gradle version 2.2.1 .      
    <img src = https://github.com/matobet/moVirt/blob/master/images/import_project.png align="center" height = "480px" width="640px">    
    After this, the prompt asks you to enter the path to the android sdk.  
