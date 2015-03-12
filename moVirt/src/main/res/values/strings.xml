@@ -53,8 +53,6 @@
     <string name="stop">Stop</string>
     <string name="reboot">Reboot</string>
     <string name="title_activity_vm_details">Vm Details</string>
-    <string name="title_activity_event_details">Event Details</string>
-    <string name="title_activity_disk_details">Disk Details</string>
     <string name="vm_scope">Vm %1$s</string>
     <string name="cpu">CPU usage:</string>
     <string name="memory">Memory usage:</string>
