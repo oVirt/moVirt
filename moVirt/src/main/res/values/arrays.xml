@@ -4,6 +4,7 @@
         <item>CPU</item>
         <item>Memory</item>
         <item>Status</item>
+        <item>Event</item>
     </string-array>
     <string-array name="notification_types">
         <item>Blink</item>

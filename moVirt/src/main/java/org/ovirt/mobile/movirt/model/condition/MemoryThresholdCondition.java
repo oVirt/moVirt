@@ -7,7 +7,7 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
 
 public class MemoryThresholdCondition extends Condition<Vm> {
-    public final int percentageLimit;
+    private final int percentageLimit;
 
     @JsonCreator
     public MemoryThresholdCondition(@JsonProperty("percentageLimit") int percentageLimit) {
@@ -16,16 +16,20 @@ public class MemoryThresholdCondition extends Condition<Vm> {
 
     @Override
     public boolean evaluate(Vm entity) {
-        return entity.getMemoryUsage() >= percentageLimit;
+        return entity.getMemoryUsage() >= getPercentageLimit();
     }
 
     @Override
     public String getMessage(Vm vm) {
-        return getResources().getString(R.string.vm_memory_message, vm.getName(), percentageLimit, vm.getMemoryUsage());
+        return getResources().getString(R.string.vm_memory_message, vm.getName(), getPercentageLimit(), vm.getMemoryUsage());
     }
 
     @Override
     public String toString() {
-        return "Memory usage over " + percentageLimit + "%";
+        return "Memory usage over " + getPercentageLimit() + "%";
+    }
+
+    public int getPercentageLimit() {
+        return percentageLimit;
     }
 }

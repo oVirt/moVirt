@@ -1,7 +1,6 @@
 package org.ovirt.mobile.movirt.sync;
 
 import android.accounts.Account;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.AbstractThreadedSyncAdapter;
@@ -13,7 +12,6 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.Vibrator;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.androidannotations.annotations.Bean;
@@ -32,6 +30,7 @@ import org.ovirt.mobile.movirt.model.trigger.TriggerResolverFactory;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.VmDetailActivity_;
+import org.ovirt.mobile.movirt.util.NotificationDisplayer;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -66,9 +65,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Bean
     MovirtAuthenticator authenticator;
 
-    public static volatile boolean inSync = false;
+    @Bean
+    NotificationDisplayer notificationDisplayer;
 
-    int notificationCount;
+    public static volatile boolean inSync = false;
 
     /** access to the {@code batch} field should be always under synchronized(this) */
     ProviderFacade.BatchBuilder batch;
@@ -120,7 +120,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private void updateQuickEntities() throws RemoteException {
         initBatch();
-        notificationCount = 0;
 
         oVirtClient.getVms(new OVirtClient.SimpleResponse<List<Vm>>() {
             @Override
@@ -217,23 +216,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     // TODO: generalize to multiple entity types
     private <E extends OVirtEntity> void displayNotification(Trigger<E> trigger, E entity) {
-        Log.d(TAG, "Displaying notification " + notificationCount);
         final Context appContext = getContext().getApplicationContext();
         final Intent intent = new Intent(appContext, VmDetailActivity_.class);
         intent.setData(entity.getUri());
-        notificationManager.notify(notificationCount++, new NotificationCompat.Builder(appContext)
-                        .setAutoCancel(true)
-                        .setDefaults(Notification.DEFAULT_ALL)
-                        .setWhen(System.currentTimeMillis())
-                        .setSmallIcon(org.ovirt.mobile.movirt.R.drawable.ic_launcher)
-                        .setContentTitle(trigger.getNotificationType() == Trigger.NotificationType.INFO ? "oVirt event" : ">>> oVirt event <<<")
-                        .setContentText(trigger.getCondition().getMessage(entity))
-                        .setContentIntent(PendingIntent.getActivity(appContext, 0, intent, 0))
-                        .build());
-
-        if (trigger.getNotificationType() == Trigger.NotificationType.CRITICAL) {
-            vibrator.vibrate(1000);
-        }
+        notificationDisplayer.showNotification(
+                trigger, entity, appContext, PendingIntent.getActivity(appContext, 0, intent, 0)
+        );
     }
 
     private static <E extends OVirtEntity> Map<String, E> groupEntitiesById(List<E> entities) {

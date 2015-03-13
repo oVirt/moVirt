@@ -7,7 +7,7 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
 
 public class CpuThresholdCondition extends Condition<Vm> {
-    public final int percentageLimit;
+    private final int percentageLimit;
 
     @JsonCreator
     public CpuThresholdCondition(@JsonProperty("percentageLimit") int percentageLimit) {
@@ -16,16 +16,20 @@ public class CpuThresholdCondition extends Condition<Vm> {
 
     @Override
     public boolean evaluate(Vm entity) {
-        return entity.getCpuUsage() >= percentageLimit;
+        return entity.getCpuUsage() >= getPercentageLimit();
     }
 
     @Override
     public String getMessage(Vm vm) {
-        return getResources().getString(R.string.vm_cpu_message, vm.getName(), percentageLimit, vm.getCpuUsage());
+        return getResources().getString(R.string.vm_cpu_message, vm.getName(), getPercentageLimit(), vm.getCpuUsage());
     }
 
     @Override
     public String toString() {
-        return "CPU usage over " + percentageLimit + "%";
+        return "CPU usage over " + getPercentageLimit() + "%";
+    }
+
+    public int getPercentageLimit() {
+        return percentageLimit;
     }
 }

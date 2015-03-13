@@ -20,9 +20,9 @@ import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.EntityType;
-import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
+import org.ovirt.mobile.movirt.model.condition.EventCondition;
 import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
@@ -30,7 +30,6 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.ENTITY_TYPE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.SCOPE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.TARGET_ID;
 
@@ -83,7 +82,7 @@ public class EditTriggersActivity extends ActionBarActivity implements BaseTrigg
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
                 TextView textView = (TextView) view;
-                Trigger<Vm> trigger = (Trigger<Vm>) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor);
+                Trigger trigger = (Trigger) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor);
                 if (columnIndex == cursor.getColumnIndex(OVirtContract.Trigger.NOTIFICATION)) {
                     textView.setText(trigger.getNotificationType().getDisplayResourceId());
                 } else if (columnIndex == cursor.getColumnIndex(OVirtContract.Trigger.CONDITION)) {
@@ -98,7 +97,7 @@ public class EditTriggersActivity extends ActionBarActivity implements BaseTrigg
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 return provider
                         .query(Trigger.class)
-                        .where(ENTITY_TYPE, getEntityType().toString())
+                        //.where(ENTITY_TYPE, getEntityType().toString()) //do not filter trigger by entity type
                         .where(SCOPE, getScope().toString())
                         .where(TARGET_ID, getTargetId())
                         .asLoader();
@@ -123,17 +122,20 @@ public class EditTriggersActivity extends ActionBarActivity implements BaseTrigg
         return "unexpected scope";
     }
 
-    private String getConditionString(Condition<Vm> triggerCondition) {
+    private String getConditionString(Condition triggerCondition) {
         StringBuilder builder =  new StringBuilder();
         if (triggerCondition instanceof CpuThresholdCondition) {
             CpuThresholdCondition condition = (CpuThresholdCondition) triggerCondition;
-            builder.append("CPU above ").append(condition.percentageLimit).append("%");
+            builder.append("CPU above ").append(condition.getPercentageLimit()).append("%");
         } else if (triggerCondition instanceof MemoryThresholdCondition) {
             MemoryThresholdCondition condition = (MemoryThresholdCondition) triggerCondition;
-            builder.append("Memory above ").append(condition.percentageLimit).append("%");
+            builder.append("Memory above ").append(condition.getPercentageLimit()).append("%");
         } else if (triggerCondition instanceof StatusCondition) {
             StatusCondition condition = (StatusCondition) triggerCondition;
-            builder.append("Status is ").append(condition.status.toString());
+            builder.append("Status is ").append(condition.getStatus().toString());
+        } else if (triggerCondition instanceof EventCondition) {
+            EventCondition condition = (EventCondition) triggerCondition;
+            builder.append("Event matches ").append(condition.getRegexString());
         }
         return builder.toString();
     }
@@ -150,12 +152,16 @@ public class EditTriggersActivity extends ActionBarActivity implements BaseTrigg
     @ItemClick
     void triggersListViewItemClicked(Cursor cursor) {
         EditTriggerDialogFragment dialog = new EditTriggerDialogFragment_();
-        dialog.setTrigger((Trigger<Vm>) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor));
+        dialog.setTrigger((Trigger) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor));
         dialog.show(getFragmentManager(), "");
     }
 
     @Override
-    public EntityType getEntityType() {
+    public EntityType getEntityType(Condition triggerCondition) {
+        if( triggerCondition instanceof EventCondition )
+        {
+            return EntityType.EVENT;
+        } //add else if when more Entity types will be added to Add Trigger menu
         return EntityType.VM;
     }
 

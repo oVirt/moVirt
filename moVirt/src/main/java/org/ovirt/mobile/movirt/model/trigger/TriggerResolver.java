@@ -1,9 +1,9 @@
 package org.ovirt.mobile.movirt.model.trigger;
 
-import org.ovirt.mobile.movirt.model.OVirtEntity;
+import org.ovirt.mobile.movirt.model.BaseEntity;
 
 import java.util.List;
 
-public interface TriggerResolver<E extends OVirtEntity> {
+public interface TriggerResolver<E extends BaseEntity<?>> {
     List<Trigger<E>> getTriggersForEntity(E entity);
 }

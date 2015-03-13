@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.ENTITY_TYPE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.SCOPE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.TARGET_ID;
 
@@ -25,7 +26,7 @@ public class VmTriggerResolver implements TriggerResolver<Vm> {
 
     @Override
     public List<Trigger<Vm>> getTriggersForEntity(Vm vm) {
-        final ArrayList<Trigger<Vm>> triggers = new ArrayList<>();
+        final List<Trigger<Vm>> triggers = new ArrayList<>();
         try {
             triggers.addAll(getVmTriggers(vm));
             triggers.addAll(getClusterTriggers(vm));
@@ -39,16 +40,25 @@ public class VmTriggerResolver implements TriggerResolver<Vm> {
 
     @SuppressWarnings("unchecked")
     private Collection<Trigger<Vm>> getVmTriggers(Vm vm) {
-        return (Collection<Trigger<Vm>>) (Collection<?>) provider.query(Trigger.class).where(TARGET_ID, vm.getId()).all();
+        return (Collection<Trigger<Vm>>) (Collection<?>) provider.query(Trigger.class)
+                .where(TARGET_ID, vm.getId())
+                .where(ENTITY_TYPE, "VM")
+                .all();
     }
 
     @SuppressWarnings("unchecked")
     private Collection<Trigger<Vm>> getClusterTriggers(Vm vm) {
-        return (Collection<Trigger<Vm>>) (Collection<?>) provider.query(Trigger.class).where(TARGET_ID, vm.getClusterId()).all();
+        return (Collection<Trigger<Vm>>) (Collection<?>) provider.query(Trigger.class)
+                .where(TARGET_ID, vm.getClusterId())
+                .where(ENTITY_TYPE, "VM")
+                .all();
     }
 
     @SuppressWarnings("unchecked")
     private Collection<Trigger<Vm>> getGlobalTriggers() {
-        return (Collection<Trigger<Vm>>) (Collection<?>) provider.query(Trigger.class).where(SCOPE, Trigger.Scope.GLOBAL.toString()).all();
+        return (Collection<Trigger<Vm>>) (Collection<?>) provider.query(Trigger.class)
+                .where(SCOPE, Trigger.Scope.GLOBAL.toString())
+                .where(ENTITY_TYPE, "VM")
+                .all();
     }
 }
