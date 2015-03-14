@@ -24,17 +24,6 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     public Os os;
     public Cpu cpu;
 
-    // status complex object in rest
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Status {
-        public String state;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Cluster {
-        public String id;
-    }
-
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Display {
         public String address, port, type;

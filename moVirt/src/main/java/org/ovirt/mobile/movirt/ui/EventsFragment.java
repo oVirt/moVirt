@@ -1,9 +1,8 @@
 package org.ovirt.mobile.movirt.ui;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -14,7 +13,6 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.Receiver;
-import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
@@ -30,7 +28,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.CLUSTER_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.VM_ID;
 
 @EFragment(R.layout.fragment_event_list)
-public class EventsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class EventsFragment extends RefreshableFragment {
 
     @ViewById
     ListView list;
@@ -68,7 +66,6 @@ public class EventsFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     @AfterViews
     void init() {
-        swipeEventsContainer.setOnRefreshListener(this);
 
         SimpleCursorAdapter eventListAdapter = new SimpleCursorAdapter(getActivity(),
                 R.layout.event_list_item,
@@ -97,7 +94,7 @@ public class EventsFragment extends Fragment implements SwipeRefreshLayout.OnRef
     public void onResume() {
         super.onResume();
         if (EventsHandler.inSync) {
-            showProgress();
+            showProgressBar();
         }
         restartLoader();
     }
@@ -105,7 +102,7 @@ public class EventsFragment extends Fragment implements SwipeRefreshLayout.OnRef
     @Override
     public void onPause() {
         super.onPause();
-        hideProgress();
+        hideProgressBar();
     }
 
     public void updateFilterClusterIdTo(String filterClusterId) {
@@ -129,23 +126,9 @@ public class EventsFragment extends Fragment implements SwipeRefreshLayout.OnRef
         getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
     }
 
-    @UiThread
-    void showProgress() {
-        swipeEventsContainer.setRefreshing(true);
-    }
-
-    @UiThread
-    void hideProgress() {
-        swipeEventsContainer.setRefreshing(false);
-    }
-
     @Receiver(actions = Broadcasts.EVENTS_IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void eventsSyncing(@Receiver.Extra((Broadcasts.Extras.SYNCING)) boolean syncing) {
-        if (syncing) {
-            showProgress();
-        } else {
-            hideProgress();
-        }
+        setRefreshing(syncing);
     }
 
     @Background
@@ -153,5 +136,10 @@ public class EventsFragment extends Fragment implements SwipeRefreshLayout.OnRef
     public void onRefresh() {
 //        eventsHandler.deleteEvents();
         eventsHandler.updateEvents(true);
+    }
+
+    @Override
+    protected SwipeRefreshLayout getSwipeRefreshLayout() {
+        return swipeEventsContainer;
     }
 }

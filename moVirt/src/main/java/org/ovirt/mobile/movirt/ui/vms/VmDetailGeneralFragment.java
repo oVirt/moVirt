@@ -1,11 +1,10 @@
 package org.ovirt.mobile.movirt.ui.vms;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.widget.TextView;
@@ -18,16 +17,15 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.EntityMapper;
+import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.sync.SyncAdapter;
-import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
+import org.ovirt.mobile.movirt.ui.RefreshableFragment;
 
 @EFragment(R.layout.fragment_vm_detail_general)
-public class VmDetailGeneralFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener, HasProgressBar {
+public class VmDetailGeneralFragment extends RefreshableFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = VmDetailGeneralFragment.class.getSimpleName();
 
@@ -68,7 +66,7 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
     ProviderFacade provider;
 
     @Bean
-    SyncAdapter syncAdapter;
+    VmFacade vmFacade;
 
     @StringRes(R.string.details_for_vm)
     String VM_DETAILS;
@@ -80,8 +78,6 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
 
     @AfterViews
     void initLoader() {
-        swipeGeneralContainer.setOnRefreshListener(this);
-
         hideProgressBar();
         Uri vmUri = getActivity().getIntent().getData();
 
@@ -97,16 +93,9 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
         getLoaderManager().restartLoader(0, args, this);
     }
 
-    @UiThread
-    @Background
-    public void showProgressBar() {
-        swipeGeneralContainer.setRefreshing(true);
-    }
-
-    @UiThread
-    @Background
-    public void hideProgressBar() {
-        swipeGeneralContainer.setRefreshing(false);
+    @Override
+    protected SwipeRefreshLayout getSwipeRefreshLayout() {
+        return swipeGeneralContainer;
     }
 
     @Override
@@ -121,7 +110,7 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
             Log.e(TAG, "Error loading Vm");
             return;
         }
-        vm = EntityMapper.VM_MAPPER.fromCursor(data);
+        vm = vmFacade.mapFromCursor(data);
         renderVm(vm);
 
     }
@@ -158,6 +147,6 @@ public class VmDetailGeneralFragment extends Fragment implements LoaderManager.L
     @Override
     @Background
     public void onRefresh() {
-        syncAdapter.syncVm(vmId, new ProgressBarResponse<Vm>(this));
+        vmFacade.sync(vmId, new ProgressBarResponse<Vm>(this));
     }
 }

@@ -5,15 +5,14 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.Loader;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.database.MergeCursor;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.Fragment;
+import android.support.v4.content.Loader;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
@@ -40,6 +39,7 @@ import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.res.StringArrayRes;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
@@ -53,12 +53,12 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
+import org.ovirt.mobile.movirt.ui.hosts.HostsFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
-import org.ovirt.mobile.movirt.ui.vms.VmsFragment;
+import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
@@ -97,6 +97,9 @@ public class MainActivity extends ActionBarActivity{
 
     @StringRes(R.string.cluster_scope)
     String CLUSTER_SCOPE;
+
+    @StringArrayRes(R.array.main_pager_titles)
+    String[] PAGER_TITLES;
 
     @Bean
     OVirtClient client;
@@ -150,29 +153,11 @@ public class MainActivity extends ActionBarActivity{
     }
 
     private void initPagers() {
-        final List<Fragment> fragmentList = new ArrayList<>();
-        fragmentList.add(new VmsFragment_());
-        fragmentList.add(new EventsFragment_());
-
-        final String[] pagerTitles = getResources().getStringArray(R.array.main_pager_titles);
-
-        FragmentPagerAdapter pagerAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
-
-            @Override
-            public Fragment getItem(int i) {
-                return fragmentList.get(i);
-            }
-
-            @Override
-            public int getCount() {
-                return fragmentList.size();
-            }
-
-            @Override
-            public CharSequence getPageTitle(int position) {
-                return pagerTitles[position];
-            }
-        };
+        FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
+                getSupportFragmentManager(), PAGER_TITLES,
+                new VmsFragment_(),
+                new HostsFragment_(),
+                new EventsFragment_());
 
         viewPager.setAdapter(pagerAdapter);
         pagerTabStrip.setTabIndicatorColorResource(R.color.material_deep_teal_200);
@@ -342,10 +327,8 @@ public class MainActivity extends ActionBarActivity{
         List<Fragment> fragments = getSupportFragmentManager().getFragments();
         if (null != fragments) {
             for (Fragment fra : fragments) {
-                if (fra instanceof VmsFragment) {
-                    ((VmsFragment) fra).updateFilterClusterIdTo(selectedClusterId);
-                } else if (fra instanceof EventsFragment) {
-                    ((EventsFragment) fra).updateFilterClusterIdTo(selectedClusterId);
+                if (fra instanceof SelectedClusterAware) {
+                    ((SelectedClusterAware) fra).updateSelectedClusterId(selectedClusterId);
                 }
             }
         }

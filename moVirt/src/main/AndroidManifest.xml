@@ -77,8 +77,13 @@
         </activity>
 
         <activity
-            android:name=".ui.VmDetailActivity_"
+            android:name=".ui.vms.VmDetailActivity_"
             android:label="@string/title_activity_vm_details">
+        </activity>
+
+        <activity
+            android:name=".ui.hosts.HostDetailActivity_"
+            android:label="@string/title_activity_host_details">
         </activity>
 
     </application>

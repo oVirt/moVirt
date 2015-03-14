@@ -1,11 +1,9 @@
 package org.ovirt.mobile.movirt.ui;
 
-import android.support.v4.app.Fragment;
 import android.os.RemoteException;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.widget.ListView;
 
-import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
@@ -17,7 +15,7 @@ import org.ovirt.mobile.movirt.rest.Disks;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 
 @EFragment(R.layout.fragment_disk_detail)
-public class DiskDetailFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, HasProgressBar {
+public class DiskDetailFragment extends RefreshableFragment {
     private static final String TAG = DiskDetailFragment.class.getSimpleName();
 
     @ViewById(R.id.diskListView)
@@ -34,27 +32,15 @@ public class DiskDetailFragment extends Fragment implements SwipeRefreshLayout.O
     @ViewById
     SwipeRefreshLayout swipeDisksContainer;
 
-    @AfterViews
-    void init() {
-        swipeDisksContainer.setOnRefreshListener(this);
-    }
-
     @Override
     public void onResume() {
         super.onResume();
         loadDiskDetails();
     }
 
-    @UiThread
     @Override
-    public void showProgressBar() {
-        swipeDisksContainer.setRefreshing(true);
-    }
-
-    @UiThread
-    @Override
-    public void hideProgressBar() {
-        swipeDisksContainer.setRefreshing(false);
+    protected SwipeRefreshLayout getSwipeRefreshLayout() {
+        return swipeDisksContainer;
     }
 
     @UiThread

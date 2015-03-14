@@ -39,6 +39,7 @@
 
     <string-array name="main_pager_titles">
         <item>VMs</item>
+        <item>Hosts</item>
         <item>Events</item>
     </string-array>
 

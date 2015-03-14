@@ -3,8 +3,6 @@ package org.ovirt.mobile.movirt.ui.vms;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.RemoteException;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
@@ -21,23 +19,25 @@ import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.res.StringArrayRes;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.rest.ActionTicket;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.ui.DiskDetailFragment;
+import org.ovirt.mobile.movirt.ui.DiskDetailFragment_;
 import org.ovirt.mobile.movirt.ui.EventsFragment;
+import org.ovirt.mobile.movirt.ui.EventsFragment_;
+import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
+import org.ovirt.mobile.movirt.ui.NicDetailFragment;
+import org.ovirt.mobile.movirt.ui.NicDetailFragment_;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.TabChangedListener;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
@@ -53,6 +53,9 @@ public class VmDetailActivity extends ActionBarActivity implements HasProgressBa
     @ViewById
     PagerTabStrip pagerTabStrip;
 
+    @StringArrayRes(R.array.vm_detail_pager_titles)
+    String[] PAGER_TITLES;
+
     @Bean
     OVirtClient client;
 
@@ -60,7 +63,7 @@ public class VmDetailActivity extends ActionBarActivity implements HasProgressBa
     ProgressBar progress;
 
     @Bean
-    SyncAdapter syncAdapter;
+    VmFacade vmFacade;
 
     @AfterViews
     void init() {
@@ -72,37 +75,20 @@ public class VmDetailActivity extends ActionBarActivity implements HasProgressBa
     }
 
     private void initPagers(){
-        final List<Fragment> fragmentList = new ArrayList<>();
         EventsFragment eventsList = new EventsFragment_();
         DiskDetailFragment diskDetails = new DiskDetailFragment_();
         NicDetailFragment nicDetails = new NicDetailFragment_();
+
         eventsList.setFilterVmId(vmId);
         diskDetails.setVmId(vmId);
         nicDetails.setVmId(vmId);
-        fragmentList.add(new VmDetailGeneralFragment_());
-        fragmentList.add(eventsList);
-        fragmentList.add(diskDetails);
-        fragmentList.add(nicDetails);
 
-        final String[] pagerTitles = getResources().getStringArray(R.array.vm_detail_pager_titles);
-
-        FragmentPagerAdapter pagerAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
-
-            @Override
-            public Fragment getItem(int i) {
-                return fragmentList.get(i);
-            }
-
-            @Override
-            public int getCount() {
-                return fragmentList.size();
-            }
-
-            @Override
-            public CharSequence getPageTitle(int position) {
-                return pagerTitles[position];
-            }
-        };
+        FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
+                getSupportFragmentManager(), PAGER_TITLES,
+                new VmDetailGeneralFragment_(),
+                eventsList,
+                diskDetails,
+                nicDetails);
 
         viewPager.setAdapter(pagerAdapter);
         pagerTabStrip.setTabIndicatorColorResource(R.color.material_deep_teal_200);
@@ -146,7 +132,7 @@ public class VmDetailActivity extends ActionBarActivity implements HasProgressBa
     @OptionsItem(R.id.action_console)
     @Background
     void openConsole() {
-        syncAdapter.syncVm(vmId, new ProgressBarResponse<Vm>(this) {
+        vmFacade.sync(vmId, new ProgressBarResponse<Vm>(this) {
 
             @Override
             public void onResponse(final Vm freshVm) throws RemoteException {
@@ -171,7 +157,7 @@ public class VmDetailActivity extends ActionBarActivity implements HasProgressBa
     }
 
     private void syncVm() {
-        syncAdapter.syncVm(vmId, new ProgressBarResponse<Vm>(this));
+        vmFacade.sync(vmId, new ProgressBarResponse<Vm>(this));
     }
 
     /**

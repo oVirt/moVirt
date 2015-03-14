@@ -25,8 +25,8 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
 
     public enum Status {
         UNASSIGNED(R.drawable.vm_question_mark),
-        DOWN(R.drawable.vm_down),
-        UP(R.drawable.vm_running),
+        DOWN(R.drawable.down),
+        UP(R.drawable.up),
         POWERING_UP(R.drawable.vm_powering_up),
         PAUSED(R.drawable.vm_paused),
         MIGRATING(R.drawable.vm_migrating),

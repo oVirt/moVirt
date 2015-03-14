@@ -20,16 +20,16 @@ import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
+import org.ovirt.mobile.movirt.facade.EntityFacade;
+import org.ovirt.mobile.movirt.facade.EntityFacadeLocator;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
+import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
-import org.ovirt.mobile.movirt.model.trigger.TriggerResolver;
-import org.ovirt.mobile.movirt.model.trigger.TriggerResolverFactory;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.ui.VmDetailActivity_;
 import org.ovirt.mobile.movirt.util.NotificationDisplayer;
 
 import java.util.Collection;
@@ -57,7 +57,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     ProviderFacade provider;
 
     @Bean
-    TriggerResolverFactory triggerResolverFactory;
+    EntityFacadeLocator entityFacadeLocator;
 
     @Bean
     EventsHandler eventsHandler;
@@ -118,19 +118,38 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }, response));
     }
 
+    public synchronized void syncHost(String id, OVirtClient.Response<Host> response) {
+        initBatch();
+        oVirtClient.getHost(id, new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<Host>() {
+            @Override
+            public void onResponse(Host host) throws RemoteException {
+                updateLocalEntity(host, Host.class);
+                applyBatch();
+            }
+        }, response));
+    }
+
     private void updateQuickEntities() throws RemoteException {
         initBatch();
 
+        // TODO: we really need promises here
+        // TODO: ideally split each request and save vms, hosts, ... in separate batches
         oVirtClient.getVms(new OVirtClient.SimpleResponse<List<Vm>>() {
             @Override
             public void onResponse(final List<Vm> remoteVms) throws RemoteException {
                 oVirtClient.getClusters(new OVirtClient.SimpleResponse<List<Cluster>>() {
                     @Override
-                    public void onResponse(List<Cluster> remoteClusters) throws RemoteException {
-                        updateLocalEntities(remoteClusters, Cluster.class);
-                        updateLocalEntities(remoteVms, Vm.class);
+                    public void onResponse(final List<Cluster> remoteClusters) throws RemoteException {
+                        oVirtClient.getHosts(new OVirtClient.SimpleResponse<List<Host>>() {
+                            @Override
+                            public void onResponse(final List<Host> remoteHosts) throws RemoteException {
+                                updateLocalEntities(remoteClusters, Cluster.class);
+                                updateLocalEntities(remoteHosts, Host.class);
+                                updateLocalEntities(remoteVms, Vm.class);
 
-                        applyBatch();
+                                applyBatch();
+                            }
+                        });
                     }
                 });
             }
@@ -160,7 +179,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             throws RemoteException {
         final Map<String, E> entityMap = groupEntitiesById(remoteEntities);
         final EntityMapper<E> mapper = EntityMapper.forEntity(clazz);
-        final TriggerResolver<E> triggerResolver = triggerResolverFactory.getResolverForEntity(clazz);
+        final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
 
         final Cursor cursor = provider.query(clazz).asCursor();
         while (cursor.moveToNext()) {
@@ -171,7 +190,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 batch.delete(localEntity);
             } else { // existing entity, update stats if changed
                 entityMap.remove(localEntity.getId());
-                checkEntityChanged(localEntity, remoteEntity, triggerResolver);
+                checkEntityChanged(localEntity, remoteEntity, entityFacade);
             }
         }
 
@@ -182,7 +201,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private <E extends OVirtEntity> void updateLocalEntity(E remoteEntity, Class<E> clazz) {
-        final TriggerResolver<E> triggerResolver = triggerResolverFactory.getResolverForEntity(clazz);
+        final EntityFacade<E> triggerResolver = entityFacadeLocator.getFacade(clazz);
 
         Collection<E> localEntities = provider.query(clazz).id(remoteEntity.getId()).all();
         if (localEntities.isEmpty()) {
@@ -194,30 +213,29 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    private <E extends OVirtEntity> void checkEntityChanged(E localEntity, E remoteEntity, TriggerResolver<E> triggerResolver) {
+    private <E extends OVirtEntity> void checkEntityChanged(E localEntity, E remoteEntity, EntityFacade<E> entityFacade) {
         if (!localEntity.equals(remoteEntity)) {
-            if (triggerResolver != null) {
-                final List<Trigger<E>> triggers = triggerResolver.getTriggersForEntity(localEntity);
-                processEntityTriggers(triggers, localEntity, remoteEntity);
+            if (entityFacade != null) {
+                final List<Trigger<E>> triggers = entityFacade.getTriggers(localEntity);
+                processEntityTriggers(triggers, localEntity, remoteEntity, entityFacade);
             }
             Log.i(TAG, "Scheduling update for URI: " + localEntity.getUri());
             batch.update(remoteEntity);
         }
     }
 
-    private <E extends OVirtEntity> void processEntityTriggers(List<Trigger<E>> triggers, E localEntity, E remoteEntity) {
+    private <E extends OVirtEntity> void processEntityTriggers(List<Trigger<E>> triggers, E localEntity, E remoteEntity, EntityFacade<E> entityFacade) {
         Log.i(TAG, "Processing triggers for entity: " + remoteEntity.getId());
         for (Trigger<E> trigger : triggers) {
             if (!trigger.getCondition().evaluate(localEntity) && trigger.getCondition().evaluate(remoteEntity)) {
-                displayNotification(trigger, remoteEntity);
+                displayNotification(trigger, remoteEntity, entityFacade);
             }
         }
     }
 
-    // TODO: generalize to multiple entity types
-    private <E extends OVirtEntity> void displayNotification(Trigger<E> trigger, E entity) {
+    private <E extends OVirtEntity> void displayNotification(Trigger<E> trigger, E entity, EntityFacade<E> entityFacade) {
         final Context appContext = getContext().getApplicationContext();
-        final Intent intent = new Intent(appContext, VmDetailActivity_.class);
+        final Intent intent = entityFacade.getDetailIntent(entity, appContext);
         intent.setData(entity.getUri());
         notificationDisplayer.showNotification(
                 trigger, entity, appContext, PendingIntent.getActivity(appContext, 0, intent, 0)

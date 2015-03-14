@@ -3,8 +3,9 @@ package org.ovirt.mobile.movirt.ui;
 /**
  * Created by yixin on 2015/3/24.
  */
-import android.support.v4.app.Fragment;
+
 import android.os.RemoteException;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.widget.ListView;
 

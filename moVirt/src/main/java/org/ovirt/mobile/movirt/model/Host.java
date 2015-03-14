@@ -5,6 +5,7 @@ import android.net.Uri;
 
 import com.j256.ormlite.field.DatabaseField;
 
+import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 
@@ -16,22 +17,32 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
     }
 
     public enum Status {
-        DOWN,
-        ERROR,
-        INITIALIZING,
-        INSTALLING,
-        INSTALL_FAILED,
-        MAINTENANCE,
-        NON_OPERATIONAL,
-        NON_RESPONSIVE,
-        PENDING_APPROVAL,
-        PREPARING_FOR_MAINTENANCE,
-        CONNECTING,
-        REBOOT,
-        UNASSIGNED,
-        UP,
-        INSTALLING_OS,
-        KDUMPING
+        DOWN(R.drawable.down),
+        ERROR(R.drawable.error),
+        INITIALIZING(R.drawable.wait),
+        INSTALLING(R.drawable.host_installing),
+        INSTALL_FAILED(R.drawable.down),
+        MAINTENANCE(R.drawable.host_maintenance),
+        NON_OPERATIONAL(R.drawable.nonoperational),
+        NON_RESPONSIVE(R.drawable.down),
+        PENDING_APPROVAL(R.drawable.unconfigured),
+        PREPARING_FOR_MAINTENANCE(R.drawable.host_prepare_to_migrate),
+        CONNECTING(R.drawable.down),
+        REBOOT(R.drawable.wait),
+        UNASSIGNED(R.drawable.down),
+        UP(R.drawable.up),
+        INSTALLING_OS(R.drawable.unconfigured),
+        KDUMPING(R.drawable.wait);
+
+        Status(int resource) {
+            this.resource = resource;
+        }
+
+        private final int resource;
+
+        public int getResource() {
+            return resource;
+        }
     }
 
     @DatabaseField(columnName = STATUS, canBeNull = false)

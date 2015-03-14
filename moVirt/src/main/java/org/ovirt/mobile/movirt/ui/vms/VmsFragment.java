@@ -1,149 +1,45 @@
 package org.ovirt.mobile.movirt.ui.vms;
 
-import android.support.v4.app.Fragment;
-import android.content.Intent;
-import android.support.v4.content.Loader;
 import android.database.Cursor;
-import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.EditText;
+import android.widget.CursorAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.Spinner;
 import android.widget.TextView;
 
-import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.InstanceState;
-import org.androidannotations.annotations.ItemClick;
-import org.androidannotations.annotations.Receiver;
-import org.androidannotations.annotations.UiThread;
-import org.androidannotations.annotations.ViewById;
-import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
-import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.provider.SortOrder;
-import org.ovirt.mobile.movirt.sync.SyncAdapter;
-import org.ovirt.mobile.movirt.ui.EndlessScrollListener;
-import org.ovirt.mobile.movirt.ui.VmDetailActivity_;
-import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
+import org.ovirt.mobile.movirt.ui.BaseEntityListFragment;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CLUSTER_ID;
-
-@EFragment(R.layout.fragment_vms_list)
-public class VmsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+@EFragment(R.layout.fragment_base_entity_list)
+public class VmsFragment extends BaseEntityListFragment<Vm> implements OVirtContract.Vm {
 
     private static final String TAG = VmsFragment.class.getSimpleName();
 
-    private static final int EVENTS_PER_PAGE = 20;
-
-    private int page = 1;
-
-    @Bean
-    SyncAdapter syncAdapter;
-
-    @ViewById(R.id.vmListView)
-    ListView listView;
-
-    @ViewById
-    EditText searchText;
-
-    @ViewById
-    Spinner orderBySpinner;
-
-    @ViewById
-    Spinner orderSpinner;
-
-    @InstanceState
-    String selectedClusterId;
-
-    @Bean
-    ProviderFacade provider;
-
-    @ViewById
-    SwipeRefreshLayout swipeVmContainer;
-
-    private final TextWatcher textWatcher = new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-
-        }
-
-        @Override
-        public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-
-        }
-
-        @Override
-        public void afterTextChanged(Editable editable) {
-            resetListViewPosition();
-            restartLoader();
-        }
-    };
-
-    private final EndlessScrollListener endlessScrollListener = new EndlessScrollListener() {
-        @Override
-        public void onLoadMore(int page, int totalItemsCount) {
-            loadMoreData(page);
-        }
-    };
-
-    public void loadMoreData(int page) {
-        this.page = page;
-        restartLoader();
-    }
-
-    private CursorAdapterLoader cursorAdapterLoader;
-
-    private void restartLoader() {
-        getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
+    public VmsFragment() {
+        super(Vm.class);
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
-        syncingChanged(SyncAdapter.inSync);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        syncingChanged(false);
-    }
-
-    @AfterViews
-    void initAdapters() {
-        swipeVmContainer.setOnRefreshListener(this);
-
+    protected CursorAdapter createCursorAdapter() {
         SimpleCursorAdapter vmListAdapter = new SimpleCursorAdapter(getActivity(),
                 R.layout.vm_list_item,
                 null,
-                new String[]{OVirtContract.Vm.NAME, OVirtContract.Vm.STATUS},
+                new String[]{NAME, STATUS},
                 new int[]{R.id.vm_name, R.id.vm_status}, 0);
 
         vmListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-                if (columnIndex == cursor.getColumnIndex(OVirtContract.Vm.NAME)) {
+                if (columnIndex == cursor.getColumnIndex(NAME)) {
                     TextView textView = (TextView) view;
-                    String vmName = cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.NAME));
+                    String vmName = cursor.getString(cursor.getColumnIndex(NAME));
                     textView.setText(vmName);
-                } else if (columnIndex == cursor.getColumnIndex(OVirtContract.Vm.STATUS)) {
+                } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
                     ImageView imageView = (ImageView) view;
-                    Vm.Status status = Vm.Status.valueOf(cursor.getString(cursor.getColumnIndex(OVirtContract.Vm.STATUS)));
+                    Vm.Status status = Vm.Status.valueOf(cursor.getString(cursor.getColumnIndex(STATUS)));
                     imageView.setImageResource(status.getResource());
                 }
 
@@ -151,95 +47,6 @@ public class VmsFragment extends Fragment implements SwipeRefreshLayout.OnRefres
             }
         });
 
-        listView.setAdapter(vmListAdapter);
-        listView.setEmptyView(getActivity().findViewById(android.R.id.empty));
-        listView.setTextFilterEnabled(true);
-
-        cursorAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
-            @Override
-            public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                ProviderFacade.QueryBuilder<Vm> query = provider.query(Vm.class);
-
-                if (selectedClusterId != null) {
-                    query.where(CLUSTER_ID, selectedClusterId);
-                }
-
-                String searchNameString = searchText.getText().toString();
-                if (!"".equals(searchNameString)) {
-                    query.whereLike(NAME, "%" + searchNameString + "%");
-                }
-
-                String orderBy = (String) orderBySpinner.getSelectedItem();
-
-                if ("".equals(orderBy)) {
-                    orderBy = NAME;
-                }
-
-                SortOrder order = SortOrder.from((String) orderSpinner.getSelectedItem());
-                return query.orderBy(orderBy, order).limit(page * EVENTS_PER_PAGE).asLoader();
-            }
-        };
-
-        getLoaderManager().initLoader(0, null, cursorAdapterLoader);
-
-        listView.setOnScrollListener(endlessScrollListener);
-
-        searchText.removeTextChangedListener(textWatcher);
-        searchText.addTextChangedListener(textWatcher);
-
-        RestartOrderItemSelectedListener orderItemSelectedListener = new RestartOrderItemSelectedListener();
-
-        orderBySpinner.setOnItemSelectedListener(orderItemSelectedListener);
-        orderSpinner.setOnItemSelectedListener(orderItemSelectedListener);
-    }
-
-    private void resetListViewPosition() {
-        page = 1;
-        listView.smoothScrollToPosition(0);
-        endlessScrollListener.resetListener();
-    }
-
-    public void updateFilterClusterIdTo(String selectedClusterId) {
-        resetListViewPosition();
-        this.selectedClusterId = selectedClusterId;
-        restartLoader();
-    }
-
-    @Override
-    public void onRefresh() {
-        performRefresh();
-    }
-
-    class RestartOrderItemSelectedListener implements AdapterView.OnItemSelectedListener {
-
-        @Override
-        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-            resetListViewPosition();
-            restartLoader();
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> adapterView) {
-
-        }
-    }
-
-    @ItemClick
-    void vmListViewItemClicked(Cursor cursor) {
-        Intent intent = new Intent(getActivity(), VmDetailActivity_.class);
-        Vm vm = EntityMapper.VM_MAPPER.fromCursor(cursor);
-        intent.setData(vm.getUri());
-        startActivity(intent);
-    }
-
-    @UiThread
-    @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
-        swipeVmContainer.setRefreshing(syncing);
-    }
-
-    @Background
-    void performRefresh() {
-        syncAdapter.doPerformSync(false);
+        return vmListAdapter;
     }
 }

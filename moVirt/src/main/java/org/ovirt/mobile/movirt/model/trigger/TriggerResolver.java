@@ -5,5 +5,5 @@ import org.ovirt.mobile.movirt.model.BaseEntity;
 import java.util.List;
 
 public interface TriggerResolver<E extends BaseEntity<?>> {
-    List<Trigger<E>> getTriggersForEntity(E entity);
+    List<Trigger<E>> getTriggers(E entity);
 }

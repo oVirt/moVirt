@@ -42,6 +42,7 @@
     <string name="whole_datacenter">Whole datacenter</string>
     <string name="cluster_scope">Cluster %1$s</string>
     <string name="details_for_vm">Vm %1$s</string>
+    <string name="details_for_host">Host %1$s</string>
     <string name="cancel">Cancel</string>
     <string name="trigger_condition_type">Condition</string>
     <string name="notification_type">Notify</string>
@@ -111,4 +112,6 @@
 
     <string name="nic_para">Linked : %1$b&#160;&#160;&#160;&#160;plugged : %2$b</string>
     <string name="nic_name_and_address">%1$s : %2$s</string>
+
+    <string name="title_activity_host_details">Host Details</string>
 </resources>

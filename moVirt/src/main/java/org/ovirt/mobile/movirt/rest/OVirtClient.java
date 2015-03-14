@@ -25,8 +25,8 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
+import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.model.trigger.TriggerResolverFactory;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.springframework.core.NestedRuntimeException;
@@ -53,9 +53,6 @@ public class OVirtClient {
 
     @Bean
     OvirtSimpleClientHttpRequestFactory requestFactory;
-
-    @Bean
-    TriggerResolverFactory triggerResolverFactory;
 
     @RootContext
     Context context;
@@ -112,6 +109,15 @@ public class OVirtClient {
         }, response);
     }
 
+    public void getHost(final String hostId, Response<Host> response) {
+        fireRestRequest(new Request<Host>() {
+            @Override
+            public Host fire() {
+                return restClient.getHost(hostId).toEntity();
+            }
+        }, response);
+    }
+
     public void getConsoleTicket(final String vmId, Response<ActionTicket> response) {
         fireRestRequest(new Request<ActionTicket>() {
             @Override
@@ -128,7 +134,6 @@ public class OVirtClient {
                 return restClient.getDisks(id);
             }
         }, response);
-
     }
 
     public void getVms(Response<List<Vm>> response) {
@@ -179,7 +184,20 @@ public class OVirtClient {
                 return restClient.getNics(id);
             }
         }, response);
+    }
 
+   public void getHosts(Response<List<Host>> response) {
+        fireRestRequest(new Request<List<Host>>() {
+            @Override
+            public List<Host> fire() {
+                Hosts loadedHosts = restClient.getHosts();
+                if (loadedHosts == null) {
+                    return new ArrayList<>();
+                }
+
+                return mapRestWrappers(loadedHosts.host, null);
+            }
+        }, response);
     }
 
     public String login(String apiUrl, String username, String password, boolean disableHttps, boolean hasAdminPrivileges) {

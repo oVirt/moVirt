@@ -23,8 +23,6 @@ public class EntityMapper<E extends BaseEntity> {
         }
     }
 
-    public static final EntityMapper<Vm> VM_MAPPER = new EntityMapper<>(Vm.class);
-
     public static final EntityMapper<Cluster> CLUSTER_MAPPER = new EntityMapper<>(Cluster.class);
 
     public static final EntityMapper<Trigger<?>> TRIGGER_MAPPER = (EntityMapper) new EntityMapper<>(Trigger.class);

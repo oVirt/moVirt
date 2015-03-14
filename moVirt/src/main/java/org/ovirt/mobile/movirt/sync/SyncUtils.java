@@ -3,12 +3,16 @@ package org.ovirt.mobile.movirt.sync;
 import android.content.ContentResolver;
 import android.os.Bundle;
 
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 
 @EBean
 public class SyncUtils {
+
+    @Bean
+    SyncAdapter syncAdapter;
 
     /**
      * Helper method to trigger an immediate sync ("refresh").
@@ -30,5 +34,9 @@ public class SyncUtils {
                 MovirtAuthenticator.MOVIRT_ACCOUNT,      // Sync account
                 OVirtContract.CONTENT_AUTHORITY, // Content authority
                 b);                                      // Extras
+    }
+
+    public void triggerCoreRefresh() {
+        syncAdapter.doPerformSync(false);
     }
 }
