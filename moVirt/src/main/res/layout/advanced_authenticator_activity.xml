@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ProgressBar
+        android:id="@+id/progress"
+        style="@style/commonProgressStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"></ProgressBar>
+
+    <CheckBox
+        android:id="@+id/enforceHttpBasicAuth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/account_enforceHttpBasicAuth" />
+
+    <Spinner
+        android:id="@+id/certHandlingStrategy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:entries="@array/certificate_handling_strategy" />
+
+    <EditText
+        android:id="@+id/txtCaUrl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/ca_cert_account_endpoint" />
+
+    <EditText
+        android:id="@+id/txtValidForHostnames"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/valid_for_hostnames" />
+
+    <ScrollView
+        android:id="@+id/certDetailsScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="100dp">
+
+        <TextView
+            android:id="@+id/txtCertDetails"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </ScrollView>
+
+    <Button
+        android:id="@+id/btnLoad"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/load_ca_from_addr" />
+
+    <Button
+        android:id="@+id/btnDelete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/delete_stored_ca" />
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/done_advanced_settings" />
+
+</LinearLayout>

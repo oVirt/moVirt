@@ -258,6 +258,24 @@ public class ProviderFacade {
         return 0;
     }
 
+    public byte[] getCaCert() {
+        try {
+            Cursor cursor = contentClient.query(OVirtContract.CaCert.CONTENT_URI,
+                    new String[]{OVirtContract.CaCert.ID, OVirtContract.CaCert.CONTENT},
+                    null,
+                    null,
+                    null);
+            if (cursor.moveToNext()) {
+                return cursor.getBlob(0);
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error determining last event id", e);
+            throw new RuntimeException(e);
+        }
+
+        return new byte[0];
+    }
+
     public int getLastEventId() {
         try {
             Cursor cursor = contentClient.query(OVirtContract.Event.CONTENT_URI,

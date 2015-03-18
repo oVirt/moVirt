@@ -23,6 +23,7 @@ import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
+import org.ovirt.mobile.movirt.model.CaCert;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
@@ -35,6 +36,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -200,12 +202,12 @@ public class OVirtClient {
         }, response);
     }
 
-    public String login(String apiUrl, String username, String password, boolean disableHttps, boolean hasAdminPrivileges) {
+    public String login(String apiUrl, String username, String password, final boolean hasAdminPrivileges) {
         setPersistentAuthHeaders();
         restClient.setRootUrl(apiUrl);
         restClient.setHttpBasicAuth(username, password);
         restClient.setCookie("JSESSIONID", "");
-        requestFactory.setIgnoreHttps(disableHttps);
+        requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
         restClient.setHeader(FILTER, Boolean.toString(!hasAdminPrivileges));
         restClient.login();
         String sessionId = restClient.getCookie("JSESSIONID");
@@ -413,7 +415,6 @@ public class OVirtClient {
 
     private void updateClientBeforeCall() {
         restClient.setHeader(FILTER, Boolean.toString(!authenticator.hasAdminPermissions()));
-        requestFactory.setIgnoreHttps(authenticator.disableHttps());
         restClient.setRootUrl(authenticator.getApiUrl());
     }
 

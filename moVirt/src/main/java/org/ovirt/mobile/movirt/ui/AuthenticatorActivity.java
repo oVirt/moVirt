@@ -5,6 +5,8 @@ import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.opengl.Visibility;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckBox;
@@ -12,11 +14,13 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.UiThread;
@@ -25,12 +29,19 @@ import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 
 @EActivity(R.layout.authenticator_activity)
 public class AuthenticatorActivity extends AccountAuthenticatorActivity {
+
+    private static final String TAG = AuthenticatorActivity.class.getSimpleName();
+
+    @Bean
+    NullHostnameVerifier verifier;
 
     @SystemService
     AccountManager accountManager;
@@ -51,12 +62,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     CheckBox chkAdminPriv;
 
     @ViewById
-    CheckBox chkDisableHttps;
-
-    @ViewById
-    CheckBox enforceHttpBasicAuth;
-
-    @ViewById
     ProgressBar authProgress;
 
     @Bean
@@ -68,16 +73,63 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     @Bean
     EventsHandler eventsHandler;
 
+    @Bean
+    ProviderFacade providerFacade;
+
+    private static int REQUEST_ACCOUNT_DETAILS = 1;
+
+    @InstanceState
+    boolean enforceHttpBasicAuth = false;
+
+    @InstanceState
+    CertHandlingStrategy certHandlingStrategy;
+
+    @InstanceState
+    boolean advancedFieldsInited = false;
+
+    @InstanceState
+    boolean inProgress;
+
     @AfterViews
     void init() {
         txtEndpoint.setText(authenticator.getApiUrl());
         txtUsername.setText(authenticator.getUserName());
         txtPassword.setText(authenticator.getPassword());
-
         chkAdminPriv.setChecked(authenticator.hasAdminPermissions());
-        chkDisableHttps.setChecked(authenticator.disableHttps());
-        enforceHttpBasicAuth.setChecked(authenticator.enforceBasicAuth());
+        changeProgressVisibilityTo(inProgress ? View.VISIBLE : View.GONE);
+    }
 
+    @AfterInject
+    void initAdvanced() {
+        if (advancedFieldsInited) {
+            return;
+        }
+        advancedFieldsInited = true;
+
+        enforceHttpBasicAuth = authenticator.enforceBasicAuth();
+        certHandlingStrategy = authenticator.getCertHandlingStrategy();
+    }
+
+    @Click(R.id.btnAdvanced)
+    void btnAdvancedClicked() {
+        Intent intent = new Intent(this, AdvancedAuthenticatorActivity_.class);
+        intent.putExtra(AdvancedAuthenticatorActivity.ENFORCE_HTTP_BASIC_AUTH, enforceHttpBasicAuth);
+        intent.putExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY, certHandlingStrategy.id());
+        intent.putExtra(AdvancedAuthenticatorActivity.LOAD_CA_FROM, txtEndpoint.getText().toString());
+        startActivityForResult(intent, REQUEST_ACCOUNT_DETAILS);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_ACCOUNT_DETAILS) {
+            if(resultCode == RESULT_OK){
+                enforceHttpBasicAuth = data.getBooleanExtra(AdvancedAuthenticatorActivity.ENFORCE_HTTP_BASIC_AUTH, enforceHttpBasicAuth);
+                long certHandlingStrategyId = data.getLongExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY, certHandlingStrategy.id());
+                certHandlingStrategy = CertHandlingStrategy.from(certHandlingStrategyId);
+            }
+        }
     }
 
     @Click(R.id.btnCreate)
@@ -87,14 +139,12 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         String password = txtPassword.getText().toString();
 
         Boolean adminPriv = chkAdminPriv.isChecked();
-        Boolean disableHttps = chkDisableHttps.isChecked();
-        Boolean enforceHttpBasic = enforceHttpBasicAuth.isChecked();
 
-        finishLogin(endpoint, username, password, adminPriv, disableHttps, enforceHttpBasic);
+        finishLogin(endpoint, username, password, adminPriv);
     }
 
     @Background
-    void finishLogin(String apiUrl, String name, String password, Boolean hasAdminPermissions, Boolean disableHttps, Boolean enforceHttpBasic) {
+    void finishLogin(String apiUrl, String name, String password, Boolean hasAdminPermissions) {
         boolean endpointChanged = false;
         if (!TextUtils.equals(apiUrl, authenticator.getApiUrl()) ||
                 !TextUtils.equals(name, authenticator.getUserName())) {
@@ -108,37 +158,33 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         ContentResolver.setSyncAutomatically(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
         ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
 
-        setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, apiUrl, name, password, hasAdminPermissions, disableHttps, enforceHttpBasic);
+        setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, apiUrl, name, password, hasAdminPermissions);
 
         changeProgressVisibilityTo(View.VISIBLE);
-        String token = "";
-        boolean success = true;
+
         try {
-            token = client.login(apiUrl, name, password, disableHttps, hasAdminPermissions);
+            String token = client.login(apiUrl, name, password, hasAdminPermissions);
+            onTokenReceived(token, endpointChanged);
         } catch (Exception e) {
-            showToast("Error logging in: " + e.getMessage());
-            success = false;
-            return;
-        } finally {
             changeProgressVisibilityTo(View.GONE);
-            if (success) {
-                if (TextUtils.isEmpty(token)) {
-                    showToast("Error: the returned token is empty");
-                    return;
-                } else {
-                    showToast("Login successful");
-                    if (endpointChanged) {
-                        // there is a different set of events and since we are counting only the increments, this ones are not needed anymore
-                        eventsHandler.deleteEvents();
-                    }
-
-                    syncUtils.triggerRefresh();
-                }
-            } else {
-                return;
-            }
+            showToast("Error logging in: " + e.getMessage());
         }
+    }
 
+    void onTokenReceived(String token, boolean endpointChanged) {
+        changeProgressVisibilityTo(View.GONE);
+        if (TextUtils.isEmpty(token)) {
+            showToast("Error: the returned token is empty");
+            return;
+        } else {
+            showToast("Login successful");
+            if (endpointChanged) {
+                // there is a different set of events and since we are counting only the increments, this ones are not needed anymore
+                eventsHandler.deleteEvents();
+            }
+
+            syncUtils.triggerRefresh();
+        }
         accountManager.setAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, token);
 
         final Intent intent = new Intent();
@@ -153,6 +199,12 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
     @UiThread
     void changeProgressVisibilityTo(int visibility) {
+        if (visibility == View.GONE) {
+            inProgress = true;
+        } else {
+            inProgress = true;
+        }
+
         authProgress.setVisibility(visibility);
     }
 
@@ -161,12 +213,13 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }
 
-    private void setUserData(Account account, String apiUrl, String name, String password, Boolean hasAdminPermissions, Boolean disableHttps, Boolean enforceHttpBasic) {
+    private void setUserData(Account account, String apiUrl, String name, String password, Boolean hasAdminPermissions) {
         accountManager.setUserData(account, MovirtAuthenticator.API_URL, apiUrl);
         accountManager.setUserData(account, MovirtAuthenticator.USER_NAME, name);
         accountManager.setUserData(account, MovirtAuthenticator.HAS_ADMIN_PERMISSIONS, Boolean.toString(hasAdminPermissions));
-        accountManager.setUserData(account, MovirtAuthenticator.DISABLE_HTTPS, Boolean.toString(disableHttps));
-        accountManager.setUserData(account, MovirtAuthenticator.ENFORCE_HTTP_BASIC, Boolean.toString(enforceHttpBasic));
+        accountManager.setUserData(account, MovirtAuthenticator.CERT_HANDLING_STRATEGY, Long.toString(certHandlingStrategy.id()));
+        accountManager.setUserData(account, MovirtAuthenticator.ENFORCE_HTTP_BASIC, Boolean.toString(enforceHttpBasicAuth));
+        accountManager.getUserData(account, MovirtAuthenticator.API_URL);
         accountManager.setPassword(account, password);
     }
 

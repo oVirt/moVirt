@@ -106,4 +106,16 @@ public interface OVirtContract {
         String STORAGE_DOMAIN_ID = "storage_domain_id";
         String DATA_CENTER_ID = "data_center_id";
     }
+
+
+    String PATH_CA_CRTS = "cacerts";
+    public interface CaCert extends BaseEntity {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_CA_CRTS).build();
+
+        String TABLE = "cacerts";
+
+        String CONTENT = "content";
+        String VALID_FOR = "valid_for";
+
+    }
 }

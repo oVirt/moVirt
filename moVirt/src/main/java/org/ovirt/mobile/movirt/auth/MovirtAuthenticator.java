@@ -17,6 +17,7 @@ import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.UiThread;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
+import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
 
 
 @EBean
@@ -32,11 +33,13 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     public static final String API_URL = "org.ovirt.mobile.movirt.apiurl";
 
+    public static final String CERT_HANDLING_STRATEGY = "org.ovirt.mobile.movirt.certhandlingstrategy";
+
     public static final String HAS_ADMIN_PERMISSIONS = "org.ovirt.mobile.movirt.adminpermissionsm";
 
-    public static final String DISABLE_HTTPS = "org.ovirt.mobile.movirt.disablehttps";
-
     public static final String ENFORCE_HTTP_BASIC = "org.ovirt.mobile.movirt.enforceHttpBasic";
+
+    public static final String CUSTOM_CERTIFICATE = "org.ovirt.mobile.movirt.customCertificate";
 
     public static final Account MOVIRT_ACCOUNT = new Account(MovirtAuthenticator.ACCOUNT_NAME, MovirtAuthenticator.ACCOUNT_TYPE);
 
@@ -86,7 +89,8 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             final String username = getUserName();
             final String password = getPassword();
             if (username != null && password != null) {
-                authToken = client.login(getApiUrl(), username, password, disableHttps(), hasAdminPermissions());
+                authToken = client.login(getApiUrl(), username, password, hasAdminPermissions());
+
                 if(!TextUtils.isEmpty(authToken)) {
                     accountManager.setAuthToken(account, authTokenType, authToken);
                 }
@@ -127,6 +131,19 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         return null;
     }
 
+    public CertHandlingStrategy getCertHandlingStrategy() {
+        String strategy = read(CERT_HANDLING_STRATEGY);
+        if (TextUtils.isEmpty(strategy)) {
+            return CertHandlingStrategy.TRUST_SYSTEM;
+        }
+
+        try {
+            return CertHandlingStrategy.from(Long.valueOf(strategy));
+        } catch (NumberFormatException e) {
+            return CertHandlingStrategy.TRUST_SYSTEM;
+        }
+    }
+
     public String getApiUrl() {
         return read(API_URL);
     }
@@ -141,10 +158,6 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     public Boolean hasAdminPermissions() {
         return read(HAS_ADMIN_PERMISSIONS, false);
-    }
-
-    public Boolean disableHttps() {
-        return read(DISABLE_HTTPS, false);
     }
 
     public Boolean enforceBasicAuth() {

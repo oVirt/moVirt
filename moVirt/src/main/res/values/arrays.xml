@@ -53,4 +53,11 @@
     <string-array name="host_detail_pager_titles">
         <item>General</item>
     </string-array>
+
+    <string-array name="certificate_handling_strategy">
+        <item>Trust System Certificates</item>
+        <item>Trust Specific Certificate</item>
+        <item>Ignore Certificate Checking</item>
+    </string-array>
+
 </resources>
