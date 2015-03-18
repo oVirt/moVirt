@@ -16,6 +16,10 @@ public class CursorHelper {
         return cursor.getString(cursor.getColumnIndexOrThrow(columnName));
     }
 
+    public byte[] getByteArray(String columnName) {
+        return cursor.getBlob(cursor.getColumnIndexOrThrow(columnName));
+    }
+
     public int getInt(String columnName) {
         return cursor.getInt(cursor.getColumnIndexOrThrow(columnName));
     }

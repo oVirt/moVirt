@@ -200,12 +200,12 @@ public class OVirtClient {
         }, response);
     }
 
-    public String login(String apiUrl, String username, String password, boolean disableHttps, boolean hasAdminPrivileges) {
+    public String login(String apiUrl, String username, String password, final boolean hasAdminPrivileges) {
         setPersistentAuthHeaders();
         restClient.setRootUrl(apiUrl);
         restClient.setHttpBasicAuth(username, password);
         restClient.setCookie("JSESSIONID", "");
-        requestFactory.setIgnoreHttps(disableHttps);
+        requestFactory.setCertificateHandlingStrategy(authenticator.getCertHandlingStrategy());
         restClient.setHeader(FILTER, Boolean.toString(!hasAdminPrivileges));
         restClient.login();
         String sessionId = restClient.getCookie("JSESSIONID");
@@ -413,7 +413,6 @@ public class OVirtClient {
 
     private void updateClientBeforeCall() {
         restClient.setHeader(FILTER, Boolean.toString(!authenticator.hasAdminPermissions()));
-        requestFactory.setIgnoreHttps(authenticator.disableHttps());
         restClient.setRootUrl(authenticator.getApiUrl());
     }
 
