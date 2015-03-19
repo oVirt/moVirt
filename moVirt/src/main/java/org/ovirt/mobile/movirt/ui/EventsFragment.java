@@ -1,7 +1,7 @@
 package org.ovirt.mobile.movirt.ui;
 
-import android.app.Fragment;
-import android.content.Loader;
+import android.support.v4.app.Fragment;
+import android.support.v4.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;

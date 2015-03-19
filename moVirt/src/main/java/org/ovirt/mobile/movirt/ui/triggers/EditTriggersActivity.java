@@ -1,6 +1,6 @@
 package org.ovirt.mobile.movirt.ui.triggers;
 
-import android.content.Loader;
+import android.support.v4.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -108,7 +108,7 @@ public class EditTriggersActivity extends ActionBarActivity implements BaseTrigg
         triggersListView.setAdapter(triggerAdapter);
         triggersListView.setEmptyView(findViewById(android.R.id.empty));
 
-        getLoaderManager().initLoader(0, null, cursorAdapterLoader);
+        getSupportLoaderManager().initLoader(0, null, cursorAdapterLoader);
     }
 
     private String getScopeText() {

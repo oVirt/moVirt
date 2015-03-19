@@ -1,6 +1,6 @@
 package org.ovirt.mobile.movirt.ui;
 
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.os.RemoteException;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;

@@ -5,7 +5,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.Loader;
+import android.support.v4.content.Loader;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.MatrixCursor;
@@ -13,13 +13,16 @@ import android.database.MergeCursor;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -31,7 +34,6 @@ import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.FragmentById;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.OptionsItem;
@@ -54,6 +56,9 @@ import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 
@@ -80,17 +85,8 @@ public class MainActivity extends ActionBarActivity implements TabChangedListene
     @ViewById
     DrawerLayout drawerLayout;
 
-    @FragmentById
-    EventsFragment eventList;
-
-    @FragmentById
-    VmsFragment vmsList;
-
     @ViewById
-    View vmsLayout;
-
-    @ViewById
-    View eventsLayout;
+    ViewPager viewPager;
 
     @ViewById
     ListView clusterDrawer;
@@ -121,6 +117,10 @@ public class MainActivity extends ActionBarActivity implements TabChangedListene
 
     private ActionBarDrawerToggle drawerToggle;
 
+    EventsFragment eventList;
+
+    VmsFragment vmsList;
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -149,34 +149,54 @@ public class MainActivity extends ActionBarActivity implements TabChangedListene
             showDialogToOpenAccountSettings(noAccMsg, new Intent(this, AuthenticatorActivity_.class));
         }
 
-        initTabs();
+        initPagers();
     }
 
-    private void initTabs() {
-        vmsLayout.setVisibility(currentlyShown == TabChangedListener.CurrentlyShown.VMS ? View.VISIBLE : View.GONE);
-        eventsLayout.setVisibility(currentlyShown == TabChangedListener.CurrentlyShown.EVENTS ? View.VISIBLE : View.GONE);
+    private void initPagers() {
+        final List<View> viewList = new ArrayList<>();
+        LayoutInflater inflater = getLayoutInflater();
+        View vmsView = inflater.inflate(R.layout.fragment_vms, null);
+        vmsList = (VmsFragment)getSupportFragmentManager().findFragmentById(R.id.vmsList);
+        View eventsView = inflater.inflate(R.layout.fragment_events, null);
+        eventList = (EventsFragment)getSupportFragmentManager().findFragmentById(R.id.eventList);
+        viewList.add(vmsView);
+        viewList.add(eventsView);
 
-        TabChangedListener.CurrentlyShown tmpCurrentlyShown = currentlyShown;
+        final List<String> viewTitleList = new ArrayList<>();
+        viewTitleList.add("VMs");
+        viewTitleList.add("Events");
 
-        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        PagerAdapter pagerAdapter = new PagerAdapter() {
+            @Override
+            public boolean isViewFromObject(View view, Object object) {
+                return view == object;
+            }
 
-        ActionBar.Tab vmsTab = getSupportActionBar().newTab()
-                .setText("VMs")
-                .setTabListener(new TabChangedListener(vmsLayout, TabChangedListener.CurrentlyShown.VMS, this));
+            @Override
+            public void destroyItem(ViewGroup container, int position,
+                                    Object object) {
+                container.removeView(viewList.get(position));
+            }
 
-        getSupportActionBar().addTab(vmsTab);
+            @Override
+            public Object instantiateItem(ViewGroup container, int position) {
+                container.addView(viewList.get(position));
+                return viewList.get(position);
+            }
 
-        ActionBar.Tab eventsTab = getSupportActionBar().newTab()
-                .setText("Events")
-                .setTabListener(new TabChangedListener(eventsLayout, TabChangedListener.CurrentlyShown.EVENTS, this));
+            @Override
+            public int getCount() {
+                return viewList.size();
+            }
 
-        getSupportActionBar().addTab(eventsTab);
+            @Override
+            public CharSequence getPageTitle(int position) {
+                return viewTitleList.get(position);
+            }
+        };
 
-        if (tmpCurrentlyShown == TabChangedListener.CurrentlyShown.EVENTS) {
-            eventsTab.select();
-        } else {
-            vmsTab.select();
-        }
+        viewPager.setAdapter(pagerAdapter);
+
     }
 
     @StringRes(R.string.all_clusters)
@@ -224,7 +244,7 @@ public class MainActivity extends ActionBarActivity implements TabChangedListene
         });
         clusterDrawer.setAdapter(clusterListAdapter);
 
-        getLoaderManager().initLoader(0, null, clusterAdapterLoader);
+        getSupportLoaderManager().initLoader(0, null, clusterAdapterLoader);
 
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
                 R.string.navigation_drawer_open,
