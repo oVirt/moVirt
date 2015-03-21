@@ -71,7 +71,9 @@
     <RelativeLayout
         android:id="@+id/statusPanel"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        >
 
         <TextView
             android:id="@+id/statusLabel"
@@ -89,6 +91,29 @@
             android:layout_alignBaseline="@id/statusLabel"/>
 
     </RelativeLayout>
+
+    <!-- option for Event triggers -->
+    <LinearLayout
+        android:id="@+id/regexPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        >
+        <TextView
+            android:id="@+id/regexLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/regex"
+            />
+        <EditText
+            android:id="@+id/regexEdit"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            />
+    </LinearLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"

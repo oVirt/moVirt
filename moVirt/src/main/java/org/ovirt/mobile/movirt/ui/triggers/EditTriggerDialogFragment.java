@@ -8,9 +8,9 @@ import android.widget.ArrayAdapter;
 
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
+import org.ovirt.mobile.movirt.model.condition.EventCondition;
 import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
@@ -20,7 +20,7 @@ public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
 
     private static final String TAG = EditTriggerDialogFragment.class.getSimpleName();
 
-    private Trigger<Vm> trigger;
+    private Trigger trigger;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -54,19 +54,24 @@ public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
     }
 
     private void mapCondition() {
-        if (trigger.getCondition() instanceof CpuThresholdCondition) {
-            CpuThresholdCondition condition = (CpuThresholdCondition) trigger.getCondition();
+        Condition triggerCondition = trigger.getCondition();
+        if (triggerCondition instanceof CpuThresholdCondition) {
+            CpuThresholdCondition condition = (CpuThresholdCondition) triggerCondition;
             conditionTypeSpinner.setSelection(0);
-            percentageEdit.setText(Integer.toString(condition.percentageLimit));
-        } else if (trigger.getCondition() instanceof MemoryThresholdCondition) {
-            MemoryThresholdCondition condition = (MemoryThresholdCondition) trigger.getCondition();
+            percentageEdit.setText(Integer.toString(condition.getPercentageLimit()));
+        } else if (triggerCondition instanceof MemoryThresholdCondition) {
+            MemoryThresholdCondition condition = (MemoryThresholdCondition) triggerCondition;
             conditionTypeSpinner.setSelection(1);
-            percentageEdit.setText(Integer.toString(condition.percentageLimit));
-        } else if (trigger.getCondition() instanceof StatusCondition) {
-            StatusCondition condition = (StatusCondition) trigger.getCondition();
+            percentageEdit.setText(Integer.toString(condition.getPercentageLimit()));
+        } else if (triggerCondition instanceof StatusCondition) {
+            StatusCondition condition = (StatusCondition) triggerCondition;
             conditionTypeSpinner.setSelection(2);
-            int index = ((ArrayAdapter<String>) statusSpinner.getAdapter()).getPosition(condition.status.toString().toUpperCase());
+            int index = ((ArrayAdapter<String>) statusSpinner.getAdapter()).getPosition(condition.getStatus().toString().toUpperCase());
             statusSpinner.setSelection(index);
+        } else if (triggerCondition instanceof EventCondition) {
+            EventCondition condition = (EventCondition) triggerCondition;
+            conditionTypeSpinner.setSelection(3);
+            regexEdit.setText(condition.getRegexString());
         }
     }
 
@@ -81,16 +86,16 @@ public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
         }
     }
 
-    public Trigger<Vm> getTrigger() {
+    public Trigger getTrigger() {
         return trigger;
     }
 
-    public void setTrigger(Trigger<Vm> trigger) {
+    public void setTrigger(Trigger trigger) {
         this.trigger = trigger;
     }
 
     private void saveTrigger() {
-        final Condition<Vm> condition = getCondition();
+        final Condition condition = getCondition();
         if (condition == null) {
             return;
         }

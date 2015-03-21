@@ -6,13 +6,15 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import org.ovirt.mobile.movirt.MoVirtApp;
-import org.ovirt.mobile.movirt.model.OVirtEntity;
+import org.ovirt.mobile.movirt.model.BaseEntity;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({@JsonSubTypes.Type(CpuThresholdCondition.class),
                @JsonSubTypes.Type(MemoryThresholdCondition.class),
-               @JsonSubTypes.Type(StatusCondition.class)})
-public abstract class Condition<T extends OVirtEntity> {
+               @JsonSubTypes.Type(StatusCondition.class),
+               @JsonSubTypes.Type(EventCondition.class)
+               })
+public abstract class Condition<T extends BaseEntity<?>> {
     public abstract boolean evaluate(T entity);
 
     public abstract String getMessage(T entity);

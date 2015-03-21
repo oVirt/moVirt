@@ -62,6 +62,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 public class MainActivity extends ActionBarActivity implements TabChangedListener.HasCurrentlyShown {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    public static final String EXTRA_ACTIVE_TAB = "org.ovirt.mobile.movirt.ACTIVE_TAB";
 
     Dialog connectionNotConfiguredProperlyDialog;
 
@@ -138,7 +139,13 @@ public class MainActivity extends ActionBarActivity implements TabChangedListene
 
     @AfterViews
     void init() {
-
+        Intent intent = getIntent();
+        String sTabFromIntent = intent.getStringExtra(EXTRA_ACTIVE_TAB);
+        if (sTabFromIntent != null) {
+            TabChangedListener.CurrentlyShown tabFromIntent =
+                    TabChangedListener.CurrentlyShown.valueOf(sTabFromIntent);
+            setCurrentlyShown(tabFromIntent);
+        }
         connectionNotConfiguredProperlyDialog = new Dialog(this);
 
         initClusterDrawer();

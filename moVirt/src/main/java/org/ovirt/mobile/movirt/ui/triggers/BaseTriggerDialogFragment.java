@@ -19,10 +19,14 @@ import org.ovirt.mobile.movirt.model.EntityType;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
+import org.ovirt.mobile.movirt.model.condition.EventCondition;
 import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 @EFragment
 public abstract class BaseTriggerDialogFragment extends DialogFragment {
@@ -36,12 +40,14 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
     protected Spinner notificationTypeSpinner;
     protected Spinner statusSpinner;
     protected EditText percentageEdit;
+    protected EditText regexEdit;
 
     protected View getDialogView(int titleResourceId) {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout.trigger_dialog, null);
         final ViewGroup rangePanel = (ViewGroup) view.findViewById(R.id.rangePanel);
         final ViewGroup statusPanel = (ViewGroup) view.findViewById(R.id.statusPanel);
+        final ViewGroup regexPanel = (ViewGroup) view.findViewById(R.id.regexPanel);
 
         final TextView headText = (TextView) view.findViewById(R.id.headText);
         headText.setText(titleResourceId);
@@ -50,6 +56,7 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
         notificationTypeSpinner = (Spinner) view.findViewById(R.id.notificationSpinner);
         statusSpinner = (Spinner) view.findViewById(R.id.statusSpinner);
         percentageEdit = (EditText) view.findViewById(R.id.percentageEdit);
+        regexEdit = (EditText) view.findViewById(R.id.regexEdit);
 
         conditionTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -60,10 +67,17 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
                     case "Memory":
                         rangePanel.setVisibility(View.VISIBLE);
                         statusPanel.setVisibility(View.GONE);
+                        regexPanel.setVisibility(View.GONE);
                         break;
                     case "Status":
                         rangePanel.setVisibility(View.GONE);
                         statusPanel.setVisibility(View.VISIBLE);
+                        regexPanel.setVisibility(View.GONE);
+                        break;
+                    case "Event":
+                        rangePanel.setVisibility(View.GONE);
+                        statusPanel.setVisibility(View.GONE);
+                        regexPanel.setVisibility(View.VISIBLE);
                         break;
                 }
             }
@@ -72,6 +86,7 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
             public void onNothingSelected(AdapterView<?> parent) {
                 rangePanel.setVisibility(View.GONE);
                 statusPanel.setVisibility(View.GONE);
+                regexPanel.setVisibility(View.GONE);
             }
         });
 
@@ -79,7 +94,7 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
     }
 
     interface TriggerActivity {
-        EntityType getEntityType();
+        EntityType getEntityType( Condition triggerCondition );
 
         Trigger.Scope getScope();
 
@@ -94,7 +109,7 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
         triggerActivity = (TriggerActivity) activity;
     }
 
-    protected Condition<Vm> getCondition() {
+    protected Condition getCondition() {
         String selectedConditionType = conditionTypeSpinner.getSelectedItem().toString();
         switch (selectedConditionType) {
             case "CPU": {
@@ -116,6 +131,24 @@ public abstract class BaseTriggerDialogFragment extends DialogFragment {
             case "Status": {
                 Vm.Status status = Vm.Status.valueOf(statusSpinner.getSelectedItem().toString().toUpperCase());
                 return new StatusCondition(status);
+            }
+            case "Event": {
+                //do not allow empty regex string
+                if (regexEdit.getText().length() == 0) {
+                    Toast.makeText(getContext(), R.string.regex_cannot_be_empty, Toast.LENGTH_LONG).show();
+                    return null;
+                }
+                //check regex syntax and create Pattern from String
+                Pattern pattern;
+                try {
+                    pattern = Pattern.compile(regexEdit.getText().toString());
+                }
+                catch(PatternSyntaxException pse)
+                {
+                    Toast.makeText(getContext(), R.string.regex_syntax_error, Toast.LENGTH_LONG).show();
+                    return null;
+                }
+                return new EventCondition(pattern);
             }
             default:
                 throw new RuntimeException("Unknown condition type selected");
