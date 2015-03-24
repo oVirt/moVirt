@@ -3,7 +3,10 @@ package org.ovirt.mobile.movirt.ui;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.RemoteException;
-import android.support.v7.app.ActionBar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.PagerTabStrip;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -13,8 +16,6 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.FragmentById;
-import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.Receiver;
@@ -30,37 +31,22 @@ import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
-public class VmDetailActivity extends ActionBarActivity implements TabChangedListener.HasCurrentlyShown, HasProgressBar {
+public class VmDetailActivity extends ActionBarActivity implements HasProgressBar {
 
     private static final String TAG = VmDetailActivity.class.getSimpleName();
 
     private String vmId = null;
 
-    @InstanceState
-    TabChangedListener.CurrentlyShown currentlyShown = TabChangedListener.CurrentlyShown.VM_DETAIL_GENERAL;
+    @ViewById
+    ViewPager viewPager;
 
     @ViewById
-    View generalFragment;
-
-    @ViewById
-    View disksFragment;
-
-    @ViewById
-    View eventsFragment;
-
-    @ViewById
-    View nicsFragment;
-
-    @FragmentById
-    DiskDetailFragment diskDetails;
-
-    @FragmentById
-    EventsFragment eventsList;
-
-    @FragmentById
-    NicDetailFragment nicDetails;
+    PagerTabStrip pagerTabStrip;
 
     @Bean
     OVirtClient client;
@@ -76,55 +62,45 @@ public class VmDetailActivity extends ActionBarActivity implements TabChangedLis
         Uri vmUri = getIntent().getData();
         vmId = vmUri.getLastPathSegment();
 
-        diskDetails.setVmId(vmId);
-        eventsList.setFilterVmId(vmId);
-        nicDetails.setVmId(vmId);
-
-        initTabs();
+        initPagers();
         hideProgressBar();
     }
 
-    private void initTabs() {
-        generalFragment.setVisibility(currentlyShown == TabChangedListener.CurrentlyShown.VM_DETAIL_GENERAL ? View.VISIBLE : View.GONE);
-        eventsFragment.setVisibility(currentlyShown == TabChangedListener.CurrentlyShown.EVENTS ? View.VISIBLE : View.GONE);
-        disksFragment.setVisibility(currentlyShown == TabChangedListener.CurrentlyShown.DISKS ? View.VISIBLE : View.GONE);
-        nicsFragment.setVisibility(currentlyShown == TabChangedListener.CurrentlyShown.NICS ? View.VISIBLE : View.GONE);
+    private void initPagers(){
+        final List<Fragment> fragmentList = new ArrayList<>();
+        EventsFragment eventsList = new EventsFragment_();
+        DiskDetailFragment diskDetails = new DiskDetailFragment_();
+        NicDetailFragment nicDetails = new NicDetailFragment_();
+        eventsList.setFilterVmId(vmId);
+        diskDetails.setVmId(vmId);
+        nicDetails.setVmId(vmId);
+        fragmentList.add(new VmDetailGeneralFragment_());
+        fragmentList.add(eventsList);
+        fragmentList.add(diskDetails);
+        fragmentList.add(nicDetails);
 
-        TabChangedListener.CurrentlyShown tmpCurrentlyShown = currentlyShown;
+        final String[] pagerTitles = getResources().getStringArray(R.array.vm_detail_pager_titles);
 
-        getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        FragmentPagerAdapter pagerAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
 
-        ActionBar.Tab generalTab = getSupportActionBar().newTab()
-                .setText("General")
-                .setTabListener(new TabChangedListener(generalFragment, TabChangedListener.CurrentlyShown.VM_DETAIL_GENERAL, this));
+            @Override
+            public Fragment getItem(int i) {
+                return fragmentList.get(i);
+            }
 
-        ActionBar.Tab eventsTab = getSupportActionBar().newTab()
-                .setText("Events")
-                .setTabListener(new TabChangedListener(eventsFragment, TabChangedListener.CurrentlyShown.EVENTS, this));
+            @Override
+            public int getCount() {
+                return fragmentList.size();
+            }
 
-        ActionBar.Tab disksTab = getSupportActionBar().newTab()
-                .setText("Disks")
-                .setTabListener(new TabChangedListener(disksFragment, TabChangedListener.CurrentlyShown.DISKS, this));
+            @Override
+            public CharSequence getPageTitle(int position) {
+                return pagerTitles[position];
+            }
+        };
 
-        ActionBar.Tab nicsTab = getSupportActionBar().newTab()
-                .setText("Nics")
-                .setTabListener(new TabChangedListener(nicsFragment, TabChangedListener.CurrentlyShown.NICS, this));
-
-        getSupportActionBar().addTab(generalTab);
-        getSupportActionBar().addTab(disksTab);
-        getSupportActionBar().addTab(eventsTab);
-        getSupportActionBar().addTab(nicsTab);
-
-        if (tmpCurrentlyShown == TabChangedListener.CurrentlyShown.EVENTS) {
-            eventsTab.select();
-        } else if (tmpCurrentlyShown == TabChangedListener.CurrentlyShown.DISKS) {
-            disksTab.select();
-        } else if (tmpCurrentlyShown == TabChangedListener.CurrentlyShown.NICS) {
-            nicsTab.select();
-        } else {
-            generalTab.select();
-        }
-
+        viewPager.setAdapter(pagerAdapter);
+        pagerTabStrip.setTabIndicatorColorResource(R.color.material_deep_teal_200);
     }
 
     @Receiver(actions = Broadcasts.CONNECTION_FAILURE, registerAt = Receiver.RegisterAt.OnResumeOnPause)
@@ -160,11 +136,6 @@ public class VmDetailActivity extends ActionBarActivity implements TabChangedLis
     void reboot() {
         client.rebootVm(vmId);
         syncVm();
-    }
-
-    @Override
-    public void setCurrentlyShown(TabChangedListener.CurrentlyShown currentlyShown) {
-        this.currentlyShown = currentlyShown;
     }
 
     @OptionsItem(R.id.action_console)

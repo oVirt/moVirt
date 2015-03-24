@@ -76,8 +76,6 @@ public class NicDetailFragment extends Fragment implements SwipeRefreshLayout.On
 
     public void setVmId(String vmId) {
         this.vmId = vmId;
-
-        loadNicDetails();
     }
 
     @Override

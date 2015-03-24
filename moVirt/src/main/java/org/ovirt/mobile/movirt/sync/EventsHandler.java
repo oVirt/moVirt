@@ -27,7 +27,6 @@ import org.ovirt.mobile.movirt.model.trigger.TriggerResolverFactory;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
-import org.ovirt.mobile.movirt.ui.TabChangedListener;
 import org.ovirt.mobile.movirt.util.NotificationDisplayer;
 
 import java.util.List;
@@ -176,7 +175,6 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
     private void displayNotification(Trigger<Event> trigger, Event event) {
         final Context appContext = context.getApplicationContext();
         final Intent intent = new Intent(appContext, MainActivity_.class);
-        intent.putExtra(MainActivity_.EXTRA_ACTIVE_TAB, TabChangedListener.CurrentlyShown.EVENTS.toString());
         final TaskStackBuilder stackBuilder = TaskStackBuilder.create(appContext);
         stackBuilder.addParentStack(MainActivity_.class);
         stackBuilder.addNextIntent(intent);
