@@ -11,21 +11,21 @@ public class ConditionSerializationTest extends TestCase {
         CpuThresholdCondition condition = new CpuThresholdCondition(42);
         CpuThresholdCondition condition2 = serializationTransform(condition);
 
-        assertEquals(condition.percentageLimit, condition2.percentageLimit);
+        assertEquals(condition.getPercentageLimit(), condition2.getPercentageLimit());
     }
 
     public void testMemoryCondition() {
         MemoryThresholdCondition condition = new MemoryThresholdCondition(42);
         MemoryThresholdCondition condition2 = serializationTransform(condition);
 
-        assertEquals(condition.percentageLimit, condition2.percentageLimit);
+        assertEquals(condition.getPercentageLimit(), condition2.getPercentageLimit());
     }
 
     public void testStatusCondition() {
         StatusCondition condition = new StatusCondition(Vm.Status.DOWN);
         StatusCondition condition2 = serializationTransform(condition);
 
-        assertEquals(condition.status, condition2.status);
+        assertEquals(condition.getStatus(), condition2.getStatus());
     }
 
     @SuppressWarnings("unchecked")

@@ -9,7 +9,6 @@ import com.j256.ormlite.table.DatabaseTable;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.BaseEntity;
 import org.ovirt.mobile.movirt.model.EntityType;
-import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.ConditionPersister;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
@@ -20,7 +19,7 @@ import org.ovirt.mobile.movirt.util.JsonUtils;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Trigger<E extends OVirtEntity> extends BaseEntity<Integer> implements OVirtContract.Trigger {
+public class Trigger<E extends BaseEntity<?>> extends BaseEntity<Integer> implements OVirtContract.Trigger {
 
     @Override
     public Uri getBaseUri() {

@@ -8,7 +8,6 @@ import android.view.View;
 
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 
@@ -37,13 +36,13 @@ public class AddTriggerDialogFragment extends BaseTriggerDialogFragment {
     }
 
     private void addTrigger() {
-        Trigger<Vm> trigger = new Trigger<>();
-        trigger.setTargetId(triggerActivity.getTargetId());
-        trigger.setEntityType(triggerActivity.getEntityType());
-        final Condition<Vm> condition = getCondition();
+        Trigger trigger = new Trigger<>();
+        final Condition condition = getCondition();
         if (condition == null) {
             return;
         }
+        trigger.setTargetId(triggerActivity.getTargetId());
+        trigger.setEntityType(triggerActivity.getEntityType(condition));
         trigger.setCondition(condition);
         trigger.setScope(triggerActivity.getScope());
         trigger.setNotificationType(getNotificationType());

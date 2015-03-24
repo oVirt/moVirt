@@ -1,11 +1,15 @@
 package org.ovirt.mobile.movirt.sync;
 
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.RemoteException;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 import org.androidannotations.annotations.AfterInject;
@@ -13,11 +17,18 @@ import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
+import org.androidannotations.annotations.SystemService;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.model.Event;
+import org.ovirt.mobile.movirt.model.trigger.Trigger;
+import org.ovirt.mobile.movirt.model.trigger.TriggerResolver;
+import org.ovirt.mobile.movirt.model.trigger.TriggerResolverFactory;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.ui.MainActivity_;
+import org.ovirt.mobile.movirt.ui.TabChangedListener;
+import org.ovirt.mobile.movirt.util.NotificationDisplayer;
 
 import java.util.List;
 
@@ -39,11 +50,23 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
     @App
     MoVirtApp app;
 
+    @SystemService
+    NotificationManager notificationManager;
+
+    @SystemService
+    Vibrator vibrator;
+
     @Bean
     ProviderFacade provider;
 
     @Bean
     OVirtClient oVirtClient;
+
+    @Bean
+    TriggerResolverFactory triggerResolverFactory;
+
+    @Bean
+    NotificationDisplayer notificationDisplayer;
 
     @RootContext
     Context context;
@@ -120,11 +143,14 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
             deleteEvents();
         }
 
+        final TriggerResolver<Event> triggerResolver = triggerResolverFactory.getResolverForEntity(Event.class);
+
         int newLastEventCandidate = -1;
 
         for (Event event : newEvents) {
             // because the user api (filtered: true) returns all the events all the time
             if (event.getId() > lastEventId) {
+                this.processEventTriggers(event, triggerResolver);
                 batch.insert(event);
                 if(event.getId() > newLastEventCandidate) {
                     newLastEventCandidate = event.getId();
@@ -135,6 +161,31 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
         if (newLastEventCandidate > lastEventId) {
             lastEventId = newLastEventCandidate;
         }
+    }
+
+    private void processEventTriggers(Event event, TriggerResolver<Event> triggerResolver) {
+        final List<Trigger<Event>> triggers = triggerResolver.getTriggersForEntity(event);
+        Log.i(TAG, "Processing triggers for Event: " + event.getId());
+        for (Trigger<Event> trigger : triggers) {
+            if (trigger.getCondition().evaluate(event)) {
+                displayNotification(trigger, event);
+            }
+        }
+    }
+
+    private void displayNotification(Trigger<Event> trigger, Event event) {
+        final Context appContext = context.getApplicationContext();
+        final Intent intent = new Intent(appContext, MainActivity_.class);
+        intent.putExtra(MainActivity_.EXTRA_ACTIVE_TAB, TabChangedListener.CurrentlyShown.EVENTS.toString());
+        final TaskStackBuilder stackBuilder = TaskStackBuilder.create(appContext);
+        stackBuilder.addParentStack(MainActivity_.class);
+        stackBuilder.addNextIntent(intent);
+        final PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        notificationDisplayer.showNotification(trigger, event, appContext, resultPendingIntent);
     }
 
     private void applyBatch() {
