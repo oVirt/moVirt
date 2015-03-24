@@ -172,6 +172,16 @@ public class OVirtClient {
         }, response);
     }
 
+    public void getNics(final String id, Response<Nics> response) {
+        fireRestRequest(new Request<Nics>() {
+            @Override
+            public Nics fire() {
+                return restClient.getNics(id);
+            }
+        }, response);
+
+    }
+
     public String login(String apiUrl, String username, String password, boolean disableHttps, boolean hasAdminPrivileges) {
         setPersistentAuthHeaders();
         restClient.setRootUrl(apiUrl);

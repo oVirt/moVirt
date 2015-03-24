@@ -109,4 +109,6 @@
     <string name="account_disableHttpsChecking_summary">This method is dangerous and should not be used in production setup.</string>
     <string name="name">Name</string>
 
+    <string name="nic_para">Linked : %1$b&#160;&#160;&#160;&#160;plugged : %2$b</string>
+    <string name="nic_name_and_address">%1$s : %2$s</string>
 </resources>

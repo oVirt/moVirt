@@ -48,5 +48,16 @@ android:layout_height="match_parent">
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
         </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/nicsFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <fragment
+                android:id="@+id/nicDetails"
+                class="org.ovirt.mobile.movirt.ui.NicDetailFragment_"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
     </RelativeLayout>
 </LinearLayout>

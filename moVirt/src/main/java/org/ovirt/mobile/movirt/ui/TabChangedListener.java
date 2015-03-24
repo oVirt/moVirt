@@ -33,7 +33,7 @@ public class TabChangedListener implements ActionBar.TabListener  {
 
     public static enum CurrentlyShown {
         VMS, EVENTS,
-        VM_DETAIL_GENERAL, DISKS
+        VM_DETAIL_GENERAL, DISKS, NICS
     }
 
     public static interface HasCurrentlyShown {

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="org.ovirt.mobile.movirt.ui.NicDetailFragment">
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeNicsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ListView
+            android:id="@+id/nicListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+    </android.support.v4.widget.SwipeRefreshLayout>
+</FrameLayout>

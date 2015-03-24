@@ -50,11 +50,17 @@ public class VmDetailActivity extends ActionBarActivity implements TabChangedLis
     @ViewById
     View eventsFragment;
 
+    @ViewById
+    View nicsFragment;
+
     @FragmentById
     DiskDetailFragment diskDetails;
 
     @FragmentById
     EventsFragment eventsList;
+
+    @FragmentById
+    NicDetailFragment nicDetails;
 
     @Bean
     OVirtClient client;
@@ -72,6 +78,7 @@ public class VmDetailActivity extends ActionBarActivity implements TabChangedLis
 
         diskDetails.setVmId(vmId);
         eventsList.setFilterVmId(vmId);
+        nicDetails.setVmId(vmId);
 
         initTabs();
         hideProgressBar();
@@ -81,6 +88,7 @@ public class VmDetailActivity extends ActionBarActivity implements TabChangedLis
         generalFragment.setVisibility(currentlyShown == TabChangedListener.CurrentlyShown.VM_DETAIL_GENERAL ? View.VISIBLE : View.GONE);
         eventsFragment.setVisibility(currentlyShown == TabChangedListener.CurrentlyShown.EVENTS ? View.VISIBLE : View.GONE);
         disksFragment.setVisibility(currentlyShown == TabChangedListener.CurrentlyShown.DISKS ? View.VISIBLE : View.GONE);
+        nicsFragment.setVisibility(currentlyShown == TabChangedListener.CurrentlyShown.NICS ? View.VISIBLE : View.GONE);
 
         TabChangedListener.CurrentlyShown tmpCurrentlyShown = currentlyShown;
 
@@ -98,14 +106,21 @@ public class VmDetailActivity extends ActionBarActivity implements TabChangedLis
                 .setText("Disks")
                 .setTabListener(new TabChangedListener(disksFragment, TabChangedListener.CurrentlyShown.DISKS, this));
 
+        ActionBar.Tab nicsTab = getSupportActionBar().newTab()
+                .setText("Nics")
+                .setTabListener(new TabChangedListener(nicsFragment, TabChangedListener.CurrentlyShown.NICS, this));
+
         getSupportActionBar().addTab(generalTab);
         getSupportActionBar().addTab(disksTab);
         getSupportActionBar().addTab(eventsTab);
+        getSupportActionBar().addTab(nicsTab);
 
         if (tmpCurrentlyShown == TabChangedListener.CurrentlyShown.EVENTS) {
             eventsTab.select();
         } else if (tmpCurrentlyShown == TabChangedListener.CurrentlyShown.DISKS) {
             disksTab.select();
+        } else if (tmpCurrentlyShown == TabChangedListener.CurrentlyShown.NICS) {
+            nicsTab.select();
         } else {
             generalTab.select();
         }
