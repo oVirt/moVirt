@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.Loader;
 import android.content.res.Configuration;
 import android.database.Cursor;
@@ -118,10 +119,6 @@ public class MainActivity extends ActionBarActivity implements TabChangedListene
 
     private ActionBarDrawerToggle drawerToggle;
 
-    EventsFragment eventList;
-
-    VmsFragment vmsList;
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -163,9 +160,7 @@ public class MainActivity extends ActionBarActivity implements TabChangedListene
         final List<View> viewList = new ArrayList<>();
         LayoutInflater inflater = getLayoutInflater();
         View vmsView = inflater.inflate(R.layout.fragment_vms, null);
-        vmsList = (VmsFragment)getSupportFragmentManager().findFragmentById(R.id.vmsList);
         View eventsView = inflater.inflate(R.layout.fragment_events, null);
-        eventList = (EventsFragment)getSupportFragmentManager().findFragmentById(R.id.eventList);
         viewList.add(vmsView);
         viewList.add(eventsView);
 
@@ -367,13 +362,15 @@ public class MainActivity extends ActionBarActivity implements TabChangedListene
         selectedClusterId = cluster.getId();
         selectedClusterName = cluster.getName();
 
-
-        if (eventList != null) {
-            eventList.updateFilterClusterIdTo(selectedClusterId);
-        }
-
-        if (vmsList != null) {
-            vmsList.updateFilterClusterIdTo(selectedClusterId);
+        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+        if (null != fragments) {
+            for (Fragment fra : fragments) {
+                if (fra instanceof VmsFragment) {
+                    ((VmsFragment) fra).updateFilterClusterIdTo(selectedClusterId);
+                } else if (fra instanceof EventsFragment) {
+                    ((EventsFragment) fra).updateFilterClusterIdTo(selectedClusterId);
+                }
+            }
         }
 
         drawerLayout.closeDrawers();
