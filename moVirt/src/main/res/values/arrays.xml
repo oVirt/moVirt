@@ -37,4 +37,16 @@
         <item>DESC</item>
     </string-array>
 
+    <string-array name="main_pager_titles">
+        <item>VMs</item>
+        <item>Events</item>
+    </string-array>
+
+    <string-array name="vm_detail_pager_titles">
+        <item>General</item>
+        <item>Events</item>
+        <item>Disks</item>
+        <item>Nics</item>
+    </string-array>
+
 </resources>

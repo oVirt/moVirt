@@ -3,9 +3,7 @@ package org.ovirt.mobile.movirt.ui;
 import android.support.v4.app.Fragment;
 import android.os.RemoteException;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.view.View;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
@@ -76,8 +74,6 @@ public class DiskDetailFragment extends Fragment implements SwipeRefreshLayout.O
 
     public void setVmId(String vmId) {
         this.vmId = vmId;
-
-        loadDiskDetails();
     }
 
     @Override

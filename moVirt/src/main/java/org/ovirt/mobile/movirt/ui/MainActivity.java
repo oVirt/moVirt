@@ -13,17 +13,16 @@ import android.database.MatrixCursor;
 import android.database.MergeCursor;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -65,10 +64,9 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends ActionBarActivity implements TabChangedListener.HasCurrentlyShown {
+public class MainActivity extends ActionBarActivity{
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    public static final String EXTRA_ACTIVE_TAB = "org.ovirt.mobile.movirt.ACTIVE_TAB";
 
     Dialog connectionNotConfiguredProperlyDialog;
 
@@ -91,6 +89,9 @@ public class MainActivity extends ActionBarActivity implements TabChangedListene
     ViewPager viewPager;
 
     @ViewById
+    PagerTabStrip pagerTabStrip;
+
+    @ViewById
     ListView clusterDrawer;
 
     @StringRes(R.string.cluster_scope)
@@ -104,9 +105,6 @@ public class MainActivity extends ActionBarActivity implements TabChangedListene
 
     @InstanceState
     String selectedClusterName;
-
-    @InstanceState
-    TabChangedListener.CurrentlyShown currentlyShown = TabChangedListener.CurrentlyShown.VMS;
 
     @Bean
     SyncUtils syncUtils;
@@ -136,13 +134,7 @@ public class MainActivity extends ActionBarActivity implements TabChangedListene
 
     @AfterViews
     void init() {
-        Intent intent = getIntent();
-        String sTabFromIntent = intent.getStringExtra(EXTRA_ACTIVE_TAB);
-        if (sTabFromIntent != null) {
-            TabChangedListener.CurrentlyShown tabFromIntent =
-                    TabChangedListener.CurrentlyShown.valueOf(sTabFromIntent);
-            setCurrentlyShown(tabFromIntent);
-        }
+
         connectionNotConfiguredProperlyDialog = new Dialog(this);
 
         initClusterDrawer();
@@ -157,48 +149,32 @@ public class MainActivity extends ActionBarActivity implements TabChangedListene
     }
 
     private void initPagers() {
-        final List<View> viewList = new ArrayList<>();
-        LayoutInflater inflater = getLayoutInflater();
-        View vmsView = inflater.inflate(R.layout.fragment_vms, null);
-        View eventsView = inflater.inflate(R.layout.fragment_events, null);
-        viewList.add(vmsView);
-        viewList.add(eventsView);
+        final List<Fragment> fragmentList = new ArrayList<>();
+        fragmentList.add(new VmsFragment_());
+        fragmentList.add(new EventsFragment_());
 
-        final List<String> viewTitleList = new ArrayList<>();
-        viewTitleList.add("VMs");
-        viewTitleList.add("Events");
+        final String[] pagerTitles = getResources().getStringArray(R.array.main_pager_titles);
 
-        PagerAdapter pagerAdapter = new PagerAdapter() {
-            @Override
-            public boolean isViewFromObject(View view, Object object) {
-                return view == object;
-            }
+        FragmentPagerAdapter pagerAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
 
             @Override
-            public void destroyItem(ViewGroup container, int position,
-                                    Object object) {
-                container.removeView(viewList.get(position));
-            }
-
-            @Override
-            public Object instantiateItem(ViewGroup container, int position) {
-                container.addView(viewList.get(position));
-                return viewList.get(position);
+            public Fragment getItem(int i) {
+                return fragmentList.get(i);
             }
 
             @Override
             public int getCount() {
-                return viewList.size();
+                return fragmentList.size();
             }
 
             @Override
             public CharSequence getPageTitle(int position) {
-                return viewTitleList.get(position);
+                return pagerTitles[position];
             }
         };
 
         viewPager.setAdapter(pagerAdapter);
-
+        pagerTabStrip.setTabIndicatorColorResource(R.color.material_deep_teal_200);
     }
 
     @StringRes(R.string.all_clusters)
@@ -385,10 +361,5 @@ public class MainActivity extends ActionBarActivity implements TabChangedListene
     @Receiver(actions = Broadcasts.CONNECTION_FAILURE, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void connectionFailure(@Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
         Toast.makeText(MainActivity.this, R.string.rest_req_failed + " " + reason, Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void setCurrentlyShown(TabChangedListener.CurrentlyShown currentlyShown) {
-        this.currentlyShown = currentlyShown;
     }
 }

@@ -16,48 +16,18 @@ android:layout_height="match_parent">
             android:layout_height="wrap_content">
         </ProgressBar>
 
-        <FrameLayout
-            android:id="@+id/generalFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <fragment
-                class="org.ovirt.mobile.movirt.ui.VmDetailGeneralFragment_"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+        <android.support.v4.view.ViewPager
+            android:id="@+id/viewPager"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
 
-            </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/disksFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <fragment
-                android:id="@+id/diskDetails"
-                class="org.ovirt.mobile.movirt.ui.DiskDetailFragment_"
+            <android.support.v4.view.PagerTabStrip
+                android:id="@+id/pagerTabStrip"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </FrameLayout>
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"/>
 
-        <FrameLayout
-            android:id="@+id/eventsFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <fragment
-                android:id="@+id/eventsList"
-                class="org.ovirt.mobile.movirt.ui.EventsFragment_"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/nicsFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <fragment
-                android:id="@+id/nicDetails"
-                class="org.ovirt.mobile.movirt.ui.NicDetailFragment_"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </FrameLayout>
+        </android.support.v4.view.ViewPager>
     </RelativeLayout>
 </LinearLayout>
