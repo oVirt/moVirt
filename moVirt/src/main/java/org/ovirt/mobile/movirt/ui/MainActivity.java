@@ -139,7 +139,7 @@ public class MainActivity extends ActionBarActivity{
 
         initClusterDrawer();
 
-        selectCluster(new Cluster(selectedClusterId, selectedClusterName));
+        setTitle(selectedClusterName == null ? getString(R.string.all_clusters) : selectedClusterName);
 
         if (!authenticator.accountConfigured()) {
             showDialogToOpenAccountSettings(noAccMsg, new Intent(this, AuthenticatorActivity_.class));
