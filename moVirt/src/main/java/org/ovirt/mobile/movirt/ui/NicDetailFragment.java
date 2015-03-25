@@ -60,8 +60,10 @@ public class NicDetailFragment extends Fragment implements SwipeRefreshLayout.On
 
     @UiThread
     void displayListView(Nics nics) {
-        nicListAdapter = new NicListAdapter(getActivity(), 0, nics);
-        listView.setAdapter(nicListAdapter);
+        if (listView != null && nics != null) {
+            nicListAdapter = new NicListAdapter(getActivity(), 0, nics);
+            listView.setAdapter(nicListAdapter);
+        }
     }
 
     @Background
