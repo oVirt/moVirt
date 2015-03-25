@@ -57,8 +57,10 @@ public class DiskDetailFragment extends Fragment implements SwipeRefreshLayout.O
 
     @UiThread
     void displayListView(Disks disks) {
-        diskListAdapter = new DiskListAdapter(getActivity(), 0, disks);
-        listView.setAdapter(diskListAdapter);
+        if (listView != null && disks != null) {
+            diskListAdapter = new DiskListAdapter(getActivity(), 0, disks);
+            listView.setAdapter(diskListAdapter);
+        }
     }
 
     @Background
