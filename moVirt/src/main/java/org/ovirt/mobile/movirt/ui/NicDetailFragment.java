@@ -12,6 +12,7 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
@@ -30,6 +31,7 @@ public class NicDetailFragment extends Fragment implements SwipeRefreshLayout.On
 
     NicListAdapter nicListAdapter;
 
+    @InstanceState
     String vmId = "";
 
     @ViewById
