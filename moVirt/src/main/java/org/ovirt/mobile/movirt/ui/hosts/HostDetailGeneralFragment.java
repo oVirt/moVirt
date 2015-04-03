@@ -10,6 +10,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ViewById;
@@ -34,6 +35,33 @@ public class HostDetailGeneralFragment extends RefreshableFragment implements Lo
     TextView statusView;
 
     @ViewById
+    TextView cpuView;
+
+    @ViewById
+    TextView memView;
+
+    @ViewById
+    TextView memoryView;
+
+    @ViewById
+    TextView summaryView;
+
+    @ViewById
+    TextView socketView;
+
+    @ViewById
+    TextView coreView;
+
+    @ViewById
+    TextView threadView;
+
+    @ViewById
+    TextView osVersionView;
+
+    @ViewById
+    TextView addressView;
+
+    @ViewById
     SwipeRefreshLayout swipeGeneralContainer;
 
     @StringRes(R.string.details_for_host)
@@ -45,13 +73,18 @@ public class HostDetailGeneralFragment extends RefreshableFragment implements Lo
     @Bean
     HostFacade hostFacade;
 
-    private Bundle args;
-
     @AfterViews
     void initLoader() {
         Uri hostUri = getActivity().getIntent().getData();
         hostId = hostUri.getLastPathSegment();
+
         getLoaderManager().initLoader(0, null, this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getLoaderManager().restartLoader(0, null, this);
     }
 
     @Override
@@ -60,6 +93,7 @@ public class HostDetailGeneralFragment extends RefreshableFragment implements Lo
     }
 
     @Override
+    @Background
     public void onRefresh() {
         hostFacade.sync(hostId, new ProgressBarResponse<Host>(this));
     }
@@ -81,6 +115,21 @@ public class HostDetailGeneralFragment extends RefreshableFragment implements Lo
     private void renderHost(Host host) {
         getActivity().setTitle(String.format(HOST_DETAILS, host.getName()));
         statusView.setText(host.getStatus().toString().toLowerCase());
+        cpuView.setText(String.format("%.2f%%", host.getCpuUsage()));
+        memView.setText(String.format("%.2f%%", host.getMemoryUsage()));
+        if(host.getMemorySizeMb() != -1) {
+            memoryView.setText(host.getMemorySizeMb() + " MB");
+        }
+        else {
+            memoryView.setText("N/A");
+        }
+        summaryView.setText(host.getActive() + " | " + host.getMigrating()
+                + " | " + host.getTotal());
+        socketView.setText(String.valueOf(host.getSockets()));
+        coreView.setText(String.valueOf(host.getCoresPerSocket()));
+        threadView.setText(String.valueOf(host.getThreadsPerCore()));
+        osVersionView.setText(host.getOsVersion());
+        addressView.setText(host.getAddress());
     }
 
     @Override

@@ -114,4 +114,8 @@
     <string name="nic_name_and_address">%1$s : %2$s</string>
 
     <string name="title_activity_host_details">Host Details</string>
+    <string name="summary">Active | Migrating | Total:</string>
+    <string name="threads">Threads/Core:</string>
+    <string name="os_version">OS Version:</string>
+    <string name="address">Address:</string>
 </resources>

@@ -50,4 +50,7 @@
         <item>Nics</item>
     </string-array>
 
+    <string-array name="host_detail_pager_titles">
+        <item>General</item>
+    </string-array>
 </resources>

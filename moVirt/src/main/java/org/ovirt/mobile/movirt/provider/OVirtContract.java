@@ -46,10 +46,24 @@ public interface OVirtContract {
     }
 
     String PATH_HOSTS = "hosts";
-    String PATH_HOST = "host/*";
+    String PATH_HOST = "hosts/*";
 
     public interface Host extends NamedEntity, HasStatus, HasCluster {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_HOSTS).build();
+
+        String TABLE = "hosts";
+
+        String CPU_USAGE = "cpu_usage";
+        String MEMORY_USAGE = "mem_usage";
+        String MEMORY_SIZE_MB = "mem_size_mb";
+        String SOCKETS = "sockets";
+        String CORES_PER_SOCKET = "cores_per_socket";
+        String THREADS_PER_CORE = "threads_per_core";
+        String OS_VERSION = "os_version";
+        String ADDRESS = "address";
+        String ACTIVE = "active";
+        String MIGRATING = "migrating";
+        String TOTAL = "total";
     }
 
     String PATH_CLUSTERS = "clusters";

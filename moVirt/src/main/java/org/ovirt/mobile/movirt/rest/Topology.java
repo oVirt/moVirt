@@ -7,5 +7,5 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Topology {
-    public String sockets, cores;
+    public String sockets, cores, threads;
 }
