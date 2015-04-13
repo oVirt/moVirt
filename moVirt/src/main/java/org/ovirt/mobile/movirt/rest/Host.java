@@ -9,7 +9,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
 
-    private static final String IDLE_CPU_PERCENTAGE_STAT = "cpu.current.idle";
+    private static final String USER_CPU_PERCENTAGE_STAT = "cpu.current.user";
+    private static final String SYSTEM_CPU_PERCENTAGE_STAT = "cpu.current.system";
     private static final String TOTAL_MEMORY_STAT = "memory.total";
     private static final String USED_MEMORY_STAT = "memory.used";
 
@@ -58,7 +59,8 @@ class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
         host.setClusterId(cluster.id);
 
         if (statistics != null && statistics.statistic != null) {
-            BigDecimal cpu = new BigDecimal(100).subtract(getStatisticValueByName(IDLE_CPU_PERCENTAGE_STAT, statistics.statistic));
+            BigDecimal cpu = getStatisticValueByName(USER_CPU_PERCENTAGE_STAT, statistics.statistic)
+                    .add(getStatisticValueByName(SYSTEM_CPU_PERCENTAGE_STAT, statistics.statistic));
             BigDecimal totalMemory = getStatisticValueByName(TOTAL_MEMORY_STAT, statistics.statistic);
             BigDecimal usedMemory = getStatisticValueByName(USED_MEMORY_STAT, statistics.statistic);
 
