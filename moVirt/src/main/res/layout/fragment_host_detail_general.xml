@@ -9,17 +9,128 @@
         android:id="@+id/swipeGeneralContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <RelativeLayout
+
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="12dp">
+            android:layout_height="match_parent">
 
-            <TextView
-                android:id="@+id/statusLabel"
-                style="@style/VmStatsLabel"
-                android:text="@string/statusLabel" />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp">
 
-        </RelativeLayout>
+                <TextView
+                    android:id="@+id/statusLabel"
+                    style="@style/HostStatsLabel"
+                    android:text="@string/statusLabel" />
+
+                <TextView
+                    android:id="@+id/statusView"
+                    style="@style/HostStat"
+                    android:layout_alignBaseline="@id/statusLabel" />
+
+                <TextView
+                    android:id="@+id/cpuLabel"
+                    style="@style/HostStatsLabel"
+                    android:layout_below="@id/statusLabel"
+                    android:text="@string/cpu"/>
+
+                <TextView
+                    android:id="@+id/cpuView"
+                    style="@style/HostStat"
+                    android:layout_alignBaseline="@id/cpuLabel" />
+
+                <TextView
+                    android:id="@+id/memLabel"
+                    style="@style/HostStatsLabel"
+                    android:text="@string/memory"
+                    android:layout_below="@id/cpuLabel"/>
+
+                <TextView
+                    android:id="@+id/memView"
+                    style="@style/HostStat"
+                    android:layout_alignBaseline="@id/memLabel" />
+
+                <TextView
+                    android:id="@+id/memoryLabel"
+                    style="@style/HostStatsLabel"
+                    android:text="@string/memoryMb"
+                    android:layout_below="@id/memLabel"/>
+
+                <TextView
+                    android:id="@+id/memoryView"
+                    style="@style/HostStat"
+                    android:layout_alignBaseline="@id/memoryLabel" />
+
+                <TextView
+                    android:id="@+id/summaryLabel"
+                    style="@style/HostStatsLabel"
+                    android:text="@string/summary"
+                    android:layout_below="@id/memoryLabel"/>
+
+                <TextView
+                    android:id="@+id/summaryView"
+                    style="@style/HostStat"
+                    android:layout_alignBaseline="@id/summaryLabel" />
+
+                <TextView
+                    android:id="@+id/socketLabel"
+                    style="@style/HostStatsLabel"
+                    android:text="@string/sockets"
+                    android:layout_below="@id/summaryLabel"/>
+
+                <TextView
+                    android:id="@+id/socketView"
+                    style="@style/HostStat"
+                    android:layout_alignBaseline="@id/socketLabel" />
+
+                <TextView
+                    android:id="@+id/coreLabel"
+                    style="@style/HostStatsLabel"
+                    android:text="@string/cores"
+                    android:layout_below="@id/socketLabel"/>
+
+                <TextView
+                    android:id="@+id/coreView"
+                    style="@style/HostStat"
+                    android:layout_alignBaseline="@id/coreLabel" />
+
+                <TextView
+                    android:id="@+id/threadLabel"
+                    style="@style/HostStatsLabel"
+                    android:text="@string/threads"
+                    android:layout_below="@id/coreLabel"/>
+
+                <TextView
+                    android:id="@+id/threadView"
+                    style="@style/HostStat"
+                    android:layout_alignBaseline="@id/threadLabel" />
+
+                <TextView
+                    android:id="@+id/osVersionLabel"
+                    style="@style/HostStatsLabel"
+                    android:text="@string/os_version"
+                    android:layout_below="@id/threadLabel"/>
+
+                <TextView
+                    android:id="@+id/osVersionView"
+                    style="@style/HostStat"
+                    android:layout_alignBaseline="@id/osVersionLabel" />
+
+                <TextView
+                    android:id="@+id/addressLabel"
+                    style="@style/HostStatsLabel"
+                    android:text="@string/address"
+                    android:layout_below="@id/osVersionLabel"/>
+
+                <TextView
+                    android:id="@+id/addressView"
+                    style="@style/HostStat"
+                    android:layout_alignBaseline="@id/addressLabel" />
+
+            </RelativeLayout>
+
+        </ScrollView>
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
