@@ -415,6 +415,7 @@ public class OVirtClient {
 
     private void updateClientBeforeCall() {
         restClient.setHeader(FILTER, Boolean.toString(!authenticator.hasAdminPermissions()));
+        requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
         restClient.setRootUrl(authenticator.getApiUrl());
     }
 
