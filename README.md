@@ -1,6 +1,5 @@
 moVirt
 ======
-[![Build Status](https://travis-ci.org/matobet/moVirt.svg)](https://travis-ci.org/matobet/moVirt)
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/matobet/moVirt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 A mobile client for [oVirt](http://www.ovirt.org). 
