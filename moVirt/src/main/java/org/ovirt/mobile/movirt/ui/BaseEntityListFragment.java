@@ -34,6 +34,8 @@ import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
+
 @EFragment(R.layout.fragment_base_entity_list)
 public abstract class BaseEntityListFragment<E extends OVirtEntity> extends RefreshableFragment
         implements OVirtContract.HasCluster, OVirtContract.NamedEntity, SelectedClusterAware {
@@ -42,6 +44,9 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
     @Bean
     protected SyncUtils syncUtils;
+
+    @InstanceState
+    protected String filterHostId;
 
     @InstanceState
     protected String selectedClusterId;
@@ -118,6 +123,10 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         endlessScrollListener.resetListener();
     }
 
+    public void setFilterHostId(String filterHostId) {
+        this.filterHostId = filterHostId;
+    }
+
     @Override
     public void updateSelectedClusterId(String selectedClusterId) {
         resetListViewPosition();
@@ -161,6 +170,10 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
                 if (selectedClusterId != null) {
                     query.where(CLUSTER_ID, selectedClusterId);
+                }
+
+                if (filterHostId != null){
+                    query.where(HOST_ID, filterHostId);
                 }
 
                 String searchNameString = searchText.getText().toString();

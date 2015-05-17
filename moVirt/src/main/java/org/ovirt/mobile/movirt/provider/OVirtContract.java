@@ -34,6 +34,7 @@ public interface OVirtContract {
 
         String TABLE = "vms";
 
+        String HOST_ID = "host_id";
         String CPU_USAGE = "cpu_usage";
         String MEMORY_USAGE = "mem_usage";
         String MEMORY_SIZE_MB = "mem_size_mb";

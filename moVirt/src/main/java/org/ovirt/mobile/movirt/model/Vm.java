@@ -84,6 +84,9 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
     @DatabaseField(columnName = STATUS, canBeNull = false)
     private Status status;
 
+    @DatabaseField(columnName = HOST_ID, canBeNull = false)
+    private String hostId;
+
     @DatabaseField(columnName = CLUSTER_ID, canBeNull = false)
     private String clusterId;
 
@@ -120,6 +123,14 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public String getHostId() {
+        return hostId;
+    }
+
+    public void setHostId(String hostId) {
+        this.hostId = hostId;
     }
 
     public String getClusterId() {
@@ -216,6 +227,7 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         if (memorySizeMb != vm.memorySizeMb) return false;
         if (Double.compare(vm.memoryUsage, memoryUsage) != 0) return false;
         if (sockets != vm.sockets) return false;
+        if (!hostId.equals(vm.hostId)) return false;
         if (!clusterId.equals(vm.clusterId)) return false;
         if (displayAddress != null ? !displayAddress.equals(vm.displayAddress) : vm.displayAddress != null)
             return false;
@@ -231,6 +243,7 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         int result = super.hashCode();
         long temp;
         result = 31 * result + status.hashCode();
+        result = 31 * result + hostId.hashCode();
         result = 31 * result + clusterId.hashCode();
         temp = Double.doubleToLongBits(cpuUsage);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
@@ -250,6 +263,7 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
     public ContentValues toValues() {
         ContentValues contentValues = super.toValues();
         contentValues.put(STATUS, getStatus().toString());
+        contentValues.put(HOST_ID, getHostId());
         contentValues.put(CLUSTER_ID, getClusterId());
         contentValues.put(CPU_USAGE, getCpuUsage());
         contentValues.put(MEMORY_USAGE, getMemoryUsage());
@@ -268,6 +282,7 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         super.initFromCursorHelper(cursorHelper);
 
         setStatus(cursorHelper.getEnum(STATUS, Vm.Status.class));
+        setHostId(cursorHelper.getString(HOST_ID));
         setClusterId(cursorHelper.getString(CLUSTER_ID));
         setCpuUsage(cursorHelper.getDouble(CPU_USAGE));
         setMemoryUsage(cursorHelper.getDouble(MEMORY_USAGE));

@@ -17,6 +17,7 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     public String id;
     public String name;
     public Status status;
+    public Host host;
     public Cluster cluster;
     public Statistics statistics;
     public String memory;
@@ -51,6 +52,7 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
         vm.setName(name);
         vm.setStatus(mapStatus(status.state));
         vm.setClusterId(cluster.id);
+        vm.setHostId(host != null ? host.id : "");
 
         if (statistics != null && statistics.statistic != null) {
             BigDecimal cpu = getStatisticValueByName(CPU_PERCENTAGE_STAT, statistics.statistic);
