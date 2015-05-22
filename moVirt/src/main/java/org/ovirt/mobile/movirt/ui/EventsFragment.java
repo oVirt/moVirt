@@ -26,6 +26,7 @@ import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.BaseEntity.ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.CLUSTER_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.VM_ID;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
 
 @EFragment(R.layout.fragment_event_list)
 public class EventsFragment extends RefreshableFragment {
@@ -38,6 +39,9 @@ public class EventsFragment extends RefreshableFragment {
 
     @Bean
     EventsHandler eventsHandler;
+
+    @InstanceState
+    String filterHostId;
 
     @InstanceState
     String filterClusterId;
@@ -79,6 +83,7 @@ public class EventsFragment extends RefreshableFragment {
             @Override
             public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 final ProviderFacade.QueryBuilder<Event> query = provider.query(Event.class);
+                if (filterHostId != null) query.where(HOST_ID, filterHostId);
                 if (filterClusterId != null) query.where(CLUSTER_ID, filterClusterId);
                 if (filterVmId != null) query.where(VM_ID, filterVmId);
                 return query.orderByDescending(ID).limit(page * EVENTS_PER_PAGE).asLoader();
@@ -103,6 +108,10 @@ public class EventsFragment extends RefreshableFragment {
     public void onPause() {
         super.onPause();
         hideProgressBar();
+    }
+
+    public void setFilterHostId(String filterHostId){
+        this.filterHostId = filterHostId;
     }
 
     public void updateFilterClusterIdTo(String filterClusterId) {
