@@ -266,6 +266,12 @@ public class MainActivity extends ActionBarActivity{
         startActivity(new Intent(this, SettingsActivity_.class));
     }
 
+    @OptionsItem(R.id.action_camera)
+    void openCamera() {
+        final Intent intent = new Intent(this, CameraActivity.class);
+        startActivity(intent);
+    }
+
     @OptionsItem(R.id.action_clear_events)
     void clearEvents() {
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
