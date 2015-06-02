@@ -268,7 +268,7 @@ public class MainActivity extends ActionBarActivity{
 
     @OptionsItem(R.id.action_camera)
     void openCamera() {
-        final Intent intent = new Intent(this, CameraActivity.class);
+        final Intent intent = new Intent(this, CameraActivity_.class);
         startActivity(intent);
     }
 

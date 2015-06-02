@@ -19,4 +19,12 @@
         android:id="@+id/result_text"
         android:layout_gravity="center_horizontal" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Open"
+        android:id="@+id/button_openhotstdetails"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone" />
+
 </LinearLayout>

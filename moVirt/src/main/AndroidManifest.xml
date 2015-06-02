@@ -87,7 +87,7 @@
             android:label="@string/title_activity_host_details" >
         </activity>
         <activity
-            android:name=".ui.CameraActivity"
+            android:name=".ui.CameraActivity_"
             android:label="@string/title_activity_camera" >
         </activity>
     </application>
