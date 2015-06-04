@@ -111,6 +111,26 @@ public class OVirtClient {
         }, response);
     }
 
+    public void activateHost(final String hostId) {
+        fireRestRequest(new Request<Void>() {
+            @Override
+            public Void fire() {
+                restClient.activateHost(new Action(), hostId);
+                return null;
+            }
+        }, null);
+    }
+
+    public void dectivateHost(final String hostId) {
+        fireRestRequest(new Request<Void>() {
+            @Override
+            public Void fire() {
+                restClient.deactivateHost(new Action(), hostId);
+                return null;
+            }
+        }, null);
+    }
+
     public void getHost(final String hostId, Response<Host> response) {
         fireRestRequest(new Request<Host>() {
             @Override

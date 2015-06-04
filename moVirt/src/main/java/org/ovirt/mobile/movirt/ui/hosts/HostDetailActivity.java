@@ -4,20 +4,33 @@ import android.net.Uri;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Background;
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.OptionsItem;
+import org.androidannotations.annotations.OptionsMenu;
+import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.facade.HostFacade;
+import org.ovirt.mobile.movirt.model.Host;
+import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.EventsFragment;
 import org.ovirt.mobile.movirt.ui.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
+import org.ovirt.mobile.movirt.ui.HasProgressBar;
+import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 
 @EActivity(R.layout.activity_host_detail)
-public class HostDetailActivity extends ActionBarActivity {
+@OptionsMenu(R.menu.host)
+public class HostDetailActivity extends ActionBarActivity implements HasProgressBar {
     private static final String TAG = HostDetailActivity.class.getSimpleName();
     @ViewById
     ViewPager viewPager;
@@ -27,10 +40,20 @@ public class HostDetailActivity extends ActionBarActivity {
     String[] PAGER_TITLES;
     private String hostId = null;
 
+    @ViewById
+    ProgressBar progress;
+
+    @Bean
+    OVirtClient client;
+
+    @Bean
+    HostFacade hostFacade;
+
     @AfterViews
     void init() {
 
         initPagers();
+        hideProgressBar();
     }
 
     private void initPagers() {
@@ -51,5 +74,35 @@ public class HostDetailActivity extends ActionBarActivity {
 
         viewPager.setAdapter(pagerAdapter);
         pagerTabStrip.setTabIndicatorColorResource(R.color.material_deep_teal_200);
+    }
+
+    @OptionsItem(R.id.action_activate)
+    @Background
+    void activate() {
+        client.activateHost(hostId);
+        syncHost();
+    }
+
+    @OptionsItem(R.id.action_deactivate)
+    @Background
+    void deactivate() {
+        client.dectivateHost(hostId);
+        syncHost();
+    }
+
+    private void syncHost() {
+        hostFacade.sync(hostId, new ProgressBarResponse<Host>(this));
+    }
+
+    @UiThread
+    @Override
+    public void showProgressBar() {
+        progress.setVisibility(View.VISIBLE);
+    }
+
+    @UiThread
+    @Override
+    public void hideProgressBar() {
+        progress.setVisibility(View.GONE);
     }
 }
