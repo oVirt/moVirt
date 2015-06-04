@@ -1,7 +1,6 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -22,9 +21,9 @@ import android.widget.TextView;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.camera.CaptureActivityHandler;
+import org.ovirt.mobile.movirt.camera.ViewfinderView;
 import org.ovirt.mobile.movirt.camera.zxing.Result;
 import org.ovirt.mobile.movirt.camera.zxing.client.CameraManager;
 import org.ovirt.mobile.movirt.camera.zxing.client.PreferencesActivity;
@@ -40,17 +39,14 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
     @Bean
     ProviderFacade provider;
 
-    @RootContext
-    Context context;
-
     private static final String TAG = CameraActivity.class.getSimpleName();
-    private static final long BULK_MODE_SCAN_DELAY_MS = 1000L;
+    private static final long BULK_MODE_SCAN_DELAY_MS = 100L;
 
     private CameraManager cameraManager;
     private CaptureActivityHandler handler;
     private Button buttonDetails;
     private String lastFoundID;
-    //private ViewfinderView viewfinderView;
+    private ViewfinderView viewfinderView;
     private boolean hasSurface;
     private Result savedResultToShow;
 
@@ -58,9 +54,9 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
         return cameraManager;
     }
 
-    /*ViewfinderView getViewfinderView() {
+    ViewfinderView getViewfinderView() {
         return viewfinderView;
-    }*/
+    }
 
     public Handler getHandler() {
         return handler;
@@ -105,23 +101,13 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
         // first launch. That led to bugs where the scanning rectangle was the wrong size and partially
         // off screen.
         cameraManager = new CameraManager(getApplication());
-        //provider = new ProviderFacade();
+        viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
+        viewfinderView.setCameraManager(cameraManager);
 
         lastFoundID = null;
         buttonDetails = (Button)findViewById(R.id.button_openhotstdetails);
         buttonDetails.setVisibility(View.GONE);
-        buttonDetails.setOnClickListener(
-            new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, HostDetailActivity.class);
-                intent.putExtra("EXTRA_HOST_ID", lastFoundID);
-                startActivity(intent);
-            }
-        });
 
-//        viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
-//        viewfinderView.setCameraManager(cameraManager);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (prefs.getBoolean(PreferencesActivity.KEY_DISABLE_AUTO_ORIENTATION, true)) {
@@ -221,8 +207,11 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
      * @param barcode   A greyscale bitmap of the camera data which was decoded.
      */
     public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
+
         TextView tw = (TextView)findViewById(R.id.result_text);
         String result = rawResult.getText();
+        viewfinderView.drawResultFrame(rawResult.getResultPoints());
+        viewfinderView.drawResultBitmap(barcode);
         if (provider.query(Host.class).id(result).all().size() == 0) {
             String message = ". Can't find or not a proper host ID.";
             tw.setText(result + message);
@@ -269,5 +258,16 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
             default:
                 return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
         }
+    }
+
+    public void drawViewfinder() {
+        viewfinderView.drawViewfinder();
+    }
+
+    //Button event
+    public void openDetails(View view) {
+        Intent intent = new Intent(this, HostDetailActivity.class);
+        intent.putExtra("EXTRA_HOST_ID", lastFoundID);
+        startActivity(intent);
     }
 }
