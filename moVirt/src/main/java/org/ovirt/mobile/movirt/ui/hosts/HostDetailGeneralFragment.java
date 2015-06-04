@@ -21,6 +21,7 @@ import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableFragment;
+import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 
 @EFragment(R.layout.fragment_host_detail_general)
 public class HostDetailGeneralFragment extends RefreshableFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -130,6 +131,10 @@ public class HostDetailGeneralFragment extends RefreshableFragment implements Lo
         threadView.setText(String.valueOf(host.getThreadsPerCore()));
         osVersionView.setText(host.getOsVersion());
         addressView.setText(host.getAddress());
+
+        if (getActivity() instanceof UpdateMenuItemAware) {
+            ((UpdateMenuItemAware) getActivity()).UpdateMenuItem(host);
+        }
     }
 
     @Override

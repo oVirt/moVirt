@@ -6,6 +6,7 @@ import android.os.RemoteException;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -16,6 +17,7 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
+import org.androidannotations.annotations.OptionsMenuItem;
 import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
@@ -23,6 +25,7 @@ import org.androidannotations.annotations.res.StringArrayRes;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.VmFacade;
+import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.rest.ActionTicket;
@@ -36,12 +39,13 @@ import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.ovirt.mobile.movirt.ui.NicDetailFragment;
 import org.ovirt.mobile.movirt.ui.NicDetailFragment_;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
+import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
-public class VmDetailActivity extends ActionBarActivity implements HasProgressBar {
+public class VmDetailActivity extends ActionBarActivity implements HasProgressBar, UpdateMenuItemAware {
 
     private static final String TAG = VmDetailActivity.class.getSimpleName();
 
@@ -64,6 +68,18 @@ public class VmDetailActivity extends ActionBarActivity implements HasProgressBa
 
     @Bean
     VmFacade vmFacade;
+
+    @OptionsMenuItem(R.id.action_run)
+    MenuItem menuRun;
+
+    @OptionsMenuItem(R.id.action_stop)
+    MenuItem menuStop;
+
+    @OptionsMenuItem(R.id.action_reboot)
+    MenuItem menuReboot;
+
+    @OptionsMenuItem(R.id.action_console)
+    MenuItem menuConsole;
 
     @AfterViews
     void init() {
@@ -204,5 +220,27 @@ public class VmDetailActivity extends ActionBarActivity implements HasProgressBa
     @Override
     public void hideProgressBar() {
         progress.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void UpdateMenuItem(OVirtEntity entity) {
+        Vm vm = (Vm) entity;
+
+        if (vm.getStatus() == Vm.Status.UP){
+            menuRun.setVisible(false);
+            menuStop.setVisible(true);
+            menuReboot.setVisible(true);
+            menuConsole.setVisible(true);
+        } else if (vm.getStatus() == Vm.Status.DOWN){
+            menuRun.setVisible(true);
+            menuStop.setVisible(false);
+            menuReboot.setVisible(false);
+            menuConsole.setVisible(false);
+        } else {
+            menuRun.setVisible(false);
+            menuStop.setVisible(false);
+            menuReboot.setVisible(false);
+            menuConsole.setVisible(false);
+        }
     }
 }
