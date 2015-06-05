@@ -1,7 +1,6 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
@@ -16,11 +15,12 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.camera.CaptureActivityHandler;
 import org.ovirt.mobile.movirt.camera.ViewfinderView;
@@ -29,24 +29,32 @@ import org.ovirt.mobile.movirt.camera.zxing.client.CameraManager;
 import org.ovirt.mobile.movirt.camera.zxing.client.PreferencesActivity;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.ui.hosts.HostDetailActivity;
 
 import java.io.IOException;
 
 @EActivity(R.layout.activity_camera)
 public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 
-    @Bean
-    ProviderFacade provider;
-
     private static final String TAG = CameraActivity.class.getSimpleName();
     private static final long BULK_MODE_SCAN_DELAY_MS = 100L;
+    @Bean
+    ProviderFacade provider;
+    @ViewById
+    TextView textHostId;
+    @ViewById
+    TextView textStatus;
+    @ViewById
+    TextView textCpuUsage;
+    @ViewById
+    TextView textMemoryUsage;
+    @ViewById
+    LinearLayout panelDetails;
+    @ViewById(R.id.viewfinder_view)
+    ViewfinderView viewfinderView;
 
     private CameraManager cameraManager;
     private CaptureActivityHandler handler;
-    private Button buttonDetails;
     private String lastFoundID;
-    private ViewfinderView viewfinderView;
     private boolean hasSurface;
     private Result savedResultToShow;
 
@@ -72,25 +80,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 
         hasSurface = false;
 
-/*      inactivityTimer = new InactivityTimer(this);
-        beepManager = new BeepManager(this);
-        ambientLightManager = new AmbientLightManager(this);*/
-
         PreferenceManager.setDefaultValues(this, R.xml.zxing_preferences, false);
-
-/*      // Create an instance of Camera
-        mCamera = getCameraInstance(CameraActivity.this);
-
-        if(mCamera == null)
-        {
-            Toast.makeText(CameraActivity.this, "Can't detect camera", Toast.LENGTH_LONG).show();
-        }
-        else {
-            // Create our Preview view and set it as the content of our activity.
-            mPreview = new CameraPreview(this, mCamera);
-            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-            preview.addView(mPreview);
-        }*/
     }
 
     @Override
@@ -101,12 +91,9 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
         // first launch. That led to bugs where the scanning rectangle was the wrong size and partially
         // off screen.
         cameraManager = new CameraManager(getApplication());
-        viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
         viewfinderView.setCameraManager(cameraManager);
 
         lastFoundID = null;
-        buttonDetails = (Button)findViewById(R.id.button_openhotstdetails);
-        buttonDetails.setVisibility(View.GONE);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -133,11 +120,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
             handler.quitSynchronously();
             handler = null;
         }
-//        inactivityTimer.onPause();
-//        ambientLightManager.stop();
-//        beepManager.close();
         cameraManager.closeDriver();
-        //historyManager = null; // Keep for onActivityResult
         if (!hasSurface) {
             SurfaceView surfaceView = (SurfaceView) findViewById(R.id.camera_preview);
             SurfaceHolder surfaceHolder = surfaceView.getHolder();
@@ -148,7 +131,6 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 
     @Override
     protected void onDestroy() {
-        //inactivityTimer.shutdown();
         super.onDestroy();
     }
 
@@ -202,35 +184,40 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
     /**
      * A valid barcode has been found, so give an indication of success and show the results.
      *
-     * @param rawResult The contents of the barcode.
+     * @param rawResult   The contents of the barcode.
      * @param scaleFactor amount by which thumbnail was scaled
-     * @param barcode   A greyscale bitmap of the camera data which was decoded.
+     * @param barcode     A greyscale bitmap of the camera data which was decoded.
      */
     public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
-
-        TextView tw = (TextView)findViewById(R.id.result_text);
+        TextView tw = (TextView) findViewById(R.id.result_text);
         String result = rawResult.getText();
-        viewfinderView.drawResultFrame(rawResult.getResultPoints());
-        viewfinderView.drawResultBitmap(barcode);
-        if (provider.query(Host.class).id(result).all().size() == 0) {
-            String message = ". Can't find or not a proper host ID.";
-            tw.setText(result + message);
-            buttonDetails.setVisibility(View.GONE);
-        } else
-        {
-            String message = ". Found host ID. Open details page?";
-            tw.setText(result + message);
-            lastFoundID = result;
-            buttonDetails.setVisibility(View.VISIBLE);
+        viewfinderView.drawResultBitmap(barcode, rawResult.getResultPoints());
+        if (!result.equals(lastFoundID)) {
+            if (provider.query(Host.class).id(result).all().size() == 0) {
+                String message = ". Can't find or not a proper host ID.";
+                tw.setText(result + message);
+            } else {
+                tw.setText(result);
+                lastFoundID = result;
+                renderDetails(result);
+            }
         }
         restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
+    }
+
+    private void renderDetails(String hostId) {
+        Host host = provider.query(Host.class).id(hostId).all().iterator().next();
+        panelDetails.setVisibility(View.VISIBLE);
+        textHostId.setText(hostId);
+        textStatus.setText(host.getStatus().toString());
+        textCpuUsage.setText(String.format("%.2f%%", host.getCpuUsage()));
+        textMemoryUsage.setText(String.format("%.2f%%", host.getMemoryUsage()));
     }
 
     public void restartPreviewAfterDelay(long delayMS) {
         if (handler != null) {
             handler.sendEmptyMessageDelayed(R.id.restart_preview, delayMS);
         }
-        //resetStatusView();
     }
 
     private void decodeOrStoreSavedBitmap(Bitmap bitmap, Result result) {
@@ -262,12 +249,5 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 
     public void drawViewfinder() {
         viewfinderView.drawViewfinder();
-    }
-
-    //Button event
-    public void openDetails(View view) {
-        Intent intent = new Intent(this, HostDetailActivity.class);
-        intent.putExtra("EXTRA_HOST_ID", lastFoundID);
-        startActivity(intent);
     }
 }

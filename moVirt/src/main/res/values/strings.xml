@@ -125,9 +125,14 @@
     <string name="threads">Threads/Core:</string>
     <string name="os_version">OS Version:</string>
     <string name="address">Address:</string>
-    <string name="title_activity_camera">CameraActivity</string>
 
-    <string name="hello_world">Hello world!</string>
+    <!-- Camera Activity string -->
+    <string name="title_activity_camera">Scan DataMatrix from server</string>
+    <string name="labelHostId">Host ID:</string>
+    <string name="labelStatus">Status:</string>
+    <string name="labelCPUUsage">CPU usage:</string>
+    <string name="labelMemoryUsage">Memory usage:</string>
+    <string name="cameraMessage">Look at Data Matrix code to</string>
 
     <!-- ZXing strings -->
     <string name="msg_error">Error</string>

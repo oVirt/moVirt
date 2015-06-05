@@ -15,24 +15,73 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="fill_parent">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Nothing"
+        android:text="Look at Data Matrix code to get Host ID"
         android:id="@+id/result_text"
         android:layout_gravity="center_horizontal" />
 
-    <Button
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Open"
-        android:id="@+id/button_openhotstdetails"
-        android:layout_gravity="center_horizontal"
+        android:layout_gravity="right"
+        android:minWidth="200dp"
+        android:layout_marginRight="10dp"
+        android:alpha=".75"
+        android:background="#000000"
+        android:padding="10dp"
         android:visibility="gone"
-        android:onClick="openDetails"
-        />
-  </LinearLayout>
+        android:id="@+id/panelDetails">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/labelHostId"
+            android:id="@+id/labelHostId" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textHostId" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/labelStatus"
+            android:id="@+id/labelStatus" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textStatus" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/labelCPUUsage"
+            android:id="@+id/labelCpuUsage" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textCpuUsage" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/labelMemoryUsage"
+            android:id="@+id/labelMemoryUsage" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textMemoryUsage" />
+    </LinearLayout>
+
+</LinearLayout>
 </merge>

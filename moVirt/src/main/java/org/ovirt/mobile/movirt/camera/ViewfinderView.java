@@ -29,9 +29,6 @@ import android.view.View;
 import org.ovirt.mobile.movirt.camera.zxing.ResultPoint;
 import org.ovirt.mobile.movirt.camera.zxing.client.CameraManager;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * This view is overlaid on top of the camera preview. It adds the viewfinder rectangle and partial
  * transparency outside it, as well as the laser scanner animation and result points.
@@ -39,129 +36,92 @@ import java.util.List;
  * @author dswitkin@google.com (Daniel Switkin)
  */
 public final class ViewfinderView extends View {
-
-  private static final int[] SCANNER_ALPHA = {0, 64, 128, 192, 255, 192, 128, 64};
-  private static final long ANIMATION_DELAY = 80L;
-  private static final int CURRENT_POINT_OPACITY = 0xA0;
-  private static final int MAX_RESULT_POINTS = 20;
-  private static final int POINT_SIZE = 6;
-
-  private CameraManager cameraManager;
-  private final Paint paint;
-  private Bitmap resultBitmap;
-  private final int maskColor;
-  private final int resultColor;
-  private final int laserColor;
-  private final int resultPointColor;
-  private int scannerAlpha;
-  private List<ResultPoint> possibleResultPoints;
-  private List<ResultPoint> lastPossibleResultPoints;
-    private boolean bDrawResult = false;
+    private final Paint paint;
+    private CameraManager cameraManager;
+    private Bitmap resultBitmap;
     private ResultPoint[] points;
 
     // This constructor is used when the class is built from an XML resource.
-  public ViewfinderView(Context context, AttributeSet attrs) {
-    super(context, attrs);
+    public ViewfinderView(Context context, AttributeSet attrs) {
+        super(context, attrs);
 
-    // Initialize these once for performance rather than calling them every time in onDraw().
-    paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    //Resources resources = getResources();
-    maskColor = Color.BLACK;
-    resultColor = Color.BLACK;
-    laserColor = Color.BLACK;
-    resultPointColor = Color.BLACK;
-    scannerAlpha = 0;
-    possibleResultPoints = new ArrayList<>(5);
-    lastPossibleResultPoints = null;
-  }
-
-  public void setCameraManager(CameraManager cameraManager) {
-    this.cameraManager = cameraManager;
-  }
-
-  @SuppressLint("DrawAllocation")
-  @Override
-  public void onDraw(Canvas canvas) {
-    if (cameraManager == null) {
-      return; // not ready yet, early draw before done configuring
+        // Initialize these once for performance rather than calling them every time in onDraw().
+        paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     }
-    Rect frame = cameraManager.getFramingRect();
-    Rect previewFrame = cameraManager.getFramingRectInPreview();    
-    if (frame == null || previewFrame == null) {
-      return;
+
+    public void setCameraManager(CameraManager cameraManager) {
+        this.cameraManager = cameraManager;
     }
-    int width = canvas.getWidth();
-    int height = canvas.getHeight();
-      paint.setColor(Color.BLACK);
-      canvas.drawLines(new float[]{
-              frame.left, frame.top, frame.right, frame.top,
-              frame.right, frame.top, frame.right, frame.bottom,
-              frame.right, frame.bottom, frame.left, frame.bottom,
-              frame.left, frame.bottom, frame.left, frame.top
-      }, paint);
 
+    @SuppressLint("DrawAllocation")
+    @Override
+    public void onDraw(Canvas canvas) {
+        if (cameraManager == null) {
+            return; // not ready yet, early draw before done configuring
+        }
+        Rect frame = cameraManager.getFramingRect();
+        Rect previewFrame = cameraManager.getFramingRectInPreview();
+        if (frame == null || previewFrame == null) {
+            return;
+        }
+        // Draw the exterior
+        paint.setColor(Color.BLACK);
+        canvas.drawLines(new float[]{
+                frame.left, frame.top, frame.right, frame.top,
+                frame.right, frame.top, frame.right, frame.bottom,
+                frame.right, frame.bottom, frame.left, frame.bottom,
+                frame.left, frame.bottom, frame.left, frame.top
+        }, paint);
+        //canvas.drawRect(0, 0, width, frame.top, paint);
+        //canvas.drawRect(0, frame.top, frame.left, frame.bottom + 1, paint);
+        //canvas.drawRect(frame.right + 1, frame.top, width, frame.bottom + 1, paint);
+        //canvas.drawRect(0, frame.bottom + 1, width, height, paint);
 
-
-    // Draw the exterior (i.e. outside the framing rect) darkened
-      paint.setColor(resultBitmap != null ? resultColor : maskColor);
-    //canvas.drawRect(0, 0, width, frame.top, paint);
-    //canvas.drawRect(0, frame.top, frame.left, frame.bottom + 1, paint);
-    //canvas.drawRect(frame.right + 1, frame.top, width, frame.bottom + 1, paint);
-    //canvas.drawRect(0, frame.bottom + 1, width, height, paint);
-
-    if (resultBitmap != null) {
-        if( bDrawResult )
-        {
-            float wScale = (float)frame.width() / (float)previewFrame.width();
-            float hScale = (float)frame.height() / (float)previewFrame.height();
+        if (resultBitmap != null) {
+            //highlight detected code with red frame
+            float wScale = (float) frame.width() / (float) previewFrame.width();
+            float hScale = (float) frame.height() / (float) previewFrame.height();
             paint.setColor(Color.RED);
-            float[] f = new float[] {
+            paint.setStrokeWidth(2.5f);
+            float[] f = new float[]{
                     points[0].getX() * wScale + frame.left, points[0].getY() * hScale + frame.top,
                     points[1].getX() * wScale + frame.left, points[1].getY() * hScale + frame.top,
                     points[2].getX() * wScale + frame.left, points[2].getY() * hScale + frame.top,
                     points[3].getX() * wScale + frame.left, points[3].getY() * hScale + frame.top
             };
-            canvas.drawLines(new float[] {
+            canvas.drawLines(new float[]{
                             f[0], f[1], f[2], f[3], f[2], f[3], f[4], f[5],
                             f[4], f[5], f[6], f[7], f[6], f[7], f[0], f[1]
                     },
                     paint);
-            //bDrawResult = false;
+            // Draw the opaque result bitmap over the scanning rectangle
+            //paint.setAlpha(CURRENT_POINT_OPACITY);
+            //canvas.drawBitmap(resultBitmap, null, frame, paint);
         }
-      // Draw the opaque result bitmap over the scanning rectangle
-      //paint.setAlpha(CURRENT_POINT_OPACITY);
-      //canvas.drawBitmap(resultBitmap, null, frame, paint);
     }
-  }
 
-  public void drawViewfinder() {
-    Bitmap resultBitmap = this.resultBitmap;
-    this.resultBitmap = null;
-    if (resultBitmap != null) {
-      resultBitmap.recycle();
-    }
-    invalidate();
-  }
-
-    public void drawResultFrame(ResultPoint[] points)
-    {
-        this.points = points;
-
-        bDrawResult = true;
+    public void drawViewfinder() {
+        Bitmap resultBitmap = this.resultBitmap;
+        this.resultBitmap = null;
+        if (resultBitmap != null) {
+            resultBitmap.recycle();
+        }
         invalidate();
     }
 
-  /**
-   * Draw a bitmap with the result points highlighted instead of the live scanning display.
-   *
-   * @param barcode An image of the decoded barcode.
-   */
-  public void drawResultBitmap(Bitmap barcode) {
-    resultBitmap = barcode;
-    invalidate();
-  }
+    /**
+     * Draw a bitmap with the result points highlighted instead of the live scanning display.
+     *
+     * @param barcode An image of the decoded barcode.
+     * @param points  Corners of barcode (should be scaled to properly fit on screen)
+     */
+    public void drawResultBitmap(Bitmap barcode, ResultPoint[] points) {
+        resultBitmap = barcode;
+        this.points = points;
+        invalidate();
+    }
 
-  public void addPossibleResultPoint(ResultPoint point) {
+/*  public void addPossibleResultPoint(ResultPoint point) {
     List<ResultPoint> points = possibleResultPoints;
     synchronized (points) {
       points.add(point);
@@ -171,6 +131,6 @@ public final class ViewfinderView extends View {
         points.subList(0, size - MAX_RESULT_POINTS / 2).clear();
       }
     }
-  }
+  }*/
 
 }

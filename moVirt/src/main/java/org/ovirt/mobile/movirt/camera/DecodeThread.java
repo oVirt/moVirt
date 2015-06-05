@@ -30,34 +30,34 @@ import java.util.concurrent.CountDownLatch;
  */
 final class DecodeThread extends Thread {
 
-  public static final String BARCODE_BITMAP = "barcode_bitmap";
-  public static final String BARCODE_SCALED_FACTOR = "barcode_scaled_factor";
+    public static final String BARCODE_BITMAP = "barcode_bitmap";
+    public static final String BARCODE_SCALED_FACTOR = "barcode_scaled_factor";
 
-  private final CameraActivity activity;
-  private Handler handler;
-  private final CountDownLatch handlerInitLatch;
+    private final CameraActivity activity;
+    private Handler handler;
+    private final CountDownLatch handlerInitLatch;
 
-  DecodeThread(CameraActivity activity) {
+    DecodeThread(CameraActivity activity) {
 
-    this.activity = activity;
-    handlerInitLatch = new CountDownLatch(1);
-  }
-
-  Handler getHandler() {
-    try {
-      handlerInitLatch.await();
-    } catch (InterruptedException ie) {
-      // continue?
+        this.activity = activity;
+        handlerInitLatch = new CountDownLatch(1);
     }
-    return handler;
-  }
 
-  @Override
-  public void run() {
-    Looper.prepare();
-    handler = new DecodeHandler(activity);
-    handlerInitLatch.countDown();
-    Looper.loop();
-  }
+    Handler getHandler() {
+        try {
+            handlerInitLatch.await();
+        } catch (InterruptedException ie) {
+            // continue?
+        }
+        return handler;
+    }
+
+    @Override
+    public void run() {
+        Looper.prepare();
+        handler = new DecodeHandler(activity);
+        handlerInitLatch.countDown();
+        Looper.loop();
+    }
 
 }
