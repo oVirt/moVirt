@@ -18,7 +18,7 @@ public class EntityMapper<E extends BaseEntity> {
             E entity = clazz.newInstance();
             entity.initFromCursor(cursor);
             return entity;
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
