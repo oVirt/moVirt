@@ -11,49 +11,48 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
-        android:name="org.ovirt.mobile.movirt.MoVirtApp_"
+        android:name=".MoVirtApp_"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-
         <activity
-            android:name="org.ovirt.mobile.movirt.ui.MainActivity_"
+            android:name=".ui.MainActivity_"
             android:label="@string/app_name"
-            android:windowSoftInputMode="stateAlwaysHidden">
+            android:windowSoftInputMode="stateAlwaysHidden" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
-            android:name="org.ovirt.mobile.movirt.ui.SettingsActivity_"
+            android:name=".ui.SettingsActivity_"
+            android:label="@string/title_activity_settings" >
+        </activity>
+        <activity
+            android:name=".ui.AdvancedAuthenticatorActivity_"
+            android:label="@string/title_activity_settings_advanced"
+            android:windowSoftInputMode="stateHidden" >
+        </activity>
+        <activity
+            android:name=".ui.AuthenticatorActivity_"
             android:label="@string/title_activity_settings" >
         </activity>
 
-        <activity
-            android:name="org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity_"
-            android:label="@string/title_activity_settings_advanced"
-            android:windowSoftInputMode="stateHidden">
-        </activity>
-
-        <activity
-            android:name="org.ovirt.mobile.movirt.ui.AuthenticatorActivity_"
-            android:label="@string/title_activity_settings">
-        </activity>
-
         <provider
-            android:name="org.ovirt.mobile.movirt.provider.Provider"
+            android:name=".provider.Provider"
             android:authorities="org.ovirt.mobile.movirt.provider"
             android:enabled="true"
-            android:exported="true" > <!--This is really just a hack to make it work with the account authenticator-->
+            android:exported="true" > <!-- This is really just a hack to make it work with the account authenticator -->
         </provider>
 
-        <service android:name="org.ovirt.mobile.movirt.auth.AuthenticatorService_" >
+        <service android:name=".auth.AuthenticatorService_" >
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
@@ -62,12 +61,10 @@
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
-
         <service
-            android:name="org.ovirt.mobile.movirt.sync.SyncService_"
+            android:name=".sync.SyncService_"
             android:enabled="true"
-            android:exported="false"
-            >
+            android:exported="false" >
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
@@ -78,20 +75,21 @@
         </service>
 
         <activity
-            android:name="org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_"
+            android:name=".ui.triggers.EditTriggersActivity_"
             android:label="@string/title_activity_edit_filters" >
         </activity>
-
         <activity
             android:name=".ui.vms.VmDetailActivity_"
-            android:label="@string/title_activity_vm_details">
+            android:label="@string/title_activity_vm_details" >
         </activity>
-
         <activity
             android:name=".ui.hosts.HostDetailActivity_"
-            android:label="@string/title_activity_host_details">
+            android:label="@string/title_activity_host_details" >
         </activity>
-
+        <activity
+            android:name=".ui.CameraActivity_"
+            android:label="@string/title_activity_camera" >
+        </activity>
     </application>
 
 </manifest>
