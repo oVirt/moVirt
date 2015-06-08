@@ -45,7 +45,7 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
-public class VmDetailActivity extends ActionBarActivity implements HasProgressBar, UpdateMenuItemAware {
+public class VmDetailActivity extends ActionBarActivity implements HasProgressBar, UpdateMenuItemAware<Vm> {
 
     private static final String TAG = VmDetailActivity.class.getSimpleName();
 
@@ -222,25 +222,12 @@ public class VmDetailActivity extends ActionBarActivity implements HasProgressBa
         progress.setVisibility(View.GONE);
     }
 
+    @UiThread
     @Override
-    public void UpdateMenuItem(OVirtEntity entity) {
-        Vm vm = (Vm) entity;
-
-        if (vm.getStatus() == Vm.Status.UP){
-            menuRun.setVisible(false);
-            menuStop.setVisible(true);
-            menuReboot.setVisible(true);
-            menuConsole.setVisible(true);
-        } else if (vm.getStatus() == Vm.Status.DOWN){
-            menuRun.setVisible(true);
-            menuStop.setVisible(false);
-            menuReboot.setVisible(false);
-            menuConsole.setVisible(false);
-        } else {
-            menuRun.setVisible(false);
-            menuStop.setVisible(false);
-            menuReboot.setVisible(false);
-            menuConsole.setVisible(false);
-        }
+    public void updateMenuItem(Vm vm) {
+        menuRun.setVisible(Vm.Command.RUN.canExecute(vm.getStatus()));
+        menuStop.setVisible(Vm.Command.STOP.canExecute(vm.getStatus()));
+        menuReboot.setVisible(Vm.Command.REBOOT.canExecute(vm.getStatus()));
+        menuConsole.setVisible(Vm.Command.CONSOLE.canExecute(vm.getStatus()));
     }
 }

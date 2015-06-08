@@ -34,7 +34,7 @@ import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 
 @EActivity(R.layout.activity_host_detail)
 @OptionsMenu(R.menu.host)
-public class HostDetailActivity extends ActionBarActivity implements HasProgressBar, UpdateMenuItemAware {
+public class HostDetailActivity extends ActionBarActivity implements HasProgressBar, UpdateMenuItemAware<Host> {
     private static final String TAG = HostDetailActivity.class.getSimpleName();
     @ViewById
     ViewPager viewPager;
@@ -116,19 +116,10 @@ public class HostDetailActivity extends ActionBarActivity implements HasProgress
         progress.setVisibility(View.GONE);
     }
 
+    @UiThread
     @Override
-    public void UpdateMenuItem(OVirtEntity entity) {
-        Host host = (Host) entity;
-
-        if (host.getStatus() == Host.Status.UP){
-            menuActivate.setVisible(false);
-            menuDeactivate.setVisible(true);
-        } else if (host.getStatus() == Host.Status.MAINTENANCE){
-            menuActivate.setVisible(true);
-            menuDeactivate.setVisible(false);
-        } else {
-            menuActivate.setVisible(false);
-            menuDeactivate.setVisible(false);
-        }
+    public void updateMenuItem(Host host) {
+        menuActivate.setVisible(Host.Command.ACTIVATE.canExecute(host.getStatus()));
+        menuDeactivate.setVisible(Host.Command.DEACTIVATE.canExecute(host.getStatus()));
     }
 }

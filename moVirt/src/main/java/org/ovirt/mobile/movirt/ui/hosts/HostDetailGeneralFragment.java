@@ -133,7 +133,7 @@ public class HostDetailGeneralFragment extends RefreshableFragment implements Lo
         addressView.setText(host.getAddress());
 
         if (getActivity() instanceof UpdateMenuItemAware) {
-            ((UpdateMenuItemAware) getActivity()).UpdateMenuItem(host);
+            ((UpdateMenuItemAware) getActivity()).updateMenuItem(host);
         }
     }
 

@@ -10,6 +10,9 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.TABLE;
 
 @DatabaseTable(tableName = TABLE)
@@ -46,6 +49,27 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
 
         public int getResource() {
             return resource;
+        }
+    }
+
+    public enum Command {
+        ACTIVATE(Status.MAINTENANCE, Status.ERROR, Status.PREPARING_FOR_MAINTENANCE,
+                Status.NON_OPERATIONAL, Status.INSTALL_FAILED),
+        DEACTIVATE(Status.UP, Status.ERROR, Status.NON_RESPONSIVE, Status.NON_OPERATIONAL,
+                Status.INSTALL_FAILED, Status.DOWN);
+
+        private final List<Status> validStates;
+
+        public List<Status> getValidStates() {
+            return validStates;
+        }
+
+        Command(Status ...validStates) {
+            this.validStates = Arrays.asList(validStates);
+        }
+
+        public boolean canExecute(Status status) {
+            return validStates.contains(status);
         }
     }
 

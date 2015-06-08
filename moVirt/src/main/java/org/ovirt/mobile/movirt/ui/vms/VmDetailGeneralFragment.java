@@ -144,7 +144,7 @@ public class VmDetailGeneralFragment extends RefreshableFragment implements Load
         }
 
         if (getActivity() instanceof UpdateMenuItemAware) {
-            ((UpdateMenuItemAware) getActivity()).UpdateMenuItem(vm);
+            ((UpdateMenuItemAware) getActivity()).updateMenuItem(vm);
         }
     }
 

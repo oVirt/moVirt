@@ -62,9 +62,12 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
 
     public enum Command {
         RUN(Status.DOWN, Status.PAUSED),
-        SHUTDOWN(Status.UP),
-        POWEROFF(Status.UP, Status.POWERING_UP, Status.POWERING_DOWN),
-        REBOOT(Status.UP);
+        STOP(Status.WAIT_FOR_LAUNCH, Status.UP, Status.POWERING_DOWN, Status.POWERING_UP,
+                Status.REBOOT_IN_PROGRESS, Status.MIGRATING, Status.SUSPENDED, Status.PAUSED,
+                Status.NOT_RESPONDING),
+        REBOOT(Status.UP, Status.POWERING_UP),
+        CONSOLE(Status.UP, Status.POWERING_UP, Status.REBOOT_IN_PROGRESS, Status.POWERING_DOWN,
+                Status.PAUSED);
 
         private final List<Status> validStates;
 
