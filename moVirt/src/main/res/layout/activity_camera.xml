@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <SurfaceView
+        android:id="@+id/camera_preview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+
+    <org.ovirt.mobile.movirt.camera.ViewfinderView
+        android:id="@+id/viewfinder_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/result_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/cameraMessage" />
+
+        <LinearLayout
+            android:id="@+id/panelDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp"
+            android:alpha=".75"
+            android:background="#000000"
+            android:minWidth="200dp"
+            android:orientation="vertical"
+            android:padding="10dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/labelHostName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/labelHostName" />
+
+            <TextView
+                android:id="@+id/textHostName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="5dp" />
+
+            <TextView
+                android:id="@+id/labelStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/labelStatus" />
+
+            <TextView
+                android:id="@+id/textStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="5dp" />
+
+            <TextView
+                android:id="@+id/labelCpuUsage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/labelCPUUsage" />
+
+            <TextView
+                android:id="@+id/textCpuUsage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="5dp" />
+
+            <TextView
+                android:id="@+id/labelMemoryUsage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/labelMemoryUsage" />
+
+            <TextView
+                android:id="@+id/textMemoryUsage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="5dp" />
+
+            <Button
+                android:id="@+id/buttonOpenHostDetails"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/buttonOpenDetails"
+                android:onClick="openHostDetails" />
+        </LinearLayout>
+
+    </LinearLayout>
+</merge>
