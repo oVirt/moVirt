@@ -19,17 +19,13 @@ import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 @EActivity(R.layout.activity_host_detail)
 public class HostDetailActivity extends ActionBarActivity {
     private static final String TAG = HostDetailActivity.class.getSimpleName();
-
-    private String hostId = null;
-
     @ViewById
     ViewPager viewPager;
-
     @ViewById
     PagerTabStrip pagerTabStrip;
-
     @StringArrayRes(R.array.host_detail_pager_titles)
     String[] PAGER_TITLES;
+    private String hostId = null;
 
     @AfterViews
     void init() {
@@ -37,7 +33,7 @@ public class HostDetailActivity extends ActionBarActivity {
         initPagers();
     }
 
-    private void initPagers(){
+    private void initPagers() {
         Uri hostUri = getIntent().getData();
         hostId = hostUri.getLastPathSegment();
 

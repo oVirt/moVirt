@@ -5,6 +5,7 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="action_settings">Settings</string>
     <string name="action_clear_events">Clear Local Events</string>
+    <string name="action_camera">Scan Code</string>
     <string name="prefs_poll_events">Poll Events</string>
     <string name="prefs_poll_events_summary">If the events are part of regular poll or not.</string>
     <string name="prefs_max_events_locally">Max events locally</string>
@@ -124,4 +125,15 @@
     <string name="threads">Threads/Core:</string>
     <string name="os_version">OS Version:</string>
     <string name="address">Address:</string>
+
+    <!-- start Camera Activity strings -->
+    <string name="title_activity_camera">Scan Data Matrix codes with camera</string>
+    <string name="labelHostName">Host name:</string>
+    <string name="labelStatus">Status:</string>
+    <string name="labelCPUUsage">CPU usage:</string>
+    <string name="labelMemoryUsage">Memory usage:</string>
+    <string name="cameraMessage">Look at Data Matrix code to decode</string>
+    <string name="buttonOpenDetails">Open host details page</string>
+    <!-- end Camera Activity strings -->
+
 </resources>
