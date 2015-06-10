@@ -17,4 +17,8 @@
     <item android:id="@+id/action_clear_events"
         android:title="@string/action_clear_events"
         app:showAsAction="never" />
+
+    <item android:id="@+id/action_camera"
+        android:title="@string/action_camera"
+        app:showAsAction="ifRoom|withText" />
 </menu>
