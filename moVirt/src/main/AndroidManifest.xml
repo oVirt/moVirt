@@ -98,8 +98,13 @@
 
         <activity
             android:name=".ui.CameraActivity_"
-            android:label="@string/title_activity_camera">
+            android:label="@string/title_activity_camera"
+            android:theme="@style/cameraViewStyle">
         </activity>
+
+        <activity android:name=".camera.PreferencesActivity"
+            android:label="@string/preferences_name"
+            android:stateNotNeeded="true" />
     </application>
 
 </manifest>

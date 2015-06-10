@@ -1,6 +1,5 @@
 package org.ovirt.mobile.movirt.ui.hosts;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
@@ -20,7 +19,6 @@ import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 @EActivity(R.layout.activity_host_detail)
 public class HostDetailActivity extends ActionBarActivity {
     private static final String TAG = HostDetailActivity.class.getSimpleName();
-    public final static String EXTRA_HOST_ID = "org.ovirt.mobile.movirt.hostId";
     @ViewById
     ViewPager viewPager;
     @ViewById
@@ -36,14 +34,8 @@ public class HostDetailActivity extends ActionBarActivity {
     }
 
     private void initPagers() {
-        Intent intent = getIntent();
-        String message = intent.getStringExtra(EXTRA_HOST_ID);
-        if (message != null) {
-            hostId = message;
-        } else {
-            Uri hostUri = intent.getData();
-            hostId = hostUri.getLastPathSegment();
-        }
+        Uri hostUri = getIntent().getData();
+        hostId = hostUri.getLastPathSegment();
 
         VmsFragment vmsFragment = new VmsFragment_();
         EventsFragment eventsFragment = new EventsFragment_();

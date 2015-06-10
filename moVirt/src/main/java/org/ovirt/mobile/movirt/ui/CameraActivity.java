@@ -1,6 +1,5 @@
 package org.ovirt.mobile.movirt.ui;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -9,7 +8,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -25,24 +28,27 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.camera.BeepManager;
 import org.ovirt.mobile.movirt.camera.CameraManager;
 import org.ovirt.mobile.movirt.camera.CaptureActivityHandler;
 import org.ovirt.mobile.movirt.camera.PreferencesActivity;
 import org.ovirt.mobile.movirt.camera.ViewfinderView;
+import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.ui.hosts.HostDetailActivity_;
 
 import java.io.IOException;
 import java.util.Collection;
 
 @EActivity(R.layout.activity_camera)
-public class CameraActivity extends Activity implements SurfaceHolder.Callback {
+public class CameraActivity extends ActionBarActivity implements SurfaceHolder.Callback {
 
     private static final String TAG = CameraActivity.class.getSimpleName();
     private static final long BULK_MODE_SCAN_DELAY_MS = 100L;
     @Bean
     ProviderFacade provider;
+    @Bean
+    HostFacade hostFacade;
     @ViewById
     TextView textHostName;
     @ViewById
@@ -58,9 +64,11 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 
     private CameraManager cameraManager;
     private CaptureActivityHandler handler;
+    private BeepManager beepManager;
     private String lastFoundID;
     private boolean hasSurface;
     private Result savedResultToShow;
+    private Host lastHost;
 
     public CameraManager getCameraManager() {
         return cameraManager;
@@ -83,6 +91,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
         setContentView(R.layout.activity_camera);
 
         hasSurface = false;
+        beepManager = new BeepManager(this);
 
         PreferenceManager.setDefaultValues(this, R.xml.zxing_preferences, false);
     }
@@ -106,6 +115,9 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
         } else {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
         }
+
+        beepManager.updatePrefs();
+
         SurfaceView surfaceView = (SurfaceView) findViewById(R.id.camera_preview);
         SurfaceHolder surfaceHolder = surfaceView.getHolder();
         if (hasSurface) {
@@ -125,6 +137,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
             handler = null;
         }
         cameraManager.closeDriver();
+        beepManager.close();
         if (!hasSurface) {
             SurfaceView surfaceView = (SurfaceView) findViewById(R.id.camera_preview);
             SurfaceHolder surfaceHolder = surfaceView.getHolder();
@@ -136,6 +149,28 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.camera, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        switch (item.getItemId()) {
+            case R.id.menu_settings:
+                intent.setClassName(this, PreferencesActivity.class.getName());
+                startActivity(intent);
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
     }
 
     @Override
@@ -197,13 +232,14 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
         String result = rawResult.getText();
         viewfinderView.drawResultBitmap(barcode, rawResult.getResultPoints());
         if (!result.equals(lastFoundID)) {
+            lastFoundID = result;
+            beepManager.playBeepSoundAndVibrate();
             Collection<Host> col = provider.query(Host.class).id(result).all();
             if (col.size() == 0) {
                 String message = ". Can't find or not a proper host ID.";
                 tw.setText(result + message);
             } else {
                 tw.setText(result);
-                lastFoundID = result;
                 renderDetails(col.iterator().next());
             }
         }
@@ -211,6 +247,7 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private void renderDetails(Host host) {
+        lastHost = host;
         panelDetails.setVisibility(View.VISIBLE);
         textHostName.setText(host.getName());
         textStatus.setText(host.getStatus().toString());
@@ -259,8 +296,8 @@ public class CameraActivity extends Activity implements SurfaceHolder.Callback {
 
     //Button event
     public void openHostDetails(View view) {
-        Intent intent = new Intent(this, HostDetailActivity_.class);
-        intent.putExtra(HostDetailActivity_.EXTRA_HOST_ID, lastFoundID);
-        startActivity(intent);
+        if (lastHost != null) {
+            startActivity(hostFacade.getDetailIntent(lastHost, this));
+        }
     }
 }
