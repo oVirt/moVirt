@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.1.0'
+        classpath 'com.android.tools.build:gradle:1.2.3'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
     }
 }
@@ -11,7 +11,9 @@ apply plugin: 'com.android.application'
 
 repositories {
     mavenCentral()
-    jcenter()
+    jcenter {
+        url 'http://jcenter.bintray.com/'
+    }
 
     maven {
         url 'https://oss.sonatype.org/content/repositories/snapshots/'
