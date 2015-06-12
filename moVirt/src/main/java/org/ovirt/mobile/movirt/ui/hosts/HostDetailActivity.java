@@ -119,6 +119,8 @@ public class HostDetailActivity extends ActionBarActivity implements HasProgress
     @UiThread
     @Override
     public void updateMenuItem(Host host) {
+        if (menuActivate == null || menuDeactivate == null) return;
+
         menuActivate.setVisible(Host.Command.ACTIVATE.canExecute(host.getStatus()));
         menuDeactivate.setVisible(Host.Command.DEACTIVATE.canExecute(host.getStatus()));
     }

@@ -225,6 +225,8 @@ public class VmDetailActivity extends ActionBarActivity implements HasProgressBa
     @UiThread
     @Override
     public void updateMenuItem(Vm vm) {
+        if (menuRun == null || menuStop == null || menuReboot == null || menuConsole == null) return;
+
         menuRun.setVisible(Vm.Command.RUN.canExecute(vm.getStatus()));
         menuStop.setVisible(Vm.Command.STOP.canExecute(vm.getStatus()));
         menuReboot.setVisible(Vm.Command.REBOOT.canExecute(vm.getStatus()));
