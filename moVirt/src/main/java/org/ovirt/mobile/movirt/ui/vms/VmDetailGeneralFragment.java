@@ -23,6 +23,7 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableFragment;
+import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 
 @EFragment(R.layout.fragment_vm_detail_general)
 public class VmDetailGeneralFragment extends RefreshableFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -142,6 +143,9 @@ public class VmDetailGeneralFragment extends RefreshableFragment implements Load
             displayView.setText("N/A");
         }
 
+        if (getActivity() instanceof UpdateMenuItemAware) {
+            ((UpdateMenuItemAware) getActivity()).updateMenuItem(vm);
+        }
     }
 
     @Override

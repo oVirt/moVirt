@@ -4,6 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ProgressBar
+        android:id="@+id/progress"
+        style="@style/commonProgressStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </ProgressBar>
+
     <android.support.v4.view.ViewPager
         android:id="@+id/viewPager"
         android:layout_width="wrap_content"

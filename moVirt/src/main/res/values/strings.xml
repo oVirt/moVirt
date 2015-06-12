@@ -126,6 +126,9 @@
     <string name="os_version">OS Version:</string>
     <string name="address">Address:</string>
 
+    <string name="activate">activate</string>
+    <string name="deactivate">deactivate</string>
+    
     <!-- start Camera Activity strings -->
     <string name="title_activity_camera">Scan Data Matrix codes with camera</string>
     <string name="labelHostName">Host name:</string>

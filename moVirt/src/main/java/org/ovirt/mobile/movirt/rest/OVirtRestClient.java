@@ -40,6 +40,12 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Post("/vms/{id}/reboot")
     void rebootVm(Action action, String id);
 
+    @Post("/hosts/{id}/activate")
+    void activateHost(Action action, String id);
+
+    @Post("/hosts/{id}/deactivate")
+    void deactivateHost(Action action, String id);
+
     @Get("/clusters")
     Clusters getClusters();
 
