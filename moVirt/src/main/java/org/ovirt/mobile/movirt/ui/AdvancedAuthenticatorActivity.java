@@ -1,6 +1,5 @@
 package org.ovirt.mobile.movirt.ui;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,7 +7,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -33,7 +31,10 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutput;
@@ -43,7 +44,6 @@ import java.net.URL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 
 @EActivity(R.layout.advanced_authenticator_activity)
@@ -54,6 +54,8 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
     public static String ENFORCE_HTTP_BASIC_AUTH = "org.ovirt.mobile.movirt.ui.ENFORCE_HTTP_BASIC_AUTH";
 
     public static String LOAD_CA_FROM = "org.ovirt.mobile.movirt.ui.LOAD_CA_FROM";
+
+    public static String IS_ONLY_LOAD_CA = "org.ovirt.mobile.movirt.ui.IS_ONLY_LOAD_CA";
 
     @Bean
     MovirtAuthenticator authenticator;
@@ -94,6 +96,12 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
     @InstanceState
     boolean inProgress;
 
+    @InstanceState
+    byte[] caCert;
+
+    @InstanceState
+    boolean isOnlyLoadCa;
+
     @AfterViews
     void init() {
         // when turning the device
@@ -103,21 +111,27 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
             hideProgressBar();
         }
 
-        certHandlingStrategy.setOnItemSelectedListener(new CertHandlingSelectionChanged());
+        isOnlyLoadCa = getIntent().getBooleanExtra(IS_ONLY_LOAD_CA, false);
+        if (isOnlyLoadCa){
+            certHandlingStrategy.setVisibility(View.GONE);
+            enforceHttpBasicAuth.setVisibility(View.GONE);
+        } else {
+            certHandlingStrategy.setOnItemSelectedListener(new CertHandlingSelectionChanged());
 
-        boolean enforceBasic = getIntent().getBooleanExtra(ENFORCE_HTTP_BASIC_AUTH, false);
-        enforceHttpBasicAuth.setChecked(enforceBasic);
+            boolean enforceBasic = getIntent().getBooleanExtra(ENFORCE_HTTP_BASIC_AUTH, false);
+            enforceHttpBasicAuth.setChecked(enforceBasic);
 
-        long handlingStrategyId = getIntent().getLongExtra(CERT_HANDLING_STRATEGY, CertHandlingStrategy.TRUST_SYSTEM.id());
-        certHandlingStrategy.setSelection((int) handlingStrategyId);
+            long handlingStrategyId = getIntent().getLongExtra(CERT_HANDLING_STRATEGY, CertHandlingStrategy.TRUST_SYSTEM.id());
+            certHandlingStrategy.setSelection((int) handlingStrategyId);
 
-        if (CertHandlingStrategy.from(handlingStrategyId) == CertHandlingStrategy.TRUST_CUSTOM) {
-            Collection<CaCert> caCerts = providerFacade.query(CaCert.class).all();
-            if (caCerts.size() == 1) {
-                CaCert trustedCert = caCerts.iterator().next();
+            if (CertHandlingStrategy.from(handlingStrategyId) == CertHandlingStrategy.TRUST_CUSTOM) {
+                Collection<CaCert> caCerts = providerFacade.query(CaCert.class).all();
+                if (caCerts.size() == 1) {
+                    CaCert trustedCert = caCerts.iterator().next();
 
-                setCertDataToView(trustedCert.asCertificate(), trustedCert.getValidFor());
-                certificate = trustedCert.asCertificate();
+                    setCertDataToView(trustedCert.asCertificate(), trustedCert.getValidFor());
+                    certificate = trustedCert.asCertificate();
+                }
             }
         }
 
@@ -140,9 +154,13 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
-                        providerFacade.deleteAll(OVirtContract.CaCert.CONTENT_URI);
-                        certificate = null;
-                        certHandlingStrategy.setSelection((int) CertHandlingStrategy.TRUST_SYSTEM.id());
+                        if (isOnlyLoadCa) {
+                            deleteCaFile();
+                        } else {
+                            providerFacade.deleteAll(OVirtContract.CaCert.CONTENT_URI);
+                            certificate = null;
+                            certHandlingStrategy.setSelection((int) CertHandlingStrategy.TRUST_SYSTEM.id());
+                        }
                         setCertDataToView(null, null);
                         break;
 
@@ -159,21 +177,26 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
 
     @Click(R.id.btnSave)
     void btnSave() {
-        Intent response = new Intent();
-
-        if (CertHandlingStrategy.from(certHandlingStrategy.getSelectedItemId()) == CertHandlingStrategy.TRUST_CUSTOM) {
-            if (storeImportedCa()) {
-                response.putExtra(CERT_HANDLING_STRATEGY, certHandlingStrategy.getSelectedItemId());
-            } else {
-                // not stored - fallback to trust system certs only
-                response.putExtra(CERT_HANDLING_STRATEGY, CertHandlingStrategy.TRUST_SYSTEM.id());
-            }
+        if (isOnlyLoadCa) {
+            storeImportedCaToFile();
         } else {
-            response.putExtra(CERT_HANDLING_STRATEGY, certHandlingStrategy.getSelectedItemId());
+            Intent response = new Intent();
+
+            if (CertHandlingStrategy.from(certHandlingStrategy.getSelectedItemId()) == CertHandlingStrategy.TRUST_CUSTOM) {
+                if (storeImportedCa()) {
+                    response.putExtra(CERT_HANDLING_STRATEGY, certHandlingStrategy.getSelectedItemId());
+                } else {
+                    // not stored - fallback to trust system certs only
+                    response.putExtra(CERT_HANDLING_STRATEGY, CertHandlingStrategy.TRUST_SYSTEM.id());
+                }
+            } else {
+                response.putExtra(CERT_HANDLING_STRATEGY, certHandlingStrategy.getSelectedItemId());
+            }
+
+            response.putExtra(ENFORCE_HTTP_BASIC_AUTH, enforceHttpBasicAuth.isChecked());
+            setResult(RESULT_OK, response);
         }
 
-        response.putExtra(ENFORCE_HTTP_BASIC_AUTH, enforceHttpBasicAuth.isChecked());
-        setResult(RESULT_OK, response);
         finish();
     }
 
@@ -224,9 +247,21 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
         }
 
         InputStream caInput = null;
-
+        ByteArrayOutputStream caOutput = null;
         try {
             caInput = new BufferedInputStream(url.openStream());
+
+            caOutput = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = caInput.read(buffer, 0, buffer.length)) != -1) {
+                caOutput.write(buffer, 0, len);
+            }
+            caOutput.flush();
+
+            caCert = caOutput.toByteArray();
+            caInput = new ByteArrayInputStream(caOutput.toByteArray());
+
         } catch (IOException e) {
             hideProgressBar();
             showToast("Error loading certificate: " + e.getMessage());
@@ -244,6 +279,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
         } finally {
             try {
                 caInput.close();
+                caOutput.close();
             } catch (IOException e) {
                 // really nothing to do about this one...
             }
@@ -255,6 +291,36 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
     void setCertDataToView(Certificate ca, String urls) {
         txtCertDetails.setText(ca != null ? ca.toString() : "");
         txtValidForHostnames.setText(urls != null ? urls : "");
+    }
+
+    public void deleteCaFile() {
+        File file = new File(Constants.getCaCertPath(this));
+        if (file.isFile() && file.exists()) {
+            file.delete();
+        }
+    }
+
+    boolean storeImportedCaToFile(){
+        FileOutputStream out = null;
+        try {
+            File file = new File(Constants.getCaCertPath(this));
+            file.createNewFile();
+            out = new FileOutputStream(file);
+            out.write(caCert, 0, caCert.length);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showToast("Error storing certificate to file: " +e.getMessage());
+            return false;
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException ex) {
+                // ignore close exception
+            }
+        }
+        return true;
     }
 
     boolean storeImportedCa() {

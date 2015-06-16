@@ -44,6 +44,8 @@ public interface OVirtContract {
         String DISPLAY_TYPE = "display_type";
         String DISPLAY_ADDRESS = "display_address";
         String DISPLAY_PORT = "display_port";
+        String DISPLAY_SECURE_PORT = "display_secure_port";
+        String CERTIFICATE_SUBJECT = "certificate_subject";
     }
 
     String PATH_HOSTS = "hosts";

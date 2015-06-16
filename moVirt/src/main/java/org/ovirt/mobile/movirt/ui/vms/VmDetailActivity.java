@@ -1,5 +1,7 @@
 package org.ovirt.mobile.movirt.ui.vms;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.RemoteException;
@@ -20,11 +22,16 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.ActionTicket;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity;
+import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity_;
+import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.DiskDetailFragment;
 import org.ovirt.mobile.movirt.ui.DiskDetailFragment_;
 import org.ovirt.mobile.movirt.ui.EventsFragment;
@@ -38,6 +45,8 @@ import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
+
+import java.io.File;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
@@ -56,6 +65,12 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
     ProgressBar progress;
     @Bean
     VmFacade vmFacade;
+
+    @Bean
+    ProviderFacade providerFacade;
+
+    @Bean
+    MovirtAuthenticator authenticator;
     @OptionsMenuItem(R.id.action_run)
     MenuItem menuRun;
     @OptionsMenuItem(R.id.action_stop)
@@ -137,10 +152,14 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
                     @Override
                     public void onResponse(ActionTicket ticket) throws RemoteException {
                         try {
-                            Intent intent = new Intent(Intent.ACTION_VIEW)
-                                    .setType("application/vnd.vnc")
-                                    .setData(Uri.parse(makeConsoleUrl(freshVm, ticket)));
-                            startActivity(intent);
+                            if (isFileExists(Constants.getCaCertPath(VmDetailActivity.this))){
+                                Intent intent = new Intent(Intent.ACTION_VIEW)
+                                        .setType("application/vnd.vnc")
+                                        .setData(Uri.parse(makeConsoleUrl(freshVm, ticket)));
+                                startActivity(intent);
+                            } else {
+                                showMissingCaCertDialog();
+                            }
                         } catch (IllegalArgumentException e) {
                             makeToast(e.getMessage());
                         } catch (Exception e) {
@@ -150,6 +169,28 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
                 });
             }
         });
+    }
+
+    @UiThread
+    void showMissingCaCertDialog() {
+        new AlertDialog.Builder(this)
+                .setMessage(R.string.missing_ca_cert)
+                .setPositiveButton(R.string.import_str, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(VmDetailActivity.this, AdvancedAuthenticatorActivity_.class);
+                        intent.putExtra(AdvancedAuthenticatorActivity.IS_ONLY_LOAD_CA, true);
+                        intent.putExtra(AdvancedAuthenticatorActivity.LOAD_CA_FROM, authenticator.getApiUrl());
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .show();
     }
 
     private void syncVm() {
@@ -170,20 +211,34 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
         }
 
         String passwordPart = "";
+        String tlsPortPart = "";
+        String certSubjectPart = "";
+        String caCertPathPart = "";
         if (ticket != null && ticket.ticket != null && ticket.ticket.value != null
                 && !ticket.ticket.value.isEmpty()) {
             switch (vm.getDisplayType()) {
                 case VNC:
-                    passwordPart = "VncPassword";
+                    passwordPart = Constants.PARAM_VNC_PWD;
                     break;
                 case SPICE:
-                    passwordPart = "SpicePassword";
+                    String caCertPath = Constants.getCaCertPath(this);
+                    tlsPortPart = Constants.PARAM_TLS_PORT + "=" + vm.getDisplaySecurePort();
+                    certSubjectPart = Constants.PARAM_CERT_SUBJECT + "=" + vm.getCertificateSubject();
+                    caCertPathPart = Constants.PARAM_CA_CERT_PATH + "=" + caCertPath;
+                    passwordPart = Constants.PARAM_SPICE_PWD;
                     break;
             }
             passwordPart += "=" + ticket.ticket.value;
         }
 
-        return vm.getDisplayType().getProtocol() + "://" + vm.getDisplayAddress() + ":" + vm.getDisplayPort() + "?" + passwordPart;
+        String url = vm.getDisplayType().getProtocol() + "://" + vm.getDisplayAddress() + ":" + vm.getDisplayPort()
+                + "?" + passwordPart + "&" + tlsPortPart + "&" + certSubjectPart + "&" + caCertPathPart ;
+        return url;
+    }
+
+    private boolean isFileExists(String fileName) {
+        File file = new File(fileName);
+        return file.exists();
     }
 
     @UiThread

@@ -27,7 +27,8 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Display {
-        public String address, port, type;
+        public String address, port, type, secure_port;
+        public org.ovirt.mobile.movirt.rest.Certificate certificate;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -85,6 +86,12 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
         } catch (Exception e) {
             vm.setDisplayPort(-1);
         }
+        try {
+            vm.setDisplaySecurePort(Integer.parseInt(display.secure_port));
+        } catch (Exception e) {
+            vm.setDisplaySecurePort(-1);
+        }
+        vm.setCertificateSubject((display.certificate != null && display.certificate.subject != null) ? display.certificate.subject : "");
 
         return vm;
     }

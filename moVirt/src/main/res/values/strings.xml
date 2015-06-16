@@ -128,6 +128,9 @@
 
     <string name="activate">activate</string>
     <string name="deactivate">deactivate</string>
+
+    <string name="import_str">Import</string>
+    <string name="missing_ca_cert">Missing the Certificate Authority file,whether import now?</string>
     
     <!-- start Camera Activity strings -->
     <string name="title_activity_camera">Scan Data Matrix codes with camera</string>
