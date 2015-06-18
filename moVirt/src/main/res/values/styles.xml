@@ -84,9 +84,7 @@
     </style>
 
     <style name="overlayActionBar" parent="@style/Widget.AppCompat.ActionBar">
-        <!--<item name="android:background">#BF000000</item>
-         Support library compatibility
-        <item name="background">@drawable/actionbar_background</item> -->
     </style>
+
 
 </resources>

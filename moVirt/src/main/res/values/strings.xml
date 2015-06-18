@@ -136,7 +136,10 @@
     <string name="labelCPUUsage">CPU usage:</string>
     <string name="labelMemoryUsage">Memory usage:</string>
     <string name="cameraMessage">Look at Data Matrix code to decode</string>
-    <string name="buttonOpenDetails">Open host details page</string>
+    <string name="buttonOpenDetails">Details page</string>
+    <string name="buttonSwitchDetails">Details</string>
+    <string name="buttonSwitchEvents">Events</string>
+    <string name="imageDesc">Host status icon</string>
     <!-- end Camera Activity strings -->
 
 </resources>
