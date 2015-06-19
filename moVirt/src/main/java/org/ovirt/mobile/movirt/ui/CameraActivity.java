@@ -3,11 +3,13 @@ package org.ovirt.mobile.movirt.ui;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -19,12 +21,18 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.google.zxing.Result;
 
+import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
@@ -34,11 +42,17 @@ import org.ovirt.mobile.movirt.camera.CaptureActivityHandler;
 import org.ovirt.mobile.movirt.camera.PreferencesActivity;
 import org.ovirt.mobile.movirt.camera.ViewfinderView;
 import org.ovirt.mobile.movirt.facade.HostFacade;
+import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
+import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import java.io.IOException;
 import java.util.Collection;
+
+import static org.ovirt.mobile.movirt.provider.OVirtContract.BaseEntity.ID;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
 
 @EActivity(R.layout.activity_camera)
 public class CameraActivity extends ActionBarActivity implements SurfaceHolder.Callback {
@@ -61,14 +75,31 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
     LinearLayout panelDetails;
     @ViewById(R.id.viewfinder_view)
     ViewfinderView viewfinderView;
+    @ViewById
+    ListView panelEvents;
+    @ViewById
+    LinearLayout panelParent;
+    @ViewById
+    ImageView imageStatus;
 
     private CameraManager cameraManager;
     private CaptureActivityHandler handler;
     private BeepManager beepManager;
-    private String lastFoundID;
+    private String lastResult;
     private boolean hasSurface;
     private Result savedResultToShow;
     private Host lastHost;
+    private SimpleCursorAdapter eventListAdapter;
+    private CursorAdapterLoader cursorAdapterLoader;
+    private View currentView;
+
+    @AfterViews
+    void init() {
+        //set visibility
+        panelEvents.setVisibility(View.GONE);
+        panelParent.setVisibility(View.GONE);
+        currentView = panelDetails;
+    }
 
     public CameraManager getCameraManager() {
         return cameraManager;
@@ -106,11 +137,12 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
         cameraManager = new CameraManager(getApplication());
         viewfinderView.setCameraManager(cameraManager);
 
-        lastFoundID = null;
+        lastResult = null;
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (prefs.getBoolean(PreferencesActivity.KEY_DISABLE_AUTO_ORIENTATION, true)) {
+            //noinspection ResourceType
             setRequestedOrientation(getCurrentOrientation());
         } else {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
@@ -128,6 +160,26 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
             // Install the callback and wait for surfaceCreated() to init the camera.
             surfaceHolder.addCallback(this);
         }
+
+        //init events
+        eventListAdapter = new SimpleCursorAdapter(this,
+                R.layout.event_list_item,
+                null,
+                new String[]{OVirtContract.Event.TIME, OVirtContract.Event.DESCRIPTION},
+                new int[]{R.id.event_timestamp, R.id.event_description}, 0);
+
+        panelEvents.setAdapter(eventListAdapter);
+        cursorAdapterLoader = new CursorAdapterLoader(eventListAdapter) {
+            @Override
+            public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                final ProviderFacade.QueryBuilder<Event> query = provider.query(Event.class);
+                if (lastHost != null) {
+                    query.where(HOST_ID, lastHost.getId());
+                }
+                return query.orderByDescending(ID).limit(20).asLoader();
+            }
+        };
+        getSupportLoaderManager().initLoader(0, null, cursorAdapterLoader);
     }
 
     @Override
@@ -231,28 +283,34 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
         TextView tw = (TextView) findViewById(R.id.result_text);
         String result = rawResult.getText();
         viewfinderView.drawResultBitmap(barcode, rawResult.getResultPoints());
-        if (!result.equals(lastFoundID)) {
-            lastFoundID = result;
+        if (!result.equals(lastResult)) {
+            lastResult = result;
             beepManager.playBeepSoundAndVibrate();
             Collection<Host> col = provider.query(Host.class).id(result).all();
             if (col.size() == 0) {
                 String message = ". Can't find or not a proper host ID.";
                 tw.setText(result + message);
             } else {
+                lastHost = col.iterator().next();
                 tw.setText(result);
-                renderDetails(col.iterator().next());
+                renderDetails(lastHost);
+                panelParent.setVisibility(View.VISIBLE);
+                currentView.setVisibility(View.VISIBLE);
             }
         }
         restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
     }
 
     private void renderDetails(Host host) {
-        lastHost = host;
-        panelDetails.setVisibility(View.VISIBLE);
         textHostName.setText(host.getName());
         textStatus.setText(host.getStatus().toString());
         textCpuUsage.setText(String.format("%.2f%%", host.getCpuUsage()));
         textMemoryUsage.setText(String.format("%.2f%%", host.getMemoryUsage()));
+        //update events
+        getSupportLoaderManager().restartLoader(0, null, cursorAdapterLoader);
+        //show status icon
+        Host.Status status = host.getStatus();
+        imageStatus.setImageResource(status.getResource());
     }
 
     public void restartPreviewAfterDelay(long delayMS) {
@@ -299,5 +357,18 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
         if (lastHost != null) {
             startActivity(hostFacade.getDetailIntent(lastHost, this));
         }
+    }
+
+    @Click
+    void buttonSwitch(View view) {
+        currentView.setVisibility(View.GONE);
+        if (currentView == panelDetails) {
+            ((Button) view).setText(R.string.buttonSwitchDetails);
+            currentView = panelEvents;
+        } else {
+            ((Button) view).setText(R.string.buttonSwitchEvents);
+            currentView = panelDetails;
+        }
+        currentView.setVisibility(View.VISIBLE);
     }
 }
