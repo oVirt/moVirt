@@ -24,12 +24,29 @@
         android:orientation="horizontal"
         android:baselineAligned="false">
 
-        <FrameLayout
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_gravity="top|left"
             android:layout_marginTop="?attr/actionBarSize"
-            android:layout_weight=".19"></FrameLayout>
+            android:padding="10dp"
+            android:layout_weight=".19"
+            android:alpha=".75"
+            android:background="#000000"
+            android:orientation="vertical"
+            android:id="@+id/panelVms">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/labelVMs"
+                android:id="@+id/textView" />
+
+            <ListView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/listVms" />
+        </LinearLayout>
 
         <LinearLayout
             android:orientation="vertical"

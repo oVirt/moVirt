@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -44,6 +45,7 @@ import org.ovirt.mobile.movirt.camera.ViewfinderView;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
+import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
@@ -53,6 +55,8 @@ import java.util.Collection;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.BaseEntity.ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 
 @EActivity(R.layout.activity_camera)
 public class CameraActivity extends ActionBarActivity implements SurfaceHolder.Callback {
@@ -81,6 +85,10 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
     LinearLayout panelParent;
     @ViewById
     ImageView imageStatus;
+    @ViewById
+    LinearLayout panelVms;
+    @ViewById
+    ListView listVms;
 
     private CameraManager cameraManager;
     private CaptureActivityHandler handler;
@@ -89,15 +97,20 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
     private boolean hasSurface;
     private Result savedResultToShow;
     private Host lastHost;
-    private SimpleCursorAdapter eventListAdapter;
-    private CursorAdapterLoader cursorAdapterLoader;
+    private CursorAdapterLoader cursorEventsAdapterLoader;
+    private CursorAdapterLoader cursorVmsAdapterLoader;
+    private LoaderManager loaderManager;
     private View currentView;
+    private int eventsPage = 1;
+    private int vmsPage = 1;
+
 
     @AfterViews
     void init() {
         //set visibility
         panelEvents.setVisibility(View.GONE);
         panelParent.setVisibility(View.GONE);
+        panelVms.setVisibility(View.GONE);
         currentView = panelDetails;
     }
 
@@ -161,25 +174,75 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
             surfaceHolder.addCallback(this);
         }
 
+        loaderManager = getSupportLoaderManager();
         //init events
-        eventListAdapter = new SimpleCursorAdapter(this,
+        final SimpleCursorAdapter eventListAdapter = new SimpleCursorAdapter(this,
                 R.layout.event_list_item,
                 null,
                 new String[]{OVirtContract.Event.TIME, OVirtContract.Event.DESCRIPTION},
                 new int[]{R.id.event_timestamp, R.id.event_description}, 0);
 
         panelEvents.setAdapter(eventListAdapter);
-        cursorAdapterLoader = new CursorAdapterLoader(eventListAdapter) {
+        panelEvents.setOnScrollListener(new EndlessScrollListener() {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                eventsPage = page;
+                loaderManager.restartLoader(0, null, cursorEventsAdapterLoader);
+            }
+        });
+        cursorEventsAdapterLoader = new CursorAdapterLoader(eventListAdapter) {
             @Override
             public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 final ProviderFacade.QueryBuilder<Event> query = provider.query(Event.class);
                 if (lastHost != null) {
                     query.where(HOST_ID, lastHost.getId());
                 }
-                return query.orderByDescending(ID).limit(20).asLoader();
+                return query.orderByDescending(ID).limit(eventsPage * 20).asLoader();
             }
         };
-        getSupportLoaderManager().initLoader(0, null, cursorAdapterLoader);
+        loaderManager.initLoader(0, null, cursorEventsAdapterLoader);
+
+        //init vms
+        SimpleCursorAdapter vmListAdapter = new SimpleCursorAdapter(this,
+                R.layout.vm_list_item_small,
+                null,
+                new String[]{NAME, STATUS},
+                new int[]{R.id.vm_name, R.id.vm_status}, 0);
+        vmListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+            @Override
+            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+                if (columnIndex == cursor.getColumnIndex(NAME)) {
+                    TextView textView = (TextView) view;
+                    String vmName = cursor.getString(cursor.getColumnIndex(NAME));
+                    textView.setText(vmName);
+                } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
+                    ImageView imageView = (ImageView) view;
+                    Vm.Status status = Vm.Status.valueOf(cursor.getString(cursor.getColumnIndex(STATUS)));
+                    imageView.setImageResource(status.getResource());
+                }
+                return true;
+            }
+        });
+        listVms.setAdapter(vmListAdapter);
+        listVms.setOnScrollListener(new EndlessScrollListener() {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                vmsPage = page;
+                loaderManager.restartLoader(1, null, cursorVmsAdapterLoader);
+            }
+        });
+        cursorVmsAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
+            @Override
+            public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                final ProviderFacade.QueryBuilder<Vm> query = provider.query(Vm.class);
+
+                if (lastHost != null) {
+                    query.where(HOST_ID, lastHost.getId());
+                }
+                return query.orderByDescending(NAME).limit(vmsPage * 20).asLoader();
+            }
+        };
+        loaderManager.initLoader(1, null, cursorVmsAdapterLoader);
     }
 
     @Override
@@ -296,6 +359,7 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
                 renderDetails(lastHost);
                 panelParent.setVisibility(View.VISIBLE);
                 currentView.setVisibility(View.VISIBLE);
+                panelVms.setVisibility(View.VISIBLE);
             }
         }
         restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
@@ -306,8 +370,9 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
         textStatus.setText(host.getStatus().toString());
         textCpuUsage.setText(String.format("%.2f%%", host.getCpuUsage()));
         textMemoryUsage.setText(String.format("%.2f%%", host.getMemoryUsage()));
-        //update events
-        getSupportLoaderManager().restartLoader(0, null, cursorAdapterLoader);
+        //update events and VMs
+        loaderManager.restartLoader(0, null, cursorEventsAdapterLoader);
+        loaderManager.restartLoader(1, null, cursorVmsAdapterLoader);
         //show status icon
         Host.Status status = host.getStatus();
         imageStatus.setImageResource(status.getResource());
