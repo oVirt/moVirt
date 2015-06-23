@@ -28,7 +28,7 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Display {
         public String address, port, type, secure_port;
-        public org.ovirt.mobile.movirt.rest.Certificate certificate;
+        public Certificate certificate;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

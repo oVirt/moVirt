@@ -153,10 +153,14 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
                     public void onResponse(ActionTicket ticket) throws RemoteException {
                         try {
                             if (isFileExists(Constants.getCaCertPath(VmDetailActivity.this))){
-                                Intent intent = new Intent(Intent.ACTION_VIEW)
-                                        .setType("application/vnd.vnc")
-                                        .setData(Uri.parse(makeConsoleUrl(freshVm, ticket)));
-                                startActivity(intent);
+                                if (freshVm.getDisplaySecurePort() != -1) {
+                                    Intent intent = new Intent(Intent.ACTION_VIEW)
+                                            .setType("application/vnd.vnc")
+                                            .setData(Uri.parse(makeConsoleUrl(freshVm, ticket)));
+                                    startActivity(intent);
+                                } else {
+                                    makeToast(getString(R.string.invalid_secure_port));
+                                }
                             } else {
                                 showMissingCaCertDialog();
                             }
@@ -179,7 +183,9 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Intent intent = new Intent(VmDetailActivity.this, AdvancedAuthenticatorActivity_.class);
-                        intent.putExtra(AdvancedAuthenticatorActivity.IS_ONLY_LOAD_CA, true);
+                        intent.putExtra(AdvancedAuthenticatorActivity.MODE, AdvancedAuthenticatorActivity.MODE_SPICE_CA_MANAGEMENT);
+                        intent.putExtra(AdvancedAuthenticatorActivity.ENFORCE_HTTP_BASIC_AUTH, authenticator.enforceBasicAuth());
+                        intent.putExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY, authenticator.getCertHandlingStrategy());
                         intent.putExtra(AdvancedAuthenticatorActivity.LOAD_CA_FROM, authenticator.getApiUrl());
                         startActivity(intent);
                     }
@@ -187,7 +193,7 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-
+                        makeToast(getString(R.string.can_not_run_console_without_ca));
                     }
                 })
                 .show();
@@ -210,29 +216,27 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
             throw new IllegalArgumentException("Vm's display type cannot be null");
         }
 
-        String passwordPart = "";
-        String tlsPortPart = "";
-        String certSubjectPart = "";
-        String caCertPathPart = "";
+        String parameters = "";
         if (ticket != null && ticket.ticket != null && ticket.ticket.value != null
                 && !ticket.ticket.value.isEmpty()) {
             switch (vm.getDisplayType()) {
                 case VNC:
-                    passwordPart = Constants.PARAM_VNC_PWD;
+                    String vncPasswordPart = Constants.PARAM_VNC_PWD + "=" + ticket.ticket.value;
+                    parameters = vncPasswordPart;
                     break;
                 case SPICE:
                     String caCertPath = Constants.getCaCertPath(this);
-                    tlsPortPart = Constants.PARAM_TLS_PORT + "=" + vm.getDisplaySecurePort();
-                    certSubjectPart = Constants.PARAM_CERT_SUBJECT + "=" + vm.getCertificateSubject();
-                    caCertPathPart = Constants.PARAM_CA_CERT_PATH + "=" + caCertPath;
-                    passwordPart = Constants.PARAM_SPICE_PWD;
+                    String tlsPortPart = Constants.PARAM_TLS_PORT + "=" + vm.getDisplaySecurePort();
+                    String certSubjectPart = Constants.PARAM_CERT_SUBJECT + "=" + vm.getCertificateSubject();
+                    String caCertPathPart = Constants.PARAM_CA_CERT_PATH + "=" + caCertPath;
+                    String spicePasswordPart = Constants.PARAM_SPICE_PWD + "=" + ticket.ticket.value;
+                    parameters = spicePasswordPart + "&" + tlsPortPart + "&" + certSubjectPart + "&" + caCertPathPart;
                     break;
             }
-            passwordPart += "=" + ticket.ticket.value;
         }
 
         String url = vm.getDisplayType().getProtocol() + "://" + vm.getDisplayAddress() + ":" + vm.getDisplayPort()
-                + "?" + passwordPart + "&" + tlsPortPart + "&" + certSubjectPart + "&" + caCertPathPart ;
+                + "?" + parameters;
         return url;
     }
 
