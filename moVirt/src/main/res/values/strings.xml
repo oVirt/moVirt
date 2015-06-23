@@ -140,6 +140,8 @@
     <string name="buttonSwitchDetails">Details</string>
     <string name="buttonSwitchEvents">Events</string>
     <string name="imageDesc">Host status icon</string>
+    <string name="labelVMs">Host VMs:</string>
+    <string name="statusIconHint">VM status</string>
     <!-- end Camera Activity strings -->
 
 </resources>
