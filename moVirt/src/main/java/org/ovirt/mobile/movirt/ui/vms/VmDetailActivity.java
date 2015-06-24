@@ -152,17 +152,13 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
                     @Override
                     public void onResponse(ActionTicket ticket) throws RemoteException {
                         try {
-                            if (isFileExists(Constants.getCaCertPath(VmDetailActivity.this))){
-                                if (freshVm.getDisplaySecurePort() != -1) {
-                                    Intent intent = new Intent(Intent.ACTION_VIEW)
-                                            .setType("application/vnd.vnc")
-                                            .setData(Uri.parse(makeConsoleUrl(freshVm, ticket)));
-                                    startActivity(intent);
-                                } else {
-                                    makeToast(getString(R.string.invalid_secure_port));
-                                }
-                            } else {
+                            if (freshVm.getDisplayType() == Vm.Display.SPICE && freshVm.getDisplaySecurePort() != -1 && !isCaFileExists()) {
                                 showMissingCaCertDialog();
+                            } else {
+                                Intent intent = new Intent(Intent.ACTION_VIEW)
+                                        .setType("application/vnd.vnc")
+                                        .setData(Uri.parse(makeConsoleUrl(freshVm, ticket)));
+                                startActivity(intent);
                             }
                         } catch (IllegalArgumentException e) {
                             makeToast(e.getMessage());
@@ -225,12 +221,16 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
                     parameters = vncPasswordPart;
                     break;
                 case SPICE:
-                    String caCertPath = Constants.getCaCertPath(this);
-                    String tlsPortPart = Constants.PARAM_TLS_PORT + "=" + vm.getDisplaySecurePort();
-                    String certSubjectPart = Constants.PARAM_CERT_SUBJECT + "=" + vm.getCertificateSubject();
-                    String caCertPathPart = Constants.PARAM_CA_CERT_PATH + "=" + caCertPath;
                     String spicePasswordPart = Constants.PARAM_SPICE_PWD + "=" + ticket.ticket.value;
-                    parameters = spicePasswordPart + "&" + tlsPortPart + "&" + certSubjectPart + "&" + caCertPathPart;
+                    parameters = spicePasswordPart;
+                    if (vm.getDisplaySecurePort() != -1) {
+                        String caCertPath = Constants.getCaCertPath(this);
+                        String tlsPortPart = Constants.PARAM_TLS_PORT + "=" + vm.getDisplaySecurePort();
+                        String certSubjectPart = Constants.PARAM_CERT_SUBJECT + "=" + vm.getCertificateSubject();
+                        String caCertPathPart = Constants.PARAM_CA_CERT_PATH + "=" + caCertPath;
+
+                        parameters += "&" + tlsPortPart + "&" + certSubjectPart + "&" + caCertPathPart;
+                    }
                     break;
             }
         }
@@ -240,8 +240,8 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
         return url;
     }
 
-    private boolean isFileExists(String fileName) {
-        File file = new File(fileName);
+    private boolean isCaFileExists() {
+        File file = new File(Constants.getCaCertPath(this));
         return file.exists();
     }
 

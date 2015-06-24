@@ -182,6 +182,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
                 certHandlingStrategy.setVisibility(View.GONE);
                 enforceHttpBasicAuth.setVisibility(View.GONE);
                 setVisibilityForCaViews(true);
+                txtValidForHostnames.setVisibility(View.GONE);
                 setCertDataToView(null, null);
 
                 setTitle(R.string.spice_ca_management);

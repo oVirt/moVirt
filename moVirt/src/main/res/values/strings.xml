@@ -131,7 +131,6 @@
 
     <string name="import_str">Import</string>
     <string name="missing_ca_cert">Missing the Certificate Authority for SPICE, do you want to import it now?</string>
-    <string name="invalid_secure_port">Invalid secure port: -1</string>
     <string name="can_not_run_console_without_ca">The console can not run without the Certificate Authority for SPICE</string>
     <string name="spice_ca_management">SPICE CA management</string>
     <string name="rest_ca_management">REST CA management</string>
