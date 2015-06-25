@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.RemoteException;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -25,7 +24,6 @@ import org.androidannotations.annotations.res.StringArrayRes;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.VmFacade;
-import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.rest.ActionTicket;
@@ -36,6 +34,7 @@ import org.ovirt.mobile.movirt.ui.EventsFragment;
 import org.ovirt.mobile.movirt.ui.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
+import org.ovirt.mobile.movirt.ui.MoVirtActivity;
 import org.ovirt.mobile.movirt.ui.NicDetailFragment;
 import org.ovirt.mobile.movirt.ui.NicDetailFragment_;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
@@ -45,41 +44,30 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
-public class VmDetailActivity extends ActionBarActivity implements HasProgressBar, UpdateMenuItemAware<Vm> {
+public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, UpdateMenuItemAware<Vm> {
 
     private static final String TAG = VmDetailActivity.class.getSimpleName();
-
-    private String vmId = null;
-
     @ViewById
     ViewPager viewPager;
-
     @ViewById
     PagerTabStrip pagerTabStrip;
-
     @StringArrayRes(R.array.vm_detail_pager_titles)
     String[] PAGER_TITLES;
-
     @Bean
     OVirtClient client;
-
     @ViewById
     ProgressBar progress;
-
     @Bean
     VmFacade vmFacade;
-
     @OptionsMenuItem(R.id.action_run)
     MenuItem menuRun;
-
     @OptionsMenuItem(R.id.action_stop)
     MenuItem menuStop;
-
     @OptionsMenuItem(R.id.action_reboot)
     MenuItem menuReboot;
-
     @OptionsMenuItem(R.id.action_console)
     MenuItem menuConsole;
+    private String vmId = null;
 
     @AfterViews
     void init() {
@@ -90,7 +78,7 @@ public class VmDetailActivity extends ActionBarActivity implements HasProgressBa
         hideProgressBar();
     }
 
-    private void initPagers(){
+    private void initPagers() {
         EventsFragment eventsList = new EventsFragment_();
         DiskDetailFragment diskDetails = new DiskDetailFragment_();
         NicDetailFragment nicDetails = new NicDetailFragment_();
@@ -178,8 +166,9 @@ public class VmDetailActivity extends ActionBarActivity implements HasProgressBa
 
     /**
      * Returns URL for running console intent.
+     *
      * @throws java.lang.IllegalArgumentException with description
-     *   if the URL can't be created from input.
+     *                                            if the URL can't be created from input.
      */
     private String makeConsoleUrl(Vm vm, ActionTicket ticket)
             throws IllegalArgumentException {
@@ -225,7 +214,8 @@ public class VmDetailActivity extends ActionBarActivity implements HasProgressBa
     @UiThread
     @Override
     public void updateMenuItem(Vm vm) {
-        if (menuRun == null || menuStop == null || menuReboot == null || menuConsole == null) return;
+        if (menuRun == null || menuStop == null || menuReboot == null || menuConsole == null)
+            return;
 
         menuRun.setVisible(Vm.Command.RUN.canExecute(vm.getStatus()));
         menuStop.setVisible(Vm.Command.STOP.canExecute(vm.getStatus()));

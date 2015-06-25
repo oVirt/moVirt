@@ -7,11 +7,11 @@
         android:title="@string/activate"
         android:orderInCategory="100"
         android:icon="@drawable/icn_play"
-        app:showAsAction="always|withText" />
+        app:showAsAction="ifRoom|withText" />
 
     <item android:id="@+id/action_deactivate"
         android:title="@string/deactivate"
         android:orderInCategory="100"
         android:icon="@drawable/host_maintenance"
-        app:showAsAction="always|withText" />
+        app:showAsAction="ifRoom|withText" />
 </menu>

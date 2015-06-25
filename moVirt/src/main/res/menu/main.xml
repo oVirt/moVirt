@@ -1,24 +1,23 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/action_refresh"
-          android:title="@string/refresh"
-          android:icon="@drawable/ic_menu_refresh"
-          app:showAsAction="always" />
+    <item
+        android:id="@+id/action_edit_triggers"
+        android:title="@string/edit_triggers"
+        app:showAsAction="ifRoom|withText" />
 
-    <item android:id="@+id/action_edit_triggers"
-          android:title="@string/edit_triggers"
-          app:showAsAction="ifRoom|withText" />
-
-    <item android:id="@+id/action_settings"
-          android:title="@string/action_settings"
-          app:showAsAction="ifRoom|withText" />
-
-    <item android:id="@+id/action_clear_events"
-        android:title="@string/action_clear_events"
-        app:showAsAction="never" />
-
-    <item android:id="@+id/action_camera"
+    <item
+        android:id="@+id/action_camera"
         android:title="@string/action_camera"
         app:showAsAction="ifRoom|withText" />
+
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        app:showAsAction="ifRoom|withText" />
+
+    <item
+        android:id="@+id/action_clear_events"
+        android:title="@string/action_clear_events"
+        app:showAsAction="never" />
 </menu>

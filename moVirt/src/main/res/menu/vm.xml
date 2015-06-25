@@ -7,25 +7,25 @@
         android:title="@string/run"
         android:orderInCategory="100"
         android:icon="@drawable/icn_play"
-        app:showAsAction="always|withText" />
+        app:showAsAction="ifRoom|withText" />
 
     <item android:id="@+id/action_stop"
         android:title="@string/stop"
         android:orderInCategory="100"
         android:icon="@drawable/icn_stop"
-        app:showAsAction="always|withText" />
+        app:showAsAction="ifRoom|withText" />
 
     <item android:id="@+id/action_reboot"
         android:title="@string/reboot"
         android:orderInCategory="100"
         android:icon="@drawable/icn_reboot"
-        app:showAsAction="always|withText" />
+        app:showAsAction="ifRoom|withText" />
 
     <item android:id="@+id/action_console"
         android:title="@string/console"
         android:orderInCategory="100"
         android:icon="@drawable/icn_console"
-        app:showAsAction="always|withText" />
+        app:showAsAction="ifRoom|withText" />
 
     <item android:id="@+id/action_edit_triggers"
         android:title="@string/edit_triggers"

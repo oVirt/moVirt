@@ -3,7 +3,6 @@ package org.ovirt.mobile.movirt.ui.hosts;
 import android.net.Uri;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -21,12 +20,12 @@ import org.androidannotations.annotations.res.StringArrayRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Host;
-import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.EventsFragment;
 import org.ovirt.mobile.movirt.ui.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
+import org.ovirt.mobile.movirt.ui.MoVirtActivity;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment;
@@ -34,7 +33,7 @@ import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 
 @EActivity(R.layout.activity_host_detail)
 @OptionsMenu(R.menu.host)
-public class HostDetailActivity extends ActionBarActivity implements HasProgressBar, UpdateMenuItemAware<Host> {
+public class HostDetailActivity extends MoVirtActivity implements HasProgressBar, UpdateMenuItemAware<Host> {
     private static final String TAG = HostDetailActivity.class.getSimpleName();
     @ViewById
     ViewPager viewPager;
@@ -42,22 +41,17 @@ public class HostDetailActivity extends ActionBarActivity implements HasProgress
     PagerTabStrip pagerTabStrip;
     @StringArrayRes(R.array.host_detail_pager_titles)
     String[] PAGER_TITLES;
-    private String hostId = null;
-
     @ViewById
     ProgressBar progress;
-
     @Bean
     OVirtClient client;
-
     @Bean
     HostFacade hostFacade;
-
     @OptionsMenuItem(R.id.action_activate)
     MenuItem menuActivate;
-
     @OptionsMenuItem(R.id.action_deactivate)
     MenuItem menuDeactivate;
+    private String hostId = null;
 
     @AfterViews
     void init() {
