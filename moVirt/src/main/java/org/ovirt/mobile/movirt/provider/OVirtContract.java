@@ -119,4 +119,16 @@ public interface OVirtContract {
         String VALID_FOR = "valid_for";
 
     }
+
+    String PATH_CONNECTION_INFOS = "connectioninfos";
+    String PATH_CONNECTION_INFO = "connectioninfos/#";
+    interface ConnectionInfo extends BaseEntity {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_CONNECTION_INFOS).build();
+
+        String TABLE = "connectioninfos";
+
+        String STATE = "state";
+        String ATTEMPT = "attempt";
+        String SUCCESSFUL = "successful";
+    }
 }

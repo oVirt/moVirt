@@ -17,7 +17,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -30,7 +29,6 @@ import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
-import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.InstanceState;
@@ -52,7 +50,6 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
-import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.hosts.HostsFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
@@ -65,61 +62,46 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends ActionBarActivity{
+public class MainActivity extends MoVirtActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-
+    private static final String[] CLUSTER_PROJECTION = new String[]{OVirtContract.Cluster.NAME, OVirtContract.Cluster.ID};
+    public final int CLUSTER_LOADER = numSuperLoaders;
     Dialog connectionNotConfiguredProperlyDialog;
-
     @StringRes(R.string.needs_configuration)
     String noAccMsg;
-
     @StringRes(R.string.connection_not_correct)
     String accIncorrectMsg;
-
     @App
     MoVirtApp app;
-
     @Bean
     ProviderFacade provider;
-
     @ViewById
     DrawerLayout drawerLayout;
-
     @ViewById
     ViewPager viewPager;
-
     @ViewById
     PagerTabStrip pagerTabStrip;
-
     @ViewById
     ListView clusterDrawer;
-
     @StringRes(R.string.cluster_scope)
     String CLUSTER_SCOPE;
-
     @StringArrayRes(R.array.main_pager_titles)
     String[] PAGER_TITLES;
-
     @Bean
     OVirtClient client;
-
     @InstanceState
     String selectedClusterId;
-
     @InstanceState
     String selectedClusterName;
-
-    @Bean
-    SyncUtils syncUtils;
-
     @Bean
     MovirtAuthenticator authenticator;
-
     @Bean
     EventsHandler eventsHandler;
-
+    @StringRes(R.string.all_clusters)
+    String allClusters;
     private ActionBarDrawerToggle drawerToggle;
+    private MatrixCursor emptyClusterCursor;
 
     @Override
     protected void onPause() {
@@ -163,12 +145,6 @@ public class MainActivity extends ActionBarActivity{
         pagerTabStrip.setTabIndicatorColorResource(R.color.material_deep_teal_200);
     }
 
-    @StringRes(R.string.all_clusters)
-    String allClusters;
-
-    private static final String[] CLUSTER_PROJECTION = new String[] {OVirtContract.Cluster.NAME, OVirtContract.Cluster.ID};
-    private MatrixCursor emptyClusterCursor;
-
     private void initClusterDrawer() {
         emptyClusterCursor = new MatrixCursor(CLUSTER_PROJECTION);
         emptyClusterCursor.addRow(new String[]{allClusters, null});
@@ -208,7 +184,7 @@ public class MainActivity extends ActionBarActivity{
         });
         clusterDrawer.setAdapter(clusterListAdapter);
 
-        getSupportLoaderManager().initLoader(0, null, clusterAdapterLoader);
+        getSupportLoaderManager().initLoader(CLUSTER_LOADER, null, clusterAdapterLoader);
 
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
                 R.string.navigation_drawer_open,
@@ -254,13 +230,6 @@ public class MainActivity extends ActionBarActivity{
         connectionNotConfiguredProperlyDialog.show();
     }
 
-    @OptionsItem(R.id.action_refresh)
-    @Background
-    public void onRefresh() {
-        Log.d(TAG, "Refresh button clicked");
-        syncUtils.triggerRefresh();
-    }
-
     @OptionsItem(R.id.action_settings)
     void showSettings() {
         startActivity(new Intent(this, SettingsActivity_.class));
@@ -277,7 +246,7 @@ public class MainActivity extends ActionBarActivity{
         DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                switch (which){
+                switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
                         eventsHandler.deleteEvents();
                         break;

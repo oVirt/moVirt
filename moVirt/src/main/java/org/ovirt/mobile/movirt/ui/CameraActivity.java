@@ -11,7 +11,6 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -59,10 +58,12 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 
 @EActivity(R.layout.activity_camera)
-public class CameraActivity extends ActionBarActivity implements SurfaceHolder.Callback {
+public class CameraActivity extends MoVirtActivity implements SurfaceHolder.Callback {
 
     private static final String TAG = CameraActivity.class.getSimpleName();
     private static final long BULK_MODE_SCAN_DELAY_MS = 100L;
+    private final int EVENTS_LOADER = numSuperLoaders;
+    private final int VMS_LOADER = numSuperLoaders + 1;
     @Bean
     ProviderFacade provider;
     @Bean
@@ -137,6 +138,7 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
         hasSurface = false;
         beepManager = new BeepManager(this);
 
+
         PreferenceManager.setDefaultValues(this, R.xml.zxing_preferences, false);
     }
 
@@ -187,7 +189,7 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
             @Override
             public void onLoadMore(int page, int totalItemsCount) {
                 eventsPage = page;
-                loaderManager.restartLoader(0, null, cursorEventsAdapterLoader);
+                loaderManager.restartLoader(EVENTS_LOADER, null, cursorEventsAdapterLoader);
             }
         });
         cursorEventsAdapterLoader = new CursorAdapterLoader(eventListAdapter) {
@@ -200,7 +202,7 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
                 return query.orderByDescending(ID).limit(eventsPage * 20).asLoader();
             }
         };
-        loaderManager.initLoader(0, null, cursorEventsAdapterLoader);
+        loaderManager.initLoader(EVENTS_LOADER, null, cursorEventsAdapterLoader);
 
         //init vms
         SimpleCursorAdapter vmListAdapter = new SimpleCursorAdapter(this,
@@ -228,7 +230,7 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
             @Override
             public void onLoadMore(int page, int totalItemsCount) {
                 vmsPage = page;
-                loaderManager.restartLoader(1, null, cursorVmsAdapterLoader);
+                loaderManager.restartLoader(VMS_LOADER, null, cursorVmsAdapterLoader);
             }
         });
         cursorVmsAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
@@ -242,7 +244,7 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
                 return query.orderByDescending(NAME).limit(vmsPage * 20).asLoader();
             }
         };
-        loaderManager.initLoader(1, null, cursorVmsAdapterLoader);
+        loaderManager.initLoader(VMS_LOADER, null, cursorVmsAdapterLoader);
     }
 
     @Override
@@ -268,9 +270,10 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.camera, menu);
-        return super.onCreateOptionsMenu(menu);
+        return true;
     }
 
     @Override
@@ -371,8 +374,8 @@ public class CameraActivity extends ActionBarActivity implements SurfaceHolder.C
         textCpuUsage.setText(String.format("%.2f%%", host.getCpuUsage()));
         textMemoryUsage.setText(String.format("%.2f%%", host.getMemoryUsage()));
         //update events and VMs
-        loaderManager.restartLoader(0, null, cursorEventsAdapterLoader);
-        loaderManager.restartLoader(1, null, cursorVmsAdapterLoader);
+        loaderManager.restartLoader(EVENTS_LOADER, null, cursorEventsAdapterLoader);
+        loaderManager.restartLoader(VMS_LOADER, null, cursorVmsAdapterLoader);
         //show status icon
         Host.Status status = host.getStatus();
         imageStatus.setImageResource(status.getResource());

@@ -23,11 +23,12 @@ import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
-import org.ovirt.mobile.movirt.model.CaCert;
 import org.ovirt.mobile.movirt.model.Cluster;
+import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.springframework.core.NestedRuntimeException;
@@ -36,8 +37,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
-import java.security.cert.Certificate;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @EBean(scope = EBean.Scope.Singleton)
@@ -55,6 +57,9 @@ public class OVirtClient {
 
     @Bean
     OvirtSimpleClientHttpRequestFactory requestFactory;
+
+    @Bean
+    ProviderFacade provider;
 
     @RootContext
     Context context;
@@ -208,7 +213,7 @@ public class OVirtClient {
         }, response);
     }
 
-   public void getHosts(Response<List<Host>> response) {
+    public void getHosts(Response<List<Host>> response) {
         fireRestRequest(new Request<List<Host>>() {
             @Override
             public List<Host> fire() {
@@ -311,12 +316,16 @@ public class OVirtClient {
             try {
                 T restResponse = request.fire();
                 success = true;
+
                 if (response != null) {
                     response.onResponse(restResponse);
                 }
             } catch (Exception e) {
                 fireConnectionError(e);
             } finally {
+                //update connection info in DB
+                updateConnectionInfo(success);
+
                 if (!success && response != null) {
                     response.onError();
                 }
@@ -324,9 +333,7 @@ public class OVirtClient {
                     response.after();
                 }
             }
-
         }
-
     }
 
     private <T> void fireRequestWithPersistentAuth(Request<T> request, Response<T> response) {
@@ -347,6 +354,37 @@ public class OVirtClient {
 
         if (response != null) {
             response.after();
+        }
+
+        //update connection info in DB
+        boolean success = false;
+        if (result == RestCallResult.SUCCESS) {
+            success = true;
+        }
+        updateConnectionInfo(success);
+    }
+
+    private void updateConnectionInfo(boolean success) {
+        ConnectionInfo connectionInfo;
+
+        Collection<ConnectionInfo> connectionInfos = provider.query(ConnectionInfo.class).all();
+        int size = connectionInfos.size();
+        if (size != 0) {
+            connectionInfo = connectionInfos.iterator().next();
+        } else {
+            connectionInfo = new ConnectionInfo();
+        }
+        Timestamp time = new Timestamp(System.currentTimeMillis());
+
+        if (!success) {
+            connectionInfo.update(ConnectionInfo.State.FAILED, time);
+        } else {
+            connectionInfo.update(ConnectionInfo.State.OK, time);
+        }
+        if (size != 0) {
+            provider.batch().update(connectionInfo).apply();
+        } else {
+            provider.batch().insert(connectionInfo).apply();
         }
     }
 
@@ -413,7 +451,7 @@ public class OVirtClient {
         } catch (Exception e) {
             fireConnectionError(e);
         }
-        
+
         if (!success) {
             return RestCallResult.OTHER_ERROR;
         } else {
@@ -476,13 +514,15 @@ public class OVirtClient {
         }
     }
 
-    /** Composes multiple {@link Response} objects and invokes their callbacks in specified order */
+    /**
+     * Composes multiple {@link Response} objects and invokes their callbacks in specified order
+     */
     public static class CompositeResponse<T> implements Response<T> {
 
         private final Response<T>[] responses;
 
         @SafeVarargs
-        public CompositeResponse(Response<T> ...responses) {
+        public CompositeResponse(Response<T>... responses) {
             this.responses = responses;
         }
 
