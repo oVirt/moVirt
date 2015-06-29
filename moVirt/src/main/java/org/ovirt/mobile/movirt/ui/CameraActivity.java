@@ -25,6 +25,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
@@ -90,6 +91,8 @@ public class CameraActivity extends MoVirtActivity implements SurfaceHolder.Call
     LinearLayout panelVms;
     @ViewById
     ListView listVms;
+    @ViewById
+    ProgressBar progress;
 
     private CameraManager cameraManager;
     private CaptureActivityHandler handler;
@@ -113,6 +116,8 @@ public class CameraActivity extends MoVirtActivity implements SurfaceHolder.Call
         panelParent.setVisibility(View.GONE);
         panelVms.setVisibility(View.GONE);
         currentView = panelDetails;
+
+        setProgressBar(progress);
     }
 
     public CameraManager getCameraManager() {
