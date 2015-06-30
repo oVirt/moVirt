@@ -68,6 +68,9 @@
     <string name="cores">Cores/Socket:</string>
     <string name="os">OS Type:</string>
     <string name="display">Display Type:</string>
+    <string name="cluster_and_version">Cluster | Version:</string>
+    <string name="data_center_and_version">Data Center | Version:</string>
+    <string name="host">Host:</string>
     <string name="events">Events</string>
     <string name="disks">Disks</string>
     <string name="statusLabel">Status:</string>

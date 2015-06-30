@@ -26,15 +26,22 @@ public interface OVirtContract {
         String CLUSTER_ID = "cluster_id";
     }
 
+    public interface HasHost {
+        String HOST_ID = "host_id";
+    }
+
+    public interface HasDataCenter {
+        String DATA_CENTER_ID = "data_center_id";
+    }
+
     String PATH_VMS = "vms";
     String PATH_VM = "vms/*";
 
-    public interface Vm extends NamedEntity, HasStatus, HasCluster {
+    public interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_VMS).build();
 
         String TABLE = "vms";
 
-        String HOST_ID = "host_id";
         String CPU_USAGE = "cpu_usage";
         String MEMORY_USAGE = "mem_usage";
         String MEMORY_SIZE_MB = "mem_size_mb";
@@ -72,10 +79,21 @@ public interface OVirtContract {
     String PATH_CLUSTERS = "clusters";
     String PATH_CLUSTER = "clusters/*";
 
-    public interface Cluster extends NamedEntity {
+    public interface Cluster extends NamedEntity, HasDataCenter {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_CLUSTERS).build();
 
         String TABLE = "clusters";
+        String VERSION = "version";
+    }
+
+    String PATH_DATA_CENTERS = "datacenters";
+    String PATH_DATA_CENTER = "datacenter/*";
+
+    public interface DataCenter extends NamedEntity {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DATA_CENTERS).build();
+
+        String TABLE = "datacenters";
+        String VERSION = "version";
     }
 
     String PATH_TRIGGERS = "triggers";
@@ -96,7 +114,7 @@ public interface OVirtContract {
     String PATH_EVENTS = "events";
     String PATH_EVENT = "events/#";
 
-    public interface Event extends BaseEntity, HasCluster {
+    public interface Event extends BaseEntity, HasHost, HasCluster, HasDataCenter {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_EVENTS).build();
 
         String TABLE = "events";
@@ -105,9 +123,7 @@ public interface OVirtContract {
         String SEVERITY = "severity";
         String TIME = "time";
         String VM_ID = "vm_id";
-        String HOST_ID = "host_id";
         String STORAGE_DOMAIN_ID = "storage_domain_id";
-        String DATA_CENTER_ID = "data_center_id";
     }
 
 

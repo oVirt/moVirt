@@ -7,17 +7,24 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
+import org.ovirt.mobile.movirt.model.Cluster;
+import org.ovirt.mobile.movirt.model.DataCenter;
+import org.ovirt.mobile.movirt.model.EntityMapper;
+import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
@@ -29,6 +36,10 @@ import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 public class VmDetailGeneralFragment extends RefreshableFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = VmDetailGeneralFragment.class.getSimpleName();
+    private static final int VMS_LOADER = 0;
+    private static final int CLUSTER_LOADER = 1;
+    private static final int DATA_CENTER_LOADER = 2;
+    private static final int HOST_LOADER = 3;
 
     private static final String VM_URI = "vm_uri";
 
@@ -58,6 +69,15 @@ public class VmDetailGeneralFragment extends RefreshableFragment implements Load
     @ViewById
     TextView displayView;
 
+    @ViewById
+    TextView clusterView;
+
+    @ViewById
+    TextView dataCenterView;
+
+    @ViewById
+    Button hostButton;
+
     Bundle args;
 
     @Bean
@@ -69,10 +89,19 @@ public class VmDetailGeneralFragment extends RefreshableFragment implements Load
     @Bean
     VmFacade vmFacade;
 
+    @Bean
+    HostFacade hostFacade;
+
     @StringRes(R.string.details_for_vm)
     String VM_DETAILS;
 
     Vm vm;
+
+    Host host;
+
+    Cluster cluster;
+
+    DataCenter dataCenter;
 
     @ViewById
     SwipeRefreshLayout swipeGeneralContainer;
@@ -84,14 +113,22 @@ public class VmDetailGeneralFragment extends RefreshableFragment implements Load
 
         args = new Bundle();
         args.putParcelable(VM_URI, vmUri);
-        getLoaderManager().initLoader(0, args, this);
+        destroyAllLoaders();
+        getLoaderManager().initLoader(VMS_LOADER, args, this);
         vmId = vmUri.getLastPathSegment();
+    }
+
+    private void destroyAllLoaders() {
+        getLoaderManager().destroyLoader(VMS_LOADER);
+        getLoaderManager().destroyLoader(CLUSTER_LOADER);
+        getLoaderManager().destroyLoader(DATA_CENTER_LOADER);
+        getLoaderManager().destroyLoader(HOST_LOADER);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        getLoaderManager().restartLoader(0, args, this);
+        getLoaderManager().restartLoader(VMS_LOADER, args, this);
     }
 
     @Override
@@ -101,18 +138,79 @@ public class VmDetailGeneralFragment extends RefreshableFragment implements Load
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String vmId = args.<Uri>getParcelable(VM_URI).getLastPathSegment();
-        return provider.query(Vm.class).id(vmId).asLoader();
+        Loader<Cursor> loader = null;
+
+        switch (id) {
+            case VMS_LOADER:
+                String vmId = args.<Uri>getParcelable(VM_URI).getLastPathSegment();
+                loader = provider.query(Vm.class).id(vmId).asLoader();
+                break;
+            case CLUSTER_LOADER:
+                if (vm != null) {
+                    loader = provider.query(Cluster.class).id(vm.getClusterId()).asLoader();
+                }
+                break;
+            case DATA_CENTER_LOADER:
+                if (cluster != null) {
+                    loader = provider.query(DataCenter.class).id(cluster.getDataCenterId()).asLoader();
+                }
+                break;
+            case HOST_LOADER:
+                if (vm != null) {
+                    loader = provider.query(Host.class).id(vm.getHostId()).asLoader();
+                };
+                break;
+            default:
+                break;
+       }
+
+        return loader;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (!data.moveToNext()) {
-            Log.e(TAG, "Error loading Vm");
+            if (loader.getId() == HOST_LOADER) {
+                host = null;
+                renderHost(host);
+            }
+            Log.e(TAG, "Error loading data: id=" + loader.getId());
             return;
         }
-        vm = vmFacade.mapFromCursor(data);
-        renderVm(vm);
+
+        switch (loader.getId()) {
+            case VMS_LOADER:
+                vm = vmFacade.mapFromCursor(data);
+                renderVm(vm);
+                if (getLoaderManager().getLoader(CLUSTER_LOADER) == null) {
+                    getLoaderManager().initLoader(CLUSTER_LOADER, null, this);
+                }
+
+                if (getLoaderManager().getLoader(HOST_LOADER) != null) {
+                    getLoaderManager().restartLoader(HOST_LOADER, null, this);
+                }
+                break;
+            case CLUSTER_LOADER:
+                cluster = EntityMapper.forEntity(Cluster.class).fromCursor(data);;
+                renderCluster(cluster);
+                if (getLoaderManager().getLoader(DATA_CENTER_LOADER) == null) {
+                    getLoaderManager().initLoader(DATA_CENTER_LOADER, null, this);
+                }
+                break;
+            case DATA_CENTER_LOADER:
+                dataCenter = EntityMapper.forEntity(DataCenter.class).fromCursor(data);;
+                renderDataCenter(dataCenter);
+                if (getLoaderManager().getLoader(HOST_LOADER) == null) {
+                    getLoaderManager().initLoader(HOST_LOADER, null, this);
+                }
+                break;
+            case HOST_LOADER:
+                host = hostFacade.mapFromCursor(data);
+                renderHost(host);
+                break;
+            default:
+                break;
+        }
 
     }
 
@@ -145,6 +243,34 @@ public class VmDetailGeneralFragment extends RefreshableFragment implements Load
 
         if (getActivity() instanceof UpdateMenuItemAware) {
             ((UpdateMenuItemAware) getActivity()).updateMenuItem(vm);
+        }
+    }
+
+    @UiThread
+    public void renderHost(Host host) {
+        if (host != null) {
+            hostButton.setText(host.getName());
+            hostButton.setEnabled(true);
+        } else {
+            hostButton.setText("N/A");
+            hostButton.setEnabled(false);
+        }
+    }
+
+    @UiThread
+    public void renderCluster(Cluster cluster) {
+        clusterView.setText(cluster.getName() + " | " + cluster.getVersion());
+    }
+
+    @UiThread
+    public void renderDataCenter(DataCenter dataCenter) {
+        dataCenterView.setText(dataCenter.getName() + " | " + dataCenter.getVersion());
+    }
+
+    @Click(R.id.hostButton)
+    void btnHost() {
+        if (host != null) {
+            startActivity(hostFacade.getDetailIntent(host, getActivity()));
         }
     }
 

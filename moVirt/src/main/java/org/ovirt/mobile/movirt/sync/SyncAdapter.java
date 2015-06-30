@@ -23,6 +23,7 @@ import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.facade.EntityFacade;
 import org.ovirt.mobile.movirt.facade.EntityFacadeLocator;
 import org.ovirt.mobile.movirt.model.Cluster;
+import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
@@ -143,11 +144,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         oVirtClient.getHosts(new OVirtClient.SimpleResponse<List<Host>>() {
                             @Override
                             public void onResponse(final List<Host> remoteHosts) throws RemoteException {
-                                updateLocalEntities(remoteClusters, Cluster.class);
-                                updateLocalEntities(remoteHosts, Host.class);
-                                updateLocalEntities(remoteVms, Vm.class);
+                                oVirtClient.getDataCenters(new OVirtClient.SimpleResponse<List<DataCenter>>() {
+                                    @Override
+                                    public void onResponse(final List<DataCenter> remoteDataCenters) throws RemoteException {
+                                        updateLocalEntities(remoteClusters, Cluster.class);
+                                        updateLocalEntities(remoteHosts, Host.class);
+                                        updateLocalEntities(remoteVms, Vm.class);
+                                        updateLocalEntities(remoteDataCenters, DataCenter.class);
 
-                                applyBatch();
+                                        applyBatch();
+                                    }
+                                });
                             }
                         });
                     }
