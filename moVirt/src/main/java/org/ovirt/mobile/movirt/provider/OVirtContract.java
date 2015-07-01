@@ -87,7 +87,7 @@ public interface OVirtContract {
     }
 
     String PATH_DATA_CENTERS = "datacenters";
-    String PATH_DATA_CENTER = "datacenter/*";
+    String PATH_DATA_CENTER = "datacenters/*";
 
     public interface DataCenter extends NamedEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DATA_CENTERS).build();
