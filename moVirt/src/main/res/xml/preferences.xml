@@ -2,44 +2,58 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <Preference         android:title="@string/prefs_connection_settings"
-                        android:key="connection_button"
-                        android:summary="@string/prefs_connection_settings_summary"/>
+    <Preference
+        android:key="connection_button"
+        android:summary="@string/prefs_connection_settings_summary"
+        android:title="@string/prefs_connection_settings" />
 
-    <CheckBoxPreference android:title="@string/prefs_poll_events"
-                        android:key="poll_events"
-                        android:summary="@string/prefs_poll_events_summary"
-                        android:persistent="true"
-                        android:defaultValue="true"/>
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="poll_events"
+        android:persistent="true"
+        android:summary="@string/prefs_poll_events_summary"
+        android:title="@string/prefs_poll_events" />
 
-    <EditTextPreference android:title="@string/prefs_max_events_locally"
-                        android:key="max_events_stored"
-                        android:summary="@string/prefs_max_events_locally_summary"
-                        android:inputType="number"
-                        android:persistent="true"
-                        android:defaultValue="500"/>
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="connection_notification"
+        android:persistent="true"
+        android:summary="@string/prefs_connection_notification_summary"
+        android:title="@string/prefs_connection_notification" />
 
-    <EditTextPreference android:title="@string/prefs_events_search_query"
-                        android:key="events_search_query"
-                        android:summary="@string/prefs_events_search_query_summary"
-                        android:persistent="true"
-                        android:defaultValue=""/>
+    <EditTextPreference
+        android:defaultValue="500"
+        android:inputType="number"
+        android:key="max_events_stored"
+        android:persistent="true"
+        android:summary="@string/prefs_max_events_locally_summary"
+        android:title="@string/prefs_max_events_locally" />
 
-    <EditTextPreference android:title="@string/prefs_max_max_vms_polled"
-                        android:key="max_vms_polled"
-                        android:summary="@string/prefs_max_vms_polled_summary"
-                        android:inputType="number"
-                        android:persistent="true"
-                        android:defaultValue="500"/>
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="events_search_query"
+        android:persistent="true"
+        android:summary="@string/prefs_events_search_query_summary"
+        android:title="@string/prefs_events_search_query" />
 
-    <EditTextPreference android:title="@string/prefs_vm_search_query"
-                        android:key="vms_search_query"
-                        android:summary="@string/prefs_vm_search_query_summary"
-                        android:persistent="true"
-                        android:defaultValue=""/>
+    <EditTextPreference
+        android:defaultValue="500"
+        android:inputType="number"
+        android:key="max_vms_polled"
+        android:persistent="true"
+        android:summary="@string/prefs_max_vms_polled_summary"
+        android:title="@string/prefs_max_max_vms_polled" />
 
-    <Preference         android:title="@string/prefs_about_moVirt"
-                        android:key="about_button"
-                        android:summary="@string/prefs_about_moVirt_summary"/>
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="vms_search_query"
+        android:persistent="true"
+        android:summary="@string/prefs_vm_search_query_summary"
+        android:title="@string/prefs_vm_search_query" />
+
+    <Preference
+        android:key="about_button"
+        android:summary="@string/prefs_about_moVirt_summary"
+        android:title="@string/prefs_about_moVirt" />
 
 </PreferenceScreen>

@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.rest;
 
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,6 +33,9 @@ import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
+import org.ovirt.mobile.movirt.ui.MainActivity_;
+import org.ovirt.mobile.movirt.ui.SettingsActivity;
+import org.ovirt.mobile.movirt.util.NotificationHelper;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.http.HttpAuthentication;
 import org.springframework.http.HttpStatus;
@@ -45,12 +49,10 @@ import java.util.List;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class OVirtClient {
-    private static final String TAG = OVirtClient.class.getSimpleName();
-
     public static final String JSESSIONID = "JSESSIONID";
     public static final String FILTER = "Filter";
     public static final String PREFER = "Prefer";
-
+    private static final String TAG = OVirtClient.class.getSimpleName();
     ObjectMapper mapper = new ObjectMapper();
 
     @RestService
@@ -71,11 +73,27 @@ public class OVirtClient {
     @Bean
     MovirtAuthenticator authenticator;
 
+    @Bean
+    NotificationHelper notificationHelper;
+
     @App
     MoVirtApp app;
 
     @StringRes(R.string.rest_request_failed)
     String errorMsg;
+
+    private static <E, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers, WrapPredicate<R> predicate) {
+        List<E> entities = new ArrayList<>();
+        if (wrappers == null) {
+            return entities;
+        }
+        for (R rest : wrappers) {
+            if (predicate == null || predicate.toWrap(rest)) {
+                entities.add(rest.toEntity());
+            }
+        }
+        return entities;
+    }
 
     public void startVm(final String vmId) {
         fireRestRequest(new Request<Void>() {
@@ -338,7 +356,6 @@ public class OVirtClient {
             } catch (Exception e) {
                 fireConnectionError(e);
             } finally {
-                //update connection info in DB
                 updateConnectionInfo(success);
 
                 if (!success && response != null) {
@@ -371,7 +388,6 @@ public class OVirtClient {
             response.after();
         }
 
-        //update connection info in DB
         boolean success = false;
         if (result == RestCallResult.SUCCESS) {
             success = true;
@@ -381,11 +397,15 @@ public class OVirtClient {
 
     private void updateConnectionInfo(boolean success) {
         ConnectionInfo connectionInfo;
+        boolean prevSuccess = true;
 
         Collection<ConnectionInfo> connectionInfos = provider.query(ConnectionInfo.class).all();
         int size = connectionInfos.size();
         if (size != 0) {
             connectionInfo = connectionInfos.iterator().next();
+            if (connectionInfo.getState() != ConnectionInfo.State.OK) {
+                prevSuccess = false;
+            }
         } else {
             connectionInfo = new ConnectionInfo();
         }
@@ -396,10 +416,25 @@ public class OVirtClient {
         } else {
             connectionInfo.update(ConnectionInfo.State.OK, time);
         }
+        //update in DB
         if (size != 0) {
             provider.batch().update(connectionInfo).apply();
         } else {
             provider.batch().insert(connectionInfo).apply();
+        }
+
+        //show Notification
+        if (!success && prevSuccess && PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(SettingsActivity.KEY_CONNECTION_NOTIFICATION, false)) {
+            Intent resultIntent = new Intent(context, MainActivity_.class);
+            PendingIntent resultPendingIntent =
+                    PendingIntent.getActivity(
+                            context,
+                            0,
+                            resultIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT
+                    );
+            notificationHelper.showConnectionNotification(context, resultPendingIntent, connectionInfo);
         }
     }
 
@@ -475,12 +510,6 @@ public class OVirtClient {
 
     }
 
-    enum RestCallResult {
-        SUCCESS,
-        AUTH_ERROR,
-        OTHER_ERROR
-    }
-
     private void setPersistentAuthHeaders() {
         restClient.setHeader("Session-TTL", "120"); // 2h
         restClient.setHeader("Prefer", "persistent-auth, csrf-protection");
@@ -490,6 +519,47 @@ public class OVirtClient {
         restClient.setHeader(FILTER, Boolean.toString(!authenticator.hasAdminPermissions()));
         requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
         restClient.setRootUrl(authenticator.getApiUrl());
+    }
+
+    private int asIntWithDefault(String key, String defaultResult) {
+        String maxEventsLocallyStr = PreferenceManager.getDefaultSharedPreferences(app).getString(key, defaultResult);
+        try {
+            return Integer.parseInt(maxEventsLocallyStr);
+        } catch (NumberFormatException e) {
+            return Integer.parseInt(defaultResult);
+        }
+    }
+
+    private void fireConnectionError(Exception e) {
+        String msg = e.getMessage();
+        if (e instanceof HttpClientErrorException) {
+
+            String responseBody = ((HttpClientErrorException) e).getResponseBodyAsString();
+            if (!TextUtils.isEmpty(responseBody)) {
+
+                try {
+                    ErrorBody errorBody = mapper.readValue(((HttpClientErrorException) e).getResponseBodyAsByteArray(), ErrorBody.class);
+                    msg = msg + " " + errorBody.fault.reason + " " + errorBody.fault.detail;
+                } catch (IOException e1) {
+                    msg = msg + ": " + responseBody;
+                }
+
+            }
+        }
+
+        fireConnectionError(String.format(errorMsg, msg));
+    }
+
+    private void fireConnectionError(String msg) {
+        Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
+        intent.putExtra(Broadcasts.Extras.CONNECTION_FAILURE_REASON, msg);
+        context.sendBroadcast(intent);
+    }
+
+    enum RestCallResult {
+        SUCCESS,
+        AUTH_ERROR,
+        OTHER_ERROR
     }
 
     public static interface Request<T> {
@@ -504,6 +574,10 @@ public class OVirtClient {
         void onError();
 
         void after();
+    }
+
+    private static interface WrapPredicate<E> {
+        boolean toWrap(E entity);
     }
 
     public static abstract class SimpleResponse<T> implements Response<T> {
@@ -576,57 +650,5 @@ public class OVirtClient {
                 }
             }
         }
-    }
-
-    private static interface WrapPredicate<E> {
-        boolean toWrap(E entity);
-    }
-
-    private static <E, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers, WrapPredicate<R> predicate) {
-        List<E> entities = new ArrayList<>();
-        if (wrappers == null) {
-            return entities;
-        }
-        for (R rest : wrappers) {
-            if (predicate == null || predicate.toWrap(rest)) {
-                entities.add(rest.toEntity());
-            }
-        }
-        return entities;
-    }
-
-    private int asIntWithDefault(String key, String defaultResult) {
-        String maxEventsLocallyStr = PreferenceManager.getDefaultSharedPreferences(app).getString(key, defaultResult);
-        try {
-            return Integer.parseInt(maxEventsLocallyStr);
-        } catch (NumberFormatException e) {
-            return Integer.parseInt(defaultResult);
-        }
-    }
-
-    private void fireConnectionError(Exception e) {
-        String msg = e.getMessage();
-        if (e instanceof HttpClientErrorException) {
-
-            String responseBody = ((HttpClientErrorException) e).getResponseBodyAsString();
-            if (!TextUtils.isEmpty(responseBody)) {
-
-                try {
-                    ErrorBody errorBody = mapper.readValue(((HttpClientErrorException) e).getResponseBodyAsByteArray(), ErrorBody.class);
-                    msg = msg + " " + errorBody.fault.reason + " " + errorBody.fault.detail;
-                } catch (IOException e1) {
-                    msg = msg + ": " + responseBody;
-                }
-
-            }
-        }
-
-        fireConnectionError(String.format(errorMsg, msg));
-    }
-
-    private void fireConnectionError(String msg) {
-        Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
-        intent.putExtra(Broadcasts.Extras.CONNECTION_FAILURE_REASON, msg);
-        context.sendBroadcast(intent);
     }
 }

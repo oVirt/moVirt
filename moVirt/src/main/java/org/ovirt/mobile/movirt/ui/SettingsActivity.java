@@ -22,6 +22,7 @@ import org.ovirt.mobile.movirt.R;
  */
 @EActivity
 public class SettingsActivity extends PreferenceActivity {
+    public static final String KEY_CONNECTION_NOTIFICATION = "connection_notification";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

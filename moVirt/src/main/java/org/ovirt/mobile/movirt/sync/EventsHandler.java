@@ -23,7 +23,7 @@ import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
-import org.ovirt.mobile.movirt.util.NotificationDisplayer;
+import org.ovirt.mobile.movirt.util.NotificationHelper;
 
 import java.util.List;
 
@@ -55,7 +55,7 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
     EventTriggerResolver eventTriggerResolver;
 
     @Bean
-    NotificationDisplayer notificationDisplayer;
+    NotificationHelper notificationHelper;
 
     @RootContext
     Context context;
@@ -171,7 +171,7 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
                         0,
                         PendingIntent.FLAG_UPDATE_CURRENT
                 );
-        notificationDisplayer.showNotification(trigger, event, appContext, resultPendingIntent);
+        notificationHelper.showTriggerNotification(trigger, event, appContext, resultPendingIntent);
     }
 
     private void applyBatch() {
