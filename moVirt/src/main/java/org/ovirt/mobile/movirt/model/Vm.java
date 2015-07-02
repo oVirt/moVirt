@@ -9,6 +9,7 @@ import com.j256.ormlite.table.DatabaseTable;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -250,17 +251,15 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         if (Double.compare(vm.cpuUsage, cpuUsage) != 0) return false;
         if (displayPort != vm.displayPort) return false;
         if (displaySecurePort != vm.displaySecurePort) return false;
-        if (certificateSubject != null ? !certificateSubject.equals(vm.certificateSubject) : vm.certificateSubject != null)
-            return false;
+        if (!ObjectUtils.equals(certificateSubject, vm.certificateSubject)) return false;
         if (memorySizeMb != vm.memorySizeMb) return false;
         if (Double.compare(vm.memoryUsage, memoryUsage) != 0) return false;
         if (sockets != vm.sockets) return false;
-        if (!hostId.equals(vm.hostId)) return false;
-        if (!clusterId.equals(vm.clusterId)) return false;
-        if (displayAddress != null ? !displayAddress.equals(vm.displayAddress) : vm.displayAddress != null)
-            return false;
+        if (!ObjectUtils.equals(hostId, vm.hostId)) return false;
+        if (!ObjectUtils.equals(clusterId, vm.clusterId)) return false;
+        if (!ObjectUtils.equals(displayAddress, vm.displayAddress)) return false;
         if (displayType != vm.displayType) return false;
-        if (!osType.equals(vm.osType)) return false;
+        if (!ObjectUtils.equals(osType, vm.osType)) return false;
         if (status != vm.status) return false;
 
         return true;
@@ -270,9 +269,9 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
     public int hashCode() {
         int result = super.hashCode();
         long temp;
-        result = 31 * result + status.hashCode();
-        result = 31 * result + hostId.hashCode();
-        result = 31 * result + clusterId.hashCode();
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (hostId != null ? hostId.hashCode() : 0);
+        result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
         temp = Double.doubleToLongBits(cpuUsage);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(memoryUsage);
@@ -280,7 +279,7 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         result = 31 * result + (int) (memorySizeMb ^ (memorySizeMb >>> 32));
         result = 31 * result + sockets;
         result = 31 * result + coresPerSocket;
-        result = 31 * result + osType.hashCode();
+        result = 31 * result + (osType != null ? osType.hashCode() : 0);
         result = 31 * result + (displayType != null ? displayType.hashCode() : 0);
         result = 31 * result + (displayAddress != null ? displayAddress.hashCode() : 0);
         result = 31 * result + displayPort;

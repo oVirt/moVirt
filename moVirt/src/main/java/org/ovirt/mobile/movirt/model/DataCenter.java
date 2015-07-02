@@ -8,6 +8,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.DataCenter.TABLE;
 
@@ -38,7 +39,7 @@ public class DataCenter extends OVirtEntity implements OVirtContract.DataCenter{
 
         DataCenter dataCenter = (DataCenter) o;
 
-        if (!version.equals(dataCenter.version)) return false;
+        if (!ObjectUtils.equals(version, dataCenter.version)) return false;
 
         return true;
     }
@@ -46,7 +47,7 @@ public class DataCenter extends OVirtEntity implements OVirtContract.DataCenter{
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + version.hashCode();
+        result = 31 * result + (version != null ? version.hashCode() : 0);
 
         return result;
     }

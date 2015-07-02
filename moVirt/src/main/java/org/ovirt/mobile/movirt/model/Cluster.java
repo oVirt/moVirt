@@ -8,6 +8,7 @@ import com.j256.ormlite.table.DatabaseTable;
 
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Cluster.TABLE;
 
@@ -57,8 +58,8 @@ public class Cluster extends OVirtEntity implements OVirtContract.Cluster {
 
         Cluster cluster = (Cluster) o;
 
-        if (!version.equals(cluster.version)) return false;
-        if (!dataCenterId.equals(cluster.dataCenterId)) return false;
+        if (!ObjectUtils.equals(version, cluster.version)) return false;
+        if (!ObjectUtils.equals(dataCenterId, cluster.dataCenterId)) return false;
 
         return true;
     }
@@ -66,8 +67,8 @@ public class Cluster extends OVirtEntity implements OVirtContract.Cluster {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + version.hashCode();
-        result = 31 * result + dataCenterId.hashCode();
+        result = 31 * result + (version != null ? version.hashCode() : 0);
+        result = 31 * result + (dataCenterId != null ? dataCenterId.hashCode() : 0);
 
         return result;
     }
