@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    >
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <SurfaceView
         android:id="@+id/camera_preview"
@@ -18,71 +19,73 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@drawable/gradient" />
 
+    <include layout="@layout/progress_bar" />
+
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:baselineAligned="false">
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
         <LinearLayout
+            android:id="@+id/panelVms"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="top|left"
             android:layout_marginTop="?attr/actionBarSize"
-            android:padding="10dp"
             android:layout_weight=".19"
             android:alpha=".75"
             android:background="#000000"
             android:orientation="vertical"
-            android:id="@+id/panelVms">
+            android:padding="10dp">
 
             <TextView
+                android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/labelVMs"
-                android:id="@+id/textView" />
+                android:text="@string/labelVMs" />
 
             <ListView
+                android:id="@+id/listVms"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/listVms" />
+                android:layout_height="wrap_content" />
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight=".63">
+            android:layout_weight=".63"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/result_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/cameraMessage"
-                android:layout_marginBottom="?attr/actionBarSize" />
+                android:layout_marginBottom="?attr/actionBarSize"
+                android:text="@string/cameraMessage" />
 
             <ImageView
+                android:id="@+id/imageStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/imageStatus"
                 android:layout_gravity="center_horizontal"
                 android:contentDescription="@string/imageDesc" />
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/panelParent"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="top|end"
+            android:layout_marginTop="?attr/actionBarSize"
+            android:layout_weight=".19"
             android:alpha=".75"
             android:background="#000000"
             android:minWidth="200dp"
             android:orientation="vertical"
-            android:id="@+id/panelParent"
-            android:visibility="visible"
             android:padding="10dp"
-            android:layout_marginTop="?attr/actionBarSize"
-            android:layout_weight=".19">
+            android:visibility="visible">
 
             <TextView
                 android:id="@+id/labelHostName"
@@ -105,28 +108,28 @@
                 android:text="@string/buttonOpenDetails" />
 
             <Button
+                android:id="@+id/buttonSwitch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/buttonSwitch"
-                android:text="@string/buttonSwitchEvents"
-                android:singleLine="true" />
+                android:singleLine="true"
+                android:text="@string/buttonSwitchEvents" />
 
             <ScrollView
+                android:id="@+id/scrollView"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/scrollView" >
+                android:layout_height="wrap_content">
 
                 <LinearLayout
                     android:id="@+id/panelDetails"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
                     android:alpha=".75"
                     android:background="#000000"
                     android:minWidth="200dp"
+                    android:nestedScrollingEnabled="true"
                     android:orientation="vertical"
-                    android:padding="10dp"
-                    android:layout_margin="10dp"
-                    android:nestedScrollingEnabled="true">
+                    android:padding="10dp">
 
                     <TextView
                         android:id="@+id/labelStatus"
@@ -171,12 +174,11 @@
                 android:id="@+id/panelEvents"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:orientation="vertical"
                 android:nestedScrollingEnabled="true"
-                android:visibility="gone">
-            </ListView>
+                android:orientation="vertical"
+                android:visibility="gone"></ListView>
 
         </LinearLayout>
 
     </LinearLayout>
-</merge>
+</RelativeLayout>

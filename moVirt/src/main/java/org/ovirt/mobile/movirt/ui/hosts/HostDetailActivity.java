@@ -4,7 +4,6 @@ import android.net.Uri;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ProgressBar;
 
 import org.androidannotations.annotations.AfterViews;
@@ -57,7 +56,7 @@ public class HostDetailActivity extends MoVirtActivity implements HasProgressBar
     void init() {
 
         initPagers();
-        hideProgressBar();
+        setProgressBar(progress);
     }
 
     private void initPagers() {
@@ -96,18 +95,6 @@ public class HostDetailActivity extends MoVirtActivity implements HasProgressBar
 
     private void syncHost() {
         hostFacade.sync(hostId, new ProgressBarResponse<Host>(this));
-    }
-
-    @UiThread
-    @Override
-    public void showProgressBar() {
-        progress.setVisibility(View.VISIBLE);
-    }
-
-    @UiThread
-    @Override
-    public void hideProgressBar() {
-        progress.setVisibility(View.GONE);
     }
 
     @UiThread

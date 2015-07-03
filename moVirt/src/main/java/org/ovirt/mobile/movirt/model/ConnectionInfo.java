@@ -12,6 +12,7 @@ import org.ovirt.mobile.movirt.util.CursorHelper;
 import java.sql.Timestamp;
 
 /**
+ * Class used to store connection information in database
  * Created by Nika on 23.06.2015.
  */
 @DatabaseTable(tableName = ConnectionInfo.TABLE)

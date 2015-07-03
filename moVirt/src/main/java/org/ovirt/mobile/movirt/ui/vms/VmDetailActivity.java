@@ -6,7 +6,6 @@ import android.os.RemoteException;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -17,11 +16,9 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.OptionsMenuItem;
-import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
-import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Vm;
@@ -75,7 +72,7 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
         vmId = vmUri.getLastPathSegment();
 
         initPagers();
-        hideProgressBar();
+        setProgressBar(progress);
     }
 
     private void initPagers() {
@@ -96,11 +93,6 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
 
         viewPager.setAdapter(pagerAdapter);
         pagerTabStrip.setTabIndicatorColorResource(R.color.material_deep_teal_200);
-    }
-
-    @Receiver(actions = Broadcasts.CONNECTION_FAILURE, registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    void connectionFailure(@Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
-        Toast.makeText(VmDetailActivity.this, R.string.rest_req_failed + " " + reason, Toast.LENGTH_LONG).show();
     }
 
     @OptionsItem(R.id.action_edit_triggers)
@@ -197,18 +189,6 @@ public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, 
     @UiThread
     void makeToast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
-    }
-
-    @UiThread
-    @Override
-    public void showProgressBar() {
-        progress.setVisibility(View.VISIBLE);
-    }
-
-    @UiThread
-    @Override
-    public void hideProgressBar() {
-        progress.setVisibility(View.GONE);
     }
 
     @UiThread

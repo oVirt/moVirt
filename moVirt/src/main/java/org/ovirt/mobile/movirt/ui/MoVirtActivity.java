@@ -6,6 +6,8 @@ import android.support.v4.app.LoaderManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.androidannotations.annotations.Background;
@@ -13,6 +15,9 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
+import org.androidannotations.annotations.Receiver;
+import org.androidannotations.annotations.UiThread;
+import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -26,7 +31,7 @@ import org.ovirt.mobile.movirt.sync.SyncUtils;
 
 @EActivity
 @OptionsMenu(R.menu.movirt)
-public abstract class MoVirtActivity extends ActionBarActivity {
+public abstract class MoVirtActivity extends ActionBarActivity implements HasProgressBar {
     private static final int CONNECTION_INFO_LOADER = 0;
     protected int numSuperLoaders = 1;
     @Bean
@@ -39,6 +44,7 @@ public abstract class MoVirtActivity extends ActionBarActivity {
     private String connectionAttempt = "unknown";
     private String connectionSuccess = "unknown";
     private ConnectionInfoLoader connectionInfoLoader;
+    private ProgressBar progress;
 
     @Override
     public LoaderManager getSupportLoaderManager() {
@@ -78,6 +84,47 @@ public abstract class MoVirtActivity extends ActionBarActivity {
         syncUtils.triggerRefresh();
     }
 
+    /**
+     * Method to set progress bar defined by child class and handled by parent class
+     *
+     * @param progress ProgressBar defined in child layout
+     */
+    public void setProgressBar(ProgressBar progress) {
+        this.progress = progress;
+        hideProgressBar();
+    }
+
+    @UiThread
+    @Override
+    public void showProgressBar() {
+        if (progress != null) {
+            progress.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @UiThread
+    @Override
+    public void hideProgressBar() {
+        if (progress != null) {
+            progress.setVisibility(View.GONE);
+        }
+    }
+
+    @Receiver(actions = Broadcasts.CONNECTION_FAILURE, registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    protected void connectionFailure(@Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
+        Toast.makeText(this, R.string.rest_req_failed + " " + reason, Toast.LENGTH_LONG).show();
+    }
+
+    @UiThread
+    @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
+        if (syncing && progress != null) {
+            showProgressBar();
+        } else {
+            hideProgressBar();
+        }
+    }
+
     private class ConnectionInfoLoader implements android.support.v4.app.LoaderManager.LoaderCallbacks<Cursor> {
         @Override
         public android.support.v4.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -98,7 +145,7 @@ public abstract class MoVirtActivity extends ActionBarActivity {
                 connectionAttempt = data.getString(attemptIndex);
                 String success = data.getString(successIndex);
                 if (success != null) {
-                    connectionSuccess = data.getString(successIndex);
+                    connectionSuccess = success;
                 }
 
                 invalidateOptionsMenu();
