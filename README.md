@@ -34,9 +34,8 @@ Follow these steps to connect to remote console:
 * Click console button in VM Detail view
 
 #####SPICE
-* Install aSPICE from https://github.com/iiordanov/remote-desktop-clients/releases/download/v3.7.7/freeaSPICE-3.7.7-final.apk
+* Install aSPICE from https://github.com/zyx0225/remote-desktop-clients/blob/aSPICE/eclipse_projects/bVNC/aSPICE-debug.apk?raw=true (This is the temporary one until the official build supports the passing of tls parameters from outside)
 * Click console button in VM Detail view
-* **Note** moVirt/aSPICE does not support SPICE secured connections at the moment!
 
 ###Get in Touch
 * Interested about news? Follow us on [Twitter](https://twitter.com/mobileOvirt)
