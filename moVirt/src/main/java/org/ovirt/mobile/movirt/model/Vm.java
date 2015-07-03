@@ -9,6 +9,7 @@ import com.j256.ormlite.table.DatabaseTable;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -120,6 +121,12 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
     @DatabaseField(columnName = DISPLAY_PORT)
     private int displayPort;
 
+    @DatabaseField(columnName = DISPLAY_SECURE_PORT)
+    private int displaySecurePort;
+
+    @DatabaseField(columnName = CERTIFICATE_SUBJECT)
+    private String certificateSubject;
+
     public Status getStatus() {
         return status;
     }
@@ -216,6 +223,22 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         this.displayPort = displayPort;
     }
 
+    public int getDisplaySecurePort() {
+        return displaySecurePort;
+    }
+
+    public void setDisplaySecurePort(int displaySecurePort) {
+        this.displaySecurePort = displaySecurePort;
+    }
+
+    public String getCertificateSubject() {
+        return certificateSubject;
+    }
+
+    public void setCertificateSubject(String certificateSubject) {
+        this.certificateSubject = certificateSubject;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -227,15 +250,16 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         if (coresPerSocket != vm.coresPerSocket) return false;
         if (Double.compare(vm.cpuUsage, cpuUsage) != 0) return false;
         if (displayPort != vm.displayPort) return false;
+        if (displaySecurePort != vm.displaySecurePort) return false;
+        if (!ObjectUtils.equals(certificateSubject, vm.certificateSubject)) return false;
         if (memorySizeMb != vm.memorySizeMb) return false;
         if (Double.compare(vm.memoryUsage, memoryUsage) != 0) return false;
         if (sockets != vm.sockets) return false;
-        if (!hostId.equals(vm.hostId)) return false;
-        if (!clusterId.equals(vm.clusterId)) return false;
-        if (displayAddress != null ? !displayAddress.equals(vm.displayAddress) : vm.displayAddress != null)
-            return false;
+        if (!ObjectUtils.equals(hostId, vm.hostId)) return false;
+        if (!ObjectUtils.equals(clusterId, vm.clusterId)) return false;
+        if (!ObjectUtils.equals(displayAddress, vm.displayAddress)) return false;
         if (displayType != vm.displayType) return false;
-        if (!osType.equals(vm.osType)) return false;
+        if (!ObjectUtils.equals(osType, vm.osType)) return false;
         if (status != vm.status) return false;
 
         return true;
@@ -245,9 +269,9 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
     public int hashCode() {
         int result = super.hashCode();
         long temp;
-        result = 31 * result + status.hashCode();
-        result = 31 * result + hostId.hashCode();
-        result = 31 * result + clusterId.hashCode();
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (hostId != null ? hostId.hashCode() : 0);
+        result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
         temp = Double.doubleToLongBits(cpuUsage);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(memoryUsage);
@@ -255,10 +279,12 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         result = 31 * result + (int) (memorySizeMb ^ (memorySizeMb >>> 32));
         result = 31 * result + sockets;
         result = 31 * result + coresPerSocket;
-        result = 31 * result + osType.hashCode();
+        result = 31 * result + (osType != null ? osType.hashCode() : 0);
         result = 31 * result + (displayType != null ? displayType.hashCode() : 0);
         result = 31 * result + (displayAddress != null ? displayAddress.hashCode() : 0);
         result = 31 * result + displayPort;
+        result = 31 * result + displaySecurePort;
+        result = 31 * result + (certificateSubject != null ? certificateSubject.hashCode() : 0);
         return result;
     }
 
@@ -277,6 +303,8 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         contentValues.put(DISPLAY_TYPE, getDisplayType().toString());
         contentValues.put(DISPLAY_ADDRESS, getDisplayAddress());
         contentValues.put(DISPLAY_PORT, getDisplayPort());
+        contentValues.put(DISPLAY_SECURE_PORT, getDisplaySecurePort());
+        contentValues.put(CERTIFICATE_SUBJECT, getCertificateSubject());
         return contentValues;
     }
 
@@ -296,5 +324,7 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
         setDisplayType(cursorHelper.getEnum(DISPLAY_TYPE, Display.class));
         setDisplayAddress(cursorHelper.getString(DISPLAY_ADDRESS));
         setDisplayPort(cursorHelper.getInt(DISPLAY_PORT));
+        setDisplaySecurePort(cursorHelper.getInt(DISPLAY_SECURE_PORT));
+        setCertificateSubject(cursorHelper.getString(CERTIFICATE_SUBJECT));
     }
 }

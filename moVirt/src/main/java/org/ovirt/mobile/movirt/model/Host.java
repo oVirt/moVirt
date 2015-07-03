@@ -9,6 +9,7 @@ import com.j256.ormlite.table.DatabaseTable;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -224,7 +225,7 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
 
         Host host = (Host) o;
 
-        if (!clusterId.equals(host.clusterId)) return false;
+        if (!ObjectUtils.equals(clusterId, host.clusterId)) return false;
         if (status != host.status) return false;
         if (Double.compare(host.cpuUsage, cpuUsage) != 0) return false;
         if (Double.compare(host.memoryUsage, memoryUsage) != 0) return false;
@@ -232,8 +233,8 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
         if (sockets != host.sockets) return false;
         if (coresPerSocket != host.coresPerSocket) return false;
         if (threadsPerCore != host.threadsPerCore) return false;
-        if (!osVersion.equals(host.osVersion)) return false;
-        if (!address.equals(host.address)) return false;
+        if (!ObjectUtils.equals(osVersion, host.osVersion)) return false;
+        if (!ObjectUtils.equals(address, host.address)) return false;
         if (active != host.active) return false;
         if (migrating != host.migrating) return false;
         if (total != host.total) return false;
@@ -246,7 +247,7 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
         int result = super.hashCode();
         long temp;
         result = 31 * result + status.hashCode();
-        result = 31 * result + clusterId.hashCode();
+        result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
 
         temp = Double.doubleToLongBits(cpuUsage);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
@@ -256,8 +257,8 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
         result = 31 * result + sockets;
         result = 31 * result + coresPerSocket;
         result = 31 * result + threadsPerCore;
-        result = 31 * result + osVersion.hashCode();
-        result = 31 * result + address.hashCode();
+        result = 31 * result + (osVersion != null ? osVersion.hashCode() : 0);
+        result = 31 * result + (address != null ? address.hashCode() : 0);
         result = 31 * result + active;
         result = 31 * result + migrating;
         result = 31 * result + total;

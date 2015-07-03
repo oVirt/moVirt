@@ -68,6 +68,9 @@
     <string name="cores">Cores/Socket:</string>
     <string name="os">OS Type:</string>
     <string name="display">Display Type:</string>
+    <string name="cluster_and_version">Cluster | Version:</string>
+    <string name="data_center_and_version">Data Center | Version:</string>
+    <string name="host">Host:</string>
     <string name="events">Events</string>
     <string name="disks">Disks</string>
     <string name="statusLabel">Status:</string>
@@ -128,6 +131,12 @@
 
     <string name="activate">activate</string>
     <string name="deactivate">deactivate</string>
+
+    <string name="import_str">Import</string>
+    <string name="missing_ca_cert">Missing the Certificate Authority for SPICE, do you want to import it now?</string>
+    <string name="can_not_run_console_without_ca">The console can not run without the Certificate Authority for SPICE</string>
+    <string name="spice_ca_management">SPICE CA management</string>
+    <string name="rest_ca_management">REST CA management</string>
     
     <!-- start Camera Activity strings -->
     <string name="title_activity_camera">Scan Data Matrix codes with camera</string>

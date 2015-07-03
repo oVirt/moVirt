@@ -27,12 +27,6 @@ class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
     public String address;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Version {
-        public String major;
-        public String full_version;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Os {
         public String type;
         public Version version;

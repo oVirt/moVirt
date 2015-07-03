@@ -107,6 +107,39 @@
                     style="@style/VmStat"
                     android:layout_alignBaseline="@id/displayLabel" />
 
+                <TextView
+                    android:id="@+id/clusterLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/cluster_and_version"
+                    android:layout_below="@id/displayLabel"/>
+
+                <TextView
+                    android:id="@+id/clusterView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/clusterLabel" />
+
+                <TextView
+                    android:id="@+id/dataCenterLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/data_center_and_version"
+                    android:layout_below="@id/clusterLabel"/>
+
+                <TextView
+                    android:id="@+id/dataCenterView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/dataCenterLabel" />
+
+                <TextView
+                    android:id="@+id/hostLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/host"
+                    android:layout_below="@id/dataCenterLabel"/>
+
+                <Button
+                    android:id="@+id/hostButton"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/hostLabel" />
+
             </RelativeLayout>
 
          </android.support.v4.widget.SwipeRefreshLayout>

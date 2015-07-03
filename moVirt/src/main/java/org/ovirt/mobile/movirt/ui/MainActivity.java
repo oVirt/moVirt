@@ -64,7 +64,8 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 public class MainActivity extends MoVirtActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String[] CLUSTER_PROJECTION = new String[]{OVirtContract.Cluster.NAME, OVirtContract.Cluster.ID};
+    private static final String[] CLUSTER_PROJECTION = new String[]{OVirtContract.Cluster.NAME, OVirtContract.Cluster.ID,
+            OVirtContract.Cluster.VERSION, OVirtContract.Cluster.DATA_CENTER_ID};
     public final int CLUSTER_LOADER = numSuperLoaders;
     Dialog connectionNotConfiguredProperlyDialog;
     @StringRes(R.string.needs_configuration)
@@ -146,7 +147,7 @@ public class MainActivity extends MoVirtActivity {
 
     private void initClusterDrawer() {
         emptyClusterCursor = new MatrixCursor(CLUSTER_PROJECTION);
-        emptyClusterCursor.addRow(new String[]{allClusters, null});
+        emptyClusterCursor.addRow(new String[]{allClusters, null, null, null});
 
 
         SimpleCursorAdapter clusterListAdapter = new SimpleCursorAdapter(this,

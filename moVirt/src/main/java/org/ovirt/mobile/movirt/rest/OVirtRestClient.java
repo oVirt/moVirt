@@ -49,6 +49,9 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/clusters")
     Clusters getClusters();
 
+    @Get("/datacenters")
+    DataCenters getDataCenters();
+
     @Get("/events;max={maxToLoad}?from={lastEventId}&search=sortby time desc")
     Events getEventsSince(String lastEventId, int maxToLoad);
 
