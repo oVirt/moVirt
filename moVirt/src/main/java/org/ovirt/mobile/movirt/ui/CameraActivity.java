@@ -46,7 +46,6 @@ import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
@@ -182,11 +181,7 @@ public class CameraActivity extends MoVirtActivity implements SurfaceHolder.Call
 
         loaderManager = getSupportLoaderManager();
         //init events
-        final SimpleCursorAdapter eventListAdapter = new SimpleCursorAdapter(this,
-                R.layout.event_list_item,
-                null,
-                new String[]{OVirtContract.Event.TIME, OVirtContract.Event.DESCRIPTION},
-                new int[]{R.id.event_timestamp, R.id.event_description}, 0);
+        SimpleCursorAdapter eventListAdapter = new EventsCursorAdapter(this);
 
         panelEvents.setAdapter(eventListAdapter);
         panelEvents.setOnScrollListener(new EndlessScrollListener() {

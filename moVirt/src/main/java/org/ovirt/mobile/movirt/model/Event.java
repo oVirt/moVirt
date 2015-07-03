@@ -6,6 +6,7 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 
@@ -28,10 +29,20 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
     }
 
     public enum Severity {
-        NORMAL,
-        WARNING,
-        ERROR,
-        ALERT,
+        NORMAL(R.drawable.log_normal),
+        WARNING(R.drawable.log_warning),
+        ERROR(R.drawable.log_error),
+        ALERT(R.drawable.log_alert);
+
+        private final int resource;
+
+        Severity(int resource) {
+            this.resource = resource;
+        }
+
+        public int getResource() {
+            return resource;
+        }
     }
 
     @DatabaseField(columnName = ID, id = true)
