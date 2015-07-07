@@ -34,7 +34,7 @@ Follow these steps to connect to remote console:
 * Click console button in VM Detail view
 
 #####SPICE
-* Install aSPICE from https://github.com/iiordanov/remote-desktop-clients/releases/download/v3.7.7/freeaSPICE-3.7.7-final.apk
+* Install aSPICE(v3.7.7+) from Google Play Store
 * Click console button in VM Detail view
 
 ###Get in Touch
