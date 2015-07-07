@@ -34,7 +34,7 @@ Follow these steps to connect to remote console:
 * Click console button in VM Detail view
 
 #####SPICE
-* Install aSPICE from https://github.com/zyx0225/remote-desktop-clients/blob/aSPICE/eclipse_projects/bVNC/aSPICE-debug.apk?raw=true (This is the temporary one until the official build supports the passing of tls parameters from outside)
+* Install aSPICE(v3.7.7+) from Google Play Store
 * Click console button in VM Detail view
 
 ###Get in Touch
