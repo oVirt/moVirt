@@ -17,7 +17,6 @@ import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Event;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
@@ -70,12 +69,7 @@ public class EventsFragment extends RefreshableFragment {
 
     @AfterViews
     void init() {
-
-        SimpleCursorAdapter eventListAdapter = new SimpleCursorAdapter(getActivity(),
-                R.layout.event_list_item,
-                null,
-                new String[]{OVirtContract.Event.TIME, OVirtContract.Event.DESCRIPTION},
-                new int[]{R.id.event_timestamp, R.id.event_description}, 0);
+        SimpleCursorAdapter eventListAdapter = new EventsCursorAdapter(getActivity());
 
         list.setAdapter(eventListAdapter);
 
