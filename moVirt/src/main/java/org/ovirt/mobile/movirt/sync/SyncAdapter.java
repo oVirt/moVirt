@@ -31,7 +31,7 @@ import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.util.NotificationDisplayer;
+import org.ovirt.mobile.movirt.util.NotificationHelper;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,41 +41,40 @@ import java.util.Map;
 @EBean
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = SyncAdapter.class.getSimpleName();
-
+    public static volatile boolean inSync = false;
     @RootContext
     Context context;
-
     @SystemService
     NotificationManager notificationManager;
-
     @SystemService
     Vibrator vibrator;
-
     @Bean
     OVirtClient oVirtClient;
-
     @Bean
     ProviderFacade provider;
-
     @Bean
     EntityFacadeLocator entityFacadeLocator;
-
     @Bean
     EventsHandler eventsHandler;
-
     @Bean
     MovirtAuthenticator authenticator;
-
     @Bean
-    NotificationDisplayer notificationDisplayer;
-
-    public static volatile boolean inSync = false;
-
-    /** access to the {@code batch} field should be always under synchronized(this) */
+    NotificationHelper notificationHelper;
+    /**
+     * access to the {@code batch} field should be always under synchronized(this)
+     */
     ProviderFacade.BatchBuilder batch;
 
     public SyncAdapter(Context context) {
         super(context, true);
+    }
+
+    private static <E extends OVirtEntity> Map<String, E> groupEntitiesById(List<E> entities) {
+        Map<String, E> entityMap = new HashMap<>();
+        for (E entity : entities) {
+            entityMap.put(entity.getId(), entity);
+        }
+        return entityMap;
     }
 
     @Override
@@ -96,10 +95,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         sendSyncIntent(true);
         try {
             // split to two methods so at least the quick entities can be already shown / used until the slow ones get processed (better ux)
-            updateQuickEntities();
-            if (tryEvents) {
-                eventsHandler.updateEvents(false);
-            }
+            updateAll(tryEvents);
         } catch (Exception e) {
             Log.e(TAG, "Error updating data", e);
             Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
@@ -130,7 +126,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }, response));
     }
 
-    private void updateQuickEntities() throws RemoteException {
+    private void updateAll(final boolean tryEvents) throws RemoteException {
         initBatch();
 
         // TODO: we really need promises here
@@ -153,6 +149,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                         updateLocalEntities(remoteDataCenters, DataCenter.class);
 
                                         applyBatch();
+										
+										if (tryEvents) {
+                                            eventsHandler.updateEvents(false);
+                                        }
                                     }
                                 });
                             }
@@ -244,19 +244,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final Context appContext = getContext().getApplicationContext();
         final Intent intent = entityFacade.getDetailIntent(entity, appContext);
         intent.setData(entity.getUri());
-        notificationDisplayer.showNotification(
+        notificationHelper.showTriggerNotification(
                 trigger, entity, appContext, PendingIntent.getActivity(appContext, 0, intent, 0)
         );
     }
-
-    private static <E extends OVirtEntity> Map<String, E> groupEntitiesById(List<E> entities) {
-        Map<String, E> entityMap = new HashMap<>();
-        for (E entity : entities) {
-            entityMap.put(entity.getId(), entity);
-        }
-        return entityMap;
-    }
-
 
     private void sendSyncIntent(boolean syncing) {
         inSync = syncing;
