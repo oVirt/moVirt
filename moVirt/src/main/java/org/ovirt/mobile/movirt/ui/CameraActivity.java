@@ -50,7 +50,6 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import java.io.IOException;
-import java.util.Collection;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.BaseEntity.ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
@@ -64,6 +63,7 @@ public class CameraActivity extends MoVirtActivity implements SurfaceHolder.Call
     private static final long BULK_MODE_SCAN_DELAY_MS = 100L;
     private final int EVENTS_LOADER = numSuperLoaders;
     private final int VMS_LOADER = numSuperLoaders + 1;
+    private final int HOSTS_LOADER = numSuperLoaders + 2;
     @Bean
     ProviderFacade provider;
     @Bean
@@ -92,6 +92,8 @@ public class CameraActivity extends MoVirtActivity implements SurfaceHolder.Call
     ListView listVms;
     @ViewById
     ProgressBar progress;
+    @ViewById(R.id.result_text)
+    TextView resultTextView;
 
     private CameraManager cameraManager;
     private CaptureActivityHandler handler;
@@ -106,6 +108,7 @@ public class CameraActivity extends MoVirtActivity implements SurfaceHolder.Call
     private View currentView;
     private int eventsPage = 1;
     private int vmsPage = 1;
+    private HostsLoader hostsLoader;
 
 
     @AfterViews
@@ -117,6 +120,75 @@ public class CameraActivity extends MoVirtActivity implements SurfaceHolder.Call
         currentView = panelDetails;
 
         setProgressBar(progress);
+
+        loaderManager = getSupportLoaderManager();
+        hostsLoader = new HostsLoader();
+        loaderManager.initLoader(HOSTS_LOADER, null, hostsLoader);
+        //init events
+        SimpleCursorAdapter eventListAdapter = new EventsCursorAdapter(this);
+        panelEvents.setAdapter(eventListAdapter);
+        panelEvents.setOnScrollListener(new EndlessScrollListener() {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                eventsPage = page;
+                loaderManager.restartLoader(EVENTS_LOADER, null, cursorEventsAdapterLoader);
+            }
+        });
+        cursorEventsAdapterLoader = new CursorAdapterLoader(eventListAdapter) {
+            @Override
+            public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                final ProviderFacade.QueryBuilder<Event> query = provider.query(Event.class);
+                if (lastHost != null) {
+                    query.where(HOST_ID, lastHost.getId());
+                }
+                return query.orderByDescending(ID).limit(eventsPage * 20).asLoader();
+            }
+        };
+        loaderManager.initLoader(EVENTS_LOADER, null, cursorEventsAdapterLoader);
+
+        //init vms
+        SimpleCursorAdapter vmListAdapter = new SimpleCursorAdapter(this,
+                R.layout.vm_list_item_small,
+                null,
+                new String[]{NAME, STATUS},
+                new int[]{R.id.vm_name, R.id.vm_status}, 0);
+        vmListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+            @Override
+            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+                if (columnIndex == cursor.getColumnIndex(NAME)) {
+                    TextView textView = (TextView) view;
+                    String vmName = cursor.getString(cursor.getColumnIndex(NAME));
+                    textView.setText(vmName);
+                } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
+                    ImageView imageView = (ImageView) view;
+                    Vm.Status status = Vm.Status.valueOf(cursor.getString(cursor.getColumnIndex(STATUS)));
+                    imageView.setImageResource(status.getResource());
+                }
+                return true;
+            }
+        });
+        listVms.setAdapter(vmListAdapter);
+        listVms.setOnScrollListener(new EndlessScrollListener() {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                vmsPage = page;
+                loaderManager.restartLoader(VMS_LOADER, null, cursorVmsAdapterLoader);
+            }
+        });
+        cursorVmsAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
+            @Override
+            public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                final ProviderFacade.QueryBuilder<Vm> query = provider.query(Vm.class);
+
+                if (lastHost == null) {
+                    return query.where(HOST_ID, "0").asLoader();
+                } else {
+                    query.where(HOST_ID, lastHost.getId());
+                }
+                return query.orderByAscending(NAME).limit(vmsPage * 20).asLoader();
+            }
+        };
+        loaderManager.initLoader(VMS_LOADER, null, cursorVmsAdapterLoader);
     }
 
     public CameraManager getCameraManager() {
@@ -178,72 +250,6 @@ public class CameraActivity extends MoVirtActivity implements SurfaceHolder.Call
             // Install the callback and wait for surfaceCreated() to init the camera.
             surfaceHolder.addCallback(this);
         }
-
-        loaderManager = getSupportLoaderManager();
-        //init events
-        SimpleCursorAdapter eventListAdapter = new EventsCursorAdapter(this);
-
-        panelEvents.setAdapter(eventListAdapter);
-        panelEvents.setOnScrollListener(new EndlessScrollListener() {
-            @Override
-            public void onLoadMore(int page, int totalItemsCount) {
-                eventsPage = page;
-                loaderManager.restartLoader(EVENTS_LOADER, null, cursorEventsAdapterLoader);
-            }
-        });
-        cursorEventsAdapterLoader = new CursorAdapterLoader(eventListAdapter) {
-            @Override
-            public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                final ProviderFacade.QueryBuilder<Event> query = provider.query(Event.class);
-                if (lastHost != null) {
-                    query.where(HOST_ID, lastHost.getId());
-                }
-                return query.orderByDescending(ID).limit(eventsPage * 20).asLoader();
-            }
-        };
-        loaderManager.initLoader(EVENTS_LOADER, null, cursorEventsAdapterLoader);
-
-        //init vms
-        SimpleCursorAdapter vmListAdapter = new SimpleCursorAdapter(this,
-                R.layout.vm_list_item_small,
-                null,
-                new String[]{NAME, STATUS},
-                new int[]{R.id.vm_name, R.id.vm_status}, 0);
-        vmListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-            @Override
-            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-                if (columnIndex == cursor.getColumnIndex(NAME)) {
-                    TextView textView = (TextView) view;
-                    String vmName = cursor.getString(cursor.getColumnIndex(NAME));
-                    textView.setText(vmName);
-                } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
-                    ImageView imageView = (ImageView) view;
-                    Vm.Status status = Vm.Status.valueOf(cursor.getString(cursor.getColumnIndex(STATUS)));
-                    imageView.setImageResource(status.getResource());
-                }
-                return true;
-            }
-        });
-        listVms.setAdapter(vmListAdapter);
-        listVms.setOnScrollListener(new EndlessScrollListener() {
-            @Override
-            public void onLoadMore(int page, int totalItemsCount) {
-                vmsPage = page;
-                loaderManager.restartLoader(VMS_LOADER, null, cursorVmsAdapterLoader);
-            }
-        });
-        cursorVmsAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
-            @Override
-            public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                final ProviderFacade.QueryBuilder<Vm> query = provider.query(Vm.class);
-
-                if (lastHost != null) {
-                    query.where(HOST_ID, lastHost.getId());
-                }
-                return query.orderByDescending(NAME).limit(vmsPage * 20).asLoader();
-            }
-        };
-        loaderManager.initLoader(VMS_LOADER, null, cursorVmsAdapterLoader);
     }
 
     @Override
@@ -328,12 +334,10 @@ public class CameraActivity extends MoVirtActivity implements SurfaceHolder.Call
             decodeOrStoreSavedBitmap(null, null);
         } catch (IOException ioe) {
             Log.w(TAG, ioe);
-            //displayFrameworkBugMessageAndExit();
         } catch (RuntimeException e) {
             // Barcode Scanner has seen crashes in the wild of this variety:
             // java.?lang.?RuntimeException: Fail to connect to camera service
             Log.w(TAG, "Unexpected error initializing camera", e);
-            //displayFrameworkBugMessageAndExit();
         }
     }
 
@@ -345,39 +349,15 @@ public class CameraActivity extends MoVirtActivity implements SurfaceHolder.Call
      * @param barcode     A greyscale bitmap of the camera data which was decoded.
      */
     public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
-        TextView tw = (TextView) findViewById(R.id.result_text);
         String result = rawResult.getText();
         viewfinderView.drawResultBitmap(barcode, rawResult.getResultPoints());
         if (!result.equals(lastResult)) {
             lastResult = result;
             beepManager.playBeepSoundAndVibrate();
-            Collection<Host> col = provider.query(Host.class).id(result).all();
-            if (col.size() == 0) {
-                String message = ". Can't find or not a proper host ID.";
-                tw.setText(result + message);
-            } else {
-                lastHost = col.iterator().next();
-                tw.setText(result);
-                renderDetails(lastHost);
-                panelParent.setVisibility(View.VISIBLE);
-                currentView.setVisibility(View.VISIBLE);
-                panelVms.setVisibility(View.VISIBLE);
-            }
+            resultTextView.setText(lastResult);
+            loaderManager.restartLoader(HOSTS_LOADER, null, hostsLoader);
         }
         restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
-    }
-
-    private void renderDetails(Host host) {
-        textHostName.setText(host.getName());
-        textStatus.setText(host.getStatus().toString());
-        textCpuUsage.setText(String.format("%.2f%%", host.getCpuUsage()));
-        textMemoryUsage.setText(String.format("%.2f%%", host.getMemoryUsage()));
-        //update events and VMs
-        loaderManager.restartLoader(EVENTS_LOADER, null, cursorEventsAdapterLoader);
-        loaderManager.restartLoader(VMS_LOADER, null, cursorVmsAdapterLoader);
-        //show status icon
-        Host.Status status = host.getStatus();
-        imageStatus.setImageResource(status.getResource());
     }
 
     public void restartPreviewAfterDelay(long delayMS) {
@@ -437,5 +417,50 @@ public class CameraActivity extends MoVirtActivity implements SurfaceHolder.Call
             currentView = panelDetails;
         }
         currentView.setVisibility(View.VISIBLE);
+    }
+
+    private void renderDetails(Host host) {
+        textHostName.setText(host.getName());
+        textStatus.setText(host.getStatus().toString());
+        textCpuUsage.setText(String.format("%.2f%%", host.getCpuUsage()));
+        textMemoryUsage.setText(String.format("%.2f%%", host.getMemoryUsage()));
+        //show status icon
+        Host.Status status = host.getStatus();
+        imageStatus.setImageResource(status.getResource());
+
+        panelParent.setVisibility(View.VISIBLE);
+        currentView.setVisibility(View.VISIBLE);
+        panelVms.setVisibility(View.VISIBLE);
+    }
+
+    private class HostsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            if (lastResult == null) {
+                return provider.query(Host.class).id("0").asLoader();
+            } else {
+                return provider.query(Host.class).id(lastResult).asLoader();
+            }
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            if (data != null && data.getCount() > 0) {
+                data.moveToFirst();
+                lastHost = new Host();
+                lastHost.initFromCursor(data);
+                loaderManager.restartLoader(EVENTS_LOADER, null, cursorEventsAdapterLoader);
+                loaderManager.restartLoader(VMS_LOADER, null, cursorVmsAdapterLoader);
+                renderDetails(lastHost);
+            } else if (lastResult != null) {
+                resultTextView.setText(lastResult + "\nNO SUCH HOST!");
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+
+        }
     }
 }

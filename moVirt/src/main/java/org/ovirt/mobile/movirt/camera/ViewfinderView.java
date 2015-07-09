@@ -63,14 +63,14 @@ public final class ViewfinderView extends View {
         if (frame == null || previewFrame == null) {
             return;
         }
+        int width = canvas.getWidth();
+        int height = canvas.getHeight();
         // Draw the exterior
-        paint.setColor(Color.BLACK);
-        canvas.drawLines(new float[]{
-                frame.left, frame.top, frame.right, frame.top,
-                frame.right, frame.top, frame.right, frame.bottom,
-                frame.right, frame.bottom, frame.left, frame.bottom,
-                frame.left, frame.bottom, frame.left, frame.top
-        }, paint);
+        paint.setColor(Color.parseColor("#60000000"));
+        canvas.drawRect(0, 0, width, frame.top, paint);
+        canvas.drawRect(0, frame.top, frame.left, frame.bottom + 1, paint);
+        canvas.drawRect(frame.right + 1, frame.top, width, frame.bottom + 1, paint);
+        canvas.drawRect(0, frame.bottom + 1, width, height, paint);
 
         if (resultBitmap != null) {
             //highlight detected code with red frame
