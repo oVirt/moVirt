@@ -57,7 +57,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 
 @EActivity(R.layout.activity_camera)
-public class CameraActivity extends MoVirtActivity implements SurfaceHolder.Callback {
+public class CameraActivity extends MovirtActivity implements SurfaceHolder.Callback {
 
     private static final String TAG = CameraActivity.class.getSimpleName();
     private static final long BULK_MODE_SCAN_DELAY_MS = 100L;

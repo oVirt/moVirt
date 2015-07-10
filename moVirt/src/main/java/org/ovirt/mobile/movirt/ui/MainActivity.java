@@ -61,7 +61,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends MoVirtActivity {
+public class MainActivity extends MovirtActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String[] CLUSTER_PROJECTION = new String[]{OVirtContract.Cluster.NAME, OVirtContract.Cluster.ID,

@@ -38,7 +38,7 @@ import org.ovirt.mobile.movirt.ui.EventsFragment;
 import org.ovirt.mobile.movirt.ui.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
-import org.ovirt.mobile.movirt.ui.MoVirtActivity;
+import org.ovirt.mobile.movirt.ui.MovirtActivity;
 import org.ovirt.mobile.movirt.ui.NicDetailFragment;
 import org.ovirt.mobile.movirt.ui.NicDetailFragment_;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
@@ -50,7 +50,7 @@ import java.io.File;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
-public class VmDetailActivity extends MoVirtActivity implements HasProgressBar, UpdateMenuItemAware<Vm> {
+public class VmDetailActivity extends MovirtActivity implements HasProgressBar, UpdateMenuItemAware<Vm> {
 
     private static final String TAG = VmDetailActivity.class.getSimpleName();
     @ViewById

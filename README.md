@@ -22,9 +22,9 @@ After successfully installing the application, you need to set the connection de
 
 **Video tutorials at a glance:**  
 1. [Interaction between the moVirt and ovirt-engine](https://github.com/matobet/moVirt/blob/master/videos/liveSetup.webm)  
-   This video tutorial assumes you have an ovirt-engine running with a few VMS. It gives a demonstration of the basic    configuraton of VM using the ovirt-engine and filling up connection details in the android application.  
+   This video tutorial assumes you have an ovirt-engine running with a few VMS. It gives a demonstration of the basic configuration of VM using the ovirt-engine and filling up connection details in the android application.  
 2. [Working with Trigger](https://github.com/matobet/moVirt/blob/master/videos/trigger.webm)    
-   This video tutroial shows the working of trigger with the android application. 'Blink when VM is down' is the     example condition that has been set and the status of the VM is changed accordingly to demonstrate this. 
+   This video tutorial shows the working of trigger with the android application. 'Blink when VM is down' is the example condition that has been set and the status of the VM is changed accordingly to demonstrate this. 
 
 ####Remote console
 Follow these steps to connect to remote console:
@@ -44,31 +44,40 @@ Follow these steps to connect to remote console:
 * Want to chat? We are usually hanging in *irc.oftc.net* in *#ovirt* - look for *sphoorti*, *mbetak* or *tjelinek*. Or anyone else, people are friendly there ;)
 
 ###Developer's guide:        
-To start contributing to moVirt, you will need to install the following things-
-* [Android SDK](http://developer.android.com/sdk/index.html)  
-   1. Untar the android sdk and change the directory to android-sdk-linux/tools. Run ./android.
-   2. After the newly opened window has fetched URLs from the mirror
-      Select the following and press Install  
-      Tools->Android SDK tools, Android SDK Platform tools and Android SDK Build-tools version 20 and version 21      
-      Android 4.4w 
-      Android Support Repository  
-      Accept License  
-      Press Install  
-   3. Android API 20 is the required SDK. You can install additional SDK as per your needs.  
-  
-* [Android Studio 1.0.0](http://tools.android.com/download/studio/canary/1-0-0)
-* [Gradle version 2.2.1](http://gvmtool.net/)  
+To start contributing to moVirt, you will need to **install** the following things  
+For **Windows** users:
 
-Once the installations are done, you can proceed to import the project into the workspace.  
-(On Windows: Before importing you need to change symlink. To do this run CMD with admin rights, change directory to moVirt's root with 'cd' command, and run symlink.bat).  
-1. File -> Open -> ~/" *path to moVirt project* "/build.gradle. Or select "Import project" from Welcome page.  
-2. On the import dialog : Select local gradle distribution. Give the path to gradle version 2.2.1 .      
+* Download and install [Android Studio Bundle](http://developer.android.com/sdk/index.html).
+* Add packages in Android SDK Manager ([guide](http://developer.android.com/sdk/installing/adding-packages.html)), you need:
+  * Android SDK Platform-tools
+  * Android SDK Build-tools v.20 and 21.*.
+  * Android Support Library and Repository
+  * Android API 20 SDK (you can install additional SDK as per your needs).
+
+For **Linux/MacOS** users:
+
+* Download [Android SDK](http://developer.android.com/sdk/index.html#Other)
+* Download and install [Android Studio](http://developer.android.com/sdk/index.html#Other) or any other IDE for Java development.
+* Install Android SDK ([guide](http://developer.android.com/sdk/installing/adding-packages.html))
+* Add packages in Android SDK Manager ([guide](http://developer.android.com/sdk/installing/adding-packages.html)), you need:
+  * Android SDK Platform-tools
+  * Android SDK Build-tools v.20 and 21.*.
+  * Android Support Library and Repository
+  * Android API 20 SDK (you can install additional SDK as per your needs).
+
+Once the installations are done, you can proceed to **import the project** into the workspace.
+
+1. This step only for Windows users.
+  * Before importing you need to change symlink. To do this run CMD with admin rights, change directory with `cd [/d] path\to\movirt\root`, and run `symlink.bat`. Repeat every time after updating repo.
+  * Also you might want to exclude symlink from your local repo. To do this add `AndroidManifest.xml` to the end of `.git\info\exclude` file.
+2. File -> Open -> ~/" *path to moVirt project* "/build.gradle. Or select "Import project" from Welcome page.  
+3. On the import dialog : Select local gradle distribution. Give the path to gradle version 2.2.1 .      
    <img src = https://github.com/matobet/moVirt/blob/master/images/import_project.png align="center" height = "480px" width="640px">    
    After this, the prompt asks you to enter the path to the android sdk.  
    You can refer the following image for the complete SDK path.    
    <img src = https://github.com/matobet/moVirt/blob/master/images/sdk_location.png align="center" height = "480px" width="640px">    
-3. Press OK. The build takes a while to complete. After it is done, the project is reloaded.  
-4. Run the android application on an emulator or a developer's device.  
+4. Press OK. The build takes a while to complete. After it is done, the project is reloaded.  
+5. Run the android application on an emulator or a developer's device.  
     Run -> Run -> Select moVirt-moVirt   
       *For the first time* Run -> Edit Configurations  
       Click on the + icon -> Android application -> in right panel General tab select the moVirt-moVirt module.  

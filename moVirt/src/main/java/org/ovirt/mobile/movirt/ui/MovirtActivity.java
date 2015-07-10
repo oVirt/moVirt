@@ -31,7 +31,7 @@ import org.ovirt.mobile.movirt.sync.SyncUtils;
 
 @EActivity
 @OptionsMenu(R.menu.movirt)
-public abstract class MoVirtActivity extends ActionBarActivity implements HasProgressBar {
+public abstract class MovirtActivity extends ActionBarActivity implements HasProgressBar {
     private static final int CONNECTION_INFO_LOADER = 0;
     protected int numSuperLoaders = 1;
     @Bean
