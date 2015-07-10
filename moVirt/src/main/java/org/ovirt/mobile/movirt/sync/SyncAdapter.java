@@ -1,7 +1,6 @@
 package org.ovirt.mobile.movirt.sync;
 
 import android.accounts.Account;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
@@ -11,13 +10,11 @@ import android.content.SyncResult;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.os.Vibrator;
 import android.util.Log;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
-import org.androidannotations.annotations.SystemService;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.facade.EntityFacade;
@@ -44,10 +41,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public static volatile boolean inSync = false;
     @RootContext
     Context context;
-    @SystemService
-    NotificationManager notificationManager;
-    @SystemService
-    Vibrator vibrator;
     @Bean
     OVirtClient oVirtClient;
     @Bean
