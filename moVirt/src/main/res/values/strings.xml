@@ -11,7 +11,7 @@
     <string name="prefs_connection_notification">Connection Notifications</string>
     <string name="prefs_connection_notification_summary">Show notifications on connection lost.</string>
     <string name="prefs_max_events_locally">Max events locally</string>
-    <string name="prefs_max_events_locally_summary">Maximal amount of events stored locally. For admin users also the max amount of events polled.</string>
+    <string name="prefs_max_events_locally_summary">Maximal amount of events stored locally. For admin users also the max amount of events polled. Current: %s</string>
     <string name="prefs_about_moVirt">About moVirt</string>
     <string name="prefs_about_moVirt_summary">License, Version and Documentation.</string>
     <string name="prefs_connection_settings">Connection Settings</string>
@@ -92,15 +92,19 @@
     <string name="notification_type_critical">Vibrate</string>
     <string name="trigger_title_format">Triggers - %1$s</string>
     <string name="when">when</string>
-	<string name="moVirt_license">Apache License, Version 2.0</string>
-	<string name="moVirt_version">App Version 0.1</string>
+    <string name="moVirt_license">Apache License, Version 2.0</string>
+    <string name="moVirt_version">App Version 0.1</string>
     <string name="moVirt_docs">https://github.com/matobet/moVirt/blob/master/README.md"</string>
     <string name="downloadEvents">Load</string>
     <string name="clearEvents">Clear</string>
     <string name="searchInVms">Search</string>
     <string name="vmsOrderBy">Order</string>
+    <string name="prefs_periodic_sync">Periodic Sync</string>
+    <string name="prefs_periodic_sync_summary">Enable periodic sync with custom interval instead of system\'s schedule. Enabling with short interval consumes battery!</string>
+    <string name="prefs_periodic_sync_interval">Sync Interval</string>
+    <string name="prefs_periodic_sync_interval_summary">Periodic sync interval in minutes. Current: %s</string>
     <string name="prefs_max_max_vms_polled">Max VMs polled</string>
-    <string name="prefs_max_vms_polled_summary">Maximum amount of VMs returned from oVirt</string>
+    <string name="prefs_max_vms_polled_summary">Maximum amount of VMs returned from oVirt. Current: %s</string>
     <string name="prefs_vm_search_query">VMs Search Query</string>
     <string name="prefs_vm_search_query_summary">Poll only VMs which satisfy given query. Has effect for admin users only. (e.g. name = production*)</string>
     <string name="prefs_events_search_query">Events Search Query</string>
@@ -139,20 +143,5 @@
     <string name="can_not_run_console_without_ca">The console can not run without the Certificate Authority for SPICE</string>
     <string name="spice_ca_management">SPICE CA management</string>
     <string name="rest_ca_management">REST CA management</string>
-    
-    <!-- start Camera Activity strings -->
-    <string name="title_activity_camera">Scan Data Matrix codes with camera</string>
-    <string name="labelHostName">Host name:</string>
-    <string name="labelStatus">Status:</string>
-    <string name="labelCPUUsage">CPU usage:</string>
-    <string name="labelMemoryUsage">Memory usage:</string>
-    <string name="cameraMessage">Look at Data Matrix code to decode</string>
-    <string name="buttonOpenDetails">Details page</string>
-    <string name="buttonSwitchDetails">Details</string>
-    <string name="buttonSwitchEvents">Events</string>
-    <string name="imageDesc">Host status icon</string>
-    <string name="labelVMs">Host VMs:</string>
-    <string name="statusIconHint">VM status</string>
-    <!-- end Camera Activity strings -->
 
 </resources>

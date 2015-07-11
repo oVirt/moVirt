@@ -214,7 +214,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         hasSurface = false;
         beepManager = new BeepManager(this);
 
-        PreferenceManager.setDefaultValues(this, R.xml.zxing_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences_zxing, false);
     }
 
     @Override
