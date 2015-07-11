@@ -8,10 +8,10 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.ui.MoVirtActivity;
+import org.ovirt.mobile.movirt.ui.MovirtActivity;
 
 @EActivity(R.layout.activity_dashboard)
-public class DashboardActivity extends MoVirtActivity {
+public class DashboardActivity extends MovirtActivity {
     private static final String TAG = DashboardActivity.class.getSimpleName();
 
     private static final long SYNC_PERIOD_MILLIS = 3 * 60 * 1000;
