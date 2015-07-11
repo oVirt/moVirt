@@ -24,6 +24,7 @@ import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
+import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -136,16 +137,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                 oVirtClient.getDataCenters(new OVirtClient.SimpleResponse<List<DataCenter>>() {
                                     @Override
                                     public void onResponse(final List<DataCenter> remoteDataCenters) throws RemoteException {
-                                        updateLocalEntities(remoteClusters, Cluster.class);
-                                        updateLocalEntities(remoteHosts, Host.class);
-                                        updateLocalEntities(remoteVms, Vm.class);
-                                        updateLocalEntities(remoteDataCenters, DataCenter.class);
+                                        oVirtClient.getStorageDomains(new OVirtClient.SimpleResponse<List<StorageDomain>>(){
+                                            @Override
+                                            public void onResponse(final List<StorageDomain> remoteStorageDomains) throws RemoteException {
+                                                updateLocalEntities(remoteClusters, Cluster.class);
+                                                updateLocalEntities(remoteHosts, Host.class);
+                                                updateLocalEntities(remoteVms, Vm.class);
+                                                updateLocalEntities(remoteDataCenters, DataCenter.class);
+                                                updateLocalEntities(remoteStorageDomains, StorageDomain.class);
 
-                                        applyBatch();
+                                                applyBatch();
 										
-										if (tryEvents) {
-                                            eventsHandler.updateEvents(false);
-                                        }
+												if (tryEvents) {
+		                                            eventsHandler.updateEvents(false);
+		                                        }
+											}
+                                        });
                                     }
                                 });
                             }

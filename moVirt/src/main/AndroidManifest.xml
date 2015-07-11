@@ -100,6 +100,11 @@
             android:name=".camera.PreferencesActivity"
             android:label="@string/preferences_name"
             android:stateNotNeeded="true" />
+
+        <activity
+            android:name=".ui.dashboard.DashboardActivity_"
+            android:label="@string/title_activity_dashboard">
+        </activity>
     </application>
 
 </manifest>

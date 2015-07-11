@@ -30,6 +30,7 @@ import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
@@ -234,6 +235,20 @@ public class OVirtClient {
                 }
 
                 return mapRestWrappers(loadedDataCenters.data_center, null);
+            }
+        }, response);
+    }
+
+    public void getStorageDomains(Response<List<StorageDomain>> response) {
+        fireRestRequest(new Request<List<StorageDomain>>() {
+            @Override
+            public List<StorageDomain> fire() {
+                StorageDomains loadedStorageDomains = restClient.getStorageDomains();
+                if (loadedStorageDomains == null){
+                    return new ArrayList();
+                }
+
+                return mapRestWrappers(loadedStorageDomains.storage_domain, null);
             }
         }, response);
     }

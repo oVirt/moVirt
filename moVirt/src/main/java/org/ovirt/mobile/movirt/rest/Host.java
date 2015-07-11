@@ -35,6 +35,7 @@ class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Cpu {
         public Topology topology;
+        public String speed;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -75,6 +76,12 @@ class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
         host.setSockets(Integer.parseInt(cpu.topology.sockets));
         host.setCoresPerSocket(Integer.parseInt(cpu.topology.cores));
         host.setThreadsPerCore(Integer.parseInt(cpu.topology.threads));
+
+        try {
+            host.setCpuSpeed(Long.parseLong(cpu.speed));
+        } catch (Exception e) {
+            host.setCpuSpeed(-1);
+        }
 
         host.setOsVersion(os.type + "-" + os.version.full_version);
 
