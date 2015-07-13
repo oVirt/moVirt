@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_activity_camera">Scan Data Matrix codes with camera</string>
+    <string name="labelHostName">Host name:</string>
+    <string name="labelStatus">Status:</string>
+    <string name="labelCPUUsage">CPU usage:</string>
+    <string name="labelMemoryUsage">Memory usage:</string>
+    <string name="cameraMessage">Look at Data Matrix code to decode</string>
+    <string name="buttonOpenDetails">Details page</string>
+    <string name="buttonSwitchDetails">Details</string>
+    <string name="buttonSwitchEvents">Events</string>
+    <string name="imageDesc">Host status icon</string>
+    <string name="labelVMs">Host VMs:</string>
+    <string name="statusIconHint">VM status</string>
+</resources>

@@ -30,7 +30,7 @@ public final class PreferencesFragment
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-        addPreferencesFromResource(R.xml.zxing_preferences);
+        addPreferencesFromResource(R.xml.preferences_zxing);
 
         PreferenceScreen preferences = getPreferenceScreen();
         preferences.getSharedPreferences().registerOnSharedPreferenceChangeListener(this);

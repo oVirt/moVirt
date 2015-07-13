@@ -21,6 +21,22 @@
         android:summary="@string/prefs_connection_notification_summary"
         android:title="@string/prefs_connection_notification" />
 
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="periodic_sync"
+        android:persistent="true"
+        android:summary="@string/prefs_periodic_sync_summary"
+        android:title="@string/prefs_periodic_sync" />
+
+    <EditTextPreference
+        android:defaultValue="60"
+        android:enabled="false"
+        android:inputType="number"
+        android:key="periodic_sync_interval"
+        android:persistent="true"
+        android:summary="@string/prefs_periodic_sync_interval_summary"
+        android:title="@string/prefs_periodic_sync_interval" />
+
     <EditTextPreference
         android:defaultValue="500"
         android:inputType="number"

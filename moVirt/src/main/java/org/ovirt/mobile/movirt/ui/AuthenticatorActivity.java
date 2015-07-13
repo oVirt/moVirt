@@ -5,8 +5,9 @@ import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
 import android.content.Intent;
-import android.opengl.Visibility;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckBox;
@@ -39,45 +40,32 @@ import org.ovirt.mobile.movirt.sync.SyncUtils;
 public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
     private static final String TAG = AuthenticatorActivity.class.getSimpleName();
-
+    private static final int SECONDS_IN_MINUTE = 60;
+    private static int REQUEST_ACCOUNT_DETAILS = 1;
     @Bean
     NullHostnameVerifier verifier;
-
     @SystemService
     AccountManager accountManager;
-
     @Bean
     OVirtClient client;
-
     @ViewById
     EditText txtEndpoint;
-
     @ViewById
     EditText txtUsername;
-
     @ViewById
     EditText txtPassword;
-
     @ViewById
     CheckBox chkAdminPriv;
-
     @ViewById
     ProgressBar authProgress;
-
     @Bean
     MovirtAuthenticator authenticator;
-
     @Bean
     SyncUtils syncUtils;
-
     @Bean
     EventsHandler eventsHandler;
-
     @Bean
     ProviderFacade providerFacade;
-
-    private static int REQUEST_ACCOUNT_DETAILS = 1;
-
     @InstanceState
     boolean enforceHttpBasicAuth = false;
 
@@ -124,7 +112,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_ACCOUNT_DETAILS) {
-            if(resultCode == RESULT_OK){
+            if (resultCode == RESULT_OK) {
                 enforceHttpBasicAuth = data.getBooleanExtra(AdvancedAuthenticatorActivity.ENFORCE_HTTP_BASIC_AUTH, enforceHttpBasicAuth);
                 long certHandlingStrategyId = data.getLongExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY, certHandlingStrategy.id());
                 certHandlingStrategy = CertHandlingStrategy.from(certHandlingStrategyId);
@@ -152,11 +140,16 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         }
 
         if (accountManager.getAccountsByType(MovirtAuthenticator.ACCOUNT_TYPE).length == 0) {
-            accountManager.addAccountExplicitly(MovirtAuthenticator.MOVIRT_ACCOUNT, password, null);
+            if (accountManager.addAccountExplicitly(MovirtAuthenticator.MOVIRT_ACCOUNT, password, null)) {
+                ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
+                ContentResolver.setSyncAutomatically(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                if (sharedPreferences.getBoolean(SettingsActivity.KEY_PERIODIC_SYNC, false)) {
+                    int intervalInMinutes = SettingsActivity.getSyncIntervalInMinutes(sharedPreferences);
+                    addPeriodicSync(intervalInMinutes);
+                }
+            }
         }
-
-        ContentResolver.setSyncAutomatically(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
-        ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
 
         setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, apiUrl, name, password, hasAdminPermissions);
 
@@ -169,6 +162,16 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             changeProgressVisibilityTo(View.GONE);
             showToast("Error logging in: " + e.getMessage());
         }
+    }
+
+    public static void addPeriodicSync(int intervalInMinutes) {
+        long intervalInSeconds =
+                (long) intervalInMinutes * (long) SECONDS_IN_MINUTE;
+        ContentResolver.addPeriodicSync(
+                MovirtAuthenticator.MOVIRT_ACCOUNT,
+                OVirtContract.CONTENT_AUTHORITY,
+                Bundle.EMPTY,
+                intervalInSeconds);
     }
 
     void onTokenReceived(String token, boolean endpointChanged) {
