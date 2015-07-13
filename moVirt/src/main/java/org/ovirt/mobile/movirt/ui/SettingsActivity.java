@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
 
 import org.androidannotations.annotations.EActivity;
 import org.ovirt.mobile.movirt.R;
@@ -79,6 +80,24 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         });
 
         periodicSyncIntervalPref = findPreference(KEY_PERIODIC_SYNC_INTERVAL);
+        periodicSyncIntervalPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                String errorMessage = "Interval should be not less then 1 minute.";
+                int newValueInt;
+                try {
+                    newValueInt = Integer.parseInt((String) newValue);
+                    if (newValueInt < 1) {
+                        Toast.makeText(SettingsActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                        return false;
+                    }
+                } catch (NumberFormatException e) {
+                    Toast.makeText(SettingsActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                    return false;
+                }
+                return true;
+            }
+        });
         maxEventsPref = findPreference(KEY_MAX_EVENTS);
         maxVmsPref = findPreference(KEY_MAX_VMS);
     }
