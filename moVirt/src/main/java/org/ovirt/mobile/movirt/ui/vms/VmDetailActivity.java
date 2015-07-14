@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.RemoteException;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -80,6 +81,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar, 
     @OptionsMenuItem(R.id.action_console)
     MenuItem menuConsole;
     private String vmId = null;
+    private Vm.Status currentStatus;
 
     @AfterViews
     void init() {
@@ -108,6 +110,18 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar, 
 
         viewPager.setAdapter(pagerAdapter);
         pagerTabStrip.setTabIndicatorColorResource(R.color.material_deep_teal_200);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (currentStatus != null ) {
+            menuRun.setVisible(Vm.Command.RUN.canExecute(currentStatus));
+            menuStop.setVisible(Vm.Command.STOP.canExecute(currentStatus));
+            menuReboot.setVisible(Vm.Command.REBOOT.canExecute(currentStatus));
+            menuConsole.setVisible(Vm.Command.CONSOLE.canExecute(currentStatus));
+        }
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @OptionsItem(R.id.action_edit_triggers)
@@ -253,12 +267,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar, 
     @UiThread
     @Override
     public void updateMenuItem(Vm vm) {
-        if (menuRun == null || menuStop == null || menuReboot == null || menuConsole == null)
-            return;
-
-        menuRun.setVisible(Vm.Command.RUN.canExecute(vm.getStatus()));
-        menuStop.setVisible(Vm.Command.STOP.canExecute(vm.getStatus()));
-        menuReboot.setVisible(Vm.Command.REBOOT.canExecute(vm.getStatus()));
-        menuConsole.setVisible(Vm.Command.CONSOLE.canExecute(vm.getStatus()));
+        currentStatus = vm.getStatus();
+        invalidateOptionsMenu();
     }
 }

@@ -3,6 +3,7 @@ package org.ovirt.mobile.movirt.ui.hosts;
 import android.net.Uri;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
 
@@ -51,6 +52,7 @@ public class HostDetailActivity extends MovirtActivity implements HasProgressBar
     @OptionsMenuItem(R.id.action_deactivate)
     MenuItem menuDeactivate;
     private String hostId = null;
+    private Host.Status currentStatus;
 
     @AfterViews
     void init() {
@@ -79,6 +81,16 @@ public class HostDetailActivity extends MovirtActivity implements HasProgressBar
         pagerTabStrip.setTabIndicatorColorResource(R.color.material_deep_teal_200);
     }
 
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (currentStatus != null) {
+            menuActivate.setVisible(Host.Command.ACTIVATE.canExecute(currentStatus));
+            menuDeactivate.setVisible(Host.Command.DEACTIVATE.canExecute(currentStatus));
+        }
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
     @OptionsItem(R.id.action_activate)
     @Background
     void activate() {
@@ -100,9 +112,7 @@ public class HostDetailActivity extends MovirtActivity implements HasProgressBar
     @UiThread
     @Override
     public void updateMenuItem(Host host) {
-        if (menuActivate == null || menuDeactivate == null) return;
-
-        menuActivate.setVisible(Host.Command.ACTIVATE.canExecute(host.getStatus()));
-        menuDeactivate.setVisible(Host.Command.DEACTIVATE.canExecute(host.getStatus()));
+        currentStatus = host.getStatus();
+        invalidateOptionsMenu();
     }
 }
