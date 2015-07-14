@@ -1,6 +1,6 @@
 package org.ovirt.mobile.movirt.ui;
 
-import android.content.Context;
+import android.os.Environment;
 
 public class Constants {
     public static final String DEFAULT_CA_CERT_FILE_NAME = "ca.crt";
@@ -16,7 +16,7 @@ public class Constants {
     public static final String PARAM_CA_CERT_PATH = "CaCertPath";
     public static final String PARAM_CERT_SUBJECT = "CertSubject";
 
-    public static String getCaCertPath(Context context){
-        return context.getExternalCacheDir() + "/" + Constants.DEFAULT_CA_CERT_FILE_NAME;
+    public static String getCaCertPath(){
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + "/" + Constants.DEFAULT_CA_CERT_FILE_NAME;
     }
 }

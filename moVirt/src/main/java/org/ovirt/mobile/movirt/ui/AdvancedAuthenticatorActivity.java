@@ -209,7 +209,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
     }
 
     private boolean isCaFileExists() {
-        File file = new File(Constants.getCaCertPath(this));
+        File file = new File(Constants.getCaCertPath());
         return file.exists();
     }
 
@@ -407,7 +407,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
     }
 
     public void deleteCaFile() {
-        File file = new File(Constants.getCaCertPath(this));
+        File file = new File(Constants.getCaCertPath());
         if (file.isFile() && file.exists()) {
             file.delete();
         }
@@ -420,7 +420,11 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
 
         FileOutputStream out = null;
         try {
-            File file = new File(Constants.getCaCertPath(this));
+            File file = new File(Constants.getCaCertPath());
+            if (file.getParent() != null) {
+                File path = new File(file.getParent());
+                path.mkdirs();
+            }
             file.createNewFile();
             out = new FileOutputStream(file);
             out.write(caCert, 0, caCert.length);
