@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/action_activate"
-        android:title="@string/activate"
-        android:orderInCategory="100"
+    <item
+        android:id="@+id/action_activate"
         android:icon="@drawable/icn_play"
+        android:title="@string/activate"
+        android:visible="false"
         app:showAsAction="ifRoom|withText" />
 
-    <item android:id="@+id/action_deactivate"
-        android:title="@string/deactivate"
-        android:orderInCategory="100"
+    <item
+        android:id="@+id/action_deactivate"
         android:icon="@drawable/host_maintenance"
+        android:title="@string/deactivate"
+        android:visible="false"
         app:showAsAction="ifRoom|withText" />
 </menu>
