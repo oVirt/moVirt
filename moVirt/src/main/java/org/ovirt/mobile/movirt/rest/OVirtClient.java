@@ -26,10 +26,10 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
+import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
@@ -40,6 +40,7 @@ import org.springframework.core.NestedRuntimeException;
 import org.springframework.http.HttpAuthentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -228,7 +229,7 @@ public class OVirtClient {
             @Override
             public List<DataCenter> fire() {
                 DataCenters loadedDataCenters = restClient.getDataCenters();
-                if (loadedDataCenters == null){
+                if (loadedDataCenters == null) {
                     return new ArrayList();
                 }
 
@@ -330,6 +331,7 @@ public class OVirtClient {
         String password = authenticator.getPassword();
 
         boolean success = false;
+        boolean connectionSuccess = false;
 
         if (TextUtils.isEmpty(userName) || TextUtils.isEmpty(password) || TextUtils.isEmpty(authenticator.getApiUrl())) {
             Intent accountAuthenticatorResponse = new Intent(context, AuthenticatorActivity_.class);
@@ -355,9 +357,9 @@ public class OVirtClient {
                 }
             } catch (Exception e) {
                 fireConnectionError(e);
+                connectionSuccess = !(e instanceof ResourceAccessException);
             } finally {
-                updateConnectionInfo(success);
-
+                updateConnectionInfo(connectionSuccess);
                 if (!success && response != null) {
                     response.onError();
                 }
@@ -388,11 +390,11 @@ public class OVirtClient {
             response.after();
         }
 
-        boolean success = false;
-        if (result == RestCallResult.SUCCESS) {
-            success = true;
+        boolean connectionSuccess = false;
+        if (result != RestCallResult.CONNECTION_ERROR) {
+            connectionSuccess = true;
         }
-        updateConnectionInfo(success);
+        updateConnectionInfo(connectionSuccess);
     }
 
     private void updateConnectionInfo(boolean success) {
@@ -427,14 +429,16 @@ public class OVirtClient {
         if (!success && prevSuccess && PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(SettingsActivity.KEY_CONNECTION_NOTIFICATION, false)) {
             Intent resultIntent = new Intent(context, MainActivity_.class);
+            resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent resultPendingIntent =
                     PendingIntent.getActivity(
                             context,
                             0,
                             resultIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT
+                            0
                     );
-            notificationHelper.showConnectionNotification(context, resultPendingIntent, connectionInfo);
+            notificationHelper.showConnectionNotification(
+                    context, resultPendingIntent, connectionInfo);
         }
     }
 
@@ -474,6 +478,12 @@ public class OVirtClient {
 
                     } catch (NestedRuntimeException e) {
                         HttpStatus statusCode = null;
+
+                        if (e instanceof ResourceAccessException) {
+                            fireConnectionError(e);
+                            return RestCallResult.CONNECTION_ERROR;
+                        }
+
                         if (e instanceof HttpClientErrorException) {
                             statusCode = ((HttpClientErrorException) e).getStatusCode();
                         }
@@ -500,6 +510,9 @@ public class OVirtClient {
             }
         } catch (Exception e) {
             fireConnectionError(e);
+            if (e instanceof ResourceAccessException) {
+                return RestCallResult.CONNECTION_ERROR;
+            }
         }
 
         if (!success) {
@@ -559,14 +572,15 @@ public class OVirtClient {
     enum RestCallResult {
         SUCCESS,
         AUTH_ERROR,
+        CONNECTION_ERROR,
         OTHER_ERROR
     }
 
-    public static interface Request<T> {
+    public interface Request<T> {
         T fire();
     }
 
-    public static interface Response<T> {
+    public interface Response<T> {
         void before();
 
         void onResponse(T t) throws RemoteException;
@@ -576,7 +590,7 @@ public class OVirtClient {
         void after();
     }
 
-    private static interface WrapPredicate<E> {
+    private interface WrapPredicate<E> {
         boolean toWrap(E entity);
     }
 
