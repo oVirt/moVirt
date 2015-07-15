@@ -7,24 +7,29 @@ A mobile client for [oVirt](http://www.ovirt.org).
 The unsigned testing release is available at: [moVirt build](https://github.com/matobet/moVirt/blob/master/moVirt/moVirt-debug.apk?raw=true)
 
 ###User's guide:    
-After successfully installing the application, you need to set the connection details up. 
+After successfully installing the application, you need to set the **connection details** up:
+
 * **API URL**: http://host:port/ovirt-engine/api
 * **Username**: name@domain - e.g. admin@internal
 * **Password**: your password
-* **Admin Privilege**: enable or disable the checkbox  
-* **Polling interval**: configure the polling interval in seconds.
-* **Poll Events**: enable or disable the checkbox
-* **Max events locally**: the maximum number of events stored locally  
-* **Events Search Query**: poll events for the search query.Admin users only. - e.g. severity > warning  
-* **Max VMs polled**: maximum number of VMs polled.  
-* **VMs Search Query**: poll VMs for the search query.Admin users only. - e.g. name = "production"  
-* **Disable Https**: enable or disable the checkbox   
+* **Admin Privilege**: enable or disable the checkbox
+* **Advanced Settings**: certificate management
 
-**Video tutorials at a glance:**  
-1. [Interaction between the moVirt and ovirt-engine](https://github.com/matobet/moVirt/blob/master/videos/liveSetup.webm)  
-   This video tutorial assumes you have an ovirt-engine running with a few VMS. It gives a demonstration of the basic configuration of VM using the ovirt-engine and filling up connection details in the android application.  
-2. [Working with Trigger](https://github.com/matobet/moVirt/blob/master/videos/trigger.webm)    
-   This video tutorial shows the working of trigger with the android application. 'Blink when VM is down' is the example condition that has been set and the status of the VM is changed accordingly to demonstrate this. 
+Also you can set **optional settings**:
+
+* **Poll Events**: enable or disable the checkbox
+* **Connection Notifications**: enable or disable the checkbox
+* **Periodic Sync**: enable or disable the checkbox
+* **Sync Interval**: configure the polling interval in minutes
+* **Max events locally**: the maximum number of events stored locally  
+* **Events Search Query**: poll events for the search query. Admin users only. - e.g. severity > warning  
+* **Max VMs polled**: maximum number of VMs polled.  
+* **VMs Search Query**: poll VMs for the search query. Admin users only. - e.g. name = "production"   
+
+**Video demonstrations:**
+
+1. [bVNC and Triggers](https://www.youtube.com/watch?v=QnD9v70oefA)  
+    Feature demonstration on YouTube
 
 ####Remote console
 Follow these steps to connect to remote console:
@@ -37,11 +42,22 @@ Follow these steps to connect to remote console:
 * Install aSPICE(v3.7.7+) from Google Play Store
 * Click console button in VM Detail view
 
+####Augmented Reality  
+You can use your smartphone/tablet camera to help managing your servers. Follow these steps to access augmented reality:
+
+1. Generate Data Matrix codes for each host you running (this step will be simplified in future).
+  * Open `http://host:port/ovirt-engine/api/hosts` in your browser and find host ID.  
+    <img src = https://github.com/matobet/moVirt/blob/master/images/data_matrix_guide/Screenshot_1.jpg align="center">
+  * Make data matrix codes with any online generator containing these IDs as a text (one code for each ID).  
+    <img src = https://github.com/matobet/moVirt/blob/master/images/data_matrix_guide/Screenshot_2.jpg align="center">
+  * Print and stick codes to physical servers.
+  * Open Scan Codes option in moVirt and you are ready.
+
 ###Get in Touch
 * Interested about news? Follow us on [Twitter](https://twitter.com/mobileOvirt)
 * Have user questions? Subscribe to [oVirt's users list](http://lists.ovirt.org/mailman/listinfo/users) and post a question with subject containing *[moVirt]*
 * Want to contribute? Have development oriented questions? Subscribe to [oVirt's devel list](http://lists.ovirt.org/mailman/listinfo/devel) and post a question with subject containing *[moVirt]*
-* Want to chat? We are usually hanging in *irc.oftc.net* in *#ovirt* - look for *sphoorti*, *mbetak* or *tjelinek*. Or anyone else, people are friendly there ;)
+* Want to chat? We are usually hanging in *irc.oftc.net* in *#ovirt* - look for *mbetak* or *tjelinek*. Or anyone else, people are friendly there ;)
 
 ###Developer's guide:        
 To start contributing to moVirt, you will need to **install** the following things  
@@ -83,8 +99,9 @@ Once the installations are done, you can proceed to **import the project** into 
       Click on the + icon -> Android application -> in right panel General tab select the moVirt-moVirt module.  
       Click Apply. Click OK.  
 
-**Resources:**    
+**Resources:**
+
 * [oVirt](http://www.ovirt.org)
 * [moVirt wiki](http://www.ovirt.org/Project_moVirt)
-* [Learning Videos](https://github.com/matobet/moVirt/tree/master/videos)
+* [moVirt on YouTube](https://www.youtube.com/channel/UCX2a6qOrCrUYGQCGLlHz2-A)
 * [Tutorials](https://github.com/matobet/moVirt/tree/master/tutorials/README.md)
