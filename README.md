@@ -47,9 +47,9 @@ You can use your smartphone/tablet camera to help managing your servers. Follow 
 
 1. Generate Data Matrix codes for each host you running (this step will be simplified in future).
   * Open `http://host:port/ovirt-engine/api/hosts` in your browser and find host ID.  
-    <img src = https://github.com/matobet/moVirt/blob/master/images/data_matrix_guide/Screenshot_1.jpg align="center">
+    <img src = /images/data_matrix_guide/Screenshot_1.jpg align="center">
   * Make data matrix codes with any online generator containing these IDs as a text (one code for each ID).  
-    <img src = https://github.com/matobet/moVirt/blob/master/images/data_matrix_guide/Screenshot_2.jpg align="center">
+    <img src = /images/data_matrix_guide/Screenshot_2.jpg align="center">
   * Print and stick codes to physical servers.
   * Open Scan Codes option in moVirt and you are ready.
 
@@ -88,10 +88,10 @@ Once the installations are done, you can proceed to **import the project** into 
   * Also you might want to exclude symlink from your local repo. To do this add `AndroidManifest.xml` to the end of `.git\info\exclude` file.
 2. File -> Open -> ~/" *path to moVirt project* "/build.gradle. Or select "Import project" from Welcome page.  
 3. On the import dialog : Select local gradle distribution. Give the path to gradle version 2.2.1 .      
-   <img src = https://github.com/matobet/moVirt/blob/master/images/import_project.png align="center" height = "480px" width="640px">    
+   <img src = /images/import_project.png align="center" height = "480px" width="640px">    
    After this, the prompt asks you to enter the path to the android sdk.  
    You can refer the following image for the complete SDK path.    
-   <img src = https://github.com/matobet/moVirt/blob/master/images/sdk_location.png align="center" height = "480px" width="640px">    
+   <img src = /images/sdk_location.png align="center" height = "480px" width="640px">    
 4. Press OK. The build takes a while to complete. After it is done, the project is reloaded.  
 5. Run the android application on an emulator or a developer's device.  
     Run -> Run -> Select moVirt-moVirt   
