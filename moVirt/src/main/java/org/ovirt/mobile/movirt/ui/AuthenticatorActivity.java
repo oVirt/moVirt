@@ -83,7 +83,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         txtEndpoint.setText(authenticator.getApiUrl());
         txtUsername.setText(authenticator.getUserName());
         txtPassword.setText(authenticator.getPassword());
-        chkAdminPriv.setChecked(authenticator.hasAdminPermissions());
+        chkAdminPriv.setChecked(true);
         changeProgressVisibilityTo(inProgress ? View.VISIBLE : View.GONE);
     }
 
