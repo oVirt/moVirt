@@ -549,12 +549,25 @@ public class OVirtClient {
 
             String responseBody = ((HttpClientErrorException) e).getResponseBodyAsString();
             if (!TextUtils.isEmpty(responseBody)) {
-
+                msg = msg + ": " + responseBody;
                 try {
                     ErrorBody errorBody = mapper.readValue(((HttpClientErrorException) e).getResponseBodyAsByteArray(), ErrorBody.class);
-                    msg = msg + " " + errorBody.fault.reason + " " + errorBody.fault.detail;
-                } catch (IOException e1) {
-                    msg = msg + ": " + responseBody;
+                    if (errorBody.fault != null) {
+                        msg = e.getMessage() + " " + errorBody.fault.reason + " " + errorBody.fault.detail;
+                    } else {
+                        try {
+                            ErrorBody.Fault fault = mapper.readValue(((HttpClientErrorException) e).getResponseBodyAsByteArray(), ErrorBody.Fault.class);
+                            if (fault != null) {
+                                msg = e.getMessage() + " " + fault.reason + " " + fault.detail;
+                            }
+                        } catch (Exception exception) {
+                            // msg inited to proper response body already
+                        }
+                    }
+
+
+                } catch (Exception e1) {
+                    // msg inited to proper response body already
                 }
 
             }
