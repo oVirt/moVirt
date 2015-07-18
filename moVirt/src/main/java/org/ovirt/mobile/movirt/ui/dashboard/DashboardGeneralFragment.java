@@ -49,6 +49,7 @@ public class DashboardGeneralFragment extends Fragment implements LoaderManager.
 
     private List<Host> hostList = new ArrayList<>();
     private List<StorageDomain> storageDomainList = new ArrayList<>();
+    private DecimalFormat decimalFormat = new DecimalFormat("0.#");
 
     @AfterViews
     void init(){
@@ -138,12 +139,11 @@ public class DashboardGeneralFragment extends Fragment implements LoaderManager.
             summaryCpuPercentageCircle.setText(getString(
                     R.string.summary_cpu_percentage_circle_mhz, cpuSpeed - usedCpuSpeed, cpuSpeed));
         } else {
-            DecimalFormat decimalFormat = new DecimalFormat("0.#");
             cpuPercentageCircle.setMaxPercentageValue(cpuSpeed / 1000f);
             cpuPercentageCircle.setPercentageValue(usedCpuSpeed / 1000f, decimalFormat);
             cpuPercentageCircle.setSummary(getString(R.string.ghz_used));
-            summaryCpuPercentageCircle.setText(getString(
-                    R.string.summary_cpu_percentage_circle_ghz, (cpuSpeed - usedCpuSpeed) / 1000f, cpuSpeed / 1000f));
+            summaryCpuPercentageCircle.setText(getString(R.string.summary_cpu_percentage_circle_ghz,
+                    decimalFormat.format((cpuSpeed - usedCpuSpeed) / 1000f), decimalFormat.format(cpuSpeed / 1000f)));
         }
     }
 
@@ -162,12 +162,11 @@ public class DashboardGeneralFragment extends Fragment implements LoaderManager.
             summaryMemoryPercentageCircle.setText(getString(
                     R.string.summary_memory_percentage_circle_mb, memorySizeMb - usedMemorySizeMb, memorySizeMb));
         } else {
-            DecimalFormat decimalFormat = new DecimalFormat("0.#");
             memoryPercentageCircle.setMaxPercentageValue(memorySizeMb / 1024f);
             memoryPercentageCircle.setPercentageValue(usedMemorySizeMb / 1024f, decimalFormat);
             memoryPercentageCircle.setSummary(getString(R.string.gb_used));
-            summaryMemoryPercentageCircle.setText(getString(
-                    R.string.summary_memory_percentage_circle_gb, (memorySizeMb - usedMemorySizeMb) / 1024f, memorySizeMb / 1024f));
+            summaryMemoryPercentageCircle.setText(getString(R.string.summary_memory_percentage_circle_gb,
+                    decimalFormat.format((memorySizeMb - usedMemorySizeMb) / 1024f), decimalFormat.format(memorySizeMb / 1024f)));
         }
     }
 
@@ -178,10 +177,10 @@ public class DashboardGeneralFragment extends Fragment implements LoaderManager.
             availableStorageSizeMb += storageDomain.getAvailableSizeMb();
             usedStorageSizeMb += storageDomain.getUsedSizeMb();
         }
-        storagePercentageCircle.setMaxPercentageValue((availableStorageSizeMb + usedStorageSizeMb) / 1024);
-        storagePercentageCircle.setPercentageValue(usedStorageSizeMb / 1024);
+        storagePercentageCircle.setMaxPercentageValue((availableStorageSizeMb + usedStorageSizeMb) / 1024f);
+        storagePercentageCircle.setPercentageValue(usedStorageSizeMb / 1024f, decimalFormat);
         storagePercentageCircle.setSummary(getString(R.string.gb_used));
-        summaryStoragePercentageCircle.setText(getString(
-                R.string.summary_storage_percentage_circle, availableStorageSizeMb / 1024, (availableStorageSizeMb + usedStorageSizeMb) / 1024));
+        summaryStoragePercentageCircle.setText(getString(R.string.summary_storage_percentage_circle,
+                decimalFormat.format(availableStorageSizeMb / 1024f), decimalFormat.format((availableStorageSizeMb + usedStorageSizeMb) / 1024f)));
     }
 }
