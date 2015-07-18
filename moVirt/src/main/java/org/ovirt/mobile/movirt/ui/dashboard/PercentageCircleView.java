@@ -11,6 +11,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import org.ovirt.mobile.movirt.R;
 
+import java.text.DecimalFormat;
+
 public class PercentageCircleView extends View {
 
     private static final float FOREGROUND_COLOR_A_MAX_PERCENTAGE = 0.5f;
@@ -18,6 +20,7 @@ public class PercentageCircleView extends View {
     private static final float FOREGROUND_COLOR_C_MAX_PERCENTAGE = 1.0f;
 
     private static final float DEFAULT_MAX_PERCENTAGE_VALUE = 100f;
+    private static final String DEFAULT_DECIMAL_FORMAT_PATTERN = "#";
     private static final int MAX_ANGLE = 360;
 
     //attr
@@ -41,7 +44,8 @@ public class PercentageCircleView extends View {
     private int angleStep = 0;
     private int minWidth;
     private float maxPercentageValue = DEFAULT_MAX_PERCENTAGE_VALUE;
-    private long percentageValue = 0;
+    private float percentageValue = 0;
+    private DecimalFormat decimalFormat = new DecimalFormat(DEFAULT_DECIMAL_FORMAT_PATTERN);
     private String summary = "";
 
     public PercentageCircleView(Context context) {
@@ -153,7 +157,7 @@ public class PercentageCircleView extends View {
     private void drawTextAndSummary(Canvas canvas) {
         if (!needShowText) return;
         //draw progress text
-        String text = String.valueOf(percentageValue);
+        String text = decimalFormat.format(percentageValue);
         int textSize = (int) ((minWidth - strokeWidth * 2) / 3.5);
         textPaint.setTextSize(textSize);
         Paint.FontMetrics fm = textPaint.getFontMetrics();
@@ -211,30 +215,44 @@ public class PercentageCircleView extends View {
      *
      * @param maxPercentageValue >0
      */
-    public void setMaxPercentageValue(long maxPercentageValue) {
-        if (maxPercentageValue > 0) {
+    public void setMaxPercentageValue(float maxPercentageValue) {
+        if (Float.compare(maxPercentageValue, 0) > 0) {
             this.maxPercentageValue = maxPercentageValue;
         } else {
             this.maxPercentageValue = DEFAULT_MAX_PERCENTAGE_VALUE;
         }
     }
 
-    public long getMaxPercentageValue() {
-        return (long) maxPercentageValue;
+    public float getMaxPercentageValue() {
+        return maxPercentageValue;
     }
 
     /**
      *
      * @param percentageValue >=0
      */
-    public void setPercentageValue(long percentageValue) {
-        if (percentageValue >= 0) {
-            this.percentageValue = percentageValue > maxPercentageValue ? (long) maxPercentageValue : percentageValue;
+    public void setPercentageValue(float percentageValue) {
+        if (Float.compare(percentageValue, 0) >= 0) {
+            this.decimalFormat = new DecimalFormat(DEFAULT_DECIMAL_FORMAT_PATTERN);
+            this.percentageValue = Float.compare(percentageValue, maxPercentageValue) > 0 ? maxPercentageValue : percentageValue;
             invalidateUi();
         }
     }
 
-    public long getPercentageValue(){
+    /**
+     *
+     * @param percentageValue >=0
+     * @param decimalFormat
+     */
+    public void setPercentageValue(float percentageValue, DecimalFormat decimalFormat) {
+        if (Float.compare(percentageValue, 0) >= 0) {
+            this.decimalFormat = decimalFormat != null ? decimalFormat : new DecimalFormat(DEFAULT_DECIMAL_FORMAT_PATTERN);
+            this.percentageValue = Float.compare(percentageValue, maxPercentageValue) > 0 ? maxPercentageValue : percentageValue;
+            invalidateUi();
+        }
+    }
+
+    public float getPercentageValue(){
         return percentageValue;
     }
 

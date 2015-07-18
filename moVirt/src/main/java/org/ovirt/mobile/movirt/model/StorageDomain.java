@@ -20,7 +20,8 @@ public class StorageDomain extends OVirtEntity implements OVirtContract.StorageD
     public enum Type {
         DATA,
         ISO,
-        IMAGE
+        IMAGE,
+        EXPORT
     }
 
     @DatabaseField(columnName = TYPE)

@@ -17,6 +17,8 @@ import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -128,11 +130,21 @@ public class DashboardGeneralFragment extends Fragment implements LoaderManager.
             cpuSpeed += host.getCpuSpeed();
             usedCpuSpeed += host.getCpuSpeed() * host.getCpuUsage() / 100;
         }
-        cpuPercentageCircle.setMaxPercentageValue(cpuSpeed);
-        cpuPercentageCircle.setPercentageValue(usedCpuSpeed);
-        cpuPercentageCircle.setSummary(getString(R.string.mhz_used));
-        summaryCpuPercentageCircle.setText(getString(
-                R.string.summary_cpu_percentage_circle, cpuSpeed - usedCpuSpeed, cpuSpeed));
+
+        if (cpuSpeed < 1000) {
+            cpuPercentageCircle.setMaxPercentageValue(cpuSpeed);
+            cpuPercentageCircle.setPercentageValue(usedCpuSpeed);
+            cpuPercentageCircle.setSummary(getString(R.string.mhz_used));
+            summaryCpuPercentageCircle.setText(getString(
+                    R.string.summary_cpu_percentage_circle_mhz, cpuSpeed - usedCpuSpeed, cpuSpeed));
+        } else {
+            DecimalFormat decimalFormat = new DecimalFormat("0.#");
+            cpuPercentageCircle.setMaxPercentageValue(cpuSpeed / 1000f);
+            cpuPercentageCircle.setPercentageValue(usedCpuSpeed / 1000f, decimalFormat);
+            cpuPercentageCircle.setSummary(getString(R.string.ghz_used));
+            summaryCpuPercentageCircle.setText(getString(
+                    R.string.summary_cpu_percentage_circle_ghz, (cpuSpeed - usedCpuSpeed) / 1000f, cpuSpeed / 1000f));
+        }
     }
 
     private void renderMemoryPercentageCircle(List<Host> hostList) {
@@ -142,11 +154,21 @@ public class DashboardGeneralFragment extends Fragment implements LoaderManager.
             memorySizeMb += host.getMemorySizeMb();
             usedMemorySizeMb += host.getMemorySizeMb() * host.getMemoryUsage() / 100;
         }
-        memoryPercentageCircle.setMaxPercentageValue(memorySizeMb);
-        memoryPercentageCircle.setPercentageValue(usedMemorySizeMb);
-        memoryPercentageCircle.setSummary(getString(R.string.mb_used));
-        summaryMemoryPercentageCircle.setText(getString(
-                R.string.summary_memory_percentage_circle, memorySizeMb - usedMemorySizeMb, memorySizeMb));
+
+        if (memorySizeMb < 1024) {
+            memoryPercentageCircle.setMaxPercentageValue(memorySizeMb);
+            memoryPercentageCircle.setPercentageValue(usedMemorySizeMb);
+            memoryPercentageCircle.setSummary(getString(R.string.mb_used));
+            summaryMemoryPercentageCircle.setText(getString(
+                    R.string.summary_memory_percentage_circle_mb, memorySizeMb - usedMemorySizeMb, memorySizeMb));
+        } else {
+            DecimalFormat decimalFormat = new DecimalFormat("0.#");
+            memoryPercentageCircle.setMaxPercentageValue(memorySizeMb / 1024f);
+            memoryPercentageCircle.setPercentageValue(usedMemorySizeMb / 1024f, decimalFormat);
+            memoryPercentageCircle.setSummary(getString(R.string.gb_used));
+            summaryMemoryPercentageCircle.setText(getString(
+                    R.string.summary_memory_percentage_circle_gb, (memorySizeMb - usedMemorySizeMb) / 1024f, memorySizeMb / 1024f));
+        }
     }
 
     private void renderStoragePercentageCircle(List<StorageDomain> storageDomainList) {
