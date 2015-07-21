@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
-import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 import org.androidannotations.annotations.AfterInject;
@@ -30,39 +29,26 @@ import java.util.List;
 @EBean(scope = EBean.Scope.Singleton)
 public class EventsHandler implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private static final String TAG = EventsHandler.class.getSimpleName();
-
     public static final boolean DEFAULT_POLL_EVENTS = true;
-
+    private static final String TAG = EventsHandler.class.getSimpleName();
     public static String MAX_EVENTS_LOCALLY = "500";
-
-    private int maxEventsStored = -1;
-
-    private boolean deleteEventsBeforeInsert = false;
-
     public static volatile boolean inSync = false;
-
     @App
     MoVirtApp app;
-
     @Bean
     ProviderFacade provider;
-
     @Bean
     OVirtClient oVirtClient;
-
     @Bean
     EventTriggerResolver eventTriggerResolver;
-
     @Bean
     NotificationHelper notificationHelper;
-
     @RootContext
     Context context;
-
     ProviderFacade.BatchBuilder batch;
-
     int lastEventId = 0;
+    private int maxEventsStored = -1;
+    private boolean deleteEventsBeforeInsert = false;
 
     @AfterInject
     void initLastEventId() {
@@ -139,7 +125,7 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
             if (event.getId() > lastEventId) {
                 this.processEventTriggers(event);
                 batch.insert(event);
-                if(event.getId() > newLastEventCandidate) {
+                if (event.getId() > newLastEventCandidate) {
                     newLastEventCandidate = event.getId();
                 }
             }
@@ -161,17 +147,16 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
     }
 
     private void displayNotification(Trigger<Event> trigger, Event event) {
-        final Context appContext = context.getApplicationContext();
-        final Intent intent = new Intent(appContext, MainActivity_.class);
-        final TaskStackBuilder stackBuilder = TaskStackBuilder.create(appContext);
-        stackBuilder.addParentStack(MainActivity_.class);
-        stackBuilder.addNextIntent(intent);
-        final PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(
+        Intent resultIntent = new Intent(context, MainActivity_.class);
+        resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent resultPendingIntent =
+                PendingIntent.getActivity(
+                        context,
                         0,
-                        PendingIntent.FLAG_UPDATE_CURRENT
+                        resultIntent,
+                        0
                 );
-        notificationHelper.showTriggerNotification(trigger, event, appContext, resultPendingIntent);
+        notificationHelper.showTriggerNotification(trigger, event, context, resultPendingIntent);
     }
 
     private void applyBatch() {

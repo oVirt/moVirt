@@ -38,6 +38,7 @@ public class VmFacade implements EntityFacade<Vm> {
     @Override
     public Intent getDetailIntent(Vm entity, Context context) {
         Intent intent = new Intent(context, VmDetailActivity_.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.setData(entity.getUri());
         return intent;
     }

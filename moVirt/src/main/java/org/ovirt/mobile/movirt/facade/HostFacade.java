@@ -38,6 +38,7 @@ public class HostFacade implements EntityFacade<Host> {
     @Override
     public Intent getDetailIntent(Host entity, Context context) {
         Intent intent = new Intent(context, HostDetailActivity_.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.setData(entity.getUri());
         return intent;
     }
