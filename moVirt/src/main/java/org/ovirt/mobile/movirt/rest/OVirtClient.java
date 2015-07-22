@@ -5,6 +5,7 @@ import android.accounts.AccountManagerFuture;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
@@ -31,7 +32,6 @@ import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.ui.SettingsActivity;
@@ -42,7 +42,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -184,13 +183,15 @@ public class OVirtClient {
     }
 
     public void getVms(Response<List<Vm>> response) {
+        final SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(app);
         fireRestRequest(new Request<List<Vm>>() {
             @Override
             public List<Vm> fire() {
                 Vms loadedVms = null;
                 if (authenticator.hasAdminPermissions()) {
-                    int maxVms = asIntWithDefault("max_vms_polled", "-1");
-                    String query = PreferenceManager.getDefaultSharedPreferences(app).getString("vms_search_query", "");
+                    int maxVms = SettingsActivity.getMaxVms(sharedPreferences);
+                    String query = sharedPreferences.getString("vms_search_query", "");
                     if (!"".equals(query)) {
                         loadedVms = restClient.getVms(query, maxVms);
                     } else {
@@ -275,15 +276,16 @@ public class OVirtClient {
     }
 
     public void getEventsSince(final int lastEventId, Response<List<Event>> response) {
+        final SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(app);
         fireRestRequest(new Request<List<Event>>() {
             @Override
             public List<Event> fire() {
                 Events loadedEvents = null;
 
                 if (authenticator.hasAdminPermissions()) {
-                    int maxEventsStored = asIntWithDefault("max_events_stored", EventsHandler.MAX_EVENTS_LOCALLY);
-
-                    String query = PreferenceManager.getDefaultSharedPreferences(app).getString("events_search_query", "");
+                    int maxEventsStored = SettingsActivity.getMaxEvents(sharedPreferences);
+                    String query = sharedPreferences.getString("events_search_query", "");
                     if (!"".equals(query)) {
                         loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), query, maxEventsStored);
                     } else {
@@ -532,15 +534,6 @@ public class OVirtClient {
         restClient.setHeader(FILTER, Boolean.toString(!authenticator.hasAdminPermissions()));
         requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
         restClient.setRootUrl(authenticator.getApiUrl());
-    }
-
-    private int asIntWithDefault(String key, String defaultResult) {
-        String maxEventsLocallyStr = PreferenceManager.getDefaultSharedPreferences(app).getString(key, defaultResult);
-        try {
-            return Integer.parseInt(maxEventsLocallyStr);
-        } catch (NumberFormatException e) {
-            return Integer.parseInt(defaultResult);
-        }
     }
 
     private void fireConnectionError(Exception e) {
