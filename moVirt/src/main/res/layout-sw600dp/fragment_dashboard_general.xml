@@ -12,22 +12,21 @@
         android:gravity="center">
 
         <LinearLayout android:orientation="vertical"
-            android:padding="6dp"
             android:layout_width="0px"
             android:layout_height="wrap_content"
             android:layout_weight="1">
 
             <TextView
                 android:text="@string/title_cpu_percentage_circle"
-                style="@style/percentageCircleTitle"/>
+                style="@style/percentageCircleTitle" />
 
             <TextView
                 android:id="@+id/summary_cpu_percentage_circle"
-                style="@style/percentageCircleSummary"/>
+                style="@style/percentageCircleSummary" />
 
             <org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView
                 android:id="@+id/cpu_percentage_circle"
-                style="@style/percentageCircleView"/>
+                style="@style/percentageCircleView" />
 
         </LinearLayout>
 
@@ -39,42 +38,40 @@
         android:layout_weight="1">
 
         <LinearLayout android:orientation="vertical"
-            android:padding="6dp"
             android:layout_width="0px"
             android:layout_height="wrap_content"
             android:layout_weight="1">
 
             <TextView
                 android:text="@string/title_memory_percentage_circle"
-                style="@style/percentageCircleTitle"/>
+                style="@style/percentageCircleTitle" />
 
             <TextView
                 android:id="@+id/summary_memory_percentage_circle"
-                style="@style/percentageCircleSummary"/>
+                style="@style/percentageCircleSummary" />
 
             <org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView
                 android:id="@+id/memory_percentage_circle"
-                style="@style/percentageCircleView"/>
+                style="@style/percentageCircleView" />
 
         </LinearLayout>
 
         <LinearLayout android:orientation="vertical"
-            android:padding="6dp"
             android:layout_width="0px"
             android:layout_height="wrap_content"
             android:layout_weight="1">
 
             <TextView
                 android:text="@string/title_storage_percentage_circle"
-                style="@style/percentageCircleTitle"/>
+                style="@style/percentageCircleTitle" />
 
             <TextView
                 android:id="@+id/summary_storage_percentage_circle"
-                style="@style/percentageCircleSummary"/>
+                style="@style/percentageCircleSummary" />
 
             <org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView
                 android:id="@+id/storage_percentage_circle"
-                style="@style/percentageCircleView"/>
+                style="@style/percentageCircleView" />
 
         </LinearLayout>
 
