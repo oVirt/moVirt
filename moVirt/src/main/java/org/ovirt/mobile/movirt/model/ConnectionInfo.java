@@ -1,7 +1,9 @@
 package org.ovirt.mobile.movirt.model;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.net.Uri;
+import android.text.format.DateUtils;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -9,32 +11,38 @@ import com.j256.ormlite.table.DatabaseTable;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 
-import java.sql.Timestamp;
-
 /**
  * Class used to store connection information in database
  * Created by Nika on 23.06.2015.
  */
 @DatabaseTable(tableName = ConnectionInfo.TABLE)
 public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract.ConnectionInfo {
+    private static final String STRING_UNKNOWN_TIME = "unknown";
+    private static final long LONG_UNKNOWN_TIME = -1;
+    private static final int FORMAT_FLAGS = DateUtils.FORMAT_SHOW_TIME |
+            DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_MONTH | DateUtils.FORMAT_SHOW_YEAR;
     @DatabaseField(columnName = ID, id = true)
     private int id;
     @DatabaseField(columnName = ConnectionInfo.STATE)
     private State state;
     @DatabaseField(columnName = ConnectionInfo.ATTEMPT)
-    private Timestamp lastAttempt;
-    @DatabaseField(columnName = ConnectionInfo.SUCCESSFUL, canBeNull = true)
-    private Timestamp lastSuccessful;
+    private long lastAttempt;
+    @DatabaseField(columnName = ConnectionInfo.SUCCESSFUL)
+    private long lastSuccessful;
 
     public ConnectionInfo() {
         this.id = 1;
+        this.state = State.UNKNOWN;
+        this.lastAttempt = LONG_UNKNOWN_TIME;
+        this.lastSuccessful = LONG_UNKNOWN_TIME;
     }
 
-    public void update(State state, Timestamp date) {
+    public void updateWithCurrentTime(State state) {
         this.state = state;
-        this.lastAttempt = date;
+        long time = System.currentTimeMillis();
+        this.lastAttempt = time;
         if (state == State.OK) {
-            this.lastSuccessful = date;
+            this.lastSuccessful = time;
         }
     }
 
@@ -48,12 +56,8 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
         ContentValues values = new ContentValues();
         values.put(ID, id);
         values.put(STATE, state.toString());
-        values.put(ATTEMPT, lastAttempt.toString());
-        if (lastSuccessful != null ) {
-            values.put(SUCCESSFUL, lastSuccessful.toString());
-        } else {
-            values.put(SUCCESSFUL, (String) null);
-        }
+        values.put(ATTEMPT, lastAttempt);
+        values.put(SUCCESSFUL, lastSuccessful);
         return values;
     }
 
@@ -61,11 +65,8 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
     protected void initFromCursorHelper(CursorHelper cursorHelper) {
         setId(cursorHelper.getInt(ID));
         setState(State.valueOf(cursorHelper.getString(STATE)));
-        setLastAttempt(cursorHelper.getTimestamp(ATTEMPT));
-        String success = cursorHelper.getString(SUCCESSFUL);
-        if (success != null) {
-            setLastSuccessful(Timestamp.valueOf(success));
-        }
+        setLastAttempt(cursorHelper.getLong(ATTEMPT));
+        setLastSuccessful(cursorHelper.getLong(SUCCESSFUL));
     }
 
     public State getState() {
@@ -76,19 +77,19 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
         this.state = state;
     }
 
-    public Timestamp getLastAttempt() {
+    public long getLastAttempt() {
         return lastAttempt;
     }
 
-    public void setLastAttempt(Timestamp lastAttempt) {
+    public void setLastAttempt(long lastAttempt) {
         this.lastAttempt = lastAttempt;
     }
 
-    public Timestamp getLastSuccessful() {
+    public long getLastSuccessful() {
         return lastSuccessful;
     }
 
-    public void setLastSuccessful(Timestamp lastSuccessful) {
+    public void setLastSuccessful(long lastSuccessful) {
         this.lastSuccessful = lastSuccessful;
     }
 
@@ -102,8 +103,31 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
         this.id = id;
     }
 
+    public String getMessage(Context context) {
+        return "Connection: " + state +
+                ".\nLast Attempt: " + getLastAttemptWithTimeZone(context) +
+                ".\nLast Successful: " + getLastSuccessfulWithTimeZone(context) +
+                '.';
+    }
+
+    public String getLastAttemptWithTimeZone(Context context) {
+        return convertDateToString(context, lastAttempt);
+    }
+
+    public String getLastSuccessfulWithTimeZone(Context context) {
+        return convertDateToString(context, lastSuccessful);
+    }
+
+    private String convertDateToString(Context context, long date) {
+        if (date == LONG_UNKNOWN_TIME) {
+            return STRING_UNKNOWN_TIME;
+        }
+        return DateUtils.formatDateTime(context, date, FORMAT_FLAGS);
+    }
+
     public enum State {
         OK,
-        FAILED
+        FAILED,
+        UNKNOWN
     }
 }
