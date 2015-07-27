@@ -64,9 +64,21 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
     @Override
     protected void initFromCursorHelper(CursorHelper cursorHelper) {
         setId(cursorHelper.getInt(ID));
-        setState(State.valueOf(cursorHelper.getString(STATE)));
-        setLastAttempt(cursorHelper.getLong(ATTEMPT));
-        setLastSuccessful(cursorHelper.getLong(SUCCESSFUL));
+        try {
+            setState(State.valueOf(cursorHelper.getString(STATE)));
+        } catch (Exception e) {
+            setState(State.UNKNOWN);
+        }
+        try {
+            setLastAttempt(cursorHelper.getLong(ATTEMPT));
+        } catch (Exception e) {
+            setLastAttempt(LONG_UNKNOWN_TIME);
+        }
+        try {
+            setLastSuccessful(cursorHelper.getLong(SUCCESSFUL));
+        } catch (Exception e) {
+            setLastSuccessful(LONG_UNKNOWN_TIME);
+        }
     }
 
     public State getState() {
