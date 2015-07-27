@@ -10,10 +10,12 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.sync.EventsHandler;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -33,9 +35,14 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     public static final String KEY_PERIODIC_SYNC_INTERVAL = "periodic_sync_interval";
     public static final String KEY_MAX_EVENTS = "max_events_stored";
     public static final String KEY_MAX_VMS = "max_vms_polled";
+    public static final String KEY_POLL_EVENTS = "poll_events";
     private static final String DEFAULT_PERIODIC_SYNC_INTERVAL = "60";
     private static final String DEFAULT_MAX_EVENTS = "500";
     private static final String DEFAULT_MAX_VMS = "500";
+    private static final boolean DEFAULT_POLL_EVENTS = true;
+
+    @Bean
+    EventsHandler eventsHandler;
 
     Preference periodicSyncIntervalPref;
     Preference maxEventsPref;
@@ -45,6 +52,18 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     public static int getSyncIntervalInMinutes(SharedPreferences sharedPreferences) {
         return Integer.parseInt(sharedPreferences
                 .getString(KEY_PERIODIC_SYNC_INTERVAL, DEFAULT_PERIODIC_SYNC_INTERVAL));
+    }
+
+    public static int getMaxEvents(SharedPreferences sharedPreferences) {
+        return Integer.parseInt(sharedPreferences.getString(KEY_MAX_EVENTS, DEFAULT_MAX_EVENTS));
+    }
+
+    public static int getMaxVms(SharedPreferences sharedPreferences) {
+        return Integer.parseInt(sharedPreferences.getString(KEY_MAX_VMS, DEFAULT_MAX_VMS));
+    }
+
+    public static boolean isPollEventsEnabled(SharedPreferences sharedPreferences) {
+        return sharedPreferences.getBoolean(KEY_POLL_EVENTS, DEFAULT_POLL_EVENTS);
     }
 
     @Override
@@ -99,7 +118,9 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
             }
         });
         maxEventsPref = findPreference(KEY_MAX_EVENTS);
+        maxEventsPref.setOnPreferenceChangeListener(new IntegerValidator());
         maxVmsPref = findPreference(KEY_MAX_VMS);
+        maxVmsPref.setOnPreferenceChangeListener(new IntegerValidator());
     }
 
     @Override
@@ -150,6 +171,7 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
                 break;
             case KEY_MAX_EVENTS:
                 setMaxEventsSummary();
+                eventsHandler.setMaxEventsStored(getMaxEvents(sharedPreferences));
                 break;
             case KEY_MAX_VMS:
                 setMaxVmsSummary();
@@ -174,5 +196,18 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
                 .getString(KEY_PERIODIC_SYNC_INTERVAL, DEFAULT_PERIODIC_SYNC_INTERVAL);
         periodicSyncIntervalPref.setSummary(getString(
                 R.string.prefs_periodic_sync_interval_summary, interval));
+    }
+
+    private class IntegerValidator implements Preference.OnPreferenceChangeListener {
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+            try {
+                Integer.parseInt((String) newValue);
+            } catch (NumberFormatException e) {
+                Toast.makeText(SettingsActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                return false;
+            }
+            return true;
+        }
     }
 }

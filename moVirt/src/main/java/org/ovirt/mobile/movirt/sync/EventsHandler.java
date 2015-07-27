@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
-import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 import org.androidannotations.annotations.AfterInject;
@@ -23,46 +22,33 @@ import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
+import org.ovirt.mobile.movirt.ui.SettingsActivity;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 
 import java.util.List;
 
 @EBean(scope = EBean.Scope.Singleton)
-public class EventsHandler implements SharedPreferences.OnSharedPreferenceChangeListener {
 
+public class EventsHandler {
     private static final String TAG = EventsHandler.class.getSimpleName();
-
-    public static final boolean DEFAULT_POLL_EVENTS = true;
-
-    public static String MAX_EVENTS_LOCALLY = "500";
-
-    private int maxEventsStored = -1;
-
-    private boolean deleteEventsBeforeInsert = false;
-
     public static volatile boolean inSync = false;
-
     @App
     MoVirtApp app;
-
     @Bean
     ProviderFacade provider;
-
     @Bean
     OVirtClient oVirtClient;
-
     @Bean
     EventTriggerResolver eventTriggerResolver;
-
     @Bean
     NotificationHelper notificationHelper;
-
     @RootContext
     Context context;
-
     ProviderFacade.BatchBuilder batch;
-
     int lastEventId = 0;
+    private int maxEventsStored = -1;
+    private boolean deleteEventsBeforeInsert = false;
+    SharedPreferences sharedPreferences;
 
     @AfterInject
     void initLastEventId() {
@@ -71,7 +57,8 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
 
     @AfterInject
     void initialize() {
-        PreferenceManager.getDefaultSharedPreferences(app).registerOnSharedPreferenceChangeListener(this);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
+        maxEventsStored = SettingsActivity.getMaxEvents(sharedPreferences);
     }
 
     public void updateEvents(boolean force) {
@@ -82,7 +69,7 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
         }
 
         try {
-            boolean configuredPoll = PreferenceManager.getDefaultSharedPreferences(app).getBoolean("poll_events", DEFAULT_POLL_EVENTS);
+            boolean configuredPoll = SettingsActivity.isPollEventsEnabled(sharedPreferences);
 
             if (configuredPoll || force) {
                 batch = provider.batch();
@@ -137,9 +124,9 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
         for (Event event : newEvents) {
             // because the user api (filtered: true) returns all the events all the time
             if (event.getId() > lastEventId) {
-                this.processEventTriggers(event);
+                processEventTriggers(event);
                 batch.insert(event);
-                if(event.getId() > newLastEventCandidate) {
+                if (event.getId() > newLastEventCandidate) {
                     newLastEventCandidate = event.getId();
                 }
             }
@@ -161,17 +148,16 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
     }
 
     private void displayNotification(Trigger<Event> trigger, Event event) {
-        final Context appContext = context.getApplicationContext();
-        final Intent intent = new Intent(appContext, MainActivity_.class);
-        final TaskStackBuilder stackBuilder = TaskStackBuilder.create(appContext);
-        stackBuilder.addParentStack(MainActivity_.class);
-        stackBuilder.addNextIntent(intent);
-        final PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(
+        Intent resultIntent = new Intent(context, MainActivity_.class);
+        resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent resultPendingIntent =
+                PendingIntent.getActivity(
+                        context,
                         0,
-                        PendingIntent.FLAG_UPDATE_CURRENT
+                        resultIntent,
+                        0
                 );
-        notificationHelper.showTriggerNotification(trigger, event, appContext, resultPendingIntent);
+        notificationHelper.showTriggerNotification(trigger, event, context, resultPendingIntent);
     }
 
     private void applyBatch() {
@@ -185,31 +171,17 @@ public class EventsHandler implements SharedPreferences.OnSharedPreferenceChange
 
     private void deleteOldEvents() {
         if (maxEventsStored == -1) {
-            maxEventsStored = getMaxEvents();
+            maxEventsStored = SettingsActivity.getMaxEvents(sharedPreferences);
         }
 
         provider.deleteEventsAndLetOnly(maxEventsStored);
     }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals("max_events_stored")) {
-            int newMaxEventsStored = getMaxEvents();
-            if (newMaxEventsStored > maxEventsStored) {
-                deleteEventsBeforeInsert = true;
-            }
-
-            maxEventsStored = newMaxEventsStored;
+    public void setMaxEventsStored(int newValue) {
+        if (newValue > maxEventsStored) {
+            deleteEventsBeforeInsert = true;
         }
-    }
-
-    private int getMaxEvents() {
-        String maxEventsString = PreferenceManager.getDefaultSharedPreferences(app).getString("max_events_stored", MAX_EVENTS_LOCALLY);
-        try {
-            return Integer.parseInt(maxEventsString);
-        } catch (NumberFormatException e) {
-            return Integer.parseInt(MAX_EVENTS_LOCALLY);
-        }
+        maxEventsStored = newValue;
     }
 
     private void sendSyncIntent(boolean syncing) {
