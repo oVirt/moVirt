@@ -39,10 +39,7 @@ public abstract class MovirtActivity extends ActionBarActivity implements HasPro
     @Bean
     protected SyncUtils syncUtils;
     private LoaderManager loaderManager;
-    private boolean connectionIconVisibility = false;
-    private String connectionState = "unknown";
-    private String connectionAttempt = "unknown";
-    private String connectionSuccess = "unknown";
+    private ConnectionInfo connectionInfo;
     private ConnectionInfoLoader connectionInfoLoader;
     private ProgressBar progress;
 
@@ -56,6 +53,7 @@ public abstract class MovirtActivity extends ActionBarActivity implements HasPro
         super.onCreate(savedInstanceState);
         loaderManager = super.getSupportLoaderManager();
         connectionInfoLoader = new ConnectionInfoLoader();
+        connectionInfo = new ConnectionInfo();
         loaderManager.initLoader(CONNECTION_INFO_LOADER, null, connectionInfoLoader);
     }
 
@@ -67,15 +65,13 @@ public abstract class MovirtActivity extends ActionBarActivity implements HasPro
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem connection = menu.findItem(R.id.menu_connection);
-        connection.setVisible(connectionIconVisibility);
+        connection.setVisible(connectionInfo.getState() == ConnectionInfo.State.FAILED);
         return super.onPrepareOptionsMenu(menu);
     }
 
     @OptionsItem(R.id.menu_connection)
     public void onConnectionInfo() {
-        Toast.makeText(this, "Connection: " + connectionState +
-                ".\nLast attempt: " + connectionAttempt +
-                ".\nLast successful: " + connectionSuccess, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, connectionInfo.getMessage(this), Toast.LENGTH_LONG).show();
     }
 
     @OptionsItem(R.id.action_refresh)
@@ -135,19 +131,7 @@ public abstract class MovirtActivity extends ActionBarActivity implements HasPro
         public void onLoadFinished(android.support.v4.content.Loader<Cursor> loader, Cursor data) {
             if (data != null && data.getCount() > 0) {
                 data.moveToFirst();
-                int stateIndex = data.getColumnIndex(ConnectionInfo.STATE);
-                int attemptIndex = data.getColumnIndex(ConnectionInfo.ATTEMPT);
-                int successIndex = data.getColumnIndex(ConnectionInfo.SUCCESSFUL);
-
-                connectionState = data.getString(stateIndex);
-                ConnectionInfo.State state = ConnectionInfo.State.valueOf(connectionState);
-                connectionIconVisibility = (state == ConnectionInfo.State.FAILED);
-                connectionAttempt = data.getString(attemptIndex);
-                String success = data.getString(successIndex);
-                if (success != null) {
-                    connectionSuccess = success;
-                }
-
+                connectionInfo.initFromCursor(data);
                 invalidateOptionsMenu();
             }
         }

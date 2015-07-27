@@ -36,6 +36,7 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     public static final String KEY_MAX_EVENTS = "max_events_stored";
     public static final String KEY_MAX_VMS = "max_vms_polled";
     public static final String KEY_POLL_EVENTS = "poll_events";
+    private static final boolean DEFAULT_CONNECTION_NOTIFICATION = true;
     private static final String DEFAULT_PERIODIC_SYNC_INTERVAL = "60";
     private static final String DEFAULT_MAX_EVENTS = "500";
     private static final String DEFAULT_MAX_VMS = "500";
@@ -64,6 +65,11 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
 
     public static boolean isPollEventsEnabled(SharedPreferences sharedPreferences) {
         return sharedPreferences.getBoolean(KEY_POLL_EVENTS, DEFAULT_POLL_EVENTS);
+    }
+
+    public static boolean isConnectionNotificationEnabled(SharedPreferences sharedPreferences) {
+        return sharedPreferences
+                .getBoolean(KEY_CONNECTION_NOTIFICATION, DEFAULT_CONNECTION_NOTIFICATION);
     }
 
     @Override

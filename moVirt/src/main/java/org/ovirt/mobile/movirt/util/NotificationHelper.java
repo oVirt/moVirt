@@ -46,19 +46,23 @@ public class NotificationHelper {
         }
     }
 
-    public void showConnectionNotification(Context context, PendingIntent resultPendingIntent, ConnectionInfo connectionInfo) {
+    public void showConnectionNotification(Context context,
+                                           PendingIntent resultPendingIntent,
+                                           ConnectionInfo connectionInfo) {
         Log.d(TAG, "Displaying notification " + notificationCount);
-        String successTime = "unknown";
-        if (connectionInfo.getLastSuccessful() != null) {
-            successTime = connectionInfo.getLastSuccessful().toString();
-        }
+        String shortMsg = "Check your settings/server";
+        String bigMsg = shortMsg +
+                "\nLast successful connection at: " +
+                connectionInfo.getLastSuccessfulWithTimeZone(context);
+
         Notification notification = new NotificationCompat.Builder(context)
                 .setAutoCancel(true)
                 .setDefaults(Notification.DEFAULT_ALL)
-                .setWhen(connectionInfo.getLastAttempt().getTime())
+                .setWhen(connectionInfo.getLastAttempt())
                 .setSmallIcon(org.ovirt.mobile.movirt.R.drawable.ic_launcher)
                 .setContentTitle("Connection lost!")
-                .setContentText("Last successful connection at: " + successTime)
+                .setContentText(shortMsg)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(bigMsg))
                 .setContentIntent(resultPendingIntent)
                 .build();
         notificationManager.notify(notificationCount++, notification);

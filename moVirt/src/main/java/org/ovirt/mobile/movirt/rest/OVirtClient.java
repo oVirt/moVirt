@@ -42,7 +42,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -401,25 +400,29 @@ public class OVirtClient {
 
     private void updateConnectionInfo(boolean success) {
         ConnectionInfo connectionInfo;
-        boolean prevSuccess = true;
-
+        ConnectionInfo.State state;
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
+        boolean prevFailed = false;
+        boolean configured = SettingsActivity.isConnectionNotificationEnabled(sharedPreferences);
         Collection<ConnectionInfo> connectionInfos = provider.query(ConnectionInfo.class).all();
         int size = connectionInfos.size();
+
         if (size != 0) {
             connectionInfo = connectionInfos.iterator().next();
-            if (connectionInfo.getState() != ConnectionInfo.State.OK) {
-                prevSuccess = false;
+            if (connectionInfo.getState() == ConnectionInfo.State.FAILED) {
+                prevFailed = true;
             }
         } else {
             connectionInfo = new ConnectionInfo();
         }
-        Timestamp time = new Timestamp(System.currentTimeMillis());
 
         if (!success) {
-            connectionInfo.update(ConnectionInfo.State.FAILED, time);
+            state = ConnectionInfo.State.FAILED;
         } else {
-            connectionInfo.update(ConnectionInfo.State.OK, time);
+            state = ConnectionInfo.State.OK;
         }
+        connectionInfo.updateWithCurrentTime(state);
+
         //update in DB
         if (size != 0) {
             provider.batch().update(connectionInfo).apply();
@@ -428,8 +431,7 @@ public class OVirtClient {
         }
 
         //show Notification
-        if (!success && prevSuccess && PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(SettingsActivity.KEY_CONNECTION_NOTIFICATION, false)) {
+        if (!success && !prevFailed && configured) {
             Intent resultIntent = new Intent(context, MainActivity_.class);
             resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent resultPendingIntent =

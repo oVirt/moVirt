@@ -70,6 +70,7 @@
             android:enabled="true"
             android:exported="true"
             android:process=":sync">
+            <!-- delete android:process to be able to debug sync actions -->
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
