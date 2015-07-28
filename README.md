@@ -4,9 +4,28 @@ moVirt
 
 A mobile client for [oVirt](http://www.ovirt.org). 
 
+Current version: 0.2 beta.  
 The unsigned testing release is available at: [moVirt build](https://github.com/matobet/moVirt/blob/master/moVirt/moVirt-debug.apk?raw=true)  
 
 <img src = /images/screenshots/Screenshot_2015-07-15-23-55-52.png><img src = /images/screenshots/Screenshot_2015-07-15-23-56-12.png><img src = /images/screenshots/Screenshot_2015-07-15-23-57-21.png>
+
+###Changelog:
+####v0.2:
+* Added augmented reality.
+* Added icons for events.
+* Refresh button on every screen.
+* Added connection information icon and notification.
+* Added option to set periodic sync with custom time interval.
+* Added actions in Host activity (activate, deactivate).
+* Added SPICE over SSL support.
+* Enriched VM activity with cluster and host information.
+
+###Known issues:
+####v0.2:
+* Non-admin users support currently disabled.
+* SPICE may not work well with SSL on Android 5.+
+* Certificates may not work on Android 4.1 (use "Ignore certificate checking" in advanced connection settings).
+* Event triggers may spam you with notifications about old events.
 
 ###User's guide:    
 After successfully installing the application, you need to set the **connection details** up:
@@ -41,8 +60,6 @@ Follow these steps to connect to remote console:
 * Click console button in VM Detail view
 
 #####SPICE
-*(may not work well with SSL on Android 5.+)*
-
 * Install aSPICE(v3.7.7+) from Google Play Store
 * Click console button in VM Detail view
 
