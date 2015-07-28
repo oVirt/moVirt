@@ -143,6 +143,10 @@ public class ProviderFacade {
 
         public Collection<E> all() {
             Cursor cursor = asCursor();
+            if (cursor == null) {
+                return new ArrayList<>();
+            }
+
             List<E> result = new ArrayList<>();
             while (cursor.moveToNext()) {
                 result.add(EntityMapper.forEntity(clazz).fromCursor(cursor));

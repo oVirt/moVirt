@@ -14,6 +14,7 @@ import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.ui.vms.VmDetailActivity_;
 
+import java.util.Collection;
 import java.util.List;
 
 @EBean
@@ -31,11 +32,6 @@ public class VmFacade implements EntityFacade<Vm> {
     }
 
     @Override
-    public List<Trigger<Vm>> getTriggers(Vm entity) {
-        return triggerResolver.getTriggers(entity);
-    }
-
-    @Override
     public Intent getDetailIntent(Vm entity, Context context) {
         Intent intent = new Intent(context, VmDetailActivity_.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -46,5 +42,15 @@ public class VmFacade implements EntityFacade<Vm> {
     @Override
     public void sync(String id, OVirtClient.Response<Vm> response) {
         syncAdapter.syncVm(id, response);
+    }
+
+    @Override
+    public Collection<Trigger<Vm>> getAllTriggers() {
+        return triggerResolver.getAllTriggers();
+    }
+
+    @Override
+    public List<Trigger<Vm>> getTriggers(Vm entity, Collection<Trigger<Vm>> allTriggers) {
+        return triggerResolver.getTriggers(entity, allTriggers);
     }
 }

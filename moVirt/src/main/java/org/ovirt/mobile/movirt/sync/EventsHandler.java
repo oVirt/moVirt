@@ -25,6 +25,7 @@ import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.ui.SettingsActivity;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 
+import java.util.Collection;
 import java.util.List;
 
 @EBean(scope = EBean.Scope.Singleton)
@@ -121,10 +122,12 @@ public class EventsHandler {
 
         int newLastEventCandidate = -1;
 
+        Collection<Trigger<Event>> allEventTriggers = eventTriggerResolver.getAllTriggers();
+
         for (Event event : newEvents) {
             // because the user api (filtered: true) returns all the events all the time
             if (event.getId() > lastEventId) {
-                processEventTriggers(event);
+                this.processEventTriggers(event, allEventTriggers);
                 batch.insert(event);
                 if (event.getId() > newLastEventCandidate) {
                     newLastEventCandidate = event.getId();
@@ -137,8 +140,8 @@ public class EventsHandler {
         }
     }
 
-    private void processEventTriggers(Event event) {
-        final List<Trigger<Event>> triggers = eventTriggerResolver.getTriggers(event);
+    private void processEventTriggers(Event event, Collection<Trigger<Event>> allEventTriggers) {
+        final List<Trigger<Event>> triggers = eventTriggerResolver.getTriggers(event, allEventTriggers);
         Log.i(TAG, "Processing triggers for Event: " + event.getId());
         for (Trigger<Event> trigger : triggers) {
             if (trigger.getCondition().evaluate(event)) {
