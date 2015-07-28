@@ -74,6 +74,7 @@ public interface OVirtContract {
         String ACTIVE = "active";
         String MIGRATING = "migrating";
         String TOTAL = "total";
+        String CPU_SPEED = "cpu_speed";
     }
 
     String PATH_CLUSTERS = "clusters";
@@ -94,6 +95,18 @@ public interface OVirtContract {
 
         String TABLE = "datacenters";
         String VERSION = "version";
+    }
+
+    String PATH_STORAGE_DOMAINS = "storagedomains";
+    String PATH_STORAGE_DOMAIN = "storagedomains/*";
+
+    public interface StorageDomain extends NamedEntity {
+        Uri CONTENT_URI =  BASE_CONTENT_URI.buildUpon().appendPath(PATH_STORAGE_DOMAINS).build();
+
+        String TABLE = "storagedomains";
+        String TYPE = "type";
+        String AVAILABLE_SIZE_MB = "available_size_mb";
+        String USED_SIZE_MB = "used_size_mb";
     }
 
     String PATH_TRIGGERS = "triggers";

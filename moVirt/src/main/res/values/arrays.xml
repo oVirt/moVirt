@@ -62,4 +62,15 @@
         <item>Ignore Certificate Checking</item>
     </string-array>
 
+    <declare-styleable name="percentage_circle_view">
+        <attr name="whole_background_color" format="color|reference" />
+        <attr name="foreground_color_a" format="color|reference" />
+        <attr name="foreground_color_b" format="color|reference" />
+        <attr name="foreground_color_c" format="color|reference" />
+        <attr name="background_color" format="color|reference" />
+        <attr name="text_color" format="color|reference" />
+        <attr name="stroke_width" format="integer" />
+        <attr name="start_angle" format="integer" />
+        <attr name="need_show_text" format="boolean" />
+    </declare-styleable>
 </resources>

@@ -113,6 +113,9 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
     @DatabaseField(columnName = TOTAL)
     private int total;
 
+    @DatabaseField(columnName = CPU_SPEED)
+    private long cpuSpeed;
+
     public Status getStatus() {
         return status;
     }
@@ -217,6 +220,14 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
         this.total = total;
     }
 
+    public long getCpuSpeed() {
+        return cpuSpeed;
+    }
+
+    public void setCpuSpeed(long cpuSpeed) {
+        this.cpuSpeed = cpuSpeed;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -238,6 +249,7 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
         if (active != host.active) return false;
         if (migrating != host.migrating) return false;
         if (total != host.total) return false;
+        if (cpuSpeed != host.cpuSpeed) return false;
 
         return true;
     }
@@ -262,6 +274,7 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
         result = 31 * result + active;
         result = 31 * result + migrating;
         result = 31 * result + total;
+        result = 31 * result + (int) (cpuSpeed ^ (cpuSpeed >>> 32));
 
         return result;
     }
@@ -282,6 +295,7 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
         values.put(ACTIVE, getActive());
         values.put(MIGRATING, getMigrating());
         values.put(TOTAL, getTotal());
+        values.put(CPU_SPEED, getCpuSpeed());
         return values;
     }
 
@@ -302,5 +316,6 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
         setActive(cursorHelper.getInt(ACTIVE));
         setMigrating(cursorHelper.getInt(MIGRATING));
         setTotal(cursorHelper.getInt(TOTAL));
+        setCpuSpeed(cursorHelper.getLong(CPU_SPEED));
     }
 }

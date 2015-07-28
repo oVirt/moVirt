@@ -8,6 +8,7 @@ import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
+import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 
@@ -35,6 +36,9 @@ public class UriMatcher extends OrmLiteUriMatcher {
 
         addClass(OVirtContract.PATH_DATA_CENTERS, DataCenter.class);
         addClass(OVirtContract.PATH_DATA_CENTER, DataCenter.class);
+
+        addClass(OVirtContract.PATH_STORAGE_DOMAINS, StorageDomain.class);
+        addClass(OVirtContract.PATH_STORAGE_DOMAIN, StorageDomain.class);
 
         addClass(OVirtContract.PATH_CA_CRTS, CaCert.class);
 

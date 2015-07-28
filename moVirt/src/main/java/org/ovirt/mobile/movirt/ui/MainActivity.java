@@ -49,6 +49,7 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
+import org.ovirt.mobile.movirt.ui.dashboard.DashboardActivity_;
 import org.ovirt.mobile.movirt.ui.hosts.HostsFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
@@ -228,6 +229,11 @@ public class MainActivity extends MovirtActivity {
         });
 
         connectionNotConfiguredProperlyDialog.show();
+    }
+
+    @OptionsItem(R.id.action_dashboard)
+    void showDashboard() {
+        startActivity(new Intent(this, DashboardActivity_.class));
     }
 
     @OptionsItem(R.id.action_settings)

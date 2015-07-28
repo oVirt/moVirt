@@ -86,5 +86,26 @@
     <style name="overlayActionBar" parent="@style/Widget.AppCompat.ActionBar">
     </style>
 
+    <style name="percentageCircleTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">25sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_gravity">center</item>
+    </style>
+
+    <style name="percentageCircleSummary"  parent="@style/percentageCircleTitle">
+        <item name="android:layout_marginTop">3dp</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="percentageCircleView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="stroke_width">25</item>
+        <item name="background_color">#666666</item>
+        <item name="text_color">#000000</item>
+    </style>
 
 </resources>
