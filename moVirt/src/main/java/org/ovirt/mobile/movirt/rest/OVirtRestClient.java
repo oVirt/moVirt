@@ -40,6 +40,12 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Post("/vms/{id}/reboot")
     void rebootVm(Action action, String id);
 
+    @Post("/vms/{id}/migrate")
+    void migrateVmToHost(Action action, String id);
+
+    @Post("/vms/{id}/cancelmigration")
+    void cancelMigration(Action action, String id);
+
     @Post("/hosts/{id}/activate")
     void activateHost(Action action, String id);
 

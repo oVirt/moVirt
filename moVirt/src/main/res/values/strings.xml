@@ -61,6 +61,8 @@
     <string name="run">Run</string>
     <string name="stop">Stop</string>
     <string name="reboot">Reboot</string>
+    <string name="start_migration">Start Migration</string>
+    <string name="cancel_migration">Cancel Migration</string>
     <string name="title_activity_vm_details">Vm Details</string>
     <string name="vm_scope">Vm %1$s</string>
     <string name="cpu">CPU usage:</string>
@@ -159,8 +161,15 @@
     <string name="mb_used">MB Used</string>
     <string name="gb_used">GB Used</string>
 
-
     <string name="yes_str">Yes</string>
     <string name="no_str">No</string>
     <string name="are_you_sure_str">Are you sure you want to %1$s?</string>
+
+    <string name="title_activity_migrate_vm">Migrate VM</string>
+    <string name="migrate_title">Choose host to migrate VM</string>
+    <string name="migrate_hint">only current cluster and working hosts shown</string>
+    <string name="migrate_to_selected">Migrate to\nselected</string>
+    <string name="migrate_to_default">Migrate to\ndefault</string>
+    <string name="migrate_empty_list">No suitable hosts to migrate</string>
+
 </resources>

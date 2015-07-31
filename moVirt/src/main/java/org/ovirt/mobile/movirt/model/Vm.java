@@ -67,6 +67,10 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
                 Status.REBOOT_IN_PROGRESS, Status.MIGRATING, Status.SUSPENDED, Status.PAUSED,
                 Status.NOT_RESPONDING),
         REBOOT(Status.UP, Status.POWERING_UP),
+        START_MIGRATION(Status.UNASSIGNED, Status.DOWN, Status.UP, Status.POWERING_UP,
+                Status.UNKNOWN, Status.WAIT_FOR_LAUNCH, Status.REBOOT_IN_PROGRESS,
+                Status.SAVING_STATE, Status.SUSPENDED, Status.IMAGE_LOCKED, Status.POWERING_DOWN),
+        CANCEL_MIGRATION(Status.MIGRATING),
         CONSOLE(Status.UP, Status.POWERING_UP, Status.REBOOT_IN_PROGRESS, Status.POWERING_DOWN,
                 Status.PAUSED);
 
@@ -76,7 +80,7 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
             return validStates;
         }
 
-        Command(Status ...validStates) {
+        Command(Status... validStates) {
             this.validStates = Arrays.asList(validStates);
         }
 
