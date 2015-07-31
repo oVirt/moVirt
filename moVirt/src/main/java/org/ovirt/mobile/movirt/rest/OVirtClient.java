@@ -126,6 +126,36 @@ public class OVirtClient {
         }, null);
     }
 
+    public void migrateVmToHost(final String vmId, final String hostId) {
+        fireRestRequest(new Request<Void>() {
+            @Override
+            public Void fire() {
+                restClient.migrateVmToHost(new ActionMigrate(hostId), vmId);
+                return null;
+            }
+        }, null);
+    }
+
+    public void migrateVmToDefaultHost(final String vmId) {
+        fireRestRequest(new Request<Void>() {
+            @Override
+            public Void fire() {
+                restClient.migrateVmToHost(new Action(), vmId);
+                return null;
+            }
+        }, null);
+    }
+
+    public void cancelMigration(final String vmId) {
+        fireRestRequest(new Request<Void>() {
+            @Override
+            public Void fire() {
+                restClient.cancelMigration(new Action(), vmId);
+                return null;
+            }
+        }, null);
+    }
+
     public void getVm(final String vmId, Response<Vm> response) {
         fireRestRequest(new Request<Vm>() {
             @Override

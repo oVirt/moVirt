@@ -55,6 +55,7 @@ import java.io.File;
 public class VmDetailActivity extends MovirtActivity implements HasProgressBar, UpdateMenuItemAware<Vm> {
 
     private static final String TAG = VmDetailActivity.class.getSimpleName();
+    private static final int REQUEST_MIGRATE = 0;
     @ViewById
     ViewPager viewPager;
     @ViewById
@@ -79,10 +80,14 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar, 
     MenuItem menuStop;
     @OptionsMenuItem(R.id.action_reboot)
     MenuItem menuReboot;
+    @OptionsMenuItem(R.id.action_start_migration)
+    MenuItem menuStartMigration;
+    @OptionsMenuItem(R.id.action_cancel_migration)
+    MenuItem menuCancelMigration;
     @OptionsMenuItem(R.id.action_console)
     MenuItem menuConsole;
     private String vmId = null;
-    private Vm.Status currentStatus;
+    private Vm currentVm = null;
 
     @AfterViews
     void init() {
@@ -115,11 +120,14 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar, 
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if (currentStatus != null ) {
-            menuRun.setVisible(Vm.Command.RUN.canExecute(currentStatus));
-            menuStop.setVisible(Vm.Command.STOP.canExecute(currentStatus));
-            menuReboot.setVisible(Vm.Command.REBOOT.canExecute(currentStatus));
-            menuConsole.setVisible(Vm.Command.CONSOLE.canExecute(currentStatus));
+        if (currentVm != null) {
+            Vm.Status status = currentVm.getStatus();
+            menuRun.setVisible(Vm.Command.RUN.canExecute(status));
+            menuStop.setVisible(Vm.Command.STOP.canExecute(status));
+            menuReboot.setVisible(Vm.Command.REBOOT.canExecute(status));
+            menuStartMigration.setVisible(Vm.Command.START_MIGRATION.canExecute(status));
+            menuCancelMigration.setVisible(Vm.Command.CANCEL_MIGRATION.canExecute(status));
+            menuConsole.setVisible(Vm.Command.CONSOLE.canExecute(status));
         }
 
         return super.onPrepareOptionsMenu(menu);
@@ -172,6 +180,57 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar, 
     @Background
     void doReboot() {
         client.rebootVm(vmId);
+        syncVm();
+    }
+
+    @OptionsItem(R.id.action_start_migration)
+    void showMigrationDialog() {
+        if (currentVm != null) {
+            Intent migrateIntent = new Intent(this, VmMigrateActivity_.class);
+            migrateIntent.putExtra(VmMigrateActivity.HOST_ID_EXTRA, currentVm.getHostId());
+            migrateIntent.putExtra(VmMigrateActivity.CLUSTER_ID_EXTRA, currentVm.getClusterId());
+            startActivityForResult(migrateIntent, REQUEST_MIGRATE);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_MIGRATE) {
+            if (resultCode == VmMigrateActivity.RESULT_DEFAULT) {
+                doMigrationToDefault();
+            }
+            if (resultCode == VmMigrateActivity.RESULT_SELECT) {
+                doMigrationTo(data.getStringExtra(VmMigrateActivity.RESULT_HOST_ID_EXTRA));
+            }
+        }
+    }
+
+    @Background
+    public void doMigrationToDefault() {
+        client.migrateVmToDefaultHost(vmId);
+        syncVm();
+    }
+
+    @Background
+    public void doMigrationTo(String hostId) {
+        client.migrateVmToHost(vmId, hostId);
+        syncVm();
+    }
+
+    @OptionsItem(R.id.action_cancel_migration)
+    @UiThread
+    void cancelMigration() {
+        AreYouSureDialog.show(this, getResources(), "cancel VM migration", new Runnable() {
+            @Override
+            public void run() {
+                doCancelMigration();
+            }
+        });
+    }
+
+    @Background
+    void doCancelMigration() {
+        client.cancelMigration(vmId);
         syncVm();
     }
 
@@ -287,8 +346,11 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar, 
 
     @UiThread
     @Override
+    //maybe not quite right name for this function now,
+    //it updates reference to VM entity after been loaded and rendered in fragment.
+    //Used for Menu and migrate Dialog.
     public void updateMenuItem(Vm vm) {
-        currentStatus = vm.getStatus();
+        currentVm = vm;
         invalidateOptionsMenu();
     }
 }
