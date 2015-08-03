@@ -13,6 +13,7 @@ import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
@@ -25,10 +26,10 @@ import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.ui.SettingsActivity;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 
+import java.util.Collection;
 import java.util.List;
 
 @EBean(scope = EBean.Scope.Singleton)
-
 public class EventsHandler {
     private static final String TAG = EventsHandler.class.getSimpleName();
     public static volatile boolean inSync = false;
@@ -45,15 +46,10 @@ public class EventsHandler {
     @RootContext
     Context context;
     ProviderFacade.BatchBuilder batch;
-    int lastEventId = 0;
+
     private int maxEventsStored = -1;
     private boolean deleteEventsBeforeInsert = false;
     SharedPreferences sharedPreferences;
-
-    @AfterInject
-    void initLastEventId() {
-        lastEventId = provider.getLastEventId();
-    }
 
     @AfterInject
     void initialize() {
@@ -73,6 +69,9 @@ public class EventsHandler {
 
             if (configuredPoll || force) {
                 batch = provider.batch();
+
+                final int lastEventId = deleteEventsBeforeInsert ? 0 : provider.getLastEventId();
+
                 oVirtClient.getEventsSince(!deleteEventsBeforeInsert ? lastEventId : 0, new OVirtClient.SimpleResponse<List<Event>>() {
 
                     @Override
@@ -83,7 +82,7 @@ public class EventsHandler {
 
                     @Override
                     public void onResponse(List<Event> newEvents) throws RemoteException {
-                        updateEvents(newEvents);
+                        updateEvents(newEvents, lastEventId);
                         applyBatch();
 
                         deleteOldEvents();
@@ -107,13 +106,12 @@ public class EventsHandler {
 
     public void deleteEvents() {
         if (provider.deleteEvents() != -1) {
-            lastEventId = 0;
             // no need to do it again
             deleteEventsBeforeInsert = false;
         }
     }
 
-    private void updateEvents(List<Event> newEvents) {
+    private void updateEvents(List<Event> newEvents, int lastEventId) {
         Log.i(TAG, "Fetched " + newEvents.size() + " new event(s)");
         if (deleteEventsBeforeInsert) {
             deleteEvents();
@@ -121,24 +119,22 @@ public class EventsHandler {
 
         int newLastEventCandidate = -1;
 
+        Collection<Trigger<Event>> allEventTriggers = eventTriggerResolver.getAllTriggers();
+
         for (Event event : newEvents) {
             // because the user api (filtered: true) returns all the events all the time
             if (event.getId() > lastEventId) {
-                processEventTriggers(event);
+                this.processEventTriggers(event, allEventTriggers);
                 batch.insert(event);
                 if (event.getId() > newLastEventCandidate) {
                     newLastEventCandidate = event.getId();
                 }
             }
         }
-
-        if (newLastEventCandidate > lastEventId) {
-            lastEventId = newLastEventCandidate;
-        }
     }
 
-    private void processEventTriggers(Event event) {
-        final List<Trigger<Event>> triggers = eventTriggerResolver.getTriggers(event);
+    private void processEventTriggers(Event event, Collection<Trigger<Event>> allEventTriggers) {
+        final List<Trigger<Event>> triggers = eventTriggerResolver.getTriggers(event, allEventTriggers);
         Log.i(TAG, "Processing triggers for Event: " + event.getId());
         for (Trigger<Event> trigger : triggers) {
             if (trigger.getCondition().evaluate(event)) {
