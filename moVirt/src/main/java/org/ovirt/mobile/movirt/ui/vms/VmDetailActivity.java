@@ -32,6 +32,7 @@ import org.ovirt.mobile.movirt.rest.ActionTicket;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity_;
+import org.ovirt.mobile.movirt.ui.AreYouSureDialog;
 import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.DiskDetailFragment;
 import org.ovirt.mobile.movirt.ui.DiskDetailFragment_;
@@ -141,15 +142,35 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar, 
     }
 
     @OptionsItem(R.id.action_stop)
-    @Background
+    @UiThread
     void stop() {
+        AreYouSureDialog.show(this, getResources(), "stop the VM", new Runnable() {
+            @Override
+            public void run() {
+                doStop();
+            }
+        });
+    }
+
+    @Background
+    void doStop() {
         client.stopVm(vmId);
         syncVm();
     }
 
     @OptionsItem(R.id.action_reboot)
-    @Background
+    @UiThread
     void reboot() {
+        AreYouSureDialog.show(this, getResources(), "reboot the VM", new Runnable() {
+            @Override
+            public void run() {
+                doReboot();
+            }
+        });
+    }
+
+    @Background
+    void doReboot() {
         client.rebootVm(vmId);
         syncVm();
     }

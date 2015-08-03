@@ -159,4 +159,8 @@
     <string name="mb_used">MB Used</string>
     <string name="gb_used">GB Used</string>
 
+
+    <string name="yes_str">Yes</string>
+    <string name="no_str">No</string>
+    <string name="are_you_sure_str">Are you sure you want to %1$s?</string>
 </resources>
