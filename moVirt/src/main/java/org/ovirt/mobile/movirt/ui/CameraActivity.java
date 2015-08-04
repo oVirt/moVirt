@@ -350,6 +350,10 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
      */
     public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
         String result = rawResult.getText();
+        if (result != null) {
+            result = result.trim().toLowerCase();
+        }
+
         viewfinderView.drawResultBitmap(barcode, rawResult.getResultPoints());
         if (!result.equals(lastResult)) {
             lastResult = result;
