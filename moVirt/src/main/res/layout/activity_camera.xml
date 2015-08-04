@@ -31,7 +31,7 @@
             android:id="@+id/panelVms"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="top|left"
+            android:layout_gravity="top|start"
             android:layout_marginTop="?attr/actionBarSize"
             android:layout_weight=".30"
             android:alpha=".75"
@@ -51,27 +51,31 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight=".40"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/result_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="?attr/actionBarSize"
-                android:text="@string/cameraMessage" />
+            android:orientation="vertical"
+            android:padding="16dp">
 
             <ImageView
                 android:id="@+id/imageStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
                 android:layout_gravity="center_horizontal"
+                android:layout_marginTop="?attr/actionBarSize"
                 android:contentDescription="@string/imageDesc" />
-        </LinearLayout>
+
+            <TextView
+                android:id="@+id/result_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:text="@string/cameraMessage" />
+        </RelativeLayout>
 
         <LinearLayout
             android:id="@+id/panelParent"
@@ -101,14 +105,15 @@
 
             <Button
                 android:id="@+id/buttonOpenHostDetails"
+                style="?android:attr/buttonStyleSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="left|center_vertical"
                 android:onClick="openHostDetails"
                 android:text="@string/buttonOpenDetails" />
 
             <Button
                 android:id="@+id/buttonSwitch"
+                style="?android:attr/buttonStyleSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
@@ -127,7 +132,6 @@
                     android:alpha=".75"
                     android:background="#000000"
                     android:minWidth="200dp"
-                    android:nestedScrollingEnabled="true"
                     android:orientation="vertical"
                     android:padding="10dp">
 
@@ -174,9 +178,8 @@
                 android:id="@+id/panelEvents"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:nestedScrollingEnabled="true"
                 android:orientation="vertical"
-                android:visibility="gone"></ListView>
+                android:visibility="gone" />
 
         </LinearLayout>
 
