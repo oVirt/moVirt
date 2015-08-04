@@ -25,6 +25,20 @@
         app:showAsAction="ifRoom|withText" />
 
     <item
+        android:id="@+id/action_start_migration"
+        android:icon="@drawable/vm_migrating"
+        android:title="@string/start_migration"
+        android:visible="false"
+        app:showAsAction="ifRoom|withText" />
+
+    <item
+        android:id="@+id/action_cancel_migration"
+        android:icon="@drawable/vm_migrating"
+        android:title="@string/cancel_migration"
+        android:visible="false"
+        app:showAsAction="ifRoom|withText" />
+
+    <item
         android:id="@+id/action_console"
         android:icon="@drawable/icn_console"
         android:title="@string/console"

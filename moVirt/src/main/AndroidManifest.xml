@@ -18,44 +18,40 @@
         android:required="false" />
 
     <application
-        android:name="org.ovirt.mobile.movirt.MoVirtApp_"
+        android:name=".MoVirtApp_"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
-
         <activity
-            android:name="org.ovirt.mobile.movirt.ui.MainActivity_"
+            android:name=".ui.MainActivity_"
             android:label="@string/app_name"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
-            android:name="org.ovirt.mobile.movirt.ui.SettingsActivity_"
+            android:name=".ui.SettingsActivity_"
             android:label="@string/title_activity_settings" />
-
         <activity
-            android:name="org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity_"
+            android:name=".ui.AdvancedAuthenticatorActivity_"
             android:label="@string/title_activity_settings_advanced"
             android:windowSoftInputMode="stateHidden" />
-
         <activity
-            android:name="org.ovirt.mobile.movirt.ui.AuthenticatorActivity_"
+            android:name=".ui.AuthenticatorActivity_"
             android:label="@string/title_activity_settings" />
 
         <provider
-            android:name="org.ovirt.mobile.movirt.provider.Provider"
+            android:name=".provider.Provider"
             android:authorities="org.ovirt.mobile.movirt.provider"
             android:enabled="true"
-            android:exported="true">
-            <!-- Exported "true" is really just a hack to make it work with the account authenticator -->
+            android:exported="true"> <!-- Exported "true" is really just a hack to make it work with the account authenticator -->
         </provider>
 
-        <service android:name="org.ovirt.mobile.movirt.auth.AuthenticatorService_">
+        <service android:name=".auth.AuthenticatorService_">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
@@ -64,13 +60,12 @@
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
-
         <service
-            android:name="org.ovirt.mobile.movirt.sync.SyncService_"
+            android:name=".sync.SyncService_"
             android:enabled="true"
             android:exported="true"
-            android:process=":sync">
-            <!-- delete android:process to be able to debug sync actions -->
+            android:process=":sync"> <!-- delete android:process to be able to debug sync actions -->
+
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
@@ -81,31 +76,28 @@
         </service>
 
         <activity
-            android:name="org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_"
+            android:name=".ui.triggers.EditTriggersActivity_"
             android:label="@string/title_activity_edit_filters" />
-
         <activity
             android:name=".ui.vms.VmDetailActivity_"
             android:label="@string/title_activity_vm_details" />
-
         <activity
             android:name=".ui.hosts.HostDetailActivity_"
             android:label="@string/title_activity_host_details" />
-
         <activity
             android:name=".ui.CameraActivity_"
             android:label="@string/title_activity_camera"
             android:theme="@style/cameraViewStyle" />
-
         <activity
             android:name=".camera.PreferencesActivity"
             android:label="@string/preferences_name"
             android:stateNotNeeded="true" />
-
         <activity
             android:name=".ui.dashboard.DashboardActivity_"
-            android:label="@string/title_activity_dashboard">
-        </activity>
+            android:label="@string/title_activity_dashboard" />
+        <activity
+            android:name=".ui.vms.VmMigrateActivity_"
+            android:label="@string/title_activity_migrate_vm" />
     </application>
 
 </manifest>
