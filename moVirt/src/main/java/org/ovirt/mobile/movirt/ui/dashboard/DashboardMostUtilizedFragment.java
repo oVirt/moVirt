@@ -23,7 +23,7 @@ import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.provider.SortOrder;
+import org.ovirt.mobile.movirt.ui.EndlessScrollListener;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;
@@ -35,7 +35,7 @@ public class DashboardMostUtilizedFragment extends Fragment implements OVirtCont
     private static final int VM_LOADER = 1;
     private static final int HOST_LOADER = 2;
 
-    private static final int MAX_ITEMS = 10;
+    private static final int ITEMS_PER_PAGE = 20;
 
     @Bean
     VmFacade vmFacade;
@@ -54,6 +54,8 @@ public class DashboardMostUtilizedFragment extends Fragment implements OVirtCont
 
     private CursorAdapterLoader vmCursorAdapterLoader;
     private CursorAdapterLoader hostCursorAdapterLoader;
+    private int vmPage = 1;
+    private int hostPage = 1;
 
     @AfterViews
     void init() {
@@ -62,7 +64,7 @@ public class DashboardMostUtilizedFragment extends Fragment implements OVirtCont
         vmCursorAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
-                return provider.query(Vm.class).orderBy(CPU_USAGE, SortOrder.from("DESC")).limit(MAX_ITEMS).asLoader();
+                return provider.query(Vm.class).orderByDescending(CPU_USAGE).limit(vmPage * ITEMS_PER_PAGE).asLoader();
             }
         };
 
@@ -71,12 +73,15 @@ public class DashboardMostUtilizedFragment extends Fragment implements OVirtCont
         hostCursorAdapterLoader = new CursorAdapterLoader(hostListAdapter) {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
-                return provider.query(Host.class).orderBy(CPU_USAGE, SortOrder.from("DESC")).limit(MAX_ITEMS).asLoader();
+                return provider.query(Host.class).orderByDescending(CPU_USAGE).limit(hostPage * ITEMS_PER_PAGE).asLoader();
             }
         };
 
         getLoaderManager().initLoader(VM_LOADER, null, vmCursorAdapterLoader);
         getLoaderManager().initLoader(HOST_LOADER, null, hostCursorAdapterLoader);
+
+        vmListView.setOnScrollListener(vmEndlessScrollListener);
+        hostListView.setOnScrollListener(hostEndlessScrollListener);
     }
 
     @Override
@@ -97,6 +102,30 @@ public class DashboardMostUtilizedFragment extends Fragment implements OVirtCont
     protected void hostItemClicked(Cursor cursor) {
         Host host = hostFacade.mapFromCursor(cursor);
         startActivity(hostFacade.getDetailIntent(host, getActivity()));
+    }
+
+    protected final EndlessScrollListener vmEndlessScrollListener = new EndlessScrollListener() {
+        @Override
+        public void onLoadMore(int page, int totalItemsCount) {
+            loadMoreVmData(page);
+        }
+    };
+
+    public void loadMoreVmData(int page) {
+        this.vmPage = page;
+        getLoaderManager().restartLoader(VM_LOADER, null, vmCursorAdapterLoader);
+    }
+
+    protected final EndlessScrollListener hostEndlessScrollListener = new EndlessScrollListener() {
+        @Override
+        public void onLoadMore(int page, int totalItemsCount) {
+            loadMoreHostData(page);
+        }
+    };
+
+    public void loadMoreHostData(int page) {
+        this.hostPage = page;
+        getLoaderManager().restartLoader(HOST_LOADER, null, hostCursorAdapterLoader);
     }
 
     private static class MostUtilizedListAdapter extends CursorAdapter {
