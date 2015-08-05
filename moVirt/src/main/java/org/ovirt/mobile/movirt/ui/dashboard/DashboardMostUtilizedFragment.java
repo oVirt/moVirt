@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.ui.dashboard;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.Loader;
@@ -155,6 +156,16 @@ public class DashboardMostUtilizedFragment extends Fragment implements OVirtCont
             nameView.setText(name);
             usageView.setText(usage + "%");
 
+            try {
+                if (Double.compare(Double.parseDouble(usage), 50) < 0) {
+                    usageView.setTextColor(Color.parseColor("#99cc03"));
+                } else if (Double.compare(Double.parseDouble(usage), 75) < 0) {
+                    usageView.setTextColor(Color.parseColor("#ec7108"));
+                } else {
+                    usageView.setTextColor(Color.parseColor("#ce0000"));
+                }
+            } catch (Exception e) {
+            }
         }
     }
 }
