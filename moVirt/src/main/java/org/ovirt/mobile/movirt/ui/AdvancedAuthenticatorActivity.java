@@ -51,7 +51,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.Collection;
 
-@EActivity(R.layout.advanced_authenticator_activity)
+@EActivity(R.layout.activity_advanced_authenticator)
 @OptionsMenu(R.menu.advanced_authenticator)
 public class AdvancedAuthenticatorActivity extends ActionBarActivity {
 
@@ -84,7 +84,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
     EditText txtValidForHostnames;
 
     @ViewById
-    ScrollView certDetailsScrollView;
+    ScrollView scrollView;
 
     @ViewById
     TextView txtCertDetails;
@@ -202,7 +202,6 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
     private void setVisibilityForCaViews(boolean visible) {
         txtCaUrl.setVisibility(visible ? View.VISIBLE : View.GONE);
         txtValidForHostnames.setVisibility(visible ? View.VISIBLE : View.GONE);
-        certDetailsScrollView.setVisibility(visible ? View.VISIBLE : View.GONE);
         txtCertDetails.setVisibility(visible ? View.VISIBLE : View.GONE);
         btnDelete.setVisibility(visible ? View.VISIBLE : View.GONE);
         btnLoad.setVisibility(visible ? View.VISIBLE : View.GONE);
@@ -219,7 +218,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    private void updateMenuItem(){
+    private void updateMenuItem() {
         switch (mode) {
             case MODE_REST_CA_MANAGEMENT:
                 if (menuRestCaManagement != null && menuSpiceCaManagement != null) {
@@ -311,14 +310,14 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
     }
 
     @OptionsItem(R.id.action_rest_ca_management)
-    void restCaManagement(){
+    void restCaManagement() {
         mode = MODE_REST_CA_MANAGEMENT;
         updateViews();
         updateMenuItem();
     }
 
     @OptionsItem(R.id.action_spice_ca_management)
-    void spiceCaManagement(){
+    void spiceCaManagement() {
         mode = MODE_SPICE_CA_MANAGEMENT;
         updateViews();
         updateMenuItem();
@@ -413,7 +412,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
         }
     }
 
-    boolean storeImportedCaToFile(){
+    boolean storeImportedCaToFile() {
         if (caCert == null) {
             return false;
         }
@@ -426,7 +425,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
             out.write(caCert, 0, caCert.length);
         } catch (IOException e) {
             e.printStackTrace();
-            showToast("Error storing certificate to file: " +e.getMessage());
+            showToast("Error storing certificate to file: " + e.getMessage());
             return false;
         } finally {
             try {
@@ -461,7 +460,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
                 providerFacade.batch().insert(caCertEntity).apply();
             } catch (IOException e) {
                 e.printStackTrace();
-                showToast("Error storing certificate: " +e.getMessage());
+                showToast("Error storing certificate: " + e.getMessage());
                 return false;
             }
         } finally {

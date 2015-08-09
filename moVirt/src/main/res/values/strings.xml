@@ -28,6 +28,7 @@
     <string name="configuration">Configuration</string>
     <string name="default_username">admin@internal</string>
     <string name="default_endpoint">http://10.0.2.2:8080/ovirt-engine/api</string>
+    <string name="default_api_path">/ovirt-engine/api</string>
     <string name="default_password">engine</string>
     <string name="action_refresh">Refresh</string>
     <string name="title_activity_edit_filters">EditFiltersActivity</string>
@@ -41,8 +42,8 @@
     <string name="save">Save</string>
     <string name="save_acc">Save Account</string>
     <string name="done_advanced_settings">Done</string>
-    <string name="delete_stored_ca">Delete Stored CA</string>
-    <string name="load_ca_from_addr">Load CA from Provided Addr</string>
+    <string name="delete_stored_ca">Delete</string>
+    <string name="load_ca_from_addr">Download</string>
     <string name="advanced_settings">Advanced Settings</string>
     <string name="trigger_scope">Editing triggers for: </string>
     <string name="add_trigger">Add Trigger</string>
@@ -113,11 +114,11 @@
     <string name="prefs_events_search_query_summary">Poll only Events which satisfy given query. Has effect for admin users only. (e.g. severity > warning)</string>
     <string name="console">Console</string>
 
-    <string name="account_endpoint">API URL</string>
+    <string name="account_endpoint">protocol://host:port/path/to/api</string>
     <string name="ca_cert_account_endpoint">CA Location (e.g. http://my-instance/ca.crt)</string>
     <string name="account_endpoint_summary">For example: https://my-instance:443/ovirt-engine/api</string>
-    <string name="account_username">Username</string>
-    <string name="account_password">Password</string>
+    <string name="account_username">name@domain</string>
+    <string name="account_password">password</string>
     <string name="account_username_summary">Username</string>
     <string name="account_password_summary">Password</string>
     <string name="account_admin_privilege">Admin Privilege</string>
@@ -127,6 +128,14 @@
     <string name="account_enforceHttpBasicAuth">Enforce HTTP Basic Authentication</string>
     <string name="account_disableHttpsChecking_summary">This method is dangerous and should not be used in production setup.</string>
     <string name="name">Name</string>
+    <string name="account_title">Connection Settings</string>
+    <string name="account_advanced_title">Advanced Connection Settings</string>
+    <string name="account_endpoint_label">API URL:</string>
+    <string name="account_username_label">Username:</string>
+    <string name="account_password_label">Password:</string>
+    <string name="account_dialog_missing_api_message">
+        Your URL missing path to api. Do you want to use default path "ovirt-engine/api"?
+    </string>
 
     <string name="nic_para">Linked : %1$b&#160;&#160;&#160;&#160;plugged : %2$b</string>
     <string name="nic_name_and_address">%1$s : %2$s</string>
@@ -173,5 +182,7 @@
     <string name="migrate_to_selected">Migrate to\nselected</string>
     <string name="migrate_to_default">Migrate to\ndefault</string>
     <string name="migrate_empty_list">No suitable hosts to migrate</string>
+
+
 
 </resources>
