@@ -1,21 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="25dp">
+    
+     <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="API URL"
+        android:textColor="#8BC34A"/>
 
     <EditText
         android:id="@+id/txtEndpoint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/account_endpoint" />
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Username"
+        android:textColor="#8BC34A"/>
     <EditText
         android:id="@+id/txtUsername"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/account_username" />
-
+     <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Password"
+        android:textColor="#8BC34A"/>
     <EditText
         android:id="@+id/txtPassword"
         android:layout_width="match_parent"
@@ -41,14 +60,17 @@
 
     <Button
         android:id="@+id/btnAdvanced"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/advanced_settings" />
+        android:text="@string/advanced_settings"
+        android:layout_gravity="center_horizontal"/>
 
     <Button
         android:id="@+id/btnCreate"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/save_acc" />
+        android:text="@string/save_acc"
+        android:layout_gravity="center_horizontal"/>
 
 </LinearLayout>
+</ScrollView>
