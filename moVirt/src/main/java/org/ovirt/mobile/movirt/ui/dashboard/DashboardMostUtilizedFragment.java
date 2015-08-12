@@ -4,7 +4,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,12 +24,13 @@ import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.EndlessScrollListener;
+import org.ovirt.mobile.movirt.ui.LoaderFragment;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;
 
 @EFragment(R.layout.fragment_dashboard_most_utilized)
-public class DashboardMostUtilizedFragment extends Fragment implements OVirtContract.NamedEntity {
+public class DashboardMostUtilizedFragment extends LoaderFragment implements OVirtContract.NamedEntity {
     private final static String TAG = DashboardMostUtilizedFragment.class.getSimpleName();
 
     private static final int VM_LOADER = 1;
@@ -86,11 +86,15 @@ public class DashboardMostUtilizedFragment extends Fragment implements OVirtCont
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
+    public void restartLoader() {
         getLoaderManager().restartLoader(VM_LOADER, null, vmCursorAdapterLoader);
         getLoaderManager().restartLoader(HOST_LOADER, null, hostCursorAdapterLoader);
+    }
+
+    @Override
+    public void destroyLoader() {
+        getLoaderManager().destroyLoader(VM_LOADER);
+        getLoaderManager().destroyLoader(HOST_LOADER);
     }
 
     @ItemClick(R.id.vmListView)

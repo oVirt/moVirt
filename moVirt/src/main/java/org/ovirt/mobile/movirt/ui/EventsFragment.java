@@ -28,7 +28,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.VM_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
 
 @EFragment(R.layout.fragment_event_list)
-public class EventsFragment extends RefreshableFragment {
+public class EventsFragment extends RefreshableLoaderFragment {
 
     @ViewById
     ListView list;
@@ -90,12 +90,21 @@ public class EventsFragment extends RefreshableFragment {
     }
 
     @Override
+    public void restartLoader() {
+        getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
+    }
+
+    @Override
+    public void destroyLoader() {
+        getLoaderManager().destroyLoader(0);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         if (EventsHandler.inSync) {
             showProgressBar();
         }
-        restartLoader();
     }
 
     @Override
@@ -123,10 +132,6 @@ public class EventsFragment extends RefreshableFragment {
     public void loadMoreData(int page) {
         this.page = page;
         restartLoader();
-    }
-
-    public void restartLoader() {
-        getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
     }
 
     @Receiver(actions = Broadcasts.EVENTS_IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)

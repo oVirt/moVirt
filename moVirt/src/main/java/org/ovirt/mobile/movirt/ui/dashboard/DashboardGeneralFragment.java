@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.ui.dashboard;
 
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.util.Log;
@@ -17,13 +16,13 @@ import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-
+import org.ovirt.mobile.movirt.ui.LoaderFragment;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 @EFragment(R.layout.fragment_dashboard_general)
-public class DashboardGeneralFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class DashboardGeneralFragment extends LoaderFragment implements LoaderManager.LoaderCallbacks<Cursor>{
     private static final String TAG = DashboardGeneralFragment.class.getSimpleName();
 
     private static final int HOST_LOADER = 1;
@@ -57,18 +56,12 @@ public class DashboardGeneralFragment extends Fragment implements LoaderManager.
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        getLoaderManager().restartLoader(HOST_LOADER, null, this);
-    }
-
-    @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
         Loader<Cursor> loader = null;
 
         switch (id) {
             case HOST_LOADER:
-                loader = provider.query(Host.class).asLoader();;
+                loader = provider.query(Host.class).asLoader();
                 break;
             case STORAGE_DOMAIN_LOADER:
                 loader = provider.query(StorageDomain.class).where(StorageDomain.TYPE, StorageDomain.Type.DATA.toString()).asLoader();
@@ -96,12 +89,6 @@ public class DashboardGeneralFragment extends Fragment implements LoaderManager.
 
                 renderCpuPercentageCircle(hostList);
                 renderMemoryPercentageCircle(hostList);
-
-                if (getLoaderManager().getLoader(STORAGE_DOMAIN_LOADER) == null) {
-                    getLoaderManager().initLoader(STORAGE_DOMAIN_LOADER, null, this);
-                } else {
-                    getLoaderManager().restartLoader(STORAGE_DOMAIN_LOADER, null, this);
-                }
 
                 break;
             case STORAGE_DOMAIN_LOADER:
@@ -182,5 +169,17 @@ public class DashboardGeneralFragment extends Fragment implements LoaderManager.
         storagePercentageCircle.setSummary(getString(R.string.gb_used));
         summaryStoragePercentageCircle.setText(getString(R.string.summary_storage_percentage_circle,
                 decimalFormat.format(availableStorageSizeMb / 1024f), decimalFormat.format((availableStorageSizeMb + usedStorageSizeMb) / 1024f)));
+    }
+
+    @Override
+    public void restartLoader() {
+        getLoaderManager().restartLoader(HOST_LOADER, null, this);
+        getLoaderManager().restartLoader(STORAGE_DOMAIN_LOADER, null, this);
+    }
+
+    @Override
+    public void destroyLoader() {
+        getLoaderManager().destroyLoader(HOST_LOADER);
+        getLoaderManager().destroyLoader(STORAGE_DOMAIN_LOADER);
     }
 }
