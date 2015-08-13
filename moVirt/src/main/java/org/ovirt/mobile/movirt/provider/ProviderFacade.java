@@ -67,6 +67,10 @@ public class ProviderFacade {
             return where(columnName, value, Relation.IS_EQUAL);
         }
 
+        public QueryBuilder<E> whereNotEqual(String columnName, String value) {
+            return where(columnName, value, Relation.NOT_EQUAL);
+        }
+
         public QueryBuilder<E> where(String columnName, String value, Relation relation) {
             assert !columnName.equals("") : "columnName cannot be empty or null";
 
