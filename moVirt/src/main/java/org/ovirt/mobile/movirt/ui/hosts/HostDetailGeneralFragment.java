@@ -20,11 +20,11 @@ import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.RefreshableFragment;
+import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 
 @EFragment(R.layout.fragment_host_detail_general)
-public class HostDetailGeneralFragment extends RefreshableFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class HostDetailGeneralFragment extends RefreshableLoaderFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = HostDetailGeneralFragment.class.getSimpleName();
 
@@ -83,9 +83,13 @@ public class HostDetailGeneralFragment extends RefreshableFragment implements Lo
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void restartLoader() {
         getLoaderManager().restartLoader(0, null, this);
+    }
+
+    @Override
+    public void destroyLoader() {
+        getLoaderManager().destroyLoader(0);
     }
 
     @Override

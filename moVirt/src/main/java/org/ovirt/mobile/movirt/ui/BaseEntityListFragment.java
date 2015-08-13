@@ -38,7 +38,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
 
 @EFragment(R.layout.fragment_base_entity_list)
 public abstract class BaseEntityListFragment<E extends OVirtEntity> extends RefreshableFragment
-        implements OVirtContract.HasCluster, OVirtContract.NamedEntity, SelectedClusterAware {
+        implements OVirtContract.HasCluster, OVirtContract.NamedEntity, SelectedClusterAware, HasLoader {
 
     private static final int ITEMS_PER_PAGE = 20;
 
@@ -111,10 +111,6 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     public void loadMoreData(int page) {
         this.page = page;
         restartLoader();
-    }
-
-    protected void restartLoader() {
-        getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
     }
 
     protected void resetListViewPosition() {
@@ -206,10 +202,22 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     }
 
     @Override
+    public void restartLoader() {
+        getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
+    }
+
+    @Override
+    public void destroyLoader() {
+        getLoaderManager().destroyLoader(0);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 
         setRefreshing(SyncAdapter.inSync);
+
+        restartLoader();
     }
 
     @Override
@@ -217,6 +225,8 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         super.onPause();
 
         setRefreshing(false);
+
+        destroyLoader();
     }
 
     @ItemClick(android.R.id.list)

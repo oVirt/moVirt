@@ -3,7 +3,6 @@ package org.ovirt.mobile.movirt.ui.triggers;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
-import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -28,6 +27,7 @@ import org.ovirt.mobile.movirt.model.condition.StatusCondition;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.ui.ActionBarLoaderActivity;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.SCOPE;
@@ -35,7 +35,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.TARGET_ID;
 
 @EActivity(R.layout.activity_edit_triggers)
 @OptionsMenu(R.menu.triggers)
-public class EditTriggersActivity extends ActionBarActivity implements BaseTriggerDialogFragment.TriggerActivity {
+public class EditTriggersActivity extends ActionBarLoaderActivity implements BaseTriggerDialogFragment.TriggerActivity {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
     public static final String EXTRA_SCOPE = "scope";
@@ -49,6 +49,7 @@ public class EditTriggersActivity extends ActionBarActivity implements BaseTrigg
     private String targetEntityName;
 
     private Trigger.Scope triggerScope;
+    private CursorAdapterLoader cursorAdapterLoader;
 
     @Bean
     ProviderFacade provider;
@@ -92,7 +93,7 @@ public class EditTriggersActivity extends ActionBarActivity implements BaseTrigg
             }
         });
 
-        CursorAdapterLoader cursorAdapterLoader = new CursorAdapterLoader(triggerAdapter) {
+        cursorAdapterLoader = new CursorAdapterLoader(triggerAdapter) {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 return provider
@@ -108,6 +109,16 @@ public class EditTriggersActivity extends ActionBarActivity implements BaseTrigg
         triggersListView.setEmptyView(findViewById(android.R.id.empty));
 
         getSupportLoaderManager().initLoader(0, null, cursorAdapterLoader);
+    }
+
+    @Override
+    public void restartLoader() {
+        getSupportLoaderManager().restartLoader(0, null, cursorAdapterLoader);
+    }
+
+    @Override
+    public void destroyLoader() {
+        getSupportLoaderManager().destroyLoader(0);
     }
 
     private String getScopeText() {

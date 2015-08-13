@@ -29,11 +29,11 @@ import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.RefreshableFragment;
+import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 
 @EFragment(R.layout.fragment_vm_detail_general)
-public class VmDetailGeneralFragment extends RefreshableFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class VmDetailGeneralFragment extends RefreshableLoaderFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = VmDetailGeneralFragment.class.getSimpleName();
     private static final int VMS_LOADER = 0;
@@ -113,22 +113,21 @@ public class VmDetailGeneralFragment extends RefreshableFragment implements Load
 
         args = new Bundle();
         args.putParcelable(VM_URI, vmUri);
-        destroyAllLoaders();
         getLoaderManager().initLoader(VMS_LOADER, args, this);
         vmId = vmUri.getLastPathSegment();
     }
 
-    private void destroyAllLoaders() {
+    @Override
+    public void restartLoader() {
+        getLoaderManager().restartLoader(VMS_LOADER, args, this);
+    }
+
+    @Override
+    public void destroyLoader() {
         getLoaderManager().destroyLoader(VMS_LOADER);
         getLoaderManager().destroyLoader(CLUSTER_LOADER);
         getLoaderManager().destroyLoader(DATA_CENTER_LOADER);
         getLoaderManager().destroyLoader(HOST_LOADER);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        getLoaderManager().restartLoader(VMS_LOADER, args, this);
     }
 
     @Override

@@ -103,6 +103,7 @@ public class MainActivity extends MovirtActivity {
     String allClusters;
     private ActionBarDrawerToggle drawerToggle;
     private MatrixCursor emptyClusterCursor;
+    private CursorAdapterLoader clusterAdapterLoader;
 
     @Override
     protected void onPause() {
@@ -157,7 +158,7 @@ public class MainActivity extends MovirtActivity {
                 CLUSTER_PROJECTION,
                 new int[]{R.id.cluster_view}, 0);
 
-        CursorAdapterLoader clusterAdapterLoader = new CursorAdapterLoader(clusterListAdapter) {
+        clusterAdapterLoader = new CursorAdapterLoader(clusterListAdapter) {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 return provider.query(Cluster.class).orderBy(NAME).asLoader();
@@ -198,6 +199,18 @@ public class MainActivity extends MovirtActivity {
 
         drawerToggle.syncState();
 
+    }
+
+    @Override
+    public void restartLoader() {
+        super.restartLoader();
+        getSupportLoaderManager().restartLoader(CLUSTER_LOADER, null, clusterAdapterLoader);
+    }
+
+    @Override
+    public void destroyLoader() {
+        super.destroyLoader();
+        getSupportLoaderManager().destroyLoader(CLUSTER_LOADER);
     }
 
     private void showDialogToOpenAccountSettings(String msg, final Intent intent) {

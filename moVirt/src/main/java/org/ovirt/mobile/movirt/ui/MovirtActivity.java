@@ -3,7 +3,6 @@ package org.ovirt.mobile.movirt.ui;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
-import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,7 +30,7 @@ import org.ovirt.mobile.movirt.sync.SyncUtils;
 
 @EActivity
 @OptionsMenu(R.menu.movirt)
-public abstract class MovirtActivity extends ActionBarActivity implements HasProgressBar {
+public abstract class MovirtActivity extends ActionBarLoaderActivity implements HasProgressBar {
     private static final int CONNECTION_INFO_LOADER = 0;
     protected int numSuperLoaders = 1;
     @Bean
@@ -58,8 +57,13 @@ public abstract class MovirtActivity extends ActionBarActivity implements HasPro
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    public void restartLoader() {
+        loaderManager.restartLoader(CONNECTION_INFO_LOADER, null, connectionInfoLoader);
+    }
+
+    @Override
+    public void destroyLoader() {
+        loaderManager.destroyLoader(CONNECTION_INFO_LOADER);
     }
 
     @Override

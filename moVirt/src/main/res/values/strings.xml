@@ -160,6 +160,8 @@
     <string name="ghz_used">GHz Used</string>
     <string name="mb_used">MB Used</string>
     <string name="gb_used">GB Used</string>
+    <string name="most_utilized_vms">Most Utilized VMs</string>
+    <string name="most_utilized_hosts">Most Utilized Hosts</string>
 
     <string name="yes_str">Yes</string>
     <string name="no_str">No</string>

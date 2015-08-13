@@ -191,6 +191,20 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         loaderManager.initLoader(VMS_LOADER, null, cursorVmsAdapterLoader);
     }
 
+    @Override
+    public void restartLoader() {
+        super.restartLoader();
+        loaderManager.restartLoader(HOSTS_LOADER, null, hostsLoader);
+    }
+
+    @Override
+    public void destroyLoader() {
+        super.destroyLoader();
+        loaderManager.destroyLoader(HOSTS_LOADER);
+        loaderManager.destroyLoader(EVENTS_LOADER);
+        loaderManager.destroyLoader(VMS_LOADER);
+    }
+
     public CameraManager getCameraManager() {
         return cameraManager;
     }

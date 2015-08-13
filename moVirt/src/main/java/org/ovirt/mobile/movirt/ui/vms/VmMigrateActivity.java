@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
-import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -22,10 +21,11 @@ import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.Relation;
+import org.ovirt.mobile.movirt.ui.ActionBarLoaderActivity;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 @EActivity(R.layout.activity_migrate_vm)
-public class VmMigrateActivity extends ActionBarActivity {
+public class VmMigrateActivity extends ActionBarLoaderActivity {
 
     public static final String CLUSTER_ID_EXTRA = "org.ovirt.mobile.movirt.CLUSTER_ID_EXTRA";
     public static final String HOST_ID_EXTRA = "org.ovirt.mobile.movirt.HOST_ID_EXTRA";
@@ -56,6 +56,16 @@ public class VmMigrateActivity extends ActionBarActivity {
         getExtras();
         setLoader(currentClusterId, currentHostId);
         setList();
+    }
+
+    @Override
+    public void restartLoader() {
+        getSupportLoaderManager().restartLoader(HOSTS_LOADER, null, cursorAdapterLoader);
+    }
+
+    @Override
+    public void destroyLoader() {
+        getSupportLoaderManager().destroyLoader(HOSTS_LOADER);
     }
 
     private void getExtras() {
