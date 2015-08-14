@@ -214,6 +214,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
         }
 
+        cursor.close();
+
         for (E entity : entityMap.values()) {
             Log.i(TAG, "Scheduling insert for entity: id = " + entity.getId());
             batch.insert(entity);
