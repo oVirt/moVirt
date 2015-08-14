@@ -151,6 +151,8 @@ public class ProviderFacade {
             while (cursor.moveToNext()) {
                 result.add(EntityMapper.forEntity(clazz).fromCursor(cursor));
             }
+
+            cursor.close();
             return result;
         }
     }
