@@ -3,15 +3,19 @@ package org.ovirt.mobile.movirt.ui;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -36,11 +40,20 @@ import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 
-@EActivity(R.layout.authenticator_activity)
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+
+import javax.net.ssl.SSLHandshakeException;
+
+@EActivity(R.layout.activity_authenticator)
 public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
     private static final String TAG = AuthenticatorActivity.class.getSimpleName();
     private static final int SECONDS_IN_MINUTE = 60;
+    private static final String[] URL_COMPLETE = {"http://", "https://", "ovirt-engine/api", "80",
+            "443", "api"};
+    private static final String[] USERNAME_COMPLETE = {"admin@", "internal", "admin@internal"};
     private static int REQUEST_ACCOUNT_DETAILS = 1;
     @Bean
     NullHostnameVerifier verifier;
@@ -49,9 +62,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     @Bean
     OVirtClient client;
     @ViewById
-    EditText txtEndpoint;
+    MultiAutoCompleteTextView txtEndpoint;
     @ViewById
-    EditText txtUsername;
+    MultiAutoCompleteTextView txtUsername;
     @ViewById
     EditText txtPassword;
     @ViewById
@@ -78,10 +91,86 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     @InstanceState
     boolean inProgress;
 
+    public static void addPeriodicSync(int intervalInMinutes) {
+        long intervalInSeconds =
+                (long) intervalInMinutes * (long) SECONDS_IN_MINUTE;
+        ContentResolver.addPeriodicSync(
+                MovirtAuthenticator.MOVIRT_ACCOUNT,
+                OVirtContract.CONTENT_AUTHORITY,
+                Bundle.EMPTY,
+                intervalInSeconds);
+    }
+
     @AfterViews
     void init() {
         txtEndpoint.setText(authenticator.getApiUrl());
+        ArrayAdapter<String> urlAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, URL_COMPLETE);
+        txtEndpoint.setAdapter(urlAdapter);
+        txtEndpoint.setTokenizer(new MultiAutoCompleteTextView.Tokenizer() {
+            @Override
+            public int findTokenStart(CharSequence text, int cursor) {
+                int i = cursor;
+                while (i > 0 && text.charAt(i - 1) != '/' && text.charAt(i - 1) != ':') {
+                    i--;
+                }
+                return i;
+            }
+
+            @Override
+            public int findTokenEnd(CharSequence text, int cursor) {
+                int i = cursor;
+                int len = text.length();
+                while (i < len) {
+                    if (text.charAt(i) == '/') {
+                        return i;
+                    } else {
+                        i++;
+                    }
+                }
+                return len;
+            }
+
+            @Override
+            public CharSequence terminateToken(CharSequence text) {
+                return text;
+            }
+        });
+
         txtUsername.setText(authenticator.getUserName());
+        ArrayAdapter<String> usernameAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, USERNAME_COMPLETE);
+        txtUsername.setAdapter(usernameAdapter);
+        txtUsername.setTokenizer(new MultiAutoCompleteTextView.Tokenizer() {
+            @Override
+            public int findTokenStart(CharSequence text, int cursor) {
+                int i = cursor;
+                while (i > 0 && text.charAt(i - 1) != '@') {
+                    i--;
+                }
+                return i;
+            }
+
+            @Override
+            public int findTokenEnd(CharSequence text, int cursor) {
+                int i = cursor;
+                int len = text.length();
+                while (i < len) {
+                    if (text.charAt(i) == '@') {
+                        return i;
+                    } else {
+                        i++;
+                    }
+                }
+                return len;
+            }
+
+            @Override
+            public CharSequence terminateToken(CharSequence text) {
+                return text;
+            }
+        });
+
         txtPassword.setText(authenticator.getPassword());
         chkAdminPriv.setChecked(true);
         changeProgressVisibilityTo(inProgress ? View.VISIBLE : View.GONE);
@@ -123,12 +212,61 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     @Click(R.id.btnCreate)
     void addNew() {
         String endpoint = txtEndpoint.getText().toString();
-        String username = txtUsername.getText().toString();
-        String password = txtPassword.getText().toString();
+        final URL endpointUrl;
+        try {
+            endpointUrl = new URL(endpoint);
+        } catch (MalformedURLException e) {
+            String message = "Invalid API URL: " + e.getMessage() + "\nExample: " +
+                    getString(R.string.default_endpoint);
+            showToast(message);
+            return;
+        }
 
-        Boolean adminPriv = chkAdminPriv.isChecked();
+        final String username = txtUsername.getText().toString();
+        if (!username.matches(".+@.+")) {
+            showToast("Invalid username. Use " +
+                    getString(R.string.account_username) + " pattern.\nExample: " +
+                    getString(R.string.default_username));
+            return;
+        }
 
-        finishLogin(endpoint, username, password, adminPriv);
+        final String password = txtPassword.getText().toString();
+        if (password.length() == 0) {
+            showToast("Password can't be empty.");
+            return;
+        }
+
+        final Boolean adminPriv = chkAdminPriv.isChecked();
+
+        String apiPath = endpointUrl.getPath();
+        if (apiPath.isEmpty() || !apiPath.contains("api")) {
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+            dialogBuilder.setMessage(R.string.account_dialog_missing_api_message)
+                    .setPositiveButton(R.string.yes_str, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            URL endpointUrlFixed = null;
+                            try {
+                                endpointUrlFixed =
+                                        new URL(endpointUrl, getString(R.string.default_api_path));
+                            } catch (MalformedURLException ignored) {
+                            }
+                            assert endpointUrlFixed != null;
+                            String endpointFixed = endpointUrlFixed.toString();
+                            txtEndpoint.setText(endpointFixed);
+                            finishLogin(endpointFixed, username, password, adminPriv);
+                        }
+                    })
+                    .setNegativeButton(R.string.no_str, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finishLogin(endpointUrl.toString(), username, password, adminPriv);
+                        }
+                    });
+            dialogBuilder.create().show();
+        } else {
+            finishLogin(endpointUrl.toString(), username, password, adminPriv);
+        }
     }
 
     @Background
@@ -160,29 +298,36 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             onTokenReceived(token, endpointChanged);
         } catch (Exception e) {
             changeProgressVisibilityTo(View.GONE);
-            showToast("Error logging in: " + e.getMessage());
+            String message;
+            Throwable cause = e.getCause();
+            if (cause != null && cause instanceof SSLHandshakeException) {
+                int ignoreIndex = Arrays
+                        .asList(getResources().getStringArray(R.array.cert_option_keys))
+                        .indexOf("ignore");
+                String certIgnore = getResources()
+                        .getStringArray(R.array.certificate_handling_strategy)[ignoreIndex];
+                message = "Certificate error. Use proper certificate or select " + certIgnore +
+                        " option in " + getString(R.string.advanced_settings);
+                message = message + "\nDetails: " + cause.getMessage();
+            } else {
+                message = "Error logging in: " + e.getMessage();
+            }
+            showToast(message);
         }
-    }
-
-    public static void addPeriodicSync(int intervalInMinutes) {
-        long intervalInSeconds =
-                (long) intervalInMinutes * (long) SECONDS_IN_MINUTE;
-        ContentResolver.addPeriodicSync(
-                MovirtAuthenticator.MOVIRT_ACCOUNT,
-                OVirtContract.CONTENT_AUTHORITY,
-                Bundle.EMPTY,
-                intervalInSeconds);
     }
 
     void onTokenReceived(String token, boolean endpointChanged) {
         changeProgressVisibilityTo(View.GONE);
         if (TextUtils.isEmpty(token)) {
-            showToast("Error: the returned token is empty");
+            showToast("Error: the returned token is empty." +
+                    "\nTry https protocol and add your certificate in " +
+                    getString(R.string.advanced_settings) + ".");
             return;
         } else {
             showToast("Login successful");
             if (endpointChanged) {
-                // there is a different set of events and since we are counting only the increments, this ones are not needed anymore
+                // there is a different set of events and since we are counting only the increments,
+                // this ones are not needed anymore
                 eventsHandler.deleteEvents();
             }
 
@@ -202,12 +347,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
     @UiThread
     void changeProgressVisibilityTo(int visibility) {
-        if (visibility == View.GONE) {
-            inProgress = true;
-        } else {
-            inProgress = true;
-        }
-
+        inProgress = visibility != View.GONE;
         authProgress.setVisibility(visibility);
     }
 

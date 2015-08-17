@@ -586,6 +586,12 @@ public class OVirtClient {
     private void fireConnectionError(Exception e) {
         String msg = e.getMessage();
         if (e instanceof HttpClientErrorException) {
+            HttpStatus statusCode = ((HttpClientErrorException) e).getStatusCode();
+            if (statusCode == HttpStatus.NOT_FOUND) {
+                msg = msg + ": " + "oVirt-engine is not found on " + restClient.getRootUrl();
+                fireConnectionError(String.format(errorMsg, msg));
+                return;
+            }
 
             String responseBody = ((HttpClientErrorException) e).getResponseBodyAsString();
             if (!TextUtils.isEmpty(responseBody)) {

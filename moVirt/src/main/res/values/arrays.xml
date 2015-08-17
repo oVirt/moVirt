@@ -56,6 +56,13 @@
         <item>Events</item>
     </string-array>
 
+    <!-- for the case display names get changed in future -->
+    <string-array name="cert_option_keys">
+        <item>system</item>
+        <item>specific</item>
+        <item>ignore</item>
+    </string-array>
+
     <string-array name="certificate_handling_strategy">
         <item>Trust System Certificates</item>
         <item>Trust Specific Certificate</item>
