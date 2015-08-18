@@ -30,7 +30,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/textView3">
+        android:layout_below="@+id/textView3"
+        android:clipToPadding="false"
+        android:paddingBottom="120dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -103,28 +105,26 @@
     <LinearLayout
         android:id="@+id/linearLayout2"
         style="?android:attr/buttonBarStyle"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="96dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="8dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:gravity="end"
         android:orientation="vertical">
 
         <Button
             android:id="@+id/btnAdvanced"
             style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical|end"
             android:text="@string/advanced_settings" />
 
         <Button
             android:id="@+id/btnCreate"
             style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical|end"
             android:text="@string/save_acc" />
     </LinearLayout>
 

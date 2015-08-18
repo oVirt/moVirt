@@ -5,16 +5,16 @@
     android:layout_height="match_parent"
     tools:context="org.ovirt.mobile.movirt.ui.VmDetailGeneralFragment_">
 
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="vertical"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeGeneralContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v4.widget.SwipeRefreshLayout
-            android:id="@+id/swipeGeneralContainer"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:id="@+id/scrollView2">
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -34,7 +34,7 @@
                     android:id="@+id/cpuLabel"
                     style="@style/VmStatsLabel"
                     android:layout_below="@id/statusLabel"
-                    android:text="@string/cpu"/>
+                    android:text="@string/cpu" />
 
                 <TextView
                     android:id="@+id/cpuView"
@@ -45,7 +45,7 @@
                     android:id="@+id/memLabel"
                     style="@style/VmStatsLabel"
                     android:text="@string/memory"
-                    android:layout_below="@id/cpuLabel"/>
+                    android:layout_below="@id/cpuLabel" />
 
                 <TextView
                     android:id="@+id/memView"
@@ -56,7 +56,7 @@
                     android:id="@+id/memoryLabel"
                     style="@style/VmStatsLabel"
                     android:text="@string/memoryMb"
-                    android:layout_below="@id/memLabel"/>
+                    android:layout_below="@id/memLabel" />
 
                 <TextView
                     android:id="@+id/memoryView"
@@ -67,7 +67,7 @@
                     android:id="@+id/socketLabel"
                     style="@style/VmStatsLabel"
                     android:text="@string/sockets"
-                    android:layout_below="@id/memoryLabel"/>
+                    android:layout_below="@id/memoryLabel" />
 
                 <TextView
                     android:id="@+id/socketView"
@@ -78,7 +78,7 @@
                     android:id="@+id/coreLabel"
                     style="@style/VmStatsLabel"
                     android:text="@string/cores"
-                    android:layout_below="@id/socketLabel"/>
+                    android:layout_below="@id/socketLabel" />
 
                 <TextView
                     android:id="@+id/coreView"
@@ -89,7 +89,7 @@
                     android:id="@+id/osLabel"
                     style="@style/VmStatsLabel"
                     android:text="@string/os"
-                    android:layout_below="@id/coreLabel"/>
+                    android:layout_below="@id/coreLabel" />
 
                 <TextView
                     android:id="@+id/osView"
@@ -100,7 +100,7 @@
                     android:id="@+id/displayLabel"
                     style="@style/VmStatsLabel"
                     android:text="@string/display"
-                    android:layout_below="@id/osLabel"/>
+                    android:layout_below="@id/osLabel" />
 
                 <TextView
                     android:id="@+id/displayView"
@@ -111,7 +111,7 @@
                     android:id="@+id/clusterLabel"
                     style="@style/VmStatsLabel"
                     android:text="@string/cluster_and_version"
-                    android:layout_below="@id/displayLabel"/>
+                    android:layout_below="@id/displayLabel" />
 
                 <TextView
                     android:id="@+id/clusterView"
@@ -122,7 +122,7 @@
                     android:id="@+id/dataCenterLabel"
                     style="@style/VmStatsLabel"
                     android:text="@string/data_center_and_version"
-                    android:layout_below="@id/clusterLabel"/>
+                    android:layout_below="@id/clusterLabel" />
 
                 <TextView
                     android:id="@+id/dataCenterView"
@@ -133,7 +133,7 @@
                     android:id="@+id/hostLabel"
                     style="@style/VmStatsLabel"
                     android:text="@string/host"
-                    android:layout_below="@id/dataCenterLabel"/>
+                    android:layout_below="@id/dataCenterLabel" />
 
                 <Button
                     android:id="@+id/hostButton"
@@ -141,9 +141,7 @@
                     android:layout_alignBaseline="@id/hostLabel" />
 
             </RelativeLayout>
+        </ScrollView>
+    </android.support.v4.widget.SwipeRefreshLayout>
 
-         </android.support.v4.widget.SwipeRefreshLayout>
-
-    </LinearLayout>
-
- </FrameLayout>
+</FrameLayout>

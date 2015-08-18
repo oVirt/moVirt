@@ -179,8 +179,8 @@
     <string name="title_activity_migrate_vm">Migrate VM</string>
     <string name="migrate_title">Choose host to migrate VM</string>
     <string name="migrate_hint">only current cluster and working hosts shown</string>
-    <string name="migrate_to_selected">Migrate to\nselected</string>
-    <string name="migrate_to_default">Migrate to\ndefault</string>
+    <string name="migrate_to_selected">Migrate to selected</string>
+    <string name="migrate_to_default">Migrate to default</string>
     <string name="migrate_empty_list">No suitable hosts to migrate</string>
 
 

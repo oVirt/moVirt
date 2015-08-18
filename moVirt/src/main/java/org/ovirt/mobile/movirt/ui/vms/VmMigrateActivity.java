@@ -115,7 +115,7 @@ public class VmMigrateActivity extends ActionBarLoaderActivity {
     }
 
     private void enableViews() {
-        labelEmpty.setVisibility(View.INVISIBLE);
+        labelEmpty.setVisibility(View.GONE);
         listHosts.setVisibility(View.VISIBLE);
         buttonMigrateToDefault.setEnabled(true);
     }
