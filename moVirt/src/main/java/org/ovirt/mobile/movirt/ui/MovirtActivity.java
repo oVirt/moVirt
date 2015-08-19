@@ -9,7 +9,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
@@ -85,7 +84,9 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
 
     @OptionsItem(R.id.menu_connection)
     public void onConnectionInfo() {
-        Toast.makeText(this, connectionInfo.getMessage(this), Toast.LENGTH_LONG).show();
+        DialogFragment dialogFragment =
+                ErrorDialogFragment.newInstance(connectionInfo.getMessage(this));
+        dialogFragment.show(getFragmentManager(), "connection_info");
     }
 
     @OptionsItem(R.id.action_refresh)
@@ -134,7 +135,7 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
         StringBuilder certificate = new StringBuilder();
         if (authenticator.getApiUrl() != null) {
             apiUrl = authenticator.getApiUrl();
-            URL url = null;
+            URL url;
             try {
                 url = new URL(apiUrl);
                 if (url.getProtocol().equalsIgnoreCase("https")) {

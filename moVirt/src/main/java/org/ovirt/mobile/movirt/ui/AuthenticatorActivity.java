@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
 import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -39,6 +40,7 @@ import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
+import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -218,13 +220,13 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         } catch (MalformedURLException e) {
             String message = "Invalid API URL: " + e.getMessage() + "\nExample: " +
                     getString(R.string.default_endpoint);
-            showToast(message);
+            showError(message);
             return;
         }
 
         final String username = txtUsername.getText().toString();
         if (!username.matches(".+@.+")) {
-            showToast("Invalid username. Use " +
+            showError("Invalid username. Use " +
                     getString(R.string.account_username) + " pattern.\nExample: " +
                     getString(R.string.default_username));
             return;
@@ -232,7 +234,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
         final String password = txtPassword.getText().toString();
         if (password.length() == 0) {
-            showToast("Password can't be empty.");
+            showError("Password can't be empty.");
             return;
         }
 
@@ -312,14 +314,14 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             } else {
                 message = "Error logging in: " + e.getMessage();
             }
-            showToast(message);
+            showError(message);
         }
     }
 
     void onTokenReceived(String token, boolean endpointChanged) {
         changeProgressVisibilityTo(View.GONE);
         if (TextUtils.isEmpty(token)) {
-            showToast("Error: the returned token is empty." +
+            showError("Error: the returned token is empty." +
                     "\nTry https protocol and add your certificate in " +
                     getString(R.string.advanced_settings) + ".");
             return;
@@ -349,6 +351,11 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     void changeProgressVisibilityTo(int visibility) {
         inProgress = visibility != View.GONE;
         authProgress.setVisibility(visibility);
+    }
+
+    void showError(String msg) {
+        DialogFragment dialogFragment = ErrorDialogFragment.newInstance(msg);
+        dialogFragment.show(getFragmentManager(), "login_error");
     }
 
     @UiThread
