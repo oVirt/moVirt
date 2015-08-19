@@ -23,7 +23,7 @@ class Cluster implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Cluster
         org.ovirt.mobile.movirt.model.Cluster cluster = new org.ovirt.mobile.movirt.model.Cluster();
         cluster.setId(id);
         cluster.setName(name);
-        cluster.setVersion(version.major + "." + version.minor);
+        cluster.setVersion(ParseUtils.parseVersion(version));
         cluster.setDataCenterId(data_center.id);
 
         return cluster;

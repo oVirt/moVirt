@@ -13,7 +13,7 @@ public class DataCenter implements RestEntityWrapper<org.ovirt.mobile.movirt.mod
         org.ovirt.mobile.movirt.model.DataCenter dataCenter = new org.ovirt.mobile.movirt.model.DataCenter();
         dataCenter.setId(id);
         dataCenter.setName(name);
-        dataCenter.setVersion(version.major + "." + version.minor);
+        dataCenter.setVersion(ParseUtils.parseVersion(version));
 
         return dataCenter;
     }

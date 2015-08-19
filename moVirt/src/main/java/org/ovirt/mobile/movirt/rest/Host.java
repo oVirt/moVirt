@@ -50,7 +50,7 @@ class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
         org.ovirt.mobile.movirt.model.Host host = new org.ovirt.mobile.movirt.model.Host();
         host.setId(id);
         host.setName(name);
-        host.setStatus(mapStatus(status.state));
+        host.setStatus(mapStatus(status));
         host.setClusterId(cluster.id);
 
         if (statistics != null && statistics.statistic != null) {
@@ -73,9 +73,15 @@ class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
             host.setMemorySizeMb(-1);
         }
 
-        host.setSockets(Integer.parseInt(cpu.topology.sockets));
-        host.setCoresPerSocket(Integer.parseInt(cpu.topology.cores));
-        host.setThreadsPerCore(Integer.parseInt(cpu.topology.threads));
+        if (cpu != null && cpu.topology != null) {
+            host.setSockets(ParseUtils.intOrDefault(cpu.topology.sockets));
+            host.setCoresPerSocket(ParseUtils.intOrDefault(cpu.topology.cores));
+            host.setThreadsPerCore(ParseUtils.intOrDefault(cpu.topology.threads));
+        } else {
+            host.setSockets(-1);
+            host.setCoresPerSocket(-1);
+            host.setThreadsPerCore(-1);
+        }
 
         try {
             host.setCpuSpeed(Long.parseLong(cpu.speed));
@@ -83,19 +89,34 @@ class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
             host.setCpuSpeed(-1);
         }
 
-        host.setOsVersion(os.type + "-" + os.version.full_version);
+        String osString = "";
+        if (os != null && os.type != null) {
+            osString = os.type;
+        }
+        if (os != null && os.version != null && os.version.full_version != null) {
+            osString += "-" + os.version.full_version;
+        }
+        host.setOsVersion(osString);
 
         host.setAddress(address);
 
-        host.setActive(Integer.parseInt(summary.active));
-        host.setMigrating(Integer.parseInt(summary.migrating));
-        host.setTotal(Integer.parseInt(summary.total));
+        if (summary != null) {
+            host.setActive(ParseUtils.intOrDefault(summary.active));
+            host.setMigrating(ParseUtils.intOrDefault(summary.migrating));
+            host.setTotal(ParseUtils.intOrDefault(summary.total));
+        }
 
         return host;
     }
 
-    private static org.ovirt.mobile.movirt.model.Host.Status mapStatus(String state) {
-        return org.ovirt.mobile.movirt.model.Host.Status.valueOf(state.toUpperCase());
+    private static org.ovirt.mobile.movirt.model.Host.Status mapStatus(Status state) {
+        try {
+            return org.ovirt.mobile.movirt.model.Host.Status.valueOf(state.state.toUpperCase());
+        } catch (Exception e) {
+            // this is the error status also on engine
+            return org.ovirt.mobile.movirt.model.Host.Status.UNASSIGNED;
+        }
+
     }
 
     private static BigDecimal getStatisticValueByName(String name, List<Statistic> statistics) {

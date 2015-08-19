@@ -29,7 +29,14 @@ class Event implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Event> {
         event.setId(id);
         event.setCode(code);
         event.setDescription(description);
-        event.setSeverity(org.ovirt.mobile.movirt.model.Event.Severity.valueOf(severity.toUpperCase()));
+
+        try {
+            event.setSeverity(org.ovirt.mobile.movirt.model.Event.Severity.valueOf(severity.toUpperCase()));
+        } catch (Exception e) {
+            // fallback...
+            event.setSeverity(org.ovirt.mobile.movirt.model.Event.Severity.NORMAL);
+        }
+
         event.setTime(new Timestamp(time));
         if (vm != null) event.setVmId(vm.id);
         if (host != null) event.setHostId(host.id);
