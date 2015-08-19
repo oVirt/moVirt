@@ -32,7 +32,7 @@ import org.ovirt.mobile.movirt.rest.ActionTicket;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity_;
-import org.ovirt.mobile.movirt.ui.AreYouSureDialog;
+import org.ovirt.mobile.movirt.ui.dialogs.AreYouSureDialog;
 import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.DiskDetailFragment;
 import org.ovirt.mobile.movirt.ui.DiskDetailFragment_;

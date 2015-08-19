@@ -63,8 +63,7 @@
         <service
             android:name=".sync.SyncService_"
             android:enabled="true"
-            android:exported="true"
-            android:process=":sync"> <!-- delete android:process to be able to debug sync actions -->
+            android:exported="true">
 
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
