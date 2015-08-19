@@ -127,7 +127,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private void updateAll(final boolean tryEvents) throws RemoteException {
         initBatch();
-
         // TODO: we really need promises here
         // TODO: ideally split each request and save vms, hosts, ... in separate batches
         oVirtClient.getVms(new OVirtClient.SimpleResponse<List<Vm>>() {
@@ -152,7 +151,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                                 updateLocalEntities(remoteStorageDomains, StorageDomain.class);
 
                                                 applyBatch();
-										
+
 												if (tryEvents) {
 		                                            eventsHandler.updateEvents(false);
 		                                        }

@@ -51,7 +51,7 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
         org.ovirt.mobile.movirt.model.Vm vm = new org.ovirt.mobile.movirt.model.Vm();
         vm.setId(id);
         vm.setName(name);
-        vm.setStatus(mapStatus(status.state));
+        vm.setStatus(mapStatus(status));
         vm.setClusterId(cluster.id);
         vm.setHostId(host != null ? host.id : "");
 
@@ -74,13 +74,27 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
             vm.setMemorySizeMb(-1);
         }
 
-        vm.setSockets(Integer.parseInt(cpu.topology.sockets));
-        vm.setCoresPerSocket(Integer.parseInt(cpu.topology.cores));
+        if (cpu != null && cpu.topology != null) {
+            vm.setSockets(ParseUtils.intOrDefault(cpu.topology.sockets));
+            vm.setCoresPerSocket(ParseUtils.intOrDefault(cpu.topology.cores));
+        } else {
+            vm.setSockets(-1);
+            vm.setCoresPerSocket(-1);
+        }
 
-        vm.setOsType(os.type);
+        if (os != null) {
+            vm.setOsType(os.type);
+        }
 
-        vm.setDisplayType(mapDisplay(display.type));
-        vm.setDisplayAddress(display.address);
+        if (display != null) {
+            vm.setDisplayType(mapDisplay(display.type));
+            vm.setDisplayAddress(display.address != null ? display.address : "");
+            vm.setCertificateSubject((display.certificate != null && display.certificate.subject != null) ? display.certificate.subject : "");
+        } else {
+            vm.setDisplayType(org.ovirt.mobile.movirt.model.Vm.Display.VNC);
+            vm.setDisplayAddress("");
+        }
+
         try {
             vm.setDisplayPort(Integer.parseInt(display.port));
         } catch (Exception e) {
@@ -91,17 +105,25 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
         } catch (Exception e) {
             vm.setDisplaySecurePort(-1);
         }
-        vm.setCertificateSubject((display.certificate != null && display.certificate.subject != null) ? display.certificate.subject : "");
 
         return vm;
     }
 
-    private static org.ovirt.mobile.movirt.model.Vm.Status mapStatus(String status) {
-        return org.ovirt.mobile.movirt.model.Vm.Status.valueOf(status.toUpperCase());
+    private static org.ovirt.mobile.movirt.model.Vm.Status mapStatus(Status status) {
+        try {
+            return org.ovirt.mobile.movirt.model.Vm.Status.valueOf(status.state.toUpperCase());
+        } catch (Exception e) {
+            return org.ovirt.mobile.movirt.model.Vm.Status.UNKNOWN;
+        }
     }
 
     private static org.ovirt.mobile.movirt.model.Vm.Display mapDisplay(String display) {
-        return org.ovirt.mobile.movirt.model.Vm.Display.valueOf(display.toUpperCase());
+        try {
+            return org.ovirt.mobile.movirt.model.Vm.Display.valueOf(display.toUpperCase());
+        } catch (Exception e) {
+            // not particularly nice but same behavior as on the webadmin/userportal
+            return org.ovirt.mobile.movirt.model.Vm.Display.VNC;
+        }
     }
 
     private static BigDecimal getStatisticValueByName(String name, List<Statistic> statistics) {

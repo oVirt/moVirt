@@ -32,7 +32,13 @@ public class StorageDomain implements RestEntityWrapper<org.ovirt.mobile.movirt.
     }
 
     private static org.ovirt.mobile.movirt.model.StorageDomain.Type mapType(String type) {
-        return org.ovirt.mobile.movirt.model.StorageDomain.Type.valueOf(type.toUpperCase());
+        try {
+            return org.ovirt.mobile.movirt.model.StorageDomain.Type.valueOf(type.toUpperCase());
+        } catch (Exception e) {
+            // guess it is this...
+            return org.ovirt.mobile.movirt.model.StorageDomain.Type.DATA;
+        }
+
     }
 
 }

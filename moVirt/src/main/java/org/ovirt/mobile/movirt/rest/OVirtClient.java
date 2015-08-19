@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -19,6 +20,7 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
+import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.res.StringRes;
 import org.androidannotations.annotations.rest.RestService;
 import org.ovirt.mobile.movirt.Broadcasts;
@@ -82,14 +84,20 @@ public class OVirtClient {
     @StringRes(R.string.rest_request_failed)
     String errorMsg;
 
-    private static <E, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers, WrapPredicate<R> predicate) {
+    private <E, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers, WrapPredicate<R> predicate) {
         List<E> entities = new ArrayList<>();
         if (wrappers == null) {
             return entities;
         }
+
         for (R rest : wrappers) {
-            if (predicate == null || predicate.toWrap(rest)) {
-                entities.add(rest.toEntity());
+            try {
+                if (predicate == null || predicate.toWrap(rest)) {
+                    entities.add(rest.toEntity());
+                }
+            } catch (Exception e) {
+                // showing only as a toast since this problem may persist and we don't want to flood the user with messages like this as dialogs...
+                showToast("Error parsing rest response, ignoring: " + rest.toString() + " error: " + e.getMessage());
             }
         }
         return entities;
@@ -239,6 +247,11 @@ public class OVirtClient {
                 return mapRestWrappers(loadedVms.vm, null);
             }
         }, response);
+    }
+
+    @UiThread
+    void showToast(String msg) {
+        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
 
     public void getClusters(Response<List<Cluster>> response) {
