@@ -1,8 +1,5 @@
 package org.ovirt.mobile.movirt.ui.hosts;
 
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.net.Uri;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
@@ -24,7 +21,7 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.ui.AreYouSureDialog;
+import org.ovirt.mobile.movirt.ui.dialogs.AreYouSureDialog;
 import org.ovirt.mobile.movirt.ui.EventsFragment;
 import org.ovirt.mobile.movirt.ui.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;

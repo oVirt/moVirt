@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.dialogs;
 
 import android.app.AlertDialog;
 import android.content.Context;

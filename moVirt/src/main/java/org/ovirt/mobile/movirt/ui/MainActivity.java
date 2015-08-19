@@ -41,7 +41,6 @@ import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
@@ -95,8 +94,6 @@ public class MainActivity extends MovirtActivity {
     String selectedClusterId;
     @InstanceState
     String selectedClusterName;
-    @Bean
-    MovirtAuthenticator authenticator;
     @Bean
     EventsHandler eventsHandler;
     @StringRes(R.string.all_clusters)
