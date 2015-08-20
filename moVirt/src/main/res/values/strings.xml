@@ -174,8 +174,8 @@
     <string name="data_centers">Data Centers</string>
     <string name="clusters">Clusters</string>
     <string name="hosts">Hosts</string>
-    <string name="storage_domains">Storage Domains</string>
-    <string name="virtual_machines">Virtual Machines</string>
+    <string name="storage_domains">Storages</string>
+    <string name="virtual_machines">VMs</string>
 
     <string name="yes_str">Yes</string>
     <string name="no_str">No</string>

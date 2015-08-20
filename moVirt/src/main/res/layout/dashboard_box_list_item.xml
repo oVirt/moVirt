@@ -42,7 +42,8 @@
                 android:id="@+id/warningEventCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="22sp" />
+                android:fontFamily="sans-serif-thin"
+                android:textSize="18sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -65,7 +66,8 @@
                 android:id="@+id/alertEventCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="22sp" />
+                android:fontFamily="sans-serif-thin"
+                android:textSize="18sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -87,7 +89,8 @@
                 android:id="@+id/errorEventCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="22sp" />
+                android:fontFamily="sans-serif-thin"
+                android:textSize="18sp" />
         </LinearLayout>
 
         <LinearLayout
