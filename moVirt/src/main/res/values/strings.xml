@@ -21,10 +21,8 @@
     <string name="refresh">Refresh</string>
     <string name="all_clusters">All clusters</string>
     <string name="no_vms">No VMs</string>
-    <string name="needs_configuration">To use the moVirt client, you first need to setup connection parameters for your data center.</string>
+    <string name="needs_configuration">To use the moVirt client, you first need to setup connection parameters for your data center.\n\nDo you want to configure now?</string>
     <string name="connection_not_correct">Connection seems to be not configured properly - configure it now?</string>
-    <string name="configure_str">Configure</string>
-    <string name="ignore_str">Ignore</string>
     <string name="configuration">Configuration</string>
     <string name="default_username">admin@internal</string>
     <string name="default_endpoint">http://10.0.2.2:8080/ovirt-engine/api</string>
@@ -149,8 +147,6 @@
     <string name="activate">activate</string>
     <string name="deactivate">deactivate</string>
 
-    <string name="import_str">Import</string>
-    <string name="missing_ca_cert">Missing the Certificate Authority for SPICE, do you want to import it now?</string>
     <string name="can_not_run_console_without_ca">The console can not run without the Certificate Authority for SPICE</string>
     <string name="spice_ca_management">SPICE CA management</string>
     <string name="rest_ca_management">REST CA management</string>
@@ -177,10 +173,6 @@
     <string name="storage_domains">Storages</string>
     <string name="virtual_machines">VMs</string>
 
-    <string name="yes_str">Yes</string>
-    <string name="no_str">No</string>
-    <string name="are_you_sure_str">Are you sure you want to %1$s?</string>
-
     <string name="title_activity_migrate_vm">Migrate VM</string>
     <string name="migrate_title">Choose host to migrate VM</string>
     <string name="migrate_hint">only current cluster and working hosts shown</string>
@@ -188,6 +180,14 @@
     <string name="migrate_to_default">Migrate to default</string>
     <string name="migrate_empty_list">No suitable hosts to migrate</string>
 
-
+    <string name="dialog_action_delete_certificate">delete stored certificate</string>
+    <string name="dialog_action_stop_vm">stop the VM</string>
+    <string name="dialog_action_reboot_vm">reboot the VM</string>
+    <string name="dialog_action_stop_migrate_vm">cancel VM migration</string>
+    <string name="dialog_action_deactivate_host">put the host to maintenance</string>
+    <string name="dialog_certificate_missing_start">Missing or invalid certificate!\n</string>
+    <string name="dialog_certificate_missing_end">\nDo you want to configure it now?</string>
+    <string name="dialog_action_clear_events">delete all the events stored locally</string>
+    <string name="dialog_confirm_message">Are you sure you want to %1$s?</string>
 
 </resources>

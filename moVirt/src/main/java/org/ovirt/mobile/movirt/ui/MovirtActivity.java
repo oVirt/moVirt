@@ -1,6 +1,5 @@
 package org.ovirt.mobile.movirt.ui;
 
-import android.accounts.AccountManager;
 import android.app.DialogFragment;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -20,14 +19,10 @@ import org.androidannotations.annotations.UiThread;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
-import org.ovirt.mobile.movirt.model.CaCert;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * Class that represents base Activity for entire moVirt app. Every Activity should extends this if
@@ -125,42 +120,8 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
             registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void connectionFailure(
             @Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
-        String sessionID = AccountManager.get(this).peekAuthToken(
-                MovirtAuthenticator.MOVIRT_ACCOUNT,
-                MovirtAuthenticator.AUTH_TOKEN_TYPE);
-        if (sessionID == null) {
-            sessionID = "sessionID is missing!\n\tauthentication failed";
-        }
-        String apiUrl = "";
-        StringBuilder certificate = new StringBuilder();
-        if (authenticator.getApiUrl() != null) {
-            apiUrl = authenticator.getApiUrl();
-            URL url;
-            try {
-                url = new URL(apiUrl);
-                if (url.getProtocol().equalsIgnoreCase("https")) {
-                    certificate.append("\nCertificate strategy: ")
-                            .append(authenticator.getCertHandlingStrategy().toString());
-                }
-                if (authenticator.getCertHandlingStrategy() == CertHandlingStrategy.TRUST_CUSTOM) {
-                    if (superProvider.query(CaCert.class).all().size() > 0) {
-                        certificate.append("\n\tcertificate is downloaded and stored");
-                    } else {
-                        certificate.append("\n\tcertificate is missing!");
-                    }
-                }
-            } catch (MalformedURLException e) {
-                apiUrl = "url is malformed\n\t" + e.getMessage();
-            }
-        } else {
-            apiUrl = "url is missing!";
-        }
-        String message = getString(R.string.rest_req_failed) +
-                "\nConnection details:\nAPI URL: " + apiUrl +
-                "\nUsername: " + authenticator.getUserName() +
-                "\nSessionID: " + sessionID +
-                certificate.toString() +
-                "\n\nError details:\n" + reason;
+        String message = ErrorDialogFragment
+                .makeErrorMessage(this, authenticator, superProvider, reason);
         DialogFragment dialogFragment = ErrorDialogFragment.newInstance(message);
         dialogFragment.show(getFragmentManager(), "error");
     }

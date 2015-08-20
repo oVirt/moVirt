@@ -1,5 +1,6 @@
 package org.ovirt.mobile.movirt.ui.hosts;
 
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
@@ -21,7 +22,6 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.ui.dialogs.AreYouSureDialog;
 import org.ovirt.mobile.movirt.ui.EventsFragment;
 import org.ovirt.mobile.movirt.ui.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
@@ -29,12 +29,16 @@ import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
+import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 
 @EActivity(R.layout.activity_host_detail)
 @OptionsMenu(R.menu.host)
-public class HostDetailActivity extends MovirtActivity implements HasProgressBar, UpdateMenuItemAware<Host> {
+public class HostDetailActivity extends MovirtActivity
+        implements HasProgressBar, UpdateMenuItemAware<Host>,
+        ConfirmDialogFragment.ConfirmDialogListener {
+
     private static final String TAG = HostDetailActivity.class.getSimpleName();
     @ViewById
     ViewPager viewPager;
@@ -102,12 +106,16 @@ public class HostDetailActivity extends MovirtActivity implements HasProgressBar
     @OptionsItem(R.id.action_deactivate)
     @UiThread
     void deactivate() {
-        AreYouSureDialog.show(this, getResources(), "put the host to maintenance", new Runnable() {
-            @Override
-            public void run() {
-                doDeactivate();
-            }
-        });
+        ConfirmDialogFragment confirmDialog = ConfirmDialogFragment
+                .newInstance(0, getString(R.string.dialog_action_deactivate_host));
+        confirmDialog.show(getFragmentManager(), "confirmDeactivateHost");
+    }
+
+    @Override
+    public void onDialogResult(int dialogButton, int actionId) {
+        if (dialogButton == DialogInterface.BUTTON_POSITIVE) {
+            doDeactivate();
+        }
     }
 
     @Background
