@@ -1,8 +1,7 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.accounts.AccountManager;
-import android.app.AlertDialog;
-import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -21,7 +20,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -49,6 +47,8 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.dashboard.DashboardActivity_;
+import org.ovirt.mobile.movirt.ui.dialogs.AccountDialogFragment;
+import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.hosts.HostsFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
@@ -61,13 +61,13 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends MovirtActivity {
+public class MainActivity extends MovirtActivity
+        implements ConfirmDialogFragment.ConfirmDialogListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String[] CLUSTER_PROJECTION = new String[]{OVirtContract.Cluster.NAME, OVirtContract.Cluster.ID,
             OVirtContract.Cluster.VERSION, OVirtContract.Cluster.DATA_CENTER_ID};
     public final int CLUSTER_LOADER = numSuperLoaders;
-    Dialog connectionNotConfiguredProperlyDialog;
     @StringRes(R.string.needs_configuration)
     String noAccMsg;
     @StringRes(R.string.connection_not_correct)
@@ -103,14 +103,6 @@ public class MainActivity extends MovirtActivity {
     private CursorAdapterLoader clusterAdapterLoader;
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        if (connectionNotConfiguredProperlyDialog.isShowing()) {
-            connectionNotConfiguredProperlyDialog.dismiss();
-        }
-    }
-
-    @Override
     public void setTitle(CharSequence title) {
         super.setTitle(title);
 
@@ -120,17 +112,20 @@ public class MainActivity extends MovirtActivity {
     @AfterViews
     void init() {
 
-        connectionNotConfiguredProperlyDialog = new Dialog(this);
-
         initClusterDrawer();
 
         setTitle(selectedClusterName == null ? getString(R.string.all_clusters) : selectedClusterName);
 
         if (!authenticator.accountConfigured()) {
-            showDialogToOpenAccountSettings(noAccMsg, new Intent(this, AuthenticatorActivity_.class));
+            showAccountDialog();
         }
 
         initPagers();
+    }
+
+    private void showAccountDialog() {
+        DialogFragment accountDialog = new AccountDialogFragment();
+        accountDialog.show(getFragmentManager(), "accountDialog");
     }
 
     private void initPagers() {
@@ -210,37 +205,6 @@ public class MainActivity extends MovirtActivity {
         getSupportLoaderManager().destroyLoader(CLUSTER_LOADER);
     }
 
-    private void showDialogToOpenAccountSettings(String msg, final Intent intent) {
-        if (connectionNotConfiguredProperlyDialog.isShowing()) {
-            return;
-        }
-
-        connectionNotConfiguredProperlyDialog.setContentView(R.layout.settings_dialog);
-        connectionNotConfiguredProperlyDialog.setTitle(getString(R.string.configuration));
-
-        TextView label = (TextView) connectionNotConfiguredProperlyDialog.findViewById(R.id.text);
-        label.setText(msg);
-
-        Button continueButton = (Button) connectionNotConfiguredProperlyDialog.findViewById(R.id.continueButton);
-        continueButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                connectionNotConfiguredProperlyDialog.dismiss();
-                startActivity(intent);
-            }
-        });
-
-        Button ignoreButton = (Button) connectionNotConfiguredProperlyDialog.findViewById(R.id.ignoreButton);
-        ignoreButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                connectionNotConfiguredProperlyDialog.dismiss();
-            }
-        });
-
-        connectionNotConfiguredProperlyDialog.show();
-    }
-
     @OptionsItem(R.id.action_dashboard)
     void showDashboard() {
         startActivity(new Intent(this, DashboardActivity_.class));
@@ -259,23 +223,16 @@ public class MainActivity extends MovirtActivity {
 
     @OptionsItem(R.id.action_clear_events)
     void clearEvents() {
-        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case DialogInterface.BUTTON_POSITIVE:
-                        eventsHandler.deleteEvents();
-                        break;
+        DialogFragment confirmDialog = ConfirmDialogFragment
+                .newInstance(0, getString(R.string.dialog_action_clear_events));
+        confirmDialog.show(getFragmentManager(), "confirmClearEvents");
+    }
 
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        break;
-                }
-            }
-        };
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure you want to delete all the events stored locally?").setPositiveButton("Yes", dialogClickListener)
-                .setNegativeButton("No", dialogClickListener).show();
+    @Override
+    public void onDialogResult(int dialogButton, int actionId) {
+        if (dialogButton == DialogInterface.BUTTON_POSITIVE) {
+            eventsHandler.deleteEvents();
+        }
     }
 
     @OptionsItem(R.id.action_edit_triggers)
@@ -330,6 +287,6 @@ public class MainActivity extends MovirtActivity {
 
     @Receiver(actions = Broadcasts.NO_CONNECTION_SPEFICIED, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void noConnection(@Receiver.Extra(AccountManager.KEY_INTENT) Parcelable toOpen) {
-        showDialogToOpenAccountSettings(accIncorrectMsg, (Intent) toOpen);
+        showAccountDialog();
     }
 }

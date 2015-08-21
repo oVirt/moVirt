@@ -3,9 +3,8 @@ package org.ovirt.mobile.movirt.ui;
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
-import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.content.ContentResolver;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -39,6 +38,9 @@ import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
+import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
+import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
+import org.ovirt.mobile.movirt.ui.dialogs.ImportCertificateDialogFragment;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -81,15 +83,22 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     ProviderFacade providerFacade;
     @InstanceState
     boolean enforceHttpBasicAuth = false;
-
     @InstanceState
     CertHandlingStrategy certHandlingStrategy;
-
     @InstanceState
     boolean advancedFieldsInited = false;
-
     @InstanceState
     boolean inProgress;
+    @InstanceState
+    URL endpointUrl;
+    @InstanceState
+    String username;
+    @InstanceState
+    String password;
+    @InstanceState
+    Boolean adminPriv;
+    @InstanceState
+    String endpoint;
 
     public static void addPeriodicSync(int intervalInMinutes) {
         long intervalInSeconds =
@@ -188,7 +197,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     }
 
     @Click(R.id.btnAdvanced)
-    void btnAdvancedClicked() {
+    public void btnAdvancedClicked() {
         Intent intent = new Intent(this, AdvancedAuthenticatorActivity_.class);
         intent.putExtra(AdvancedAuthenticatorActivity.ENFORCE_HTTP_BASIC_AUTH, enforceHttpBasicAuth);
         intent.putExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY, certHandlingStrategy.id());
@@ -211,69 +220,63 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
     @Click(R.id.btnCreate)
     void addNew() {
-        String endpoint = txtEndpoint.getText().toString();
-        final URL endpointUrl;
+        endpoint = txtEndpoint.getText().toString();
         try {
             endpointUrl = new URL(endpoint);
         } catch (MalformedURLException e) {
             String message = "Invalid API URL: " + e.getMessage() + "\nExample: " +
                     getString(R.string.default_endpoint);
-            showToast(message);
+            showError(message);
             return;
         }
+        endpoint = endpointUrl.toString();
 
-        final String username = txtUsername.getText().toString();
+        username = txtUsername.getText().toString();
         if (!username.matches(".+@.+")) {
-            showToast("Invalid username. Use " +
+            showError("Invalid username. Use " +
                     getString(R.string.account_username) + " pattern.\nExample: " +
                     getString(R.string.default_username));
             return;
         }
 
-        final String password = txtPassword.getText().toString();
+        password = txtPassword.getText().toString();
         if (password.length() == 0) {
             showToast("Password can't be empty.");
             return;
         }
 
-        final Boolean adminPriv = chkAdminPriv.isChecked();
+        adminPriv = chkAdminPriv.isChecked();
 
         String apiPath = endpointUrl.getPath();
         if (apiPath.isEmpty() || !apiPath.contains("api")) {
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-            dialogBuilder.setMessage(R.string.account_dialog_missing_api_message)
-                    .setPositiveButton(R.string.yes_str, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            URL endpointUrlFixed = null;
-                            try {
-                                endpointUrlFixed =
-                                        new URL(endpointUrl, getString(R.string.default_api_path));
-                            } catch (MalformedURLException ignored) {
-                            }
-                            assert endpointUrlFixed != null;
-                            String endpointFixed = endpointUrlFixed.toString();
-                            txtEndpoint.setText(endpointFixed);
-                            finishLogin(endpointFixed, username, password, adminPriv);
-                        }
-                    })
-                    .setNegativeButton(R.string.no_str, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            finishLogin(endpointUrl.toString(), username, password, adminPriv);
-                        }
-                    });
-            dialogBuilder.create().show();
+            DialogFragment apiPathDialog = new ApiPathDialogFragment();
+            apiPathDialog.show(getFragmentManager(), "apiPathDialog");
         } else {
-            finishLogin(endpointUrl.toString(), username, password, adminPriv);
+            finishLogin();
         }
     }
 
+    public void fixUrlAndLogin() {
+        URL endpointUrlFixed = null;
+        try {
+            endpointUrlFixed =
+                    new URL(endpointUrl, getString(R.string.default_api_path));
+        } catch (MalformedURLException ignored) {
+        }
+        assert endpointUrlFixed != null;
+        endpoint = endpointUrlFixed.toString();
+        txtEndpoint.setText(endpoint);
+        finishLogin();
+    }
+
     @Background
-    void finishLogin(String apiUrl, String name, String password, Boolean hasAdminPermissions) {
+    public void finishLogin() {
+        if (endpoint == null || username == null || password == null) {
+            return;
+        }
         boolean endpointChanged = false;
-        if (!TextUtils.equals(apiUrl, authenticator.getApiUrl()) ||
-                !TextUtils.equals(name, authenticator.getUserName())) {
+        if (!TextUtils.equals(endpoint, authenticator.getApiUrl()) ||
+                !TextUtils.equals(username, authenticator.getUserName())) {
             endpointChanged = true;
         }
 
@@ -289,16 +292,15 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             }
         }
 
-        setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, apiUrl, name, password, hasAdminPermissions);
+        setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv);
 
         changeProgressVisibilityTo(View.VISIBLE);
 
         try {
-            String token = client.login(apiUrl, name, password, hasAdminPermissions);
+            String token = client.login(endpoint, username, password, adminPriv);
             onTokenReceived(token, endpointChanged);
         } catch (Exception e) {
             changeProgressVisibilityTo(View.GONE);
-            String message;
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof SSLHandshakeException) {
                 int ignoreIndex = Arrays
@@ -306,20 +308,23 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                         .indexOf("ignore");
                 String certIgnore = getResources()
                         .getStringArray(R.array.certificate_handling_strategy)[ignoreIndex];
-                message = "Certificate error. Use proper certificate or select " + certIgnore +
-                        " option in " + getString(R.string.advanced_settings);
-                message = message + "\nDetails: " + cause.getMessage();
+                String message = "Use proper certificate, or select " + certIgnore +
+                        ".\nError details: " + cause.getMessage();
+                DialogFragment importCertificateDialog =
+                        ImportCertificateDialogFragment.newInstance(message,
+                                AdvancedAuthenticatorActivity.MODE_REST_CA_MANAGEMENT,
+                                enforceHttpBasicAuth, certHandlingStrategy.id(), endpoint);
+                importCertificateDialog.show(getFragmentManager(), "certificateDialog");
             } else {
-                message = "Error logging in: " + e.getMessage();
+                showError("Error logging in: " + e.getMessage());
             }
-            showToast(message);
         }
     }
 
     void onTokenReceived(String token, boolean endpointChanged) {
         changeProgressVisibilityTo(View.GONE);
         if (TextUtils.isEmpty(token)) {
-            showToast("Error: the returned token is empty." +
+            showError("Error: the returned token is empty." +
                     "\nTry https protocol and add your certificate in " +
                     getString(R.string.advanced_settings) + ".");
             return;
@@ -351,6 +356,11 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         authProgress.setVisibility(visibility);
     }
 
+    void showError(String msg) {
+        DialogFragment dialogFragment = ErrorDialogFragment.newInstance(msg);
+        dialogFragment.show(getFragmentManager(), "login_error");
+    }
+
     @UiThread
     void showToast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
@@ -366,8 +376,12 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         accountManager.setPassword(account, password);
     }
 
-    @Receiver(actions = {Broadcasts.CONNECTION_FAILURE}, registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    void connectionFailure(@Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
-        Toast.makeText(AuthenticatorActivity.this, R.string.rest_req_failed + " " + reason, Toast.LENGTH_LONG).show();
+    @Receiver(actions = {Broadcasts.CONNECTION_FAILURE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    void connectionFailure(
+            @Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
+        DialogFragment dialogFragment = ErrorDialogFragment
+                .newInstance(this, authenticator, providerFacade, reason);
+        dialogFragment.show(getFragmentManager(), "error");
     }
 }

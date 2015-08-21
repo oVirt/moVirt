@@ -1,6 +1,6 @@
 package org.ovirt.mobile.movirt.ui;
 
-import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,10 +29,10 @@ import org.androidannotations.annotations.OptionsMenuItem;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.CaCert;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -53,66 +52,43 @@ import java.util.Collection;
 
 @EActivity(R.layout.activity_advanced_authenticator)
 @OptionsMenu(R.menu.advanced_authenticator)
-public class AdvancedAuthenticatorActivity extends ActionBarActivity {
+public class AdvancedAuthenticatorActivity extends ActionBarActivity
+        implements ConfirmDialogFragment.ConfirmDialogListener {
 
     public final static String CERT_HANDLING_STRATEGY = "org.ovirt.mobile.movirt.ui.CERT_HANDLING_STRATEGY";
-
     public final static String ENFORCE_HTTP_BASIC_AUTH = "org.ovirt.mobile.movirt.ui.ENFORCE_HTTP_BASIC_AUTH";
-
     public final static String LOAD_CA_FROM = "org.ovirt.mobile.movirt.ui.LOAD_CA_FROM";
-
     public final static String MODE = "org.ovirt.mobile.movirt.ui.MODE";
     public final static int MODE_REST_CA_MANAGEMENT = 1;
     public final static int MODE_SPICE_CA_MANAGEMENT = 2;
-
-    @Bean
-    MovirtAuthenticator authenticator;
-
     @Bean
     ProviderFacade providerFacade;
-
     @ViewById
     CheckBox enforceHttpBasicAuth;
-
     @ViewById
     Spinner certHandlingStrategy;
-
     @ViewById
     EditText txtCaUrl;
-
     @ViewById
     EditText txtValidForHostnames;
-
-    @ViewById
-    ScrollView scrollView;
-
     @ViewById
     TextView txtCertDetails;
-
     @ViewById
     Button btnDelete;
-
     @ViewById
     Button btnLoad;
-
     @InstanceState
     Certificate certificate;
-
     @ViewById
     ProgressBar progress;
-
     @InstanceState
     boolean inProgress;
-
     @InstanceState
     byte[] caCert;
-
     @InstanceState
     int mode;
-
     @OptionsMenuItem(R.id.action_rest_ca_management)
     MenuItem menuRestCaManagement;
-
     @OptionsMenuItem(R.id.action_spice_ca_management)
     MenuItem menuSpiceCaManagement;
 
@@ -239,39 +215,32 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity {
 
     @Click(R.id.btnDelete)
     void btnDelete() {
-        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case DialogInterface.BUTTON_POSITIVE:
-                        switch (mode) {
-                            case MODE_REST_CA_MANAGEMENT:
-                                providerFacade.deleteAll(OVirtContract.CaCert.CONTENT_URI);
-                                certificate = null;
-                                certHandlingStrategy.setSelection((int) CertHandlingStrategy.TRUST_SYSTEM.id());
-                                setCertDataToView(null, null);
-                                break;
-                            case MODE_SPICE_CA_MANAGEMENT:
-                                deleteCaFile();
-                                setCertDataToView(null, null);
-                                break;
-                            default:
-                                break;
-                        }
+        DialogFragment confirmDialog = ConfirmDialogFragment
+                .newInstance(0, getString(R.string.dialog_action_delete_certificate));
+        confirmDialog.show(getFragmentManager(), "confirmDeleteCert");
+    }
 
-                        btnDelete.setEnabled(false);
-
-                        break;
-
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        break;
-                }
+    @Override
+    @Background
+    public void onDialogResult(int dialogButton, int actionId) {
+        if (dialogButton == DialogInterface.BUTTON_POSITIVE) {
+            switch (mode) {
+                case MODE_REST_CA_MANAGEMENT:
+                    providerFacade.deleteAll(OVirtContract.CaCert.CONTENT_URI);
+                    certificate = null;
+                    certHandlingStrategy.setSelection((int) CertHandlingStrategy.TRUST_SYSTEM.id());
+                    setCertDataToView(null, null);
+                    break;
+                case MODE_SPICE_CA_MANAGEMENT:
+                    deleteCaFile();
+                    setCertDataToView(null, null);
+                    break;
+                default:
+                    break;
             }
-        };
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Are you sure you want to delete the stored certificate?").setPositiveButton("Yes", dialogClickListener)
-                .setNegativeButton("No", dialogClickListener).show();
+            btnDelete.setEnabled(false);
+        }
     }
 
     @Click(R.id.btnSave)

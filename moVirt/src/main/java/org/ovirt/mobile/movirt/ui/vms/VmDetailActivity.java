@@ -1,6 +1,6 @@
 package org.ovirt.mobile.movirt.ui.vms;
 
-import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -23,7 +23,6 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
@@ -31,8 +30,6 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.ActionTicket;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity;
-import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity_;
-import org.ovirt.mobile.movirt.ui.dialogs.AreYouSureDialog;
 import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.DiskDetailFragment;
 import org.ovirt.mobile.movirt.ui.DiskDetailFragment_;
@@ -45,6 +42,8 @@ import org.ovirt.mobile.movirt.ui.NicDetailFragment;
 import org.ovirt.mobile.movirt.ui.NicDetailFragment_;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
+import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
+import org.ovirt.mobile.movirt.ui.dialogs.ImportCertificateDialogFragment;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
@@ -52,10 +51,15 @@ import java.io.File;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
-public class VmDetailActivity extends MovirtActivity implements HasProgressBar, UpdateMenuItemAware<Vm> {
+public class VmDetailActivity extends MovirtActivity
+        implements HasProgressBar, UpdateMenuItemAware<Vm>,
+        ConfirmDialogFragment.ConfirmDialogListener {
 
     private static final String TAG = VmDetailActivity.class.getSimpleName();
     private static final int REQUEST_MIGRATE = 0;
+    private static final int ACTION_STOP_VM = 0;
+    private static final int ACTION_REBOOT_VM = 1;
+    private static final int ACTION_STOP_MIGRATE_VM = 2;
     @ViewById
     ViewPager viewPager;
     @ViewById
@@ -68,12 +72,8 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar, 
     ProgressBar progress;
     @Bean
     VmFacade vmFacade;
-
     @Bean
     ProviderFacade providerFacade;
-
-    @Bean
-    MovirtAuthenticator authenticator;
     @OptionsMenuItem(R.id.action_run)
     MenuItem menuRun;
     @OptionsMenuItem(R.id.action_stop)
@@ -152,12 +152,43 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar, 
     @OptionsItem(R.id.action_stop)
     @UiThread
     void stop() {
-        AreYouSureDialog.show(this, getResources(), "stop the VM", new Runnable() {
-            @Override
-            public void run() {
-                doStop();
+        DialogFragment confirmDialog = ConfirmDialogFragment
+                .newInstance(ACTION_STOP_VM, getString(R.string.dialog_action_stop_vm));
+        confirmDialog.show(getFragmentManager(), "confirmStopVM");
+    }
+
+    @OptionsItem(R.id.action_reboot)
+    @UiThread
+    void reboot() {
+        DialogFragment confirmDialog = ConfirmDialogFragment
+                .newInstance(ACTION_REBOOT_VM, getString(R.string.dialog_action_reboot_vm));
+        confirmDialog.show(getFragmentManager(), "confirmRebootVM");
+    }
+
+    @OptionsItem(R.id.action_cancel_migration)
+    @UiThread
+    void cancelMigration() {
+        DialogFragment confirmDialog = ConfirmDialogFragment
+                .newInstance(ACTION_STOP_MIGRATE_VM,
+                        getString(R.string.dialog_action_stop_migrate_vm));
+        confirmDialog.show(getFragmentManager(), "confirmStopMigrateVM");
+    }
+
+    @Override
+    public void onDialogResult(int dialogButton, int actionId) {
+        if (dialogButton == DialogInterface.BUTTON_POSITIVE) {
+            switch (actionId) {
+                case ACTION_STOP_VM:
+                    doStop();
+                    break;
+                case ACTION_REBOOT_VM:
+                    doReboot();
+                    break;
+                case ACTION_STOP_MIGRATE_VM:
+                    doCancelMigration();
+                    break;
             }
-        });
+        }
     }
 
     @Background
@@ -166,20 +197,15 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar, 
         syncVm();
     }
 
-    @OptionsItem(R.id.action_reboot)
-    @UiThread
-    void reboot() {
-        AreYouSureDialog.show(this, getResources(), "reboot the VM", new Runnable() {
-            @Override
-            public void run() {
-                doReboot();
-            }
-        });
-    }
-
     @Background
     void doReboot() {
         client.rebootVm(vmId);
+        syncVm();
+    }
+
+    @Background
+    void doCancelMigration() {
+        client.cancelMigration(vmId);
         syncVm();
     }
 
@@ -217,23 +243,6 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar, 
         syncVm();
     }
 
-    @OptionsItem(R.id.action_cancel_migration)
-    @UiThread
-    void cancelMigration() {
-        AreYouSureDialog.show(this, getResources(), "cancel VM migration", new Runnable() {
-            @Override
-            public void run() {
-                doCancelMigration();
-            }
-        });
-    }
-
-    @Background
-    void doCancelMigration() {
-        client.cancelMigration(vmId);
-        syncVm();
-    }
-
     @OptionsItem(R.id.action_console)
     @Background
     void openConsole() {
@@ -267,26 +276,13 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar, 
 
     @UiThread
     void showMissingCaCertDialog() {
-        new AlertDialog.Builder(this)
-                .setMessage(R.string.missing_ca_cert)
-                .setPositiveButton(R.string.import_str, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(VmDetailActivity.this, AdvancedAuthenticatorActivity_.class);
-                        intent.putExtra(AdvancedAuthenticatorActivity.MODE, AdvancedAuthenticatorActivity.MODE_SPICE_CA_MANAGEMENT);
-                        intent.putExtra(AdvancedAuthenticatorActivity.ENFORCE_HTTP_BASIC_AUTH, authenticator.enforceBasicAuth());
-                        intent.putExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY, authenticator.getCertHandlingStrategy());
-                        intent.putExtra(AdvancedAuthenticatorActivity.LOAD_CA_FROM, authenticator.getApiUrl());
-                        startActivity(intent);
-                    }
-                })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        makeToast(getString(R.string.can_not_run_console_without_ca));
-                    }
-                })
-                .show();
+        ImportCertificateDialogFragment importCertificateDialog = ImportCertificateDialogFragment
+                .newInstance(getString(R.string.can_not_run_console_without_ca),
+                        AdvancedAuthenticatorActivity.MODE_SPICE_CA_MANAGEMENT,
+                        authenticator.enforceBasicAuth(),
+                        authenticator.getCertHandlingStrategy().id(),
+                        authenticator.getApiUrl());
+        importCertificateDialog.show(getFragmentManager(), "certificateDialog");
     }
 
     private void syncVm() {
