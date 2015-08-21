@@ -4,12 +4,19 @@ moVirt
 
 A mobile client for [oVirt](http://www.ovirt.org). 
 
-Current version: 1.0
+Current version: 1.1
 You can install it from [Google Play Store](https://play.google.com/store/apps/details?id=org.ovirt.mobile.movirt)
+Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/moVirt-release.apk?raw=true)
 
-<img src = /images/screenshots/Screenshot_2015-07-15-23-55-52.png><img src = /images/screenshots/Screenshot_2015-07-15-23-56-12.png><img src = /images/screenshots/Screenshot_2015-07-15-23-57-21.png>
+<img src = /images/screenshots/Screenshot_2015-07-15-23-55-52.png><img src = /images/screenshots/Screenshot_2015-07-15-23-56-12.png><img src = /images/screenshots/Screenshot_2015-07-15-23-57-21.png><img src = /images/screenshots/7inchDashoard.png>
 
 ###Changelog:
+####v1.1:
+* Added max utilized resources and overview of issues to the dashboard
+* Now can survive even completely broken response from the REST API
+* Better error handling
+* Better UX for the connection settings
+
 ####v0.2:
 * Added augmented reality.
 * Added icons for events.
@@ -21,7 +28,7 @@ You can install it from [Google Play Store](https://play.google.com/store/apps/d
 * Enriched VM activity with cluster and host information.
 
 ###Known issues:
-####v0.2:
+####v0.2, v1.0, v1.1:
 * Non-admin users support currently disabled.
 * SPICE may not work well with SSL on Android 5.+
 * Certificates may not work on Android 4.1 (use "Ignore certificate checking" in advanced connection settings).
