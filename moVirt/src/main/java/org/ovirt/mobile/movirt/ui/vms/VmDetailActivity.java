@@ -23,7 +23,6 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
@@ -75,8 +74,6 @@ public class VmDetailActivity extends MovirtActivity
     VmFacade vmFacade;
     @Bean
     ProviderFacade providerFacade;
-    @Bean
-    MovirtAuthenticator authenticator;
     @OptionsMenuItem(R.id.action_run)
     MenuItem menuRun;
     @OptionsMenuItem(R.id.action_stop)

@@ -120,9 +120,8 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
             registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void connectionFailure(
             @Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
-        String message = ErrorDialogFragment
-                .makeErrorMessage(this, authenticator, superProvider, reason);
-        DialogFragment dialogFragment = ErrorDialogFragment.newInstance(message);
+        DialogFragment dialogFragment = ErrorDialogFragment
+                .newInstance(this, authenticator, superProvider, reason);
         dialogFragment.show(getFragmentManager(), "error");
     }
 

@@ -34,8 +34,8 @@ public class ErrorDialogFragment extends DialogFragment {
         return fragment;
     }
 
-    public static String makeErrorMessage(Context context, MovirtAuthenticator authenticator,
-                                          ProviderFacade provider, String reason) {
+    public static ErrorDialogFragment newInstance(Context context, MovirtAuthenticator authenticator,
+                                                  ProviderFacade provider, String reason) {
         String sessionID = AccountManager.get(context).peekAuthToken(
                 MovirtAuthenticator.MOVIRT_ACCOUNT,
                 MovirtAuthenticator.AUTH_TOKEN_TYPE);
@@ -66,12 +66,14 @@ public class ErrorDialogFragment extends DialogFragment {
         } else {
             apiUrl = "url is missing!";
         }
-        return context.getString(R.string.rest_req_failed) +
+        String errorMessage = context.getString(R.string.rest_req_failed) +
                 "\nConnection details:\nAPI URL: " + apiUrl +
                 "\nUsername: " + authenticator.getUserName() +
                 "\nSessionID: " + sessionID +
                 certificate.toString() +
                 "\n\nError details:\n" + reason;
+
+        return newInstance(errorMessage);
     }
 
     @Override

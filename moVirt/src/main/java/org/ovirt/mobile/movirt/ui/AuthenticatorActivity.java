@@ -89,11 +89,16 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     boolean advancedFieldsInited = false;
     @InstanceState
     boolean inProgress;
-    private URL endpointUrl;
-    private String username;
-    private String password;
-    private Boolean adminPriv;
-    private String endpoint;
+    @InstanceState
+    URL endpointUrl;
+    @InstanceState
+    String username;
+    @InstanceState
+    String password;
+    @InstanceState
+    Boolean adminPriv;
+    @InstanceState
+    String endpoint;
 
     public static void addPeriodicSync(int intervalInMinutes) {
         long intervalInSeconds =
@@ -196,7 +201,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         Intent intent = new Intent(this, AdvancedAuthenticatorActivity_.class);
         intent.putExtra(AdvancedAuthenticatorActivity.ENFORCE_HTTP_BASIC_AUTH, enforceHttpBasicAuth);
         intent.putExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY, certHandlingStrategy.id());
-        intent.putExtra(AdvancedAuthenticatorActivity.LOAD_CA_FROM, endpoint);
+        intent.putExtra(AdvancedAuthenticatorActivity.LOAD_CA_FROM, txtEndpoint.getText().toString());
         startActivityForResult(intent, REQUEST_ACCOUNT_DETAILS);
     }
 
@@ -375,9 +380,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void connectionFailure(
             @Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
-        String message = ErrorDialogFragment
-                .makeErrorMessage(this, authenticator, providerFacade, reason);
-        DialogFragment dialogFragment = ErrorDialogFragment.newInstance(message);
+        DialogFragment dialogFragment = ErrorDialogFragment
+                .newInstance(this, authenticator, providerFacade, reason);
         dialogFragment.show(getFragmentManager(), "error");
     }
 }
