@@ -107,6 +107,11 @@ public interface OVirtContract {
         String TYPE = "type";
         String AVAILABLE_SIZE_MB = "available_size_mb";
         String USED_SIZE_MB = "used_size_mb";
+        String STATUS = "status";
+        String STORAGE_ADDRESS = "storage_address";
+        String STORAGE_TYPE = "storage_type";
+        String STORAGE_PATH = "storage_path";
+        String STORAGE_FORMAT = "storage_format";
     }
 
     String PATH_TRIGGERS = "triggers";

@@ -202,6 +202,15 @@ public class OVirtClient {
         }, response);
     }
 
+    public void getStorageDomain(final String storageDomainId, Response<StorageDomain> response) {
+        fireRestRequest(new Request<StorageDomain>() {
+            @Override
+            public StorageDomain fire() {
+                return restClient.getStorageDomain(storageDomainId).toEntity();
+            }
+        }, response);
+    }
+
     public void getConsoleTicket(final String vmId, Response<ActionTicket> response) {
         fireRestRequest(new Request<ActionTicket>() {
             @Override

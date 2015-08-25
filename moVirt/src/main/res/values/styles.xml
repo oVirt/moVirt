@@ -46,6 +46,14 @@
         <item name="android:layout_alignParentRight">true</item>
     </style>
 
+    <style name="StorageDomainStatsLabel" parent="@style/VmTextView">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="StorageDomainStat" parent="@style/VmTextView">
+        <item name="android:layout_alignParentRight">true</item>
+    </style>
+
     <style name="ButtonBar">
         <item name="android:background">?android:attr/selectableItemBackground</item>
         <item name="android:paddingTop">5dip</item>

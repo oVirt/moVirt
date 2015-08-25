@@ -5,6 +5,7 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
+import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 
 import java.util.HashMap;
@@ -19,12 +20,16 @@ public class EntityFacadeLocator {
     @Bean
     HostFacade hostFacade;
 
+    @Bean
+    StorageDomainFacade storageDomainFacade;
+
     private final Map<Class<?>, EntityFacade<?>> facades = new HashMap<>();
 
     @AfterInject
     void initFacadeMap() {
         addFacade(Vm.class, vmFacade);
         addFacade(Host.class, hostFacade);
+        addFacade(StorageDomain.class, storageDomainFacade);
     }
 
     private <E extends OVirtEntity> void addFacade(Class<E> clazz, EntityFacade<E> facade) {

@@ -50,6 +50,7 @@ import org.ovirt.mobile.movirt.ui.dashboard.DashboardActivity_;
 import org.ovirt.mobile.movirt.ui.dialogs.AccountDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.hosts.HostsFragment_;
+import org.ovirt.mobile.movirt.ui.storage.StorageDomainFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
@@ -133,6 +134,7 @@ public class MainActivity extends MovirtActivity
                 getSupportFragmentManager(), PAGER_TITLES,
                 new VmsFragment_(),
                 new HostsFragment_(),
+                new StorageDomainFragment_(),
                 new EventsFragment_());
 
         viewPager.setAdapter(pagerAdapter);

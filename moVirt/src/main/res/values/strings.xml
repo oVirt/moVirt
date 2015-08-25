@@ -190,4 +190,12 @@
     <string name="dialog_action_clear_events">delete all the events stored locally</string>
     <string name="dialog_confirm_message">Are you sure you want to %1$s?</string>
 
+    <string name="domain_type">Domain Type:</string>
+    <string name="storage_type">Storage Type:</string>
+    <string name="format">Format:</string>
+    <string name="free_space">Free Space:</string>
+    <string name="total_space">Total Space:</string>
+    <string name="details_for_storage_domain">Storage %1$s</string>
+    <string name="title_activity_storage_domain_details">Storage Domain</string>
+
 </resources>

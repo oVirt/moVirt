@@ -9,12 +9,41 @@ public class StorageDomain implements RestEntityWrapper<org.ovirt.mobile.movirt.
     public String type;
     public String available;
     public String used;
+    public Status status;
+    public Storage storage;
+    public String storage_format;
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Storage {
+        public String address;
+        public String type;
+        public String path;
+    }
 
     @Override
     public org.ovirt.mobile.movirt.model.StorageDomain toEntity() {
         org.ovirt.mobile.movirt.model.StorageDomain storageDomain = new org.ovirt.mobile.movirt.model.StorageDomain();
         storageDomain.setId(id);
         storageDomain.setName(name);
+        storageDomain.setStorageFormat(storage_format);
+
+        if (status != null && status.state != null) {
+            storageDomain.setStatus(mapStatus(status));
+        } else {
+            storageDomain.setStatus(org.ovirt.mobile.movirt.model.StorageDomain.Status.ACTIVE);
+        }
+
+        if (storage != null) {
+            if (storage.address != null) {
+                storageDomain.setStorageAddress(storage.address);
+            }
+            if (storage.type != null) {
+                storageDomain.setStorageType(storage.type);
+            }
+            if (storage.path != null) {
+                storageDomain.setStoragePath(storage.path);
+            }
+        }
 
         storageDomain.setType(mapType(type));
         try {
@@ -39,6 +68,14 @@ public class StorageDomain implements RestEntityWrapper<org.ovirt.mobile.movirt.
             return org.ovirt.mobile.movirt.model.StorageDomain.Type.DATA;
         }
 
+    }
+
+    private static org.ovirt.mobile.movirt.model.StorageDomain.Status mapStatus(Status status) {
+        try {
+            return org.ovirt.mobile.movirt.model.StorageDomain.Status.valueOf(status.state.toUpperCase());
+        } catch (Exception e) {
+            return org.ovirt.mobile.movirt.model.StorageDomain.Status.UNKNOWN;
+        }
     }
 
 }

@@ -24,6 +24,7 @@ import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.BaseEntity.ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.CLUSTER_ID;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.STORAGE_DOMAIN_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.VM_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
 
@@ -47,6 +48,9 @@ public class EventsFragment extends RefreshableLoaderFragment {
 
     @InstanceState
     String filterVmId;
+
+    @InstanceState
+    String filterStorageDomainId;
 
     @Bean
     SyncUtils syncUtils;
@@ -80,6 +84,7 @@ public class EventsFragment extends RefreshableLoaderFragment {
                 if (filterHostId != null) query.where(HOST_ID, filterHostId);
                 if (filterClusterId != null) query.where(CLUSTER_ID, filterClusterId);
                 if (filterVmId != null) query.where(VM_ID, filterVmId);
+                if (filterStorageDomainId != null) query.where(STORAGE_DOMAIN_ID, filterStorageDomainId);
                 return query.orderByDescending(ID).limit(page * EVENTS_PER_PAGE).asLoader();
             }
         };
@@ -115,6 +120,10 @@ public class EventsFragment extends RefreshableLoaderFragment {
 
     public void setFilterHostId(String filterHostId){
         this.filterHostId = filterHostId;
+    }
+
+    public void setFilterStorageDomainId(String filterStorageDomainId){
+        this.filterStorageDomainId = filterStorageDomainId;
     }
 
     public void updateFilterClusterIdTo(String filterClusterId) {

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeGeneralContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp">
+
+                <TextView
+                    android:id="@+id/statusLabel"
+                    style="@style/StorageDomainStatsLabel"
+                    android:text="@string/statusLabel" />
+
+                <TextView
+                    android:id="@+id/statusView"
+                    style="@style/StorageDomainStat"
+                    android:layout_alignBaseline="@id/statusLabel" />
+
+                <TextView
+                    android:id="@+id/domainTypeLabel"
+                    style="@style/StorageDomainStatsLabel"
+                    android:layout_below="@id/statusLabel"
+                    android:text="@string/domain_type"/>
+
+                <TextView
+                    android:id="@+id/domainTypeView"
+                    style="@style/StorageDomainStat"
+                    android:layout_alignBaseline="@id/domainTypeLabel" />
+
+                <TextView
+                    android:id="@+id/storageTypeLabel"
+                    style="@style/StorageDomainStatsLabel"
+                    android:text="@string/storage_type"
+                    android:layout_below="@id/domainTypeLabel"/>
+
+                <TextView
+                    android:id="@+id/storageTypeView"
+                    style="@style/StorageDomainStat"
+                    android:layout_alignBaseline="@id/storageTypeLabel" />
+
+                <TextView
+                    android:id="@+id/formatLabel"
+                    style="@style/StorageDomainStatsLabel"
+                    android:text="@string/format"
+                    android:layout_below="@id/storageTypeLabel"/>
+
+                <TextView
+                    android:id="@+id/formatView"
+                    style="@style/StorageDomainStat"
+                    android:layout_alignBaseline="@id/formatLabel" />
+
+                <TextView
+                    android:id="@+id/freeSpaceLabel"
+                    style="@style/StorageDomainStatsLabel"
+                    android:text="@string/free_space"
+                    android:layout_below="@id/formatLabel"/>
+
+                <TextView
+                    android:id="@+id/freeSpaceView"
+                    style="@style/StorageDomainStat"
+                    android:layout_alignBaseline="@id/freeSpaceLabel" />
+
+                <TextView
+                    android:id="@+id/totalSpaceLabel"
+                    style="@style/StorageDomainStatsLabel"
+                    android:text="@string/total_space"
+                    android:layout_below="@id/freeSpaceLabel"/>
+
+                <TextView
+                    android:id="@+id/totalSpaceView"
+                    style="@style/StorageDomainStat"
+                    android:layout_alignBaseline="@id/totalSpaceLabel" />
+
+            </RelativeLayout>
+
+        </ScrollView>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+</LinearLayout>
