@@ -97,6 +97,8 @@
         <activity
             android:name=".ui.vms.VmMigrateActivity_"
             android:label="@string/title_activity_migrate_vm" />
+        <activity android:name=".ui.storage.StorageDomainDetailActivity_"
+            android:label="@string/title_activity_storage_domain_details" />
     </application>
 
 </manifest>

@@ -12,7 +12,7 @@
 
     <item
         android:id="@+id/action_deactivate"
-        android:icon="@drawable/host_maintenance"
+        android:icon="@drawable/maintenance"
         android:title="@string/deactivate"
         android:visible="false"
         app:showAsAction="ifRoom|withText" />

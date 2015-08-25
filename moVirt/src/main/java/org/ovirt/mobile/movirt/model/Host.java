@@ -30,7 +30,7 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
         INITIALIZING(R.drawable.wait),
         INSTALLING(R.drawable.host_installing),
         INSTALL_FAILED(R.drawable.down),
-        MAINTENANCE(R.drawable.host_maintenance),
+        MAINTENANCE(R.drawable.maintenance),
         NON_OPERATIONAL(R.drawable.nonoperational),
         NON_RESPONSIVE(R.drawable.down),
         PENDING_APPROVAL(R.drawable.unconfigured),

@@ -40,6 +40,7 @@
     <string-array name="main_pager_titles">
         <item>VMs</item>
         <item>Hosts</item>
+        <item>Storages</item>
         <item>Events</item>
     </string-array>
 
@@ -53,6 +54,11 @@
     <string-array name="host_detail_pager_titles">
         <item>General</item>
         <item>VMs</item>
+        <item>Events</item>
+    </string-array>
+
+    <string-array name="storage_domain_detail_pager_titles">
+        <item>General</item>
         <item>Events</item>
     </string-array>
 
