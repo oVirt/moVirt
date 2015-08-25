@@ -35,6 +35,9 @@ import org.ovirt.mobile.movirt.ui.CameraActivity;
 
 import java.io.ByteArrayOutputStream;
 
+/**
+ * modified by Nika
+ */
 final class DecodeHandler extends Handler {
 
     private static final String TAG = DecodeHandler.class.getSimpleName();
