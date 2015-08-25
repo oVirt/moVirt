@@ -26,7 +26,6 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
-import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.ActionTicket;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity;
@@ -72,8 +71,6 @@ public class VmDetailActivity extends MovirtActivity
     ProgressBar progress;
     @Bean
     VmFacade vmFacade;
-    @Bean
-    ProviderFacade providerFacade;
     @OptionsMenuItem(R.id.action_run)
     MenuItem menuRun;
     @OptionsMenuItem(R.id.action_stop)

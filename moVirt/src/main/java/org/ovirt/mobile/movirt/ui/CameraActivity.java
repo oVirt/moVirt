@@ -61,11 +61,9 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
 
     private static final String TAG = CameraActivity.class.getSimpleName();
     private static final long BULK_MODE_SCAN_DELAY_MS = 100L;
-    private final int EVENTS_LOADER = numSuperLoaders;
-    private final int VMS_LOADER = numSuperLoaders + 1;
-    private final int HOSTS_LOADER = numSuperLoaders + 2;
-    @Bean
-    ProviderFacade provider;
+    private static final int EVENTS_LOADER = FIRST_CHILD_LOADER;
+    private static final int VMS_LOADER = FIRST_CHILD_LOADER + 1;
+    private static final int HOSTS_LOADER = FIRST_CHILD_LOADER + 2;
     @Bean
     HostFacade hostFacade;
     @ViewById
@@ -137,7 +135,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         cursorEventsAdapterLoader = new CursorAdapterLoader(eventListAdapter) {
             @Override
             public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                final ProviderFacade.QueryBuilder<Event> query = provider.query(Event.class);
+                final ProviderFacade.QueryBuilder<Event> query = providerFacade.query(Event.class);
                 if (lastHost != null) {
                     query.where(HOST_ID, lastHost.getId());
                 }
@@ -178,7 +176,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         cursorVmsAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
             @Override
             public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                final ProviderFacade.QueryBuilder<Vm> query = provider.query(Vm.class);
+                final ProviderFacade.QueryBuilder<Vm> query = providerFacade.query(Vm.class);
 
                 if (lastHost == null) {
                     return query.where(HOST_ID, "0").asLoader();
@@ -456,9 +454,9 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             if (lastResult == null) {
-                return provider.query(Host.class).id("0").asLoader();
+                return providerFacade.query(Host.class).id("0").asLoader();
             } else {
-                return provider.query(Host.class).id(lastResult).asLoader();
+                return providerFacade.query(Host.class).id(lastResult).asLoader();
             }
         }
 
