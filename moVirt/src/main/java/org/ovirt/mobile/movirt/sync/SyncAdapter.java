@@ -125,6 +125,19 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }, response));
     }
 
+    public synchronized void syncStorageDomain(String id, OVirtClient.Response<StorageDomain> response) {
+        initBatch();
+        oVirtClient.getStorageDomain(id, new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<StorageDomain>() {
+            @Override
+            public void onResponse(StorageDomain storageDomain) throws RemoteException {
+                final EntityFacade<StorageDomain> entityFacade = entityFacadeLocator.getFacade(StorageDomain.class);
+                Collection<Trigger<StorageDomain>> allTriggers = entityFacade.getAllTriggers();
+                updateLocalEntity(storageDomain, StorageDomain.class, allTriggers);
+                applyBatch();
+            }
+        }, response));
+    }
+
     private void updateAll(final boolean tryEvents) throws RemoteException {
         initBatch();
         // TODO: we really need promises here
