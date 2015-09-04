@@ -4,13 +4,17 @@ moVirt
 
 A mobile client for [oVirt](http://www.ovirt.org). 
 
-Current version: 1.1
+Current version: 1.2
 You can install it from [Google Play Store](https://play.google.com/store/apps/details?id=org.ovirt.mobile.movirt)
 Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/moVirt-release.apk?raw=true)
 
 <img src = /images/screenshots/Screenshot_2015-07-15-23-55-52.png><img src = /images/screenshots/Screenshot_2015-07-15-23-56-12.png><img src = /images/screenshots/Screenshot_2015-07-15-23-57-21.png><img src = /images/screenshots/7inchDashoard.png>
 
 ###Changelog:
+####v1.1:
+* Added basic support for storage
+* Fixes in augmented reality (scan code) part
+
 ####v1.1:
 * Added max utilized resources and overview of issues to the dashboard
 * Now can survive even completely broken response from the REST API
