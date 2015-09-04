@@ -1,21 +1,17 @@
 package org.ovirt.mobile.movirt.ui;
 
+import android.app.DialogFragment;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.Surface;
+import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -35,11 +31,15 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.OptionsItem;
+import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.camera.AmbientLightManager;
 import org.ovirt.mobile.movirt.camera.BeepManager;
 import org.ovirt.mobile.movirt.camera.CameraManager;
 import org.ovirt.mobile.movirt.camera.CaptureActivityHandler;
+import org.ovirt.mobile.movirt.camera.InactivityTimer;
 import org.ovirt.mobile.movirt.camera.PreferencesActivity;
 import org.ovirt.mobile.movirt.camera.ViewfinderView;
 import org.ovirt.mobile.movirt.facade.HostFacade;
@@ -47,6 +47,7 @@ import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import java.io.IOException;
@@ -57,15 +58,14 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 
 @EActivity(R.layout.activity_camera)
+@OptionsMenu(R.menu.camera)
 public class CameraActivity extends MovirtActivity implements SurfaceHolder.Callback {
 
     private static final String TAG = CameraActivity.class.getSimpleName();
-    private static final long BULK_MODE_SCAN_DELAY_MS = 100L;
-    private final int EVENTS_LOADER = numSuperLoaders;
-    private final int VMS_LOADER = numSuperLoaders + 1;
-    private final int HOSTS_LOADER = numSuperLoaders + 2;
-    @Bean
-    ProviderFacade provider;
+    private static final long SCAN_DELAY_MS = 100L;
+    private static final int EVENTS_LOADER = FIRST_CHILD_LOADER;
+    private static final int VMS_LOADER = FIRST_CHILD_LOADER + 1;
+    private static final int HOSTS_LOADER = FIRST_CHILD_LOADER + 2;
     @Bean
     HostFacade hostFacade;
     @ViewById
@@ -98,9 +98,10 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
     private CameraManager cameraManager;
     private CaptureActivityHandler handler;
     private BeepManager beepManager;
+    private InactivityTimer inactivityTimer;
+    private AmbientLightManager ambientLightManager;
     private String lastResult;
     private boolean hasSurface;
-    private Result savedResultToShow;
     private Host lastHost;
     private CursorAdapterLoader cursorEventsAdapterLoader;
     private CursorAdapterLoader cursorVmsAdapterLoader;
@@ -137,7 +138,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         cursorEventsAdapterLoader = new CursorAdapterLoader(eventListAdapter) {
             @Override
             public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                final ProviderFacade.QueryBuilder<Event> query = provider.query(Event.class);
+                final ProviderFacade.QueryBuilder<Event> query = providerFacade.query(Event.class);
                 if (lastHost != null) {
                     query.where(HOST_ID, lastHost.getId());
                 }
@@ -178,7 +179,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         cursorVmsAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
             @Override
             public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                final ProviderFacade.QueryBuilder<Vm> query = provider.query(Vm.class);
+                final ProviderFacade.QueryBuilder<Vm> query = providerFacade.query(Vm.class);
 
                 if (lastHost == null) {
                     return query.where(HOST_ID, "0").asLoader();
@@ -227,6 +228,8 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
 
         hasSurface = false;
         beepManager = new BeepManager(this);
+        inactivityTimer = new InactivityTimer(this);
+        ambientLightManager = new AmbientLightManager(this);
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences_zxing, false);
     }
@@ -243,16 +246,11 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
 
         lastResult = null;
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        if (prefs.getBoolean(PreferencesActivity.KEY_DISABLE_AUTO_ORIENTATION, true)) {
-            //noinspection ResourceType
-            setRequestedOrientation(getCurrentOrientation());
-        } else {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-        }
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         beepManager.updatePrefs();
+        inactivityTimer.onResume();
+        ambientLightManager.start(cameraManager);
 
         SurfaceView surfaceView = (SurfaceView) findViewById(R.id.camera_preview);
         SurfaceHolder surfaceHolder = surfaceView.getHolder();
@@ -274,6 +272,8 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         }
         cameraManager.closeDriver();
         beepManager.close();
+        inactivityTimer.onPause();
+        ambientLightManager.stop();
         if (!hasSurface) {
             SurfaceView surfaceView = (SurfaceView) findViewById(R.id.camera_preview);
             SurfaceHolder surfaceHolder = surfaceView.getHolder();
@@ -284,31 +284,28 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
 
     @Override
     protected void onDestroy() {
+        inactivityTimer.shutdown();
         super.onDestroy();
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.camera, menu);
-        return true;
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_FOCUS:
+            case KeyEvent.KEYCODE_CAMERA:
+                // Handle these events so they don't launch the Camera app
+                return true;
+            // Use volume up/down to turn on light
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                cameraManager.setTorch(false);
+                return true;
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                cameraManager.setTorch(true);
+                return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-        switch (item.getItemId()) {
-            case R.id.menu_settings:
-                intent.setClassName(this, PreferencesActivity.class.getName());
-                startActivity(intent);
-                break;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-        return true;
-    }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -328,7 +325,6 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
     }
 
     private void initCamera(SurfaceHolder surfaceHolder) {
@@ -345,37 +341,47 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
             if (handler == null) {
                 handler = new CaptureActivityHandler(this, cameraManager);
             }
-            decodeOrStoreSavedBitmap(null, null);
         } catch (IOException ioe) {
             Log.w(TAG, ioe);
+            displayFrameworkBugMessage(ioe.getMessage());
         } catch (RuntimeException e) {
             // Barcode Scanner has seen crashes in the wild of this variety:
             // java.?lang.?RuntimeException: Fail to connect to camera service
             Log.w(TAG, "Unexpected error initializing camera", e);
+            displayFrameworkBugMessage(e.getMessage());
         }
+    }
+
+    private void displayFrameworkBugMessage(String errorDetails) {
+        DialogFragment dialogFragment = ErrorDialogFragment.newInstance(
+                getString(com.google.zxing.client.android.R.string.zxing_msg_camera_framework_bug) +
+                        "\n\n" + errorDetails
+        );
+        dialogFragment.show(getFragmentManager(), "camera_error");
     }
 
     /**
      * A valid barcode has been found, so give an indication of success and show the results.
      *
-     * @param rawResult   The contents of the barcode.
-     * @param scaleFactor amount by which thumbnail was scaled
-     * @param barcode     A greyscale bitmap of the camera data which was decoded.
+     * @param rawResult The contents of the barcode.
+     * @param barcode   A greyscale bitmap of the camera data which was decoded.
      */
-    public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
+    public void handleDecode(Result rawResult, Bitmap barcode) {
+        inactivityTimer.onActivity();
         String result = rawResult.getText();
         if (result != null) {
             result = result.trim().toLowerCase();
-        }
 
-        viewfinderView.drawResultBitmap(barcode, rawResult.getResultPoints());
-        if (!result.equals(lastResult)) {
-            lastResult = result;
-            beepManager.playBeepSoundAndVibrate();
-            resultTextView.setText(lastResult);
-            loaderManager.restartLoader(HOSTS_LOADER, null, hostsLoader);
+            viewfinderView.drawResultBitmap(barcode, rawResult.getResultPoints());
+
+            if (!result.equals(lastResult)) {
+                lastResult = result;
+                beepManager.playBeepSoundAndVibrate();
+                resultTextView.setText(lastResult);
+                loaderManager.restartLoader(HOSTS_LOADER, null, hostsLoader);
+            }
         }
-        restartPreviewAfterDelay(BULK_MODE_SCAN_DELAY_MS);
+        restartPreviewAfterDelay(SCAN_DELAY_MS);
     }
 
     public void restartPreviewAfterDelay(long delayMS) {
@@ -385,40 +391,18 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         }
     }
 
-    private void decodeOrStoreSavedBitmap(Bitmap bitmap, Result result) {
-        // Bitmap isn't used yet -- will be used soon
-        if (handler == null) {
-            savedResultToShow = result;
-        } else {
-            if (result != null) {
-                savedResultToShow = result;
-            }
-            if (savedResultToShow != null) {
-                Message message = Message.obtain(
-                        handler, com.google.zxing.client.android.R.id.zxing_decode_succeeded, savedResultToShow);
-                handler.sendMessage(message);
-            }
-            savedResultToShow = null;
-        }
-    }
-
-    private int getCurrentOrientation() {
-        int rotation = getWindowManager().getDefaultDisplay().getRotation();
-        switch (rotation) {
-            case Surface.ROTATION_0:
-            case Surface.ROTATION_90:
-                return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-            default:
-                return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-        }
-    }
-
     public void drawViewfinder() {
         viewfinderView.drawViewfinder();
     }
 
-    //Button event
-    public void openHostDetails(View view) {
+    @OptionsItem(R.id.menu_settings)
+    public void openSettings() {
+        Intent intent = new Intent(this, PreferencesActivity.class);
+        startActivity(intent);
+    }
+
+    @Click
+    void buttonOpenHostDetails() {
         if (lastHost != null) {
             startActivity(hostFacade.getDetailIntent(lastHost, this));
         }
@@ -456,9 +440,9 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             if (lastResult == null) {
-                return provider.query(Host.class).id("0").asLoader();
+                return providerFacade.query(Host.class).id("0").asLoader();
             } else {
-                return provider.query(Host.class).id(lastResult).asLoader();
+                return providerFacade.query(Host.class).id(lastResult).asLoader();
             }
         }
 
@@ -472,7 +456,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
                 loaderManager.restartLoader(VMS_LOADER, null, cursorVmsAdapterLoader);
                 renderDetails(lastHost);
             } else if (lastResult != null) {
-                resultTextView.setText(lastResult + "\nNO SUCH HOST!");
+                resultTextView.setText(lastResult + '\n' + getString(R.string.no_such_host));
             }
         }
 

@@ -23,10 +23,6 @@
             android:defaultValue="false"
             android:key="preferences_vibrate"
             android:title="@string/preferences_vibrate_title" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="preferences_copy_to_clipboard"
-            android:title="@string/preferences_copy_to_clipboard_title" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/preferences_general_title">
         <ListPreference
@@ -45,10 +41,6 @@
             android:key="preferences_invert_scan"
             android:summary="@string/preferences_invert_scan_summary"
             android:title="@string/preferences_invert_scan_title" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="preferences_orientation"
-            android:title="@string/preferences_orientation_title" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/preferences_device_bug_workarounds_title">
         <CheckBoxPreference

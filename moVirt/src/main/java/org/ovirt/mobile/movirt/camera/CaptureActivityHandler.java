@@ -31,6 +31,7 @@ import org.ovirt.mobile.movirt.ui.CameraActivity;
  * This class handles all the messaging which comprises the state machine for capture.
  *
  * @author dswitkin@google.com (Daniel Switkin)
+ * modified by Nika
  */
 public final class CaptureActivityHandler extends Handler {
 
@@ -64,7 +65,6 @@ public final class CaptureActivityHandler extends Handler {
                 state = State.SUCCESS;
                 Bundle bundle = message.getData();
                 Bitmap barcode = null;
-                float scaleFactor = 1.0f;
                 if (bundle != null) {
                     byte[] compressedBitmap = bundle.getByteArray(DecodeThread.BARCODE_BITMAP);
                     if (compressedBitmap != null) {
@@ -72,9 +72,8 @@ public final class CaptureActivityHandler extends Handler {
                         // Mutable copy:
                         barcode = barcode.copy(Bitmap.Config.ARGB_8888, true);
                     }
-                    scaleFactor = bundle.getFloat(DecodeThread.BARCODE_SCALED_FACTOR);
                 }
-                activity.handleDecode((Result) message.obj, barcode, scaleFactor);
+                activity.handleDecode((Result) message.obj, barcode);
                 break;
             case R.id.zxing_decode_failed:
                 // We're decoding as fast as possible, so when one decode fails, start another.

@@ -65,17 +65,16 @@ public class MainActivity extends MovirtActivity
         implements ConfirmDialogFragment.ConfirmDialogListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String[] CLUSTER_PROJECTION = new String[]{OVirtContract.Cluster.NAME, OVirtContract.Cluster.ID,
-            OVirtContract.Cluster.VERSION, OVirtContract.Cluster.DATA_CENTER_ID};
-    public final int CLUSTER_LOADER = numSuperLoaders;
+    private static final String[] CLUSTER_PROJECTION = new String[]{OVirtContract.Cluster.NAME,
+            OVirtContract.Cluster.ID, OVirtContract.Cluster.VERSION,
+            OVirtContract.Cluster.DATA_CENTER_ID};
+    private static final int CLUSTER_LOADER = FIRST_CHILD_LOADER;
     @StringRes(R.string.needs_configuration)
     String noAccMsg;
     @StringRes(R.string.connection_not_correct)
     String accIncorrectMsg;
     @App
     MoVirtApp app;
-    @Bean
-    ProviderFacade provider;
     @ViewById
     DrawerLayout drawerLayout;
     @ViewById
@@ -153,7 +152,7 @@ public class MainActivity extends MovirtActivity
         clusterAdapterLoader = new CursorAdapterLoader(clusterListAdapter) {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                return provider.query(Cluster.class).orderBy(NAME).asLoader();
+                return providerFacade.query(Cluster.class).orderBy(NAME).asLoader();
             }
 
             @Override

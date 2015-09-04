@@ -33,10 +33,10 @@ import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
 @EActivity
 @OptionsMenu(R.menu.movirt)
 public abstract class MovirtActivity extends ActionBarLoaderActivity implements HasProgressBar {
+    public static final int FIRST_CHILD_LOADER = 1;
     private static final int CONNECTION_INFO_LOADER = 0;
-    protected int numSuperLoaders = 1;
     @Bean
-    protected ProviderFacade superProvider;
+    protected ProviderFacade providerFacade;
     @Bean
     protected SyncUtils syncUtils;
     @Bean
@@ -121,7 +121,7 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
     protected void connectionFailure(
             @Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
         DialogFragment dialogFragment = ErrorDialogFragment
-                .newInstance(this, authenticator, superProvider, reason);
+                .newInstance(this, authenticator, providerFacade, reason);
         dialogFragment.show(getFragmentManager(), "error");
     }
 
@@ -138,7 +138,7 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
     private class ConnectionInfoLoader implements android.support.v4.app.LoaderManager.LoaderCallbacks<Cursor> {
         @Override
         public android.support.v4.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
-            return superProvider.query(ConnectionInfo.class).asLoader();
+            return providerFacade.query(ConnectionInfo.class).asLoader();
         }
 
         @Override

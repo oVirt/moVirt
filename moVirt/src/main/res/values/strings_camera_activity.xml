@@ -12,4 +12,5 @@
     <string name="imageDesc">Host status icon</string>
     <string name="labelVMs">Host VMs:</string>
     <string name="statusIconHint">VM status</string>
+    <string name="no_such_host">NO SUCH HOST!</string>
 </resources>

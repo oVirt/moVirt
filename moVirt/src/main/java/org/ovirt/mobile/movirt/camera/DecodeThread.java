@@ -27,6 +27,7 @@ import java.util.concurrent.CountDownLatch;
  * This thread does all the heavy lifting of decoding the images.
  *
  * @author dswitkin@google.com (Daniel Switkin)
+ * modified by Nika
  */
 final class DecodeThread extends Thread {
 

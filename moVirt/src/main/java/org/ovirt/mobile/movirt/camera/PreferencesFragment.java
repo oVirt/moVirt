@@ -23,21 +23,13 @@ import android.preference.PreferenceScreen;
 
 import org.ovirt.mobile.movirt.R;
 
-public final class PreferencesFragment
-        extends PreferenceFragment
-        implements SharedPreferences.OnSharedPreferenceChangeListener {
-
+/**
+ * modified by Nika
+ */
+public final class PreferencesFragment extends PreferenceFragment {
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         addPreferencesFromResource(R.xml.preferences_zxing);
-
-        PreferenceScreen preferences = getPreferenceScreen();
-        preferences.getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
     }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-    }
-
 }
