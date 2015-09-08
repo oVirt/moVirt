@@ -11,7 +11,7 @@ Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/
 <img src = /images/screenshots/Screenshot_2015-07-15-23-55-52.png><img src = /images/screenshots/Screenshot_2015-07-15-23-56-12.png><img src = /images/screenshots/Screenshot_2015-07-15-23-57-21.png><img src = /images/screenshots/7inchDashoard.png>
 
 ###Changelog:
-####v1.1:
+####v1.2:
 * Added basic support for storage
 * Fixes in augmented reality (scan code) part
 
