@@ -6,7 +6,10 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.graphics.Color;
+import com.melnykov.fab.FloatingActionButton;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
@@ -17,7 +20,6 @@ import org.ovirt.mobile.movirt.ui.BaseEntityListFragment;
 public class VmsFragment extends BaseEntityListFragment<Vm> implements OVirtContract.Vm {
 
     private static final String TAG = VmsFragment.class.getSimpleName();
-
     public VmsFragment() {
         super(Vm.class);
     }
@@ -29,7 +31,6 @@ public class VmsFragment extends BaseEntityListFragment<Vm> implements OVirtCont
                 null,
                 new String[]{NAME, STATUS},
                 new int[]{R.id.vm_name, R.id.vm_status}, 0);
-
         vmListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {

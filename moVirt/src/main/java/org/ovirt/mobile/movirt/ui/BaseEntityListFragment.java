@@ -1,6 +1,7 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -10,8 +11,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
+
+import com.melnykov.fab.FloatingActionButton;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
@@ -71,6 +75,18 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
     @Bean
     protected EntityFacadeLocator entityFacadeLocator;
+
+    @ViewById
+    public ListView list;
+
+    @ViewById
+    public FloatingActionButton fab;
+
+    @ViewById
+    public LinearLayout searchbox;
+
+    @InstanceState
+    public boolean searchtoggle;
 
     private EntityFacade<E> entityFacade;
 
@@ -199,6 +215,26 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
         orderBySpinner.setOnItemSelectedListener(orderItemSelectedListener);
         orderSpinner.setOnItemSelectedListener(orderItemSelectedListener);
+
+        fab.setColorPressed(Color.parseColor("#80cbc4"));
+        fab.setColorRipple(getResources().getColor(R.color.abc_search_url_text_selected));
+        fab.attachToListView(list);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toggleSearchBoxVisibility();
+            }
+        });
+    }
+    @UiThread
+    public void toggleSearchBoxVisibility() {
+        if(searchtoggle == false) {
+            searchbox.setVisibility(View.VISIBLE);
+            searchtoggle = true;
+        } else if(searchtoggle == true) {
+            searchbox.setVisibility(View.GONE);
+            searchtoggle = false;
+        }
     }
 
     @Override
@@ -249,3 +285,4 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
     protected abstract CursorAdapter createCursorAdapter();
 }
+
