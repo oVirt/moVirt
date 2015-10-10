@@ -227,14 +227,17 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         });
     }
     @UiThread
-    public void toggleSearchBoxVisibility() {
-        if(searchtoggle == false) {
+    public void setSearchBoxVisibility(boolean visible) {
+        if(visible) {
             searchbox.setVisibility(View.VISIBLE);
-            searchtoggle = true;
-        } else if(searchtoggle == true) {
+        } else {
             searchbox.setVisibility(View.GONE);
-            searchtoggle = false;
         }
+    }
+
+    public void toggleSearchBoxVisibility() {
+        searchtoggle = !searchtoggle;
+        setSearchBoxVisibility(searchtoggle);
     }
 
     @Override
@@ -254,6 +257,7 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         setRefreshing(SyncAdapter.inSync);
 
         restartLoader();
+        setSearchBoxVisibility(searchtoggle);
     }
 
     @Override
