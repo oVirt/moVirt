@@ -142,8 +142,14 @@ public class VmDetailActivity extends MovirtActivity
     @OptionsItem(R.id.action_run)
     @Background
     void start() {
-        client.startVm(vmId);
-        syncVm();
+        client.startVm(vmId, new OVirtClient.SimpleResponse() {
+
+            @Override
+            public void onResponse(Object o) throws RemoteException {
+                syncVm();
+            }
+
+        });
     }
 
     @OptionsItem(R.id.action_stop)
@@ -190,20 +196,38 @@ public class VmDetailActivity extends MovirtActivity
 
     @Background
     void doStop() {
-        client.stopVm(vmId);
-        syncVm();
+        client.stopVm(vmId, new OVirtClient.SimpleResponse() {
+
+            @Override
+            public void onResponse(Object o) throws RemoteException {
+                syncVm();
+            }
+
+        });
     }
 
     @Background
     void doReboot() {
-        client.rebootVm(vmId);
-        syncVm();
+        client.rebootVm(vmId, new OVirtClient.SimpleResponse() {
+
+            @Override
+            public void onResponse(Object o) throws RemoteException {
+                syncVm();
+            }
+
+        });
     }
 
     @Background
     void doCancelMigration() {
-        client.cancelMigration(vmId);
-        syncVm();
+        client.cancelMigration(vmId, new OVirtClient.SimpleResponse() {
+
+            @Override
+            public void onResponse(Object o) throws RemoteException {
+                syncVm();
+            }
+
+        });
     }
 
     @OptionsItem(R.id.action_start_migration)
@@ -230,14 +254,26 @@ public class VmDetailActivity extends MovirtActivity
 
     @Background
     public void doMigrationToDefault() {
-        client.migrateVmToDefaultHost(vmId);
-        syncVm();
+        client.migrateVmToDefaultHost(vmId, new OVirtClient.SimpleResponse() {
+
+            @Override
+            public void onResponse(Object o) throws RemoteException {
+                syncVm();
+            }
+
+        });
     }
 
     @Background
     public void doMigrationTo(String hostId) {
-        client.migrateVmToHost(vmId, hostId);
-        syncVm();
+        client.migrateVmToHost(vmId, hostId, new OVirtClient.SimpleResponse() {
+
+            @Override
+            public void onResponse(Object o) throws RemoteException {
+                syncVm();
+            }
+
+        });
     }
 
     @OptionsItem(R.id.action_console)
