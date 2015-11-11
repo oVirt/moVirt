@@ -21,16 +21,16 @@ repositories {
 }
 
 apply plugin: 'android-apt'
-ext.androidAnnottationVersion = '3.3+'
+ext.androidAnnottationVersion = '3.3'
 
 dependencies {
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.j256.ormlite:ormlite-android:4.+'
     compile 'com.blandware.android.atleap:core:+@aar'
     compile 'org.springframework.android:spring-android-rest-template:+'
-    compile 'com.fasterxml.jackson.core:jackson-core:+'
-    compile 'com.fasterxml.jackson.core:jackson-databind:+'
-    compile 'com.fasterxml.jackson.core:jackson-annotations:+'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.6.3'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.6.3'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.6.3'
     compile 'com.journeyapps:zxing-android-embedded:+@aar'
     compile 'com.google.zxing:core:3.+'
     apt "org.androidannotations:androidannotations:$androidAnnottationVersion"
