@@ -103,65 +103,65 @@ public class OVirtClient {
         return entities;
     }
 
-    public void startVm(final String vmId) {
+    public void startVm(final String vmId, Response response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
                 restClient.startVm(new Action(), vmId);
                 return null;
             }
-        }, null);
+        }, response);
     }
 
-    public void stopVm(final String vmId) {
+    public void stopVm(final String vmId,Response response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
                 restClient.stopVm(new Action(), vmId);
                 return null;
             }
-        }, null);
+        }, response);
 
     }
 
-    public void rebootVm(final String vmId) {
+    public void rebootVm(final String vmId, Response response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
                 restClient.rebootVm(new Action(), vmId);
                 return null;
             }
-        }, null);
+        }, response);
     }
 
-    public void migrateVmToHost(final String vmId, final String hostId) {
+    public void migrateVmToHost(final String vmId, final String hostId, Response response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
                 restClient.migrateVmToHost(new ActionMigrate(hostId), vmId);
                 return null;
             }
-        }, null);
+        }, response);
     }
 
-    public void migrateVmToDefaultHost(final String vmId) {
+    public void migrateVmToDefaultHost(final String vmId, Response response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
                 restClient.migrateVmToHost(new Action(), vmId);
                 return null;
             }
-        }, null);
+        }, response);
     }
 
-    public void cancelMigration(final String vmId) {
+    public void cancelMigration(final String vmId, Response response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
                 restClient.cancelMigration(new Action(), vmId);
                 return null;
             }
-        }, null);
+        }, response);
     }
 
     public void getVm(final String vmId, Response<Vm> response) {
