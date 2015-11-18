@@ -41,6 +41,7 @@ import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ImportCertificateDialogFragment;
+import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -99,6 +100,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     Boolean adminPriv;
     @InstanceState
     String endpoint;
+    @Bean
+    SharedPreferencesHelper sharedPreferencesHelper;
 
     public static void addPeriodicSync(int intervalInMinutes) {
         long intervalInSeconds =
@@ -285,8 +288,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
                 ContentResolver.setSyncAutomatically(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-                if (sharedPreferences.getBoolean(SettingsActivity.KEY_PERIODIC_SYNC, false)) {
-                    int intervalInMinutes = SettingsActivity.getSyncIntervalInMinutes(sharedPreferences);
+                if (sharedPreferences.getBoolean(SharedPreferencesHelper.KEY_PERIODIC_SYNC, false)) {
+                    int intervalInMinutes = sharedPreferencesHelper.getSyncIntervalInMinutes();
                     addPeriodicSync(intervalInMinutes);
                 }
             }

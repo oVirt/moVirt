@@ -37,8 +37,8 @@ import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
-import org.ovirt.mobile.movirt.ui.SettingsActivity;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
+import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.http.HttpAuthentication;
 import org.springframework.http.HttpStatus;
@@ -83,6 +83,9 @@ public class OVirtClient {
 
     @StringRes(R.string.rest_request_failed)
     String errorMsg;
+
+    @Bean
+    SharedPreferencesHelper sharedPreferencesHelper;
 
     private <E, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers, WrapPredicate<R> predicate) {
         List<E> entities = new ArrayList<>();
@@ -237,7 +240,7 @@ public class OVirtClient {
             public List<Vm> fire() {
                 Vms loadedVms = null;
                 if (authenticator.hasAdminPermissions()) {
-                    int maxVms = SettingsActivity.getMaxVms(sharedPreferences);
+                    int maxVms = sharedPreferencesHelper.getMaxVms();
                     String query = sharedPreferences.getString("vms_search_query", "");
                     if (!"".equals(query)) {
                         loadedVms = restClient.getVms(query, maxVms);
@@ -350,7 +353,7 @@ public class OVirtClient {
                 Events loadedEvents = null;
 
                 if (authenticator.hasAdminPermissions()) {
-                    int maxEventsStored = SettingsActivity.getMaxEvents(sharedPreferences);
+                    int maxEventsStored = sharedPreferencesHelper.getMaxEvents();
                     String query = sharedPreferences.getString("events_search_query", "");
                     if (!"".equals(query)) {
                         loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), query, maxEventsStored);
@@ -468,9 +471,8 @@ public class OVirtClient {
     private void updateConnectionInfo(boolean success) {
         ConnectionInfo connectionInfo;
         ConnectionInfo.State state;
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
         boolean prevFailed = false;
-        boolean configured = SettingsActivity.isConnectionNotificationEnabled(sharedPreferences);
+        boolean configured = sharedPreferencesHelper.isConnectionNotificationEnabled();
         Collection<ConnectionInfo> connectionInfos = provider.query(ConnectionInfo.class).all();
         int size = connectionInfos.size();
 
