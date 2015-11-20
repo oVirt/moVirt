@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
 import android.util.Log;
+import android.util.Pair;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
@@ -20,7 +21,9 @@ import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
+import org.ovirt.mobile.movirt.util.enums.MainActivityFragments;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -111,34 +114,45 @@ public class EventsHandler {
         }
 
         int newLastEventCandidate = -1;
-
-        Collection<Trigger<Event>> allEventTriggers = eventTriggerResolver.getAllTriggers();
+        List<Event> filteredEvents = new ArrayList<>();
 
         for (Event event : newEvents) {
             // because the user api (filtered: true) returns all the events all the time
             if (event.getId() > lastEventId) {
-                this.processEventTriggers(event, allEventTriggers);
+                filteredEvents.add(event);
                 batch.insert(event);
                 if (event.getId() > newLastEventCandidate) {
                     newLastEventCandidate = event.getId();
                 }
             }
         }
+
+        this.processEventsTriggers(filteredEvents);
     }
 
-    private void processEventTriggers(Event event, Collection<Trigger<Event>> allEventTriggers) {
-        final List<Trigger<Event>> triggers = eventTriggerResolver.getTriggers(event, allEventTriggers);
-        Log.i(TAG, "Processing triggers for Event: " + event.getId());
-        for (Trigger<Event> trigger : triggers) {
-            if (trigger.getCondition().evaluate(event)) {
-                displayNotification(trigger, event);
+    private void processEventsTriggers(List<Event> events) {
+        Collection<Trigger<Event>> allEventTriggers = eventTriggerResolver.getAllTriggers();
+        List<Pair<Event, Trigger<Event>>> eventsAndTriggers = new ArrayList<>();
+
+        for(Event event : events){
+            final List<Trigger<Event>> triggers = eventTriggerResolver.getTriggers(event, allEventTriggers);
+            Log.i(TAG, "Processing triggers for Events: " + event.getId());
+            for (Trigger<Event> trigger : triggers) {
+                if (trigger.getCondition().evaluate(event)) {
+                    eventsAndTriggers.add(new Pair<>(event, trigger));
+                }
             }
         }
+        displayNotification(eventsAndTriggers);
     }
 
-    private void displayNotification(Trigger<Event> trigger, Event event) {
+    private void displayNotification(List<Pair<Event, Trigger<Event>>> eventsAndTriggers) {
+        if(eventsAndTriggers.size() == 0) {
+            return;
+        }
         Intent resultIntent = new Intent(context, MainActivity_.class);
-        resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        resultIntent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        resultIntent.setAction(MainActivityFragments.EVENTS.name());
         PendingIntent resultPendingIntent =
                 PendingIntent.getActivity(
                         context,
@@ -146,7 +160,7 @@ public class EventsHandler {
                         resultIntent,
                         0
                 );
-        notificationHelper.showTriggerNotification(trigger, event, context, resultPendingIntent);
+        notificationHelper.showTriggersNotification(eventsAndTriggers, context, resultPendingIntent);
     }
 
     private void applyBatch() {

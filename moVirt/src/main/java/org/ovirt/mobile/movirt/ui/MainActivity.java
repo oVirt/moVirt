@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.ui;
 
 import android.accounts.AccountManager;
 import android.app.DialogFragment;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -11,6 +12,7 @@ import android.database.MergeCursor;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.Loader;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.PagerTabStrip;
@@ -43,7 +45,6 @@ import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
-import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.dashboard.DashboardActivity_;
@@ -55,6 +56,7 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
+import org.ovirt.mobile.movirt.util.enums.MainActivityFragments;
 
 import java.util.List;
 
@@ -289,5 +291,13 @@ public class MainActivity extends MovirtActivity
     @Receiver(actions = Broadcasts.NO_CONNECTION_SPEFICIED, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void noConnection(@Receiver.Extra(AccountManager.KEY_INTENT) Parcelable toOpen) {
         showAccountDialog();
+    }
+
+    @Override
+    public void onNewIntent(Intent intent){
+        String action = intent.getAction();
+        if(action != null && !action.isEmpty()){
+            viewPager.setCurrentItem(MainActivityFragments.valueOf(intent.getAction()).ordinal());
+        }
     }
 }
