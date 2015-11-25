@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.util.enums;
+package org.ovirt.mobile.movirt.ui;
 
 /**
  * Created by suomiy on 11/20/15.

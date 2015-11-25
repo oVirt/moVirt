@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.ui;
 
 import android.accounts.AccountManager;
 import android.app.DialogFragment;
-import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -12,7 +11,6 @@ import android.database.MergeCursor;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.Loader;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.PagerTabStrip;
@@ -50,13 +48,13 @@ import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.dashboard.DashboardActivity_;
 import org.ovirt.mobile.movirt.ui.dialogs.AccountDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
+import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.hosts.HostsFragment_;
 import org.ovirt.mobile.movirt.ui.storage.StorageDomainFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
-import org.ovirt.mobile.movirt.util.enums.MainActivityFragments;
 
 import java.util.List;
 

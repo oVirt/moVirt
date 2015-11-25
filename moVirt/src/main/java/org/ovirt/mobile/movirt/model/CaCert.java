@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.model;
 
 import android.content.ContentValues;
 import android.net.Uri;
-import android.renderscript.Element;
 import android.text.TextUtils;
 
 import com.j256.ormlite.field.DataType;
@@ -17,9 +16,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.security.cert.Certificate;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 

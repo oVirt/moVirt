@@ -30,19 +30,15 @@ import org.ovirt.mobile.movirt.rest.ActionTicket;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.Constants;
-import org.ovirt.mobile.movirt.ui.DiskDetailFragment;
-import org.ovirt.mobile.movirt.ui.DiskDetailFragment_;
-import org.ovirt.mobile.movirt.ui.EventsFragment;
-import org.ovirt.mobile.movirt.ui.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
-import org.ovirt.mobile.movirt.ui.NicDetailFragment;
-import org.ovirt.mobile.movirt.ui.NicDetailFragment_;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ImportCertificateDialogFragment;
+import org.ovirt.mobile.movirt.ui.events.EventsFragment;
+import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
@@ -97,8 +93,9 @@ public class VmDetailActivity extends MovirtActivity
 
     private void initPagers() {
         EventsFragment eventsList = new EventsFragment_();
-        DiskDetailFragment diskDetails = new DiskDetailFragment_();
-        NicDetailFragment nicDetails = new NicDetailFragment_();
+        VmDiskDetailFragment diskDetails = new VmDiskDetailFragment_();
+        VmNicDetailFragment nicDetails = new VmNicDetailFragment_();
+
 
         eventsList.setFilterVmId(vmId);
         diskDetails.setVmId(vmId);

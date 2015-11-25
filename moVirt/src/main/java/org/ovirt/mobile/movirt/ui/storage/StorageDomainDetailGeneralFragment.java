@@ -8,6 +8,7 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.widget.TextView;
+
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
@@ -20,6 +21,7 @@ import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
+
 import java.text.DecimalFormat;
 
 @EFragment(R.layout.fragment_storage_domain_detail_general)
