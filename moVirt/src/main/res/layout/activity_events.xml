@@ -6,5 +6,5 @@
         android:id="@+id/eventList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        class="org.ovirt.mobile.movirt.ui.EventsFragment_" />
+        class="org.ovirt.mobile.movirt.ui.events.EventsFragment_" />
 </LinearLayout>

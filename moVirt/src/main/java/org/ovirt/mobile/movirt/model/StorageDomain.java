@@ -2,8 +2,10 @@ package org.ovirt.mobile.movirt.model;
 
 import android.content.ContentValues;
 import android.net.Uri;
+
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
