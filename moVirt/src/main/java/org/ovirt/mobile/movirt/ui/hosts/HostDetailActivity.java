@@ -100,13 +100,7 @@ public class HostDetailActivity extends MovirtActivity
     @OptionsItem(R.id.action_activate)
     @Background
     void activate() {
-        client.activateHost(hostId, new OVirtClient.SimpleResponse() {
-
-            @Override
-            public void onResponse(Object o) throws RemoteException {
-                syncHost();
-            }
-        });
+        client.activateHost(hostId, new SyncHostResponse());
     }
 
     @OptionsItem(R.id.action_deactivate)
@@ -126,14 +120,7 @@ public class HostDetailActivity extends MovirtActivity
 
     @Background
     void doDeactivate() {
-        client.dectivateHost(hostId, new OVirtClient.SimpleResponse() {
-
-            @Override
-            public void onResponse(Object o) throws RemoteException {
-                syncHost();
-            }
-
-        });
+        client.dectivateHost(hostId, new SyncHostResponse());
     }
 
     private void syncHost() {
@@ -145,5 +132,13 @@ public class HostDetailActivity extends MovirtActivity
     public void updateMenuItem(Host host) {
         currentStatus = host.getStatus();
         invalidateOptionsMenu();
+    }
+
+    /** Refreshes Host upon success */
+    private class SyncHostResponse extends OVirtClient.SimpleResponse<Void> {
+        @Override
+        public void onResponse(Void aVoid) throws RemoteException {
+            syncHost();
+        }
     }
 }
