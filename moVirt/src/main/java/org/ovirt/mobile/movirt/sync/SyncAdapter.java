@@ -102,40 +102,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    public synchronized void syncVm(final String id, final OVirtClient.Response<Vm> response) {
+    public synchronized <E extends OVirtEntity> void syncEntity(final Class<E> clazz,
+                                                                OVirtClient.Request<E> request,
+                                                                OVirtClient.Response<E> response) {
+        final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
         initBatch();
-        oVirtClient.getVm(id, new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<Vm>() {
+        oVirtClient.fireRestRequest(request, new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<E>() {
             @Override
-            public void onResponse(Vm vm) throws RemoteException {
-                final EntityFacade<Vm> entityFacade = entityFacadeLocator.getFacade(Vm.class);
-                Collection<Trigger<Vm>> allTriggers = entityFacade.getAllTriggers();
-                updateLocalEntity(vm, Vm.class, allTriggers);
-                applyBatch();
-            }
-        }, response));
-    }
-
-    public synchronized void syncHost(String id, OVirtClient.Response<Host> response) {
-        initBatch();
-        oVirtClient.getHost(id, new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<Host>() {
-            @Override
-            public void onResponse(Host host) throws RemoteException {
-                final EntityFacade<Host> entityFacade = entityFacadeLocator.getFacade(Host.class);
-                Collection<Trigger<Host>> allTriggers = entityFacade.getAllTriggers();
-                updateLocalEntity(host, Host.class, allTriggers);
-                applyBatch();
-            }
-        }, response));
-    }
-
-    public synchronized void syncStorageDomain(String id, OVirtClient.Response<StorageDomain> response) {
-        initBatch();
-        oVirtClient.getStorageDomain(id, new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<StorageDomain>() {
-            @Override
-            public void onResponse(StorageDomain storageDomain) throws RemoteException {
-                final EntityFacade<StorageDomain> entityFacade = entityFacadeLocator.getFacade(StorageDomain.class);
-                Collection<Trigger<StorageDomain>> allTriggers = entityFacade.getAllTriggers();
-                updateLocalEntity(storageDomain, StorageDomain.class, allTriggers);
+            public void onResponse(E entity) throws RemoteException {
+                Collection<Trigger<E>> allTriggers = entityFacade.getAllTriggers();
+                updateLocalEntity(entity, clazz, allTriggers);
                 applyBatch();
             }
         }, response));

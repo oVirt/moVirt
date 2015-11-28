@@ -18,14 +18,13 @@ import java.util.Collection;
 import java.util.List;
 
 @EBean
-public class StorageDomainFacade implements EntityFacade<StorageDomain> {
+public class StorageDomainFacade extends BaseEntityFacade<StorageDomain> {
 
     @Bean
-    SyncAdapter syncAdapter;
+    OVirtClient oVirtClient;
 
-    @Override
-    public StorageDomain mapFromCursor(Cursor cursor) {
-        return EntityMapper.forEntity(StorageDomain.class).fromCursor(cursor);
+    public StorageDomainFacade() {
+        super(StorageDomain.class);
     }
 
     @Override
@@ -34,11 +33,6 @@ public class StorageDomainFacade implements EntityFacade<StorageDomain> {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.setData(entity.getUri());
         return intent;
-    }
-
-    @Override
-    public void sync(String id, OVirtClient.Response<StorageDomain> response) {
-        syncAdapter.syncStorageDomain(id, response);
     }
 
     @Override
@@ -51,5 +45,10 @@ public class StorageDomainFacade implements EntityFacade<StorageDomain> {
     public List<Trigger<StorageDomain>> getTriggers(StorageDomain entity, Collection<Trigger<StorageDomain>> allTriggers) {
         //TODO: StorageDomainTriggerResolver not implemented, so return an empty list
         return new ArrayList<>();
+    }
+
+    @Override
+    protected OVirtClient.Request<StorageDomain> getRestRequest(String id) {
+        return oVirtClient.getStorageDomainRequest(id);
     }
 }
