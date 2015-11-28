@@ -106,7 +106,7 @@ public class OVirtClient {
         return entities;
     }
 
-    public void startVm(final String vmId, Response response) {
+    public void startVm(final String vmId, Response<Void> response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
@@ -116,7 +116,7 @@ public class OVirtClient {
         }, response);
     }
 
-    public void stopVm(final String vmId,Response response) {
+    public void stopVm(final String vmId, Response<Void> response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
@@ -127,7 +127,7 @@ public class OVirtClient {
 
     }
 
-    public void rebootVm(final String vmId, Response response) {
+    public void rebootVm(final String vmId, Response<Void> response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
@@ -137,7 +137,7 @@ public class OVirtClient {
         }, response);
     }
 
-    public void migrateVmToHost(final String vmId, final String hostId, Response response) {
+    public void migrateVmToHost(final String vmId, final String hostId, Response<Void> response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
@@ -147,7 +147,7 @@ public class OVirtClient {
         }, response);
     }
 
-    public void migrateVmToDefaultHost(final String vmId, Response response) {
+    public void migrateVmToDefaultHost(final String vmId, Response<Void> response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
@@ -157,7 +157,7 @@ public class OVirtClient {
         }, response);
     }
 
-    public void cancelMigration(final String vmId, Response response) {
+    public void cancelMigration(final String vmId, Response<Void> response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
@@ -176,7 +176,7 @@ public class OVirtClient {
         }, response);
     }
 
-    public void activateHost(final String hostId, Response response) {
+    public void activateHost(final String hostId, Response<Void> response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
@@ -186,7 +186,7 @@ public class OVirtClient {
         }, response);
     }
 
-    public void dectivateHost(final String hostId, Response response) {
+    public void dectivateHost(final String hostId, Response<Void> response) {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
@@ -286,7 +286,7 @@ public class OVirtClient {
             public List<DataCenter> fire() {
                 DataCenters loadedDataCenters = restClient.getDataCenters();
                 if (loadedDataCenters == null) {
-                    return new ArrayList();
+                    return new ArrayList<>();
                 }
 
                 return mapRestWrappers(loadedDataCenters.data_center, null);
@@ -300,7 +300,7 @@ public class OVirtClient {
             public List<StorageDomain> fire() {
                 StorageDomains loadedStorageDomains = restClient.getStorageDomains();
                 if (loadedStorageDomains == null){
-                    return new ArrayList();
+                    return new ArrayList<>();
                 }
 
                 return mapRestWrappers(loadedStorageDomains.storage_domain, null);
