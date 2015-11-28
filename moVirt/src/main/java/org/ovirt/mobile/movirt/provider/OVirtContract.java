@@ -10,34 +10,34 @@ public interface OVirtContract {
 
     Uri BASE_CONTENT_URI = new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(CONTENT_AUTHORITY).build();
 
-    public interface BaseEntity extends BaseColumns {
+    interface BaseEntity extends BaseColumns {
         String ID = _ID;
     }
 
-    public interface NamedEntity extends BaseEntity {
+    interface NamedEntity extends BaseEntity {
         String NAME = "name";
     }
 
-    public interface HasStatus {
+    interface HasStatus {
         String STATUS = "status";
     }
 
-    public interface HasCluster {
+    interface HasCluster {
         String CLUSTER_ID = "cluster_id";
     }
 
-    public interface HasHost {
+    interface HasHost {
         String HOST_ID = "host_id";
     }
 
-    public interface HasDataCenter {
+    interface HasDataCenter {
         String DATA_CENTER_ID = "data_center_id";
     }
 
     String PATH_VMS = "vms";
     String PATH_VM = "vms/*";
 
-    public interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost {
+    interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_VMS).build();
 
         String TABLE = "vms";
@@ -58,7 +58,7 @@ public interface OVirtContract {
     String PATH_HOSTS = "hosts";
     String PATH_HOST = "hosts/*";
 
-    public interface Host extends NamedEntity, HasStatus, HasCluster {
+    interface Host extends NamedEntity, HasStatus, HasCluster {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_HOSTS).build();
 
         String TABLE = "hosts";
@@ -80,7 +80,7 @@ public interface OVirtContract {
     String PATH_CLUSTERS = "clusters";
     String PATH_CLUSTER = "clusters/*";
 
-    public interface Cluster extends NamedEntity, HasDataCenter {
+    interface Cluster extends NamedEntity, HasDataCenter {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_CLUSTERS).build();
 
         String TABLE = "clusters";
@@ -90,7 +90,7 @@ public interface OVirtContract {
     String PATH_DATA_CENTERS = "datacenters";
     String PATH_DATA_CENTER = "datacenters/*";
 
-    public interface DataCenter extends NamedEntity {
+    interface DataCenter extends NamedEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DATA_CENTERS).build();
 
         String TABLE = "datacenters";
@@ -100,7 +100,7 @@ public interface OVirtContract {
     String PATH_STORAGE_DOMAINS = "storagedomains";
     String PATH_STORAGE_DOMAIN = "storagedomains/*";
 
-    public interface StorageDomain extends NamedEntity {
+    interface StorageDomain extends NamedEntity {
         Uri CONTENT_URI =  BASE_CONTENT_URI.buildUpon().appendPath(PATH_STORAGE_DOMAINS).build();
 
         String TABLE = "storagedomains";
@@ -117,7 +117,7 @@ public interface OVirtContract {
     String PATH_TRIGGERS = "triggers";
     String PATH_TRIGGER = "triggers/#";
 
-    public interface Trigger extends BaseEntity {
+    interface Trigger extends BaseEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_TRIGGERS).build();
 
         String TABLE = "triggers";
@@ -132,7 +132,7 @@ public interface OVirtContract {
     String PATH_EVENTS = "events";
     String PATH_EVENT = "events/#";
 
-    public interface Event extends BaseEntity, HasHost, HasCluster, HasDataCenter {
+    interface Event extends BaseEntity, HasHost, HasCluster, HasDataCenter {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_EVENTS).build();
 
         String TABLE = "events";
@@ -146,7 +146,7 @@ public interface OVirtContract {
 
 
     String PATH_CA_CRTS = "cacerts";
-    public interface CaCert extends BaseEntity {
+    interface CaCert extends BaseEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_CA_CRTS).build();
 
         String TABLE = "cacerts";

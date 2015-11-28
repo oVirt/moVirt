@@ -9,7 +9,7 @@ public interface Broadcasts {
     String NO_CONNECTION_SPEFICIED = "org.ovirt.mobile.movirt.NO_CONNECTION_SPEFICIED";
 
 
-    public interface Extras {
+    interface Extras {
         String CONNECTION_FAILURE_REASON = "org.ovirt.mobile.movirt.CONNECTION_FAILURE_REASON";
         String SYNCING = "org.ovirt.mobile.movirt.SYNCING";
     }
