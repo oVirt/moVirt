@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.widget.Toast;
 
@@ -167,13 +168,18 @@ public class OVirtClient {
         }, response);
     }
 
-    public void getVm(final String vmId, Response<Vm> response) {
-        fireRestRequest(new Request<Vm>() {
+    @NonNull
+    public Request<Vm> getVmRequest(final String vmId) {
+        return new Request<Vm>() {
             @Override
             public Vm fire() {
                 return restClient.getVm(vmId).toEntity();
             }
-        }, response);
+        };
+    }
+
+    public void getVm(final String vmId, Response<Vm> response) {
+        fireRestRequest(getVmRequest(vmId), response);
     }
 
     public void activateHost(final String hostId, Response<Void> response) {
@@ -196,22 +202,32 @@ public class OVirtClient {
         }, response);
     }
 
-    public void getHost(final String hostId, Response<Host> response) {
-        fireRestRequest(new Request<Host>() {
+    @NonNull
+    public Request<Host> getHostRequest(final String hostId) {
+        return new Request<Host>() {
             @Override
             public Host fire() {
                 return restClient.getHost(hostId).toEntity();
             }
-        }, response);
+        };
     }
 
-    public void getStorageDomain(final String storageDomainId, Response<StorageDomain> response) {
-        fireRestRequest(new Request<StorageDomain>() {
+    public void getHost(final String hostId, Response<Host> response) {
+        fireRestRequest(getHostRequest(hostId), response);
+    }
+
+    @NonNull
+    public Request<StorageDomain> getStorageDomainRequest(final String storageDomainId) {
+        return new Request<StorageDomain>() {
             @Override
             public StorageDomain fire() {
                 return restClient.getStorageDomain(storageDomainId).toEntity();
             }
-        }, response);
+        };
+    }
+
+    public void getStorageDomain(final String storageDomainId, Response<StorageDomain> response) {
+        fireRestRequest(getStorageDomainRequest(storageDomainId), response);
     }
 
     public void getConsoleTicket(final String vmId, Response<ActionTicket> response) {
@@ -389,7 +405,7 @@ public class OVirtClient {
     /**
      * has to be synced because of error handling - otherwise it would not be possible to bind the error
      */
-    private synchronized <T> void fireRestRequest(final Request<T> request, final Response<T> response) {
+    public synchronized <T> void fireRestRequest(final Request<T> request, final Response<T> response) {
         if (authenticator.enforceBasicAuth()) {
             fireRequestWithHttpBasicAuth(request, response);
         } else {
