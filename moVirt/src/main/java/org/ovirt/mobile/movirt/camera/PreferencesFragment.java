@@ -16,10 +16,8 @@
 
 package org.ovirt.mobile.movirt.camera;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
 
 import org.ovirt.mobile.movirt.R;
 

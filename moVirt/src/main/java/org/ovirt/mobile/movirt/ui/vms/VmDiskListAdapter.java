@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.vms;
 
 import android.content.Context;
 import android.util.Log;
@@ -15,10 +15,10 @@ import org.ovirt.mobile.movirt.rest.Disks;
 /**
  * Created by sphoorti on 11/2/15.
  */
-public class DiskListAdapter extends ArrayAdapter<Disk> {
-    private static final String TAG = DiskListAdapter.class.getSimpleName();
+public class VmDiskListAdapter extends ArrayAdapter<Disk> {
+    private static final String TAG = VmDiskListAdapter.class.getSimpleName();
 
-    public  DiskListAdapter (Context context, int textViewResourceId, Disks ldisk) {
+    public VmDiskListAdapter(Context context, int textViewResourceId, Disks ldisk) {
         super(context, textViewResourceId,ldisk.disk);
     }
     @Override

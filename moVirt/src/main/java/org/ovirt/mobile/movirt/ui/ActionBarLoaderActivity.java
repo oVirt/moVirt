@@ -1,6 +1,7 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.support.v7.app.ActionBarActivity;
+
 import org.androidannotations.annotations.EActivity;
 
 @EActivity

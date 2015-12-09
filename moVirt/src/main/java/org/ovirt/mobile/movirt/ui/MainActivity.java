@@ -43,12 +43,12 @@ import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
-import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.dashboard.DashboardActivity_;
 import org.ovirt.mobile.movirt.ui.dialogs.AccountDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
+import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.hosts.HostsFragment_;
 import org.ovirt.mobile.movirt.ui.storage.StorageDomainFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
@@ -289,5 +289,13 @@ public class MainActivity extends MovirtActivity
     @Receiver(actions = Broadcasts.NO_CONNECTION_SPEFICIED, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void noConnection(@Receiver.Extra(AccountManager.KEY_INTENT) Parcelable toOpen) {
         showAccountDialog();
+    }
+
+    @Override
+    public void onNewIntent(Intent intent){
+        String action = intent.getAction();
+        if(action != null && !action.isEmpty()){
+            viewPager.setCurrentItem(MainActivityFragments.valueOf(intent.getAction()).ordinal());
+        }
     }
 }

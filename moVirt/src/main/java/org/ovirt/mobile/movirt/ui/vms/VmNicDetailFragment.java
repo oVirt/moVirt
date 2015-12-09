@@ -1,15 +1,13 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.vms;
 
 /**
  * Created by yixin on 2015/3/24.
  */
 
 import android.os.RemoteException;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.widget.ListView;
 
-import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
@@ -19,10 +17,12 @@ import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.rest.Nics;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
+import org.ovirt.mobile.movirt.ui.RefreshableFragment;
 
 @EFragment(R.layout.fragment_nic_detail)
-public class NicDetailFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener, HasProgressBar {
-    private static final String TAG = NicDetailFragment.class.getSimpleName();
+public class VmNicDetailFragment extends RefreshableFragment {
+    private static final String TAG = VmNicDetailFragment.class.getSimpleName();
 
     @ViewById(R.id.nicListView)
     ListView listView;
@@ -30,7 +30,7 @@ public class NicDetailFragment extends Fragment implements SwipeRefreshLayout.On
     @Bean
     OVirtClient oVirtClient;
 
-    NicListAdapter nicListAdapter;
+    VmNicListAdapter vmNicListAdapter;
 
     @InstanceState
     String vmId = "";
@@ -38,34 +38,22 @@ public class NicDetailFragment extends Fragment implements SwipeRefreshLayout.On
     @ViewById
     SwipeRefreshLayout swipeNicsContainer;
 
-    @AfterViews
-    void init() {
-        swipeNicsContainer.setOnRefreshListener(this);
-    }
-
     @Override
     public void onResume() {
         super.onResume();
         loadNicDetails();
     }
 
-    @UiThread
     @Override
-    public void showProgressBar() {
-        swipeNicsContainer.setRefreshing(true);
-    }
-
-    @UiThread
-    @Override
-    public void hideProgressBar() {
-        swipeNicsContainer.setRefreshing(false);
+    protected SwipeRefreshLayout getSwipeRefreshLayout() {
+        return swipeNicsContainer;
     }
 
     @UiThread
     void displayListView(Nics nics) {
         if (listView != null && nics != null && nics.nic != null) {
-            nicListAdapter = new NicListAdapter(getActivity(), 0, nics);
-            listView.setAdapter(nicListAdapter);
+            vmNicListAdapter = new VmNicListAdapter(getActivity(), 0, nics);
+            listView.setAdapter(vmNicListAdapter);
         }
     }
 

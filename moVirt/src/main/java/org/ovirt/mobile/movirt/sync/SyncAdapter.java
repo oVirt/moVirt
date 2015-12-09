@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
+import android.util.Pair;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
@@ -29,6 +30,8 @@ import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.ui.MainActivityFragments;
+import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 
 import java.util.ArrayList;
@@ -214,6 +217,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             return;
         }
 
+        List<Pair<E, E>> entities = new ArrayList<>();
         while (cursor.moveToNext()) {
             E localEntity = mapper.fromCursor(cursor);
             E remoteEntity = entityMap.get(localEntity.getId());
@@ -222,9 +226,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 batch.delete(localEntity);
             } else { // existing entity, update stats if changed
                 entityMap.remove(localEntity.getId());
-                checkEntityChanged(localEntity, remoteEntity, entityFacade, allTriggers);
+                entities.add(new Pair<>(localEntity, remoteEntity));
             }
         }
+
+        checkEntitiesChanged(entities, entityFacade, allTriggers);
 
         cursor.close();
 
@@ -248,31 +254,55 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private <E extends OVirtEntity> void checkEntityChanged(E localEntity, E remoteEntity, EntityFacade<E> entityFacade, Collection<Trigger<E>> allTriggers) {
-        if (!localEntity.equals(remoteEntity)) {
-            if (entityFacade != null) {
-                final List<Trigger<E>> triggers = entityFacade.getTriggers(localEntity, allTriggers);
-                processEntityTriggers(triggers, localEntity, remoteEntity, entityFacade);
-            }
-            Log.i(TAG, "Scheduling update for URI: " + localEntity.getUri());
-            batch.update(remoteEntity);
-        }
+        List<Pair<E, E>> entities = new ArrayList<>();
+        entities.add(new Pair<>(localEntity,remoteEntity));
+        checkEntitiesChanged(entities, entityFacade, allTriggers);
     }
 
-    private <E extends OVirtEntity> void processEntityTriggers(List<Trigger<E>> triggers, E localEntity, E remoteEntity, EntityFacade<E> entityFacade) {
-        Log.i(TAG, "Processing triggers for entity: " + remoteEntity.getId());
-        for (Trigger<E> trigger : triggers) {
-            if (!trigger.getCondition().evaluate(localEntity) && trigger.getCondition().evaluate(remoteEntity)) {
-                displayNotification(trigger, remoteEntity, entityFacade);
+    private <E extends OVirtEntity> void checkEntitiesChanged(List<Pair<E, E>> entities, EntityFacade<E> entityFacade, Collection<Trigger<E>> allTriggers) {
+
+        List<Pair<E, Trigger<E>>>  entitiesAndTriggers = new ArrayList<>();
+        for (Pair<E, E> pair : entities){
+            E localEntity = pair.first;
+            E remoteEntity = pair.second;
+
+            if (!localEntity.equals(remoteEntity)) {
+                if (entityFacade != null) {
+                    final List<Trigger<E>> triggers = entityFacade.getTriggers(localEntity, allTriggers);
+                    Log.i(TAG, "Processing triggers for entity: " + remoteEntity.getId());
+
+                    for (Trigger<E> trigger : triggers) {
+                        if (!trigger.getCondition().evaluate(localEntity) && trigger.getCondition().evaluate(remoteEntity)) {
+                            entitiesAndTriggers.add(new Pair<>(remoteEntity, trigger));
+                        }
+                    }
+                }
+                Log.i(TAG, "Scheduling update for URI: " + localEntity.getUri());
+                batch.update(remoteEntity);
             }
         }
+        displayNotification(entitiesAndTriggers, entityFacade);
     }
 
-    private <E extends OVirtEntity> void displayNotification(Trigger<E> trigger, E entity, EntityFacade<E> entityFacade) {
-        final Context appContext = getContext().getApplicationContext();
-        final Intent intent = entityFacade.getDetailIntent(entity, appContext);
-        intent.setData(entity.getUri());
-        notificationHelper.showTriggerNotification(
-                trigger, entity, appContext, PendingIntent.getActivity(appContext, 0, intent, 0)
+    private <E extends OVirtEntity> void displayNotification(List<Pair<E,Trigger<E>>> entitiesAndTriggers, EntityFacade<E> entityFacade) {
+        if(entitiesAndTriggers.size() == 0) {
+            return;
+        }
+        Intent resultIntent;
+
+        if(entitiesAndTriggers.size() == 1){
+            E entity = entitiesAndTriggers.get(0).first;
+            final Context appContext = getContext().getApplicationContext();
+            resultIntent = entityFacade.getDetailIntent(entity, appContext);
+            resultIntent.setData(entity.getUri());
+        }else{
+            resultIntent = new Intent(context, MainActivity_.class);
+            resultIntent.setAction(MainActivityFragments.VMS.name());
+            resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        }
+
+        notificationHelper.showTriggersNotification(
+                entitiesAndTriggers, context, PendingIntent.getActivity(context, 0, resultIntent,  0  )
         );
     }
 

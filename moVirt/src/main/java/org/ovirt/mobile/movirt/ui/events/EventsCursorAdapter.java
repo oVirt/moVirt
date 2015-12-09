@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.events;
 
 import android.content.Context;
 import android.database.Cursor;
