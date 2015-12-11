@@ -100,16 +100,19 @@ public class VmDetailActivity extends MovirtActivity
         EventsFragment eventsList = new EventsFragment_();
         VmDiskDetailFragment diskDetails = new VmDiskDetailFragment_();
         VmNicDetailFragment nicDetails = new VmNicDetailFragment_();
+        VmSnapshotsFragment snapshotsList = new VmSnapshotsFragment_();
 
 
         eventsList.setFilterVmId(vmId);
         diskDetails.setVmId(vmId);
         nicDetails.setVmId(vmId);
+        snapshotsList.setFilterVmId(vmId);
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
                 getSupportFragmentManager(), PAGER_TITLES,
                 new VmDetailGeneralFragment_(),
                 eventsList,
+                snapshotsList,
                 diskDetails,
                 nicDetails);
 
@@ -239,7 +242,7 @@ public class VmDetailActivity extends MovirtActivity
     @OptionsItem(R.id.action_console)
     @Background
     void openConsole() {
-        vmFacade.sync(vmId, new ProgressBarResponse<Vm>(this) {
+        vmFacade.syncOne(new ProgressBarResponse<Vm>(this) {
 
             @Override
             public void onResponse(final Vm freshVm) throws RemoteException {
@@ -264,7 +267,7 @@ public class VmDetailActivity extends MovirtActivity
                     }
                 });
             }
-        });
+        }, vmId);
     }
 
     @UiThread
@@ -279,7 +282,7 @@ public class VmDetailActivity extends MovirtActivity
     }
 
     private void syncVm() {
-        vmFacade.sync(vmId, new ProgressBarResponse<Vm>(this));
+        vmFacade.syncOne(new ProgressBarResponse<Vm>(this), vmId);
     }
 
     /**

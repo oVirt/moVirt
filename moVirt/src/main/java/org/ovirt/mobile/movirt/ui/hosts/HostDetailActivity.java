@@ -130,7 +130,7 @@ public class HostDetailActivity extends MovirtActivity
     }
 
     private void syncHost() {
-        hostFacade.sync(hostId, new ProgressBarResponse<Host>(this));
+        hostFacade.syncOne(new ProgressBarResponse<Host>(this), hostId);
     }
 
     @UiThread
@@ -140,7 +140,9 @@ public class HostDetailActivity extends MovirtActivity
         invalidateOptionsMenu();
     }
 
-    /** Refreshes Host upon success */
+    /**
+     * Refreshes Host upon success
+     */
     private class SyncHostResponse extends OVirtClient.SimpleResponse<Void> {
         @Override
         public void onResponse(Void aVoid) throws RemoteException {

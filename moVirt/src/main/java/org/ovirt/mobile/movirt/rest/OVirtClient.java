@@ -33,20 +33,24 @@ import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
+import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.http.HttpAuthentication;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -173,7 +177,8 @@ public class OVirtClient {
         return new Request<Vm>() {
             @Override
             public Vm fire() {
-                return restClient.getVm(vmId).toEntity();
+                org.ovirt.mobile.movirt.rest.Vm vm = restClient.getVm(vmId);
+                return vm.toEntity();
             }
         };
     }
@@ -248,35 +253,6 @@ public class OVirtClient {
         }, response);
     }
 
-    public void getVms(Response<List<Vm>> response) {
-        final SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(app);
-        fireRestRequest(new Request<List<Vm>>() {
-            @Override
-            public List<Vm> fire() {
-                Vms loadedVms = null;
-                if (authenticator.hasAdminPermissions()) {
-                    int maxVms = sharedPreferencesHelper.getMaxVms();
-                    String query = sharedPreferences.getString("vms_search_query", "");
-                    if (!"".equals(query)) {
-                        loadedVms = restClient.getVms(query, maxVms);
-                    } else {
-                        loadedVms = restClient.getVms(maxVms);
-                    }
-
-                } else {
-                    loadedVms = restClient.getVms(-1);
-                }
-
-                if (loadedVms == null) {
-                    return new ArrayList<>();
-                }
-
-                return mapRestWrappers(loadedVms.vm, null);
-            }
-        }, response);
-    }
-
     @UiThread
     void showToast(String msg) {
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
@@ -310,20 +286,6 @@ public class OVirtClient {
         }, response);
     }
 
-    public void getStorageDomains(Response<List<StorageDomain>> response) {
-        fireRestRequest(new Request<List<StorageDomain>>() {
-            @Override
-            public List<StorageDomain> fire() {
-                StorageDomains loadedStorageDomains = restClient.getStorageDomains();
-                if (loadedStorageDomains == null){
-                    return new ArrayList<>();
-                }
-
-                return mapRestWrappers(loadedStorageDomains.storage_domain, null);
-            }
-        }, response);
-    }
-
     public void getNics(final String id, Response<Nics> response) {
         fireRestRequest(new Request<Nics>() {
             @Override
@@ -333,8 +295,8 @@ public class OVirtClient {
         }, response);
     }
 
-    public void getHosts(Response<List<Host>> response) {
-        fireRestRequest(new Request<List<Host>>() {
+    public Request<List<Host>> getHostsRequest() {
+        return new Request<List<Host>>() {
             @Override
             public List<Host> fire() {
                 Hosts loadedHosts = restClient.getHosts();
@@ -344,7 +306,75 @@ public class OVirtClient {
 
                 return mapRestWrappers(loadedHosts.host, null);
             }
-        }, response);
+        };
+    }
+
+    public Request<List<Vm>> getVmsRequest() {
+        final SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(app);
+
+        return new Request<List<Vm>>() {
+            @Override
+            public List<Vm> fire() {
+                Vms loadedVms = null;
+                if (authenticator.hasAdminPermissions()) {
+                    int maxVms = sharedPreferencesHelper.getMaxVms();
+                    String query = sharedPreferences.getString("vms_search_query", "");
+                    if (StringUtils.isEmpty(query)) {
+                        loadedVms = restClient.getVms(maxVms);
+                    } else {
+                        loadedVms = restClient.getVms(query, maxVms);
+                    }
+
+                } else {
+                    loadedVms = restClient.getVms(-1);
+                }
+
+                if (loadedVms == null) {
+                    return new ArrayList<>();
+                }
+
+
+                return mapRestWrappers(loadedVms.vm, null);
+            }
+        };
+    }
+
+    public Request<List<StorageDomain>> getStorageDomainsRequest() {
+        return new Request<List<StorageDomain>>() {
+            @Override
+            public List<StorageDomain> fire() {
+                StorageDomains loadedStorageDomains = restClient.getStorageDomains();
+                if (loadedStorageDomains == null) {
+                    return new ArrayList<>();
+                }
+
+                return mapRestWrappers(loadedStorageDomains.storage_domain, null);
+            }
+        };
+    }
+
+    public Request<List<Snapshot>> getSnapshotsRequest(final String vmId) {
+        return new Request<List<Snapshot>>() {
+            @Override
+            public List<Snapshot> fire() {
+                Snapshots loadedSnapshots = restClient.getSnapshots(vmId);
+                if (loadedSnapshots == null) {
+                    return new ArrayList<>();
+                }
+
+                List<Snapshot> result = mapRestWrappers(loadedSnapshots.snapshot, null);
+                for (Snapshot s : result) {
+                    s.setVmId(vmId); // Active VM Snapshot doesn't include this
+                }
+
+                return result;
+            }
+        };
+    }
+
+    public Request<Snapshot> getSnapshotRequest(String vmId, String snapshotId) {
+        return null;
     }
 
     public String login(String apiUrl, String username, String password, final boolean hasAdminPrivileges) {
@@ -379,7 +409,6 @@ public class OVirtClient {
                 } else {
                     loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), -1);
                 }
-
 
                 if (loadedEvents == null) {
                     return new ArrayList<>();
@@ -721,11 +750,11 @@ public class OVirtClient {
      */
     public static class CompositeResponse<T> implements Response<T> {
 
-        private final Response<T>[] responses;
+        private List<Response<T>> responses;
 
         @SafeVarargs
         public CompositeResponse(Response<T>... responses) {
-            this.responses = responses;
+            this.responses = new ArrayList<>(Arrays.asList(responses));
         }
 
         @Override
@@ -762,6 +791,10 @@ public class OVirtClient {
                     response.after();
                 }
             }
+        }
+
+        public void addResponse(Response<T> response) {
+            responses.add(response);
         }
     }
 }

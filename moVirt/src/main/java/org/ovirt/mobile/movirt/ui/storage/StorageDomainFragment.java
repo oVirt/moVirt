@@ -10,11 +10,13 @@ import android.widget.TextView;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.StorageDomain;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.ui.BaseEntityListFragment;
 
+import static org.ovirt.mobile.movirt.provider.OVirtContract.StorageDomain.NAME;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.StorageDomain.STATUS;
+
 @EFragment(R.layout.fragment_base_entity_list)
-public class StorageDomainFragment extends BaseEntityListFragment<StorageDomain> implements OVirtContract.StorageDomain{
+public class StorageDomainFragment extends BaseEntityListFragment<StorageDomain> {
 
     public StorageDomainFragment() {
         super(StorageDomain.class);

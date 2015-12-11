@@ -42,7 +42,7 @@ public class VmDiskListAdapter extends ArrayAdapter<Disk> {
             TextView diskSize = (TextView) v.findViewById(R.id.disk_size);
 
             diskName.setText("Name : " + disk.name);
-            diskStatus.setText("Status : " + disk.status.state);
+            diskStatus.setText("Status : " + disk.status.state.toUpperCase());
             try {
                 diskSizeMB = Long.parseLong(disk.size);
             }

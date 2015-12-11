@@ -10,13 +10,16 @@ import android.widget.TextView;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.ui.BaseEntityListFragment;
 
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
+
 @EFragment(R.layout.fragment_base_entity_list)
-public class VmsFragment extends BaseEntityListFragment<Vm> implements OVirtContract.Vm {
+public class VmsFragment extends BaseEntityListFragment<Vm> {
 
     private static final String TAG = VmsFragment.class.getSimpleName();
+
     public VmsFragment() {
         super(Vm.class);
     }

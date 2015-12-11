@@ -8,8 +8,11 @@ import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.trigger.TriggerResolver;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 
+import java.util.List;
+
 /**
  * Provides uniform interface for various services dependant on entity type
+ *
  * @param <E> Type of entity
  */
 public interface EntityFacade<E extends OVirtEntity> extends TriggerResolver<E> {
@@ -18,5 +21,9 @@ public interface EntityFacade<E extends OVirtEntity> extends TriggerResolver<E> 
 
     Intent getDetailIntent(E entity, Context context);
 
-    void sync(String id, OVirtClient.Response<E> response);
+    void syncOne(OVirtClient.Response<E> response, String id, String... ids);
+
+    void syncAll(String... ids);
+
+    void syncAll(OVirtClient.Response<List<E>> response, String... ids);
 }

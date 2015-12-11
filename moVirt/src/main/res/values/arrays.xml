@@ -47,6 +47,7 @@
     <string-array name="vm_detail_pager_titles">
         <item>General</item>
         <item>Events</item>
+        <item>Snapshots</item>
         <item>Disks</item>
         <item>Nics</item>
     </string-array>
@@ -55,6 +56,9 @@
         <item>General</item>
         <item>VMs</item>
         <item>Events</item>
+    </string-array>
+
+    <string-array name="snapshot_detail_pager_titles">
     </string-array>
 
     <string-array name="storage_domain_detail_pager_titles">

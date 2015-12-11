@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui.hosts;
+package org.ovirt.mobile.movirt.ui.snapshots;
 
 import android.database.Cursor;
 import android.net.Uri;
@@ -24,9 +24,9 @@ import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 
 @EFragment(R.layout.fragment_host_detail_general)
-public class HostDetailGeneralFragment extends RefreshableLoaderFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class SnapshotDetailGeneralFragment extends RefreshableLoaderFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final String TAG = HostDetailGeneralFragment.class.getSimpleName();
+    private static final String TAG = SnapshotDetailGeneralFragment.class.getSimpleName();
 
     private static final String HOST_URI = "host_uri";
 
@@ -122,9 +122,10 @@ public class HostDetailGeneralFragment extends RefreshableLoaderFragment impleme
         statusView.setText(host.getStatus().toString().toLowerCase());
         cpuView.setText(String.format("%.2f%%", host.getCpuUsage()));
         memView.setText(String.format("%.2f%%", host.getMemoryUsage()));
-        if (host.getMemorySizeMb() != -1) {
+        if(host.getMemorySizeMb() != -1) {
             memoryView.setText(host.getMemorySizeMb() + " MB");
-        } else {
+        }
+        else {
             memoryView.setText("N/A");
         }
         summaryView.setText(host.getActive() + " | " + host.getMigrating()

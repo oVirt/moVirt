@@ -131,6 +131,10 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
     @DatabaseField(columnName = CERTIFICATE_SUBJECT)
     private String certificateSubject;
 
+    private transient List<Disk> disks;
+
+    private transient List<Nic> nics;
+
     public Status getStatus() {
         return status;
     }
@@ -241,6 +245,22 @@ public class Vm extends OVirtEntity implements OVirtContract.Vm {
 
     public void setCertificateSubject(String certificateSubject) {
         this.certificateSubject = certificateSubject;
+    }
+
+    public List<Disk> getDisks() {
+        return disks;
+    }
+
+    public void setDisks(List<Disk> disks) {
+        this.disks = disks;
+    }
+
+    public List<Nic> getNics() {
+        return nics;
+    }
+
+    public void setNics(List<Nic> nics) {
+        this.nics = nics;
     }
 
     @Override

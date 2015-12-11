@@ -30,6 +30,13 @@ public interface OVirtContract {
         String HOST_ID = "host_id";
     }
 
+    interface HasVm {
+        String VM_ID = "vm_id";
+
+        String getVmId();
+    }
+
+
     interface HasDataCenter {
         String DATA_CENTER_ID = "data_center_id";
     }
@@ -101,7 +108,7 @@ public interface OVirtContract {
     String PATH_STORAGE_DOMAIN = "storagedomains/*";
 
     interface StorageDomain extends NamedEntity {
-        Uri CONTENT_URI =  BASE_CONTENT_URI.buildUpon().appendPath(PATH_STORAGE_DOMAINS).build();
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_STORAGE_DOMAINS).build();
 
         String TABLE = "storagedomains";
         String TYPE = "type";
@@ -146,6 +153,7 @@ public interface OVirtContract {
 
 
     String PATH_CA_CRTS = "cacerts";
+
     interface CaCert extends BaseEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_CA_CRTS).build();
 
@@ -158,6 +166,7 @@ public interface OVirtContract {
 
     String PATH_CONNECTION_INFOS = "connectioninfos";
     String PATH_CONNECTION_INFO = "connectioninfos/#";
+
     interface ConnectionInfo extends BaseEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_CONNECTION_INFOS).build();
 
@@ -166,5 +175,43 @@ public interface OVirtContract {
         String STATE = "state";
         String ATTEMPT = "attempt";
         String SUCCESSFUL = "successful";
+    }
+
+    String PATH_SNAPSHOTS = "snapshots";
+    String PATH_SNAPSHOT = "snapshots/*";
+
+    interface Snapshot extends HasVm, NamedEntity {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_SNAPSHOTS).build();
+
+        String TABLE = "snapshots";
+
+        String SNAPSHOT_STATUS = "snapshot_status";
+        String DATE = "date";
+        String PERSIST_MEMORYSTATE = "persist_memorystate";
+    }
+
+    String PATH_DISKS = "disks";
+    String PATH_DISK = "disks/*";
+
+    interface Disk extends HasVm, NamedEntity, HasStatus {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISKS).build();
+
+        String TABLE = "disks";
+
+        String SIZE = "size";
+    }
+
+    String PATH_NICS = "nics";
+    String PATH_NIC = "nics/*";
+
+    interface Nic extends HasVm, NamedEntity {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_NICS).build();
+
+        String TABLE = "nics";
+
+        String LINKED = "linked";
+        String MAC_ADDRESS = "mac_address";
+        String ACTIVE = "active";
+        String PLUGGED = "plugged";
     }
 }

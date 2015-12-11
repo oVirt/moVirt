@@ -23,26 +23,27 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ItemClick;
-import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
-import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.EntityFacade;
 import org.ovirt.mobile.movirt.facade.EntityFacadeLocator;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
-import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
+import java.util.List;
+
+import static org.ovirt.mobile.movirt.provider.OVirtContract.HasCluster.CLUSTER_ID;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.HasVm.VM_ID;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public abstract class BaseEntityListFragment<E extends OVirtEntity> extends RefreshableFragment
-        implements OVirtContract.HasCluster, OVirtContract.NamedEntity, SelectedClusterAware, HasLoader {
+public abstract class BaseEntityListFragment<E extends OVirtEntity> extends RefreshableLoaderFragment
+        implements SelectedClusterAware, HasLoader {
 
     private static final int ITEMS_PER_PAGE = 20;
 
@@ -51,6 +52,9 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
     @InstanceState
     protected String filterHostId;
+
+    @InstanceState
+    protected String filterVmId;
 
     @InstanceState
     protected String selectedClusterId;
@@ -139,6 +143,10 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         this.filterHostId = filterHostId;
     }
 
+    public void setFilterVmId(String filterVmId) {
+        this.filterVmId = filterVmId;
+    }
+
     @Override
     public void updateSelectedClusterId(String selectedClusterId) {
         resetListViewPosition();
@@ -184,8 +192,12 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
                     query.where(CLUSTER_ID, selectedClusterId);
                 }
 
-                if (filterHostId != null){
+                if (filterHostId != null) {
                     query.where(HOST_ID, filterHostId);
+                }
+
+                if (filterVmId != null) {
+                    query.where(VM_ID, filterVmId);
                 }
 
                 String searchNameString = searchText.getText().toString();
@@ -226,9 +238,10 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
             }
         });
     }
+
     @UiThread
     public void setSearchBoxVisibility(boolean visible) {
-        if(visible) {
+        if (visible) {
             searchbox.setVisibility(View.VISIBLE);
         } else {
             searchbox.setVisibility(View.GONE);
@@ -254,8 +267,6 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     public void onResume() {
         super.onResume();
 
-        setRefreshing(SyncAdapter.inSync);
-
         restartLoader();
         setSearchBoxVisibility(searchtoggle);
     }
@@ -263,28 +274,20 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     @Override
     public void onPause() {
         super.onPause();
-
-        setRefreshing(false);
-
-        destroyLoader();
     }
 
     @ItemClick(android.R.id.list)
     protected void itemClicked(Cursor cursor) {
         E entity = entityFacade.mapFromCursor(cursor);
-        startActivity(entityFacade.getDetailIntent(entity, getActivity()));
+        if (entityFacade.getDetailIntent(entity, getActivity()) != null) { // remove after snapshot detail finished
+            startActivity(entityFacade.getDetailIntent(entity, getActivity()));
+        }
     }
 
     @Override
     @Background
     public void onRefresh() {
-        syncUtils.triggerCoreRefresh();
-    }
-
-    @UiThread
-    @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
-        setRefreshing(syncing);
+        entityFacade.syncAll(new ProgressBarResponse<List<E>>(this));
     }
 
     protected abstract CursorAdapter createCursorAdapter();

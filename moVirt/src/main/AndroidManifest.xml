@@ -96,6 +96,9 @@
         </activity>
 
         <activity
+            android:name=".ui.snapshots.SnapshotDetailActivity_"
+            android:label="@string/title_activity_snapshot_details" />
+        <activity
             android:name=".ui.CameraActivity_"
             android:label="@string/title_activity_camera"
             android:theme="@style/cameraViewStyle" />

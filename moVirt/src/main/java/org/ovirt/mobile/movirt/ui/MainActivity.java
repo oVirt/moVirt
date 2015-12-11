@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
@@ -90,6 +91,8 @@ public class MainActivity extends MovirtActivity
     String[] PAGER_TITLES;
     @Bean
     OVirtClient client;
+    @ViewById
+    ProgressBar progress;
     @InstanceState
     String selectedClusterId;
     @InstanceState
@@ -121,6 +124,7 @@ public class MainActivity extends MovirtActivity
         }
 
         initPagers();
+        setProgressBar(progress);
     }
 
     private void showAccountDialog() {

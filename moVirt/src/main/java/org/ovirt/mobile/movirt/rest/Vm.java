@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -24,6 +25,8 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     public Display display;
     public Os os;
     public Cpu cpu;
+    public Disks disks;
+    public Nics nics;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Display {
@@ -44,7 +47,7 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     @Override
     public String toString() {
         return String.format("Vm: name=%s, id=%s, status=%s, clusterId=%s",
-                             name, id, status.state, cluster.id);
+                name, id, status.state, cluster.id);
     }
 
     public org.ovirt.mobile.movirt.model.Vm toEntity() {
@@ -106,6 +109,18 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
             vm.setDisplaySecurePort(-1);
         }
 
+        List<org.ovirt.mobile.movirt.model.Disk> diskEntities = mapToEntities(disks.disk);
+        for (org.ovirt.mobile.movirt.model.Disk d : diskEntities) {
+            d.setVmId(id);
+        }
+        vm.setDisks(diskEntities);
+
+        List<org.ovirt.mobile.movirt.model.Nic> nicEntities = mapToEntities(nics.nic);
+        for (org.ovirt.mobile.movirt.model.Nic n : nicEntities) {
+            n.setVmId(id);
+        }
+        vm.setNics(nicEntities);
+
         return vm;
     }
 
@@ -133,5 +148,17 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
             }
         }
         return BigDecimal.ZERO;
+    }
+
+    private <E, R extends RestEntityWrapper<E>> List<E> mapToEntities(List<R> wrappers) {
+        List<E> entities = new ArrayList<>();
+        if (wrappers == null) {
+            return entities;
+        }
+
+        for (R rest : wrappers) {
+            entities.add(rest.toEntity());
+        }
+        return entities;
     }
 }
