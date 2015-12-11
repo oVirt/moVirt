@@ -3,13 +3,13 @@ package org.ovirt.mobile.movirt.model;
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
-import android.text.format.DateUtils;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
+import org.ovirt.mobile.movirt.util.DateUtils;
 
 /**
  * Class used to store connection information in database
@@ -17,10 +17,8 @@ import org.ovirt.mobile.movirt.util.CursorHelper;
  */
 @DatabaseTable(tableName = ConnectionInfo.TABLE)
 public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract.ConnectionInfo {
-    private static final String STRING_UNKNOWN_TIME = "unknown";
-    private static final long LONG_UNKNOWN_TIME = -1;
-    private static final int FORMAT_FLAGS = DateUtils.FORMAT_SHOW_TIME |
-            DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_MONTH | DateUtils.FORMAT_SHOW_YEAR;
+    private static final long UNKNOWN_TIME = DateUtils.UNKNOWN_TIME;
+
     @DatabaseField(columnName = ID, id = true)
     private int id;
     @DatabaseField(columnName = ConnectionInfo.STATE)
@@ -33,8 +31,8 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
     public ConnectionInfo() {
         this.id = 1;
         this.state = State.UNKNOWN;
-        this.lastAttempt = LONG_UNKNOWN_TIME;
-        this.lastSuccessful = LONG_UNKNOWN_TIME;
+        this.lastAttempt = UNKNOWN_TIME;
+        this.lastSuccessful = UNKNOWN_TIME;
     }
 
     public void updateWithCurrentTime(State state) {
@@ -72,12 +70,12 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
         try {
             setLastAttempt(cursorHelper.getLong(ATTEMPT));
         } catch (Exception e) {
-            setLastAttempt(LONG_UNKNOWN_TIME);
+            setLastAttempt(UNKNOWN_TIME);
         }
         try {
             setLastSuccessful(cursorHelper.getLong(SUCCESSFUL));
         } catch (Exception e) {
-            setLastSuccessful(LONG_UNKNOWN_TIME);
+            setLastSuccessful(UNKNOWN_TIME);
         }
     }
 
@@ -123,18 +121,11 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
     }
 
     public String getLastAttemptWithTimeZone(Context context) {
-        return convertDateToString(context, lastAttempt);
+        return DateUtils.convertDateToString(context, lastAttempt);
     }
 
     public String getLastSuccessfulWithTimeZone(Context context) {
-        return convertDateToString(context, lastSuccessful);
-    }
-
-    private String convertDateToString(Context context, long date) {
-        if (date == LONG_UNKNOWN_TIME) {
-            return STRING_UNKNOWN_TIME;
-        }
-        return DateUtils.formatDateTime(context, date, FORMAT_FLAGS);
+        return DateUtils.convertDateToString(context, lastSuccessful);
     }
 
     public enum State {
