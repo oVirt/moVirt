@@ -1,16 +1,11 @@
 package org.ovirt.mobile.movirt.ui.hosts;
 
 import android.database.Cursor;
-import android.graphics.Color;
 import android.view.View;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-
-import com.melnykov.fab.FloatingActionButton;
 
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;

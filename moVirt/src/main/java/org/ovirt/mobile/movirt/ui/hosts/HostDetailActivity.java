@@ -23,14 +23,14 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.ui.EventsFragment;
-import org.ovirt.mobile.movirt.ui.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
+import org.ovirt.mobile.movirt.ui.events.EventsFragment;
+import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 

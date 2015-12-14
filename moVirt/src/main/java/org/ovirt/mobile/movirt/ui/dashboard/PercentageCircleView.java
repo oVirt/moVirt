@@ -9,6 +9,7 @@ import android.graphics.RectF;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.View;
+
 import org.ovirt.mobile.movirt.R;
 
 import java.text.DecimalFormat;

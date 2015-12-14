@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.vms;
 
 import android.content.Context;
 import android.util.Log;
@@ -16,10 +16,10 @@ import org.ovirt.mobile.movirt.rest.Nics;
 /**
  * Created by yixin on 11/2/15.
  */
-public class NicListAdapter extends ArrayAdapter<Nic> {
-    private static final String TAG = NicListAdapter.class.getSimpleName();
+public class VmNicListAdapter extends ArrayAdapter<Nic> {
+    private static final String TAG = VmNicListAdapter.class.getSimpleName();
 
-    public NicListAdapter(Context context, int textViewResourceId, Nics lnic) {
+    public VmNicListAdapter(Context context, int textViewResourceId, Nics lnic) {
         super(context, textViewResourceId,lnic.nic);
     }
     @Override

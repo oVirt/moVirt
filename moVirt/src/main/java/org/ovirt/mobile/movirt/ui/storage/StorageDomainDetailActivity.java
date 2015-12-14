@@ -4,16 +4,17 @@ import android.net.Uri;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
 import android.widget.ProgressBar;
+
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.ui.EventsFragment;
-import org.ovirt.mobile.movirt.ui.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
+import org.ovirt.mobile.movirt.ui.events.EventsFragment;
+import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 
 @EActivity(R.layout.activity_storage_domain_detail)
 public class StorageDomainDetailActivity extends MovirtActivity implements HasProgressBar {

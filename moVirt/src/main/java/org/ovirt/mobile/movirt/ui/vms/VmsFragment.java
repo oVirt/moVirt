@@ -6,10 +6,7 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.graphics.Color;
-import com.melnykov.fab.FloatingActionButton;
+
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;

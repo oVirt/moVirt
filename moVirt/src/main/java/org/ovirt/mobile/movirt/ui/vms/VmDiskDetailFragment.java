@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.vms;
 
 import android.os.RemoteException;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -13,10 +13,12 @@ import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.rest.Disks;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
+import org.ovirt.mobile.movirt.ui.RefreshableFragment;
 
 @EFragment(R.layout.fragment_disk_detail)
-public class DiskDetailFragment extends RefreshableFragment {
-    private static final String TAG = DiskDetailFragment.class.getSimpleName();
+public class VmDiskDetailFragment extends RefreshableFragment {
+    private static final String TAG = VmDiskDetailFragment.class.getSimpleName();
 
     @ViewById(R.id.diskListView)
     ListView listView;
@@ -24,7 +26,7 @@ public class DiskDetailFragment extends RefreshableFragment {
     @Bean
     OVirtClient oVirtClient;
 
-    DiskListAdapter diskListAdapter;
+    VmDiskListAdapter vmDiskListAdapter;
 
     @InstanceState
     String vmId = "";
@@ -46,8 +48,8 @@ public class DiskDetailFragment extends RefreshableFragment {
     @UiThread
     void displayListView(Disks disks) {
         if (listView != null && disks != null) {
-            diskListAdapter = new DiskListAdapter(getActivity(), 0, disks);
-            listView.setAdapter(diskListAdapter);
+            vmDiskListAdapter = new VmDiskListAdapter(getActivity(), 0, disks);
+            listView.setAdapter(vmDiskListAdapter);
         }
     }
 

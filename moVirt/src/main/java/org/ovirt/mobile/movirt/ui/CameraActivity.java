@@ -48,6 +48,7 @@ import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
+import org.ovirt.mobile.movirt.ui.events.EventsCursorAdapter;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import java.io.IOException;

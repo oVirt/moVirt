@@ -18,10 +18,10 @@ import org.ovirt.mobile.movirt.model.trigger.EventTriggerResolver;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
-import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 
 import java.util.ArrayList;
 import java.util.Collection;

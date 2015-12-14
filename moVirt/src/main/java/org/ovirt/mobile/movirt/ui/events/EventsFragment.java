@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.events;
 
 import android.database.Cursor;
 import android.os.Bundle;
@@ -20,6 +20,8 @@ import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
+import org.ovirt.mobile.movirt.ui.EndlessScrollListener;
+import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.BaseEntity.ID;

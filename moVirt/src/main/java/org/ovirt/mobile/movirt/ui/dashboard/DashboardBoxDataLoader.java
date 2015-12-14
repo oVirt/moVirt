@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.ui.dashboard;
 
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
+
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Event;
