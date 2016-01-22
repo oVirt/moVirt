@@ -58,10 +58,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     MovirtAuthenticator authenticator;
     @Bean
     NotificationHelper notificationHelper;
-    /**
-     * access to the {@code batch} field should be always under synchronized(this)
-     */
-    ProviderFacade.BatchBuilder batch;
 
     public SyncAdapter(Context context) {
         super(context, true);
@@ -90,10 +86,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             return;
         }
 
-        sendSyncIntent(true);
         try {
-            // split to two methods so at least the quick entities can be already shown / used until the slow ones get processed (better ux)
-            updateAll(tryEvents);
+            updateClusters();
+            updateHosts();
+            updateVms();
+            updateDataCenters();
+            updateStorageDomains();
+
+            if (tryEvents) {
+                eventsHandler.updateEvents(false);
+            }
         } catch (Exception e) {
             Log.e(TAG, "Error updating data", e);
             Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
@@ -102,98 +104,80 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    public synchronized void syncVm(final String id, final OVirtClient.Response<Vm> response) {
-        initBatch();
-        oVirtClient.getVm(id, new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<Vm>() {
+    public <E extends OVirtEntity> void syncEntity(final Class<E> clazz,
+                                                                OVirtClient.Request<E> request,
+                                                                OVirtClient.Response<E> response) {
+        final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
+        final ProviderFacade.BatchBuilder batch = provider.batch();
+        oVirtClient.fireRestRequest(request, new OVirtClient.CompositeResponse<>(new SyncResponse<E>() {
             @Override
-            public void onResponse(Vm vm) throws RemoteException {
-                final EntityFacade<Vm> entityFacade = entityFacadeLocator.getFacade(Vm.class);
-                Collection<Trigger<Vm>> allTriggers = entityFacade.getAllTriggers();
-                updateLocalEntity(vm, Vm.class, allTriggers);
-                applyBatch();
+            public void onResponse(E entity) throws RemoteException {
+                Collection<Trigger<E>> allTriggers = entityFacade.getAllTriggers();
+                updateLocalEntity(entity, clazz, allTriggers, batch);
+                applyBatch(batch);
             }
         }, response));
     }
 
-    public synchronized void syncHost(String id, OVirtClient.Response<Host> response) {
-        initBatch();
-        oVirtClient.getHost(id, new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<Host>() {
-            @Override
-            public void onResponse(Host host) throws RemoteException {
-                final EntityFacade<Host> entityFacade = entityFacadeLocator.getFacade(Host.class);
-                Collection<Trigger<Host>> allTriggers = entityFacade.getAllTriggers();
-                updateLocalEntity(host, Host.class, allTriggers);
-                applyBatch();
-            }
-        }, response));
+    /** Sends broadcasts about start/stop of sync around response */
+    private class SyncResponse<T> extends OVirtClient.SimpleResponse<T> {
+        @Override
+        public void before() {
+            sendSyncIntent(true);
+        }
+
+        @Override
+        public void after() {
+            sendSyncIntent(false);
+        }
     }
 
-    public synchronized void syncStorageDomain(String id, OVirtClient.Response<StorageDomain> response) {
-        initBatch();
-        oVirtClient.getStorageDomain(id, new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<StorageDomain>() {
+    private void updateClusters() {
+        oVirtClient.getClusters(new SyncResponse<List<Cluster>>() {
             @Override
-            public void onResponse(StorageDomain storageDomain) throws RemoteException {
-                final EntityFacade<StorageDomain> entityFacade = entityFacadeLocator.getFacade(StorageDomain.class);
-                Collection<Trigger<StorageDomain>> allTriggers = entityFacade.getAllTriggers();
-                updateLocalEntity(storageDomain, StorageDomain.class, allTriggers);
-                applyBatch();
-            }
-        }, response));
-    }
-
-    private void updateAll(final boolean tryEvents) throws RemoteException {
-        initBatch();
-        // TODO: we really need promises here
-        // TODO: ideally split each request and save vms, hosts, ... in separate batches
-        oVirtClient.getVms(new OVirtClient.SimpleResponse<List<Vm>>() {
-            @Override
-            public void onResponse(final List<Vm> remoteVms) throws RemoteException {
-                oVirtClient.getClusters(new OVirtClient.SimpleResponse<List<Cluster>>() {
-                    @Override
-                    public void onResponse(final List<Cluster> remoteClusters) throws RemoteException {
-                        oVirtClient.getHosts(new OVirtClient.SimpleResponse<List<Host>>() {
-                            @Override
-                            public void onResponse(final List<Host> remoteHosts) throws RemoteException {
-                                oVirtClient.getDataCenters(new OVirtClient.SimpleResponse<List<DataCenter>>() {
-                                    @Override
-                                    public void onResponse(final List<DataCenter> remoteDataCenters) throws RemoteException {
-                                        oVirtClient.getStorageDomains(new OVirtClient.SimpleResponse<List<StorageDomain>>() {
-                                            @Override
-                                            public void onResponse(final List<StorageDomain> remoteStorageDomains) throws RemoteException {
-                                                updateLocalEntities(remoteClusters, Cluster.class);
-                                                updateLocalEntities(remoteHosts, Host.class);
-                                                updateLocalEntities(remoteVms, Vm.class);
-                                                updateLocalEntities(remoteDataCenters, DataCenter.class);
-                                                updateLocalEntities(remoteStorageDomains, StorageDomain.class);
-
-                                                applyBatch();
-
-                                                if (tryEvents) {
-                                                    eventsHandler.updateEvents(false);
-                                                }
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-
-            @Override
-            public void after() {
-                sendSyncIntent(false);
+            public void onResponse(List<Cluster> clusters) throws RemoteException {
+                updateLocalEntities(clusters, Cluster.class);
             }
         });
-
     }
 
-    private void initBatch() {
-        batch = provider.batch();
+    private void updateVms() {
+        oVirtClient.getVms(new SyncResponse<List<Vm>>() {
+            @Override
+            public void onResponse(List<Vm> vms) throws RemoteException {
+                updateLocalEntities(vms, Vm.class);
+            }
+        });
     }
 
-    private void applyBatch() {
+    private void updateHosts() {
+        oVirtClient.getHosts(new SyncResponse<List<Host>>() {
+            @Override
+            public void onResponse(List<Host> hosts) throws RemoteException {
+                updateLocalEntities(hosts, Host.class);
+            }
+        });
+    }
+
+    private void updateDataCenters() {
+        oVirtClient.getDataCenters(new SyncResponse<List<DataCenter>>() {
+            @Override
+            public void onResponse(List<DataCenter> dataCenters) throws RemoteException {
+                updateLocalEntities(dataCenters, DataCenter.class);
+            }
+        });
+    }
+
+    private void updateStorageDomains() {
+        oVirtClient.getStorageDomains(new SyncResponse<List<StorageDomain>>() {
+            @Override
+            public void onResponse(List<StorageDomain> storageDomains) throws RemoteException {
+                updateLocalEntities(storageDomains, StorageDomain.class);
+            }
+        });
+    }
+
+    private void applyBatch(ProviderFacade.BatchBuilder batch) {
         if (batch.isEmpty()) {
             Log.i(TAG, "No updates necessary");
         } else {
@@ -217,7 +201,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             return;
         }
 
+        ProviderFacade.BatchBuilder batch = provider.batch();
         List<Pair<E, E>> entities = new ArrayList<>();
+
         while (cursor.moveToNext()) {
             E localEntity = mapper.fromCursor(cursor);
             E remoteEntity = entityMap.get(localEntity.getId());
@@ -230,17 +216,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
         }
 
-        checkEntitiesChanged(entities, entityFacade, allTriggers);
-
+        checkEntitiesChanged(entities, entityFacade, allTriggers, batch);
         cursor.close();
 
         for (E entity : entityMap.values()) {
             Log.i(TAG, "Scheduling insert for entity: id = " + entity.getId());
             batch.insert(entity);
         }
+
+        applyBatch(batch);
     }
 
-    private <E extends OVirtEntity> void updateLocalEntity(E remoteEntity, Class<E> clazz, Collection<Trigger<E>> allTriggers) {
+    private <E extends OVirtEntity> void updateLocalEntity(E remoteEntity, Class<E> clazz, Collection<Trigger<E>> allTriggers, ProviderFacade.BatchBuilder batch) {
         final EntityFacade<E> triggerResolver = entityFacadeLocator.getFacade(clazz);
 
         Collection<E> localEntities = provider.query(clazz).id(remoteEntity.getId()).all();
@@ -249,17 +236,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             batch.insert(remoteEntity);
         } else {
             E localEntity = localEntities.iterator().next();
-            checkEntityChanged(localEntity, remoteEntity, triggerResolver, allTriggers);
+            checkEntityChanged(localEntity, remoteEntity, triggerResolver, allTriggers, batch);
         }
     }
 
-    private <E extends OVirtEntity> void checkEntityChanged(E localEntity, E remoteEntity, EntityFacade<E> entityFacade, Collection<Trigger<E>> allTriggers) {
+    private <E extends OVirtEntity> void checkEntityChanged(E localEntity, E remoteEntity, EntityFacade<E> entityFacade, Collection<Trigger<E>> allTriggers, ProviderFacade.BatchBuilder batch) {
         List<Pair<E, E>> entities = new ArrayList<>();
         entities.add(new Pair<>(localEntity, remoteEntity));
-        checkEntitiesChanged(entities, entityFacade, allTriggers);
+        checkEntitiesChanged(entities, entityFacade, allTriggers, batch);
     }
 
-    private <E extends OVirtEntity> void checkEntitiesChanged(List<Pair<E, E>> entities, EntityFacade<E> entityFacade, Collection<Trigger<E>> allTriggers) {
+    private <E extends OVirtEntity> void checkEntitiesChanged(List<Pair<E, E>> entities, EntityFacade<E> entityFacade, Collection<Trigger<E>> allTriggers, ProviderFacade.BatchBuilder batch) {
 
         List<Pair<E, Trigger<E>>> entitiesAndTriggers = new ArrayList<>();
         for (Pair<E, E> pair : entities) {

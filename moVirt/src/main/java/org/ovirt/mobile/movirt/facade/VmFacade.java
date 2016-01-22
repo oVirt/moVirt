@@ -18,17 +18,16 @@ import java.util.Collection;
 import java.util.List;
 
 @EBean
-public class VmFacade implements EntityFacade<Vm> {
+public class VmFacade extends BaseEntityFacade<Vm> {
 
     @Bean
     VmTriggerResolver triggerResolver;
 
     @Bean
-    SyncAdapter syncAdapter;
+    OVirtClient oVirtClient;
 
-    @Override
-    public Vm mapFromCursor(Cursor cursor) {
-        return EntityMapper.forEntity(Vm.class).fromCursor(cursor);
+    public VmFacade() {
+        super(Vm.class);
     }
 
     @Override
@@ -40,11 +39,6 @@ public class VmFacade implements EntityFacade<Vm> {
     }
 
     @Override
-    public void sync(String id, OVirtClient.Response<Vm> response) {
-        syncAdapter.syncVm(id, response);
-    }
-
-    @Override
     public Collection<Trigger<Vm>> getAllTriggers() {
         return triggerResolver.getAllTriggers();
     }
@@ -52,5 +46,10 @@ public class VmFacade implements EntityFacade<Vm> {
     @Override
     public List<Trigger<Vm>> getTriggers(Vm entity, Collection<Trigger<Vm>> allTriggers) {
         return triggerResolver.getTriggers(entity, allTriggers);
+    }
+
+    @Override
+    protected OVirtClient.Request<Vm> getRestRequest(String id) {
+        return oVirtClient.getVmRequest(id);
     }
 }
