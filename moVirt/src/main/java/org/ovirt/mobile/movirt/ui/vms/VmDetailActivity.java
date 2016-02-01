@@ -13,6 +13,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
@@ -22,6 +23,7 @@ import org.androidannotations.annotations.OptionsMenuItem;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
+import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Vm;
@@ -32,6 +34,7 @@ import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
+import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
@@ -67,6 +70,8 @@ public class VmDetailActivity extends MovirtActivity
     ProgressBar progress;
     @Bean
     VmFacade vmFacade;
+    @App
+    MoVirtApp app;
     @OptionsMenuItem(R.id.action_run)
     MenuItem menuRun;
     @OptionsMenuItem(R.id.action_stop)
@@ -344,5 +349,10 @@ public class VmDetailActivity extends MovirtActivity
         public void onResponse(Void obj) throws RemoteException {
             syncVm();
         }
+    }
+
+    @OptionsItem(android.R.id.home)
+    public void homeSelected() {
+        app.startMainActivity();
     }
 }

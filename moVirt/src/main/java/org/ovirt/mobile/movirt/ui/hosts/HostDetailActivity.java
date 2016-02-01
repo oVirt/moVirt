@@ -1,6 +1,7 @@
 package org.ovirt.mobile.movirt.ui.hosts;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.support.v4.view.PagerTabStrip;
@@ -10,6 +11,7 @@ import android.view.MenuItem;
 import android.widget.ProgressBar;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
@@ -19,12 +21,14 @@ import org.androidannotations.annotations.OptionsMenuItem;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
+import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
+import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
@@ -53,6 +57,8 @@ public class HostDetailActivity extends MovirtActivity
     OVirtClient client;
     @Bean
     HostFacade hostFacade;
+    @App
+    MoVirtApp app;
     @OptionsMenuItem(R.id.action_activate)
     MenuItem menuActivate;
     @OptionsMenuItem(R.id.action_deactivate)
@@ -140,5 +146,10 @@ public class HostDetailActivity extends MovirtActivity
         public void onResponse(Void aVoid) throws RemoteException {
             syncHost();
         }
+    }
+
+    @OptionsItem(android.R.id.home)
+    public void homeSelected() {
+        app.startMainActivity();
     }
 }

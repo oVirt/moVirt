@@ -1,8 +1,10 @@
 package org.ovirt.mobile.movirt.ui.triggers;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -28,6 +30,7 @@ import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.ActionBarLoaderActivity;
+import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.SCOPE;
@@ -172,8 +175,13 @@ public class EditTriggersActivity extends ActionBarLoaderActivity implements Bas
         if( triggerCondition instanceof EventCondition )
         {
             return EntityType.EVENT;
-        } //add else if when more Entity types will be added to Add Trigger menu
+        } // add else if when more Entity types will be added to Add Trigger menu
         return EntityType.VM;
+    }
+
+    @OptionsItem(android.R.id.home)
+    public void homeSelected() {
+        onBackPressed(); // home behaves like back button - we need to return to vm from triggers
     }
 
     @Override
