@@ -13,12 +13,12 @@ public class Nic implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Nic>
     public Mac mac;
     public boolean active;
     public boolean plugged;
+    public Vm vm;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Mac {
         public String address;
     }
-
 
     public org.ovirt.mobile.movirt.model.Nic toEntity() {
         org.ovirt.mobile.movirt.model.Nic nic = new org.ovirt.mobile.movirt.model.Nic();
@@ -28,6 +28,7 @@ public class Nic implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Nic>
         nic.setMacAddress(mac.address);
         nic.setActive(active);
         nic.setPlugged(plugged);
+        nic.setVmId(vm.id);
 
         return nic;
     }

@@ -11,6 +11,7 @@ public class Disk implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Dis
     public String name;
     public String size;
     public Status status;
+    public Vm vm;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public class Status {
@@ -23,6 +24,7 @@ public class Disk implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Dis
         disk.setName(name);
         disk.setSize(size);
         disk.setStatus(status.state);
+        disk.setVmId(vm.id);
 
         return disk;
     }

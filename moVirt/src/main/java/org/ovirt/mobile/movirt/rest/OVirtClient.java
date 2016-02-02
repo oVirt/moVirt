@@ -31,8 +31,10 @@ import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.model.DataCenter;
+import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
+import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
@@ -244,13 +246,29 @@ public class OVirtClient {
         }, response);
     }
 
-    public void getDisks(final String id, Response<Disks> response) {
-        fireRestRequest(new Request<Disks>() {
+    @NonNull
+    public Request<Disk> getDiskRequest(final String vmId, final String id) {
+        return new Request<Disk>() {
             @Override
-            public Disks fire() {
-                return restClient.getDisks(id);
+            public Disk fire() {
+                org.ovirt.mobile.movirt.rest.Disk disk = restClient.getDisk(vmId, id);
+                return disk.toEntity();
             }
-        }, response);
+        };
+    }
+
+    public Request<List<Disk>> getDisksRequest(final String vmId) {
+        return new Request<List<Disk>>() {
+            @Override
+            public List<Disk> fire() {
+                Disks loadedDisks = restClient.getDisks(vmId);
+                if (loadedDisks == null) {
+                    return new ArrayList<>();
+                }
+
+                return mapRestWrappers(loadedDisks.disk, null);
+            }
+        };
     }
 
     @UiThread
@@ -284,6 +302,31 @@ public class OVirtClient {
                 return mapRestWrappers(loadedDataCenters.data_center, null);
             }
         }, response);
+    }
+
+    @NonNull
+    public Request<Nic> getNicRequest(final String vmId, final String id) {
+        return new Request<Nic>() {
+            @Override
+            public Nic fire() {
+                org.ovirt.mobile.movirt.rest.Nic nic = restClient.getNic(vmId, id);
+                return nic.toEntity();
+            }
+        };
+    }
+
+    public Request<List<Nic>> getNicsRequest(final String vmId) {
+        return new Request<List<Nic>>() {
+            @Override
+            public List<Nic> fire() {
+                Nics loadedNics = restClient.getNics(vmId);
+                if (loadedNics == null) {
+                    return new ArrayList<>();
+                }
+
+                return mapRestWrappers(loadedNics.nic, null);
+            }
+        };
     }
 
     public void getNics(final String id, Response<Nics> response) {

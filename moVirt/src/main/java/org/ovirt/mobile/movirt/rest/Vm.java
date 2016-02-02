@@ -109,17 +109,8 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
             vm.setDisplaySecurePort(-1);
         }
 
-        List<org.ovirt.mobile.movirt.model.Disk> diskEntities = mapToEntities(disks.disk);
-        for (org.ovirt.mobile.movirt.model.Disk d : diskEntities) {
-            d.setVmId(id);
-        }
-        vm.setDisks(diskEntities);
-
-        List<org.ovirt.mobile.movirt.model.Nic> nicEntities = mapToEntities(nics.nic);
-        for (org.ovirt.mobile.movirt.model.Nic n : nicEntities) {
-            n.setVmId(id);
-        }
-        vm.setNics(nicEntities);
+        vm.setNics(mapToEntities(nics.nic));
+        vm.setDisks(mapToEntities(disks.disk));
 
         return vm;
     }

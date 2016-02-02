@@ -1,5 +1,6 @@
 package org.ovirt.mobile.movirt.ui;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -92,7 +93,7 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     @InstanceState
     public boolean searchtoggle;
 
-    private EntityFacade<E> entityFacade;
+    protected EntityFacade<E> entityFacade;
 
     private final Class<E> entityClass;
 
@@ -279,8 +280,9 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     @ItemClick(android.R.id.list)
     protected void itemClicked(Cursor cursor) {
         E entity = entityFacade.mapFromCursor(cursor);
-        if (entityFacade.getDetailIntent(entity, getActivity()) != null) { // remove after snapshot detail finished
-            startActivity(entityFacade.getDetailIntent(entity, getActivity()));
+        Intent intent = entityFacade.getDetailIntent(entity, getActivity());
+        if (intent != null) {
+            startActivity(intent);
         }
     }
 

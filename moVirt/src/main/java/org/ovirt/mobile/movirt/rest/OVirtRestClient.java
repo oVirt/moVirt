@@ -76,8 +76,14 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Post("/vms/{id}/ticket")
     ActionTicket getConsoleTicket(Action action, String id);
 
+    @Get("/vms/{vmId}/disks/{id}")
+    Disk getDisk(String vmId, String id);
+
     @Get("/vms/{id}/disks")
     Disks getDisks(String id);
+
+    @Get("/vms/{vmId}/nics/{id}")
+    Nic getNic(String vmId, String id);
 
     @Get("/vms/{id}/nics")
     Nics getNics(String id);

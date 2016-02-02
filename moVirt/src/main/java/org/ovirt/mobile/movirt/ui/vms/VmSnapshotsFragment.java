@@ -7,12 +7,10 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.facade.SnapshotFacade;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.ui.BaseEntityListFragment;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
@@ -31,9 +29,6 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.SNAPSHOT_S
 @EFragment(R.layout.fragment_base_entity_list)
 public class VmSnapshotsFragment extends BaseEntityListFragment<Snapshot> {
     private static final String TAG = VmSnapshotsFragment.class.getSimpleName();
-
-    @Bean
-    SnapshotFacade snapshotFacade;
 
     public VmSnapshotsFragment() {
         super(Snapshot.class);
@@ -59,9 +54,9 @@ public class VmSnapshotsFragment extends BaseEntityListFragment<Snapshot> {
                     textView.setText(date);
                 } else if (columnIndex == cursor.getColumnIndex(SNAPSHOT_STATUS)) {
                     String status = cursor.getString(columnIndex);
-                    textView.setText("Status : " + status.toUpperCase());
+                    textView.setText(getString(R.string.snapshot_status, status.toUpperCase()));
                 } else if (columnIndex == cursor.getColumnIndex(PERSIST_MEMORYSTATE) && cursor.getInt(columnIndex) > 0) {
-                    textView.setText("Memory : true");
+                    textView.setText(getString(R.string.snapshot_memory));
                     textView.setVisibility(View.VISIBLE);
                 }
 
@@ -81,14 +76,14 @@ public class VmSnapshotsFragment extends BaseEntityListFragment<Snapshot> {
     @Background
     @Override
     public void onRefresh() {
-        snapshotFacade.syncAll(new ProgressBarResponse<List<Snapshot>>(this), super.filterVmId);
+        entityFacade.syncAll(new ProgressBarResponse<List<Snapshot>>(this), super.filterVmId);
     }
 
     @Background
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
         if (syncing) {
-            snapshotFacade.syncAll(super.filterVmId);
+            entityFacade.syncAll(super.filterVmId);
         }
     }
 }
