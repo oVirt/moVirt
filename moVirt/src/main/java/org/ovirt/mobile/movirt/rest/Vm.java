@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -142,11 +143,11 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     }
 
     private <E, R extends RestEntityWrapper<E>> List<E> mapToEntities(List<R> wrappers) {
-        List<E> entities = new ArrayList<>();
         if (wrappers == null) {
-            return entities;
+            return Collections.emptyList();
         }
 
+        List<E> entities = new ArrayList<>();
         for (R rest : wrappers) {
             entities.add(rest.toEntity());
         }

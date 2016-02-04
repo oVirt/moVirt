@@ -54,6 +54,7 @@ import org.springframework.web.client.ResourceAccessException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @EBean(scope = EBean.Scope.Singleton)
@@ -95,11 +96,11 @@ public class OVirtClient {
     SharedPreferencesHelper sharedPreferencesHelper;
 
     private <E, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers, WrapPredicate<R> predicate) {
-        List<E> entities = new ArrayList<>();
         if (wrappers == null) {
-            return entities;
+            return Collections.emptyList();
         }
 
+        List<E> entities = new ArrayList<>();
         for (R rest : wrappers) {
             try {
                 if (predicate == null || predicate.toWrap(rest)) {
@@ -263,7 +264,7 @@ public class OVirtClient {
             public List<Disk> fire() {
                 Disks loadedDisks = restClient.getDisks(vmId);
                 if (loadedDisks == null) {
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
 
                 return mapRestWrappers(loadedDisks.disk, null);
@@ -282,7 +283,7 @@ public class OVirtClient {
             public List<Cluster> fire() {
                 Clusters loadedClusters = restClient.getClusters();
                 if (loadedClusters == null) {
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
 
                 return mapRestWrappers(loadedClusters.cluster, null);
@@ -296,7 +297,7 @@ public class OVirtClient {
             public List<DataCenter> fire() {
                 DataCenters loadedDataCenters = restClient.getDataCenters();
                 if (loadedDataCenters == null) {
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
 
                 return mapRestWrappers(loadedDataCenters.data_center, null);
@@ -321,7 +322,7 @@ public class OVirtClient {
             public List<Nic> fire() {
                 Nics loadedNics = restClient.getNics(vmId);
                 if (loadedNics == null) {
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
 
                 return mapRestWrappers(loadedNics.nic, null);
@@ -344,7 +345,7 @@ public class OVirtClient {
             public List<Host> fire() {
                 Hosts loadedHosts = restClient.getHosts();
                 if (loadedHosts == null) {
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
 
                 return mapRestWrappers(loadedHosts.host, null);
@@ -374,7 +375,7 @@ public class OVirtClient {
                 }
 
                 if (loadedVms == null) {
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
 
 
@@ -389,7 +390,7 @@ public class OVirtClient {
             public List<StorageDomain> fire() {
                 StorageDomains loadedStorageDomains = restClient.getStorageDomains();
                 if (loadedStorageDomains == null) {
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
 
                 return mapRestWrappers(loadedStorageDomains.storage_domain, null);
@@ -403,7 +404,7 @@ public class OVirtClient {
             public List<Snapshot> fire() {
                 Snapshots loadedSnapshots = restClient.getSnapshots(vmId);
                 if (loadedSnapshots == null) {
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
 
                 List<Snapshot> result = mapRestWrappers(loadedSnapshots.snapshot, null);
@@ -454,7 +455,7 @@ public class OVirtClient {
                 }
 
                 if (loadedEvents == null) {
-                    return new ArrayList<>();
+                    return Collections.emptyList();
                 }
 
                 return mapRestWrappers(loadedEvents.event, new WrapPredicate<org.ovirt.mobile.movirt.rest.Event>() {

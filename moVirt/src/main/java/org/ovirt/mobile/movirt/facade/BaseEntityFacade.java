@@ -14,6 +14,7 @@ import org.ovirt.mobile.movirt.sync.SyncAdapter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @EBean
@@ -66,12 +67,12 @@ public abstract class BaseEntityFacade<E extends OVirtEntity> implements EntityF
     @Override
     public Collection<Trigger<E>> getAllTriggers() {
         // TriggerResolver does not have to be implemented, return an empty list as default
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 
     @Override
     public List<Trigger<E>> getTriggers(E entity, Collection<Trigger<E>> allTriggers) {
         // TriggerResolver does not have to be implemented, return an empty list as default
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 }

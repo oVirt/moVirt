@@ -19,6 +19,7 @@ import org.ovirt.mobile.movirt.model.EntityMapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @EBean
@@ -148,7 +149,7 @@ public class ProviderFacade {
         public Collection<E> all() {
             Cursor cursor = asCursor();
             if (cursor == null) {
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
 
             List<E> result = new ArrayList<>();
