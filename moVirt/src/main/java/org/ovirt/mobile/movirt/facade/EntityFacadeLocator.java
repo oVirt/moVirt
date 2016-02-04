@@ -3,8 +3,11 @@ package org.ovirt.mobile.movirt.facade;
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.Host;
+import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
+import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 
@@ -23,6 +26,15 @@ public class EntityFacadeLocator {
     @Bean
     StorageDomainFacade storageDomainFacade;
 
+    @Bean
+    SnapshotFacade snapshotFacade;
+
+    @Bean
+    DiskFacade diskFacade;
+
+    @Bean
+    NicFacade nicFacade;
+
     private final Map<Class<?>, EntityFacade<?>> facades = new HashMap<>();
 
     @AfterInject
@@ -30,6 +42,9 @@ public class EntityFacadeLocator {
         addFacade(Vm.class, vmFacade);
         addFacade(Host.class, hostFacade);
         addFacade(StorageDomain.class, storageDomainFacade);
+        addFacade(Snapshot.class, snapshotFacade);
+        addFacade(Disk.class, diskFacade);
+        addFacade(Nic.class, nicFacade);
     }
 
     private <E extends OVirtEntity> void addFacade(Class<E> clazz, EntityFacade<E> facade) {

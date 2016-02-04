@@ -135,10 +135,19 @@
         Your URL missing path to api. Do you want to use default path "ovirt-engine/api"?
     </string>
 
-    <string name="nic_para">Linked : %1$b&#160;&#160;&#160;&#160;plugged : %2$b</string>
-    <string name="nic_name_and_address">%1$s : %2$s</string>
+    <string name="nic_para">Linked: %1$b&#160;&#160;&#160;&#160;plugged : %2$b</string>
+    <string name="nic_name_and_address">%1$s: %2$s</string>
+
+    <string name="snapshot_memory">Memory: true</string>
+    <string name="snapshot_status">Status: %1$s</string>
+
+    <string name="disk_name">Name: %1$s</string>
+    <string name="disk_size">Size: %1$s MB</string>
+    <string name="disk_unknown_size">Size: N/A</string>
+    <string name="disk_status">Status: %1$s</string>
 
     <string name="title_activity_host_details">Host Details</string>
+    <string name="title_activity_snapshot_details">Snapshot Details</string>
     <string name="summary">Active | Migrating | Total:</string>
     <string name="threads">Threads/Core:</string>
     <string name="os_version">OS Version:</string>

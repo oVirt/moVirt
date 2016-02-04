@@ -35,8 +35,4 @@ public class SyncUtils {
                 OVirtContract.CONTENT_AUTHORITY, // Content authority
                 b);                                      // Extras
     }
-
-    public void triggerCoreRefresh() {
-        syncAdapter.doPerformSync(false);
-    }
 }

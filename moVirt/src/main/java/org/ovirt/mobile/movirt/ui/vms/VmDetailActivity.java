@@ -34,7 +34,6 @@ import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
-import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
@@ -97,21 +96,23 @@ public class VmDetailActivity extends MovirtActivity
     }
 
     private void initPagers() {
-        EventsFragment eventsList = new EventsFragment_();
-        VmDiskDetailFragment diskDetails = new VmDiskDetailFragment_();
-        VmNicDetailFragment nicDetails = new VmNicDetailFragment_();
+        EventsFragment eventList = new EventsFragment_();
+        VmDisksFragment diskList = new VmDisksFragment_();
+        VmNicsFragment nicList = new VmNicsFragment_();
+        VmSnapshotsFragment snapshotList = new VmSnapshotsFragment_();
 
-
-        eventsList.setFilterVmId(vmId);
-        diskDetails.setVmId(vmId);
-        nicDetails.setVmId(vmId);
+        eventList.setFilterVmId(vmId);
+        diskList.setFilterVmId(vmId);
+        nicList.setFilterVmId(vmId);
+        snapshotList.setFilterVmId(vmId);
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
                 getSupportFragmentManager(), PAGER_TITLES,
                 new VmDetailGeneralFragment_(),
-                eventsList,
-                diskDetails,
-                nicDetails);
+                eventList,
+                snapshotList,
+                diskList,
+                nicList);
 
         viewPager.setAdapter(pagerAdapter);
         pagerTabStrip.setTabIndicatorColorResource(R.color.material_deep_teal_200);
@@ -239,7 +240,7 @@ public class VmDetailActivity extends MovirtActivity
     @OptionsItem(R.id.action_console)
     @Background
     void openConsole() {
-        vmFacade.sync(vmId, new ProgressBarResponse<Vm>(this) {
+        vmFacade.syncOne(new ProgressBarResponse<Vm>(this) {
 
             @Override
             public void onResponse(final Vm freshVm) throws RemoteException {
@@ -264,7 +265,7 @@ public class VmDetailActivity extends MovirtActivity
                     }
                 });
             }
-        });
+        }, vmId);
     }
 
     @UiThread
@@ -279,7 +280,7 @@ public class VmDetailActivity extends MovirtActivity
     }
 
     private void syncVm() {
-        vmFacade.sync(vmId, new ProgressBarResponse<Vm>(this));
+        vmFacade.syncOne(new ProgressBarResponse<Vm>(this), vmId);
     }
 
     /**
@@ -343,7 +344,9 @@ public class VmDetailActivity extends MovirtActivity
         invalidateOptionsMenu();
     }
 
-    /** Refreshes VM upon success */
+    /**
+     * Refreshes VM upon success
+     */
     private class SyncVmResponse extends OVirtClient.SimpleResponse<Void> {
         @Override
         public void onResponse(Void obj) throws RemoteException {

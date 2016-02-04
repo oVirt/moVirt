@@ -15,7 +15,7 @@ import org.androidannotations.api.rest.RestClientSupport;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 @Rest(converters = MappingJackson2HttpMessageConverter.class)
-@Accept(MediaType.APPLICATION_JSON + "; detail=statistics")
+@Accept(MediaType.APPLICATION_JSON + "; detail=statistics+disks+nics")
 @RequiresHeader({"Filter", "Accept-Encoding", "Session-TTL", "Prefer"})
 @SetsCookie("JSESSIONID")
 @RequiresCookie("JSESSIONID")
@@ -76,8 +76,14 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Post("/vms/{id}/ticket")
     ActionTicket getConsoleTicket(Action action, String id);
 
+    @Get("/vms/{vmId}/disks/{id}")
+    Disk getDisk(String vmId, String id);
+
     @Get("/vms/{id}/disks")
     Disks getDisks(String id);
+
+    @Get("/vms/{vmId}/nics/{id}")
+    Nic getNic(String vmId, String id);
 
     @Get("/vms/{id}/nics")
     Nics getNics(String id);
@@ -87,6 +93,9 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
 
     @Get("/hosts/{id}")
     Host getHost(String id);
+
+    @Get("/vms/{id}/snapshots")
+    Snapshots getSnapshots(String id);
 
     @Get("/")
     EmptyResult login();

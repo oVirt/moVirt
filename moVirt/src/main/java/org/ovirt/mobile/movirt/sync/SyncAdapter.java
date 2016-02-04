@@ -13,6 +13,8 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.util.Pair;
 
+import com.android.internal.util.Predicate;
+
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
@@ -44,6 +46,7 @@ import java.util.Map;
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = SyncAdapter.class.getSimpleName();
     public static volatile boolean inSync = false;
+
     @RootContext
     Context context;
     @Bean
@@ -73,10 +76,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient providerClient, SyncResult syncResult) {
-        doPerformSync(true);
-    }
 
-    public synchronized void doPerformSync(boolean tryEvents) {
         if (inSync) {
             return;
         }
@@ -87,15 +87,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         try {
-            updateClusters();
-            updateHosts();
-            updateVms();
-            updateDataCenters();
-            updateStorageDomains();
+            sendSyncIntent(true);
 
-            if (tryEvents) {
-                eventsHandler.updateEvents(false);
-            }
+            updateClusters();
+            updateDataCenters();
+            facadeSync(Vm.class);
+            facadeSync(Host.class);
+            facadeSync(StorageDomain.class);
+            eventsHandler.updateEvents(false);
+
+            sendSyncIntent(false);
         } catch (Exception e) {
             Log.e(TAG, "Error updating data", e);
             Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
@@ -104,77 +105,49 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    public <E extends OVirtEntity> void syncEntity(final Class<E> clazz,
-                                                                OVirtClient.Request<E> request,
-                                                                OVirtClient.Response<E> response) {
+    private void updateClusters() {
+        oVirtClient.getClusters(getUpdateEntitiesResponse(Cluster.class));
+    }
+
+    private void updateDataCenters() {
+        oVirtClient.getDataCenters(getUpdateEntitiesResponse(DataCenter.class));
+    }
+
+    private <E extends OVirtEntity> void facadeSync(final Class<E> clazz) {
+        final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
+        entityFacade.syncAll();
+    }
+
+    public <E extends OVirtEntity> OVirtClient.SimpleResponse<E> getUpdateEntityResponse(final Class<E> clazz) {
         final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
         final ProviderFacade.BatchBuilder batch = provider.batch();
-        oVirtClient.fireRestRequest(request, new OVirtClient.CompositeResponse<>(new SyncResponse<E>() {
+
+        return new OVirtClient.SimpleResponse<E>() {
             @Override
             public void onResponse(E entity) throws RemoteException {
                 Collection<Trigger<E>> allTriggers = entityFacade.getAllTriggers();
                 updateLocalEntity(entity, clazz, allTriggers, batch);
                 applyBatch(batch);
             }
-        }, response));
+        };
     }
 
-    /** Sends broadcasts about start/stop of sync around response */
-    private class SyncResponse<T> extends OVirtClient.SimpleResponse<T> {
-        @Override
-        public void before() {
-            sendSyncIntent(true);
-        }
-
-        @Override
-        public void after() {
-            sendSyncIntent(false);
-        }
-    }
-
-    private void updateClusters() {
-        oVirtClient.getClusters(new SyncResponse<List<Cluster>>() {
+    public <E extends OVirtEntity> OVirtClient.SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz) {
+        return new OVirtClient.SimpleResponse<List<E>>() {
             @Override
-            public void onResponse(List<Cluster> clusters) throws RemoteException {
-                updateLocalEntities(clusters, Cluster.class);
+            public void onResponse(List<E> entities) throws RemoteException {
+                updateLocalEntities(entities, clazz);
             }
-        });
+        };
     }
 
-    private void updateVms() {
-        oVirtClient.getVms(new SyncResponse<List<Vm>>() {
+    public <E extends OVirtEntity> OVirtClient.SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz, final Predicate<E> scopePredicate) {
+        return new OVirtClient.SimpleResponse<List<E>>() {
             @Override
-            public void onResponse(List<Vm> vms) throws RemoteException {
-                updateLocalEntities(vms, Vm.class);
+            public void onResponse(List<E> entities) throws RemoteException {
+                updateLocalEntities(entities, clazz, scopePredicate);
             }
-        });
-    }
-
-    private void updateHosts() {
-        oVirtClient.getHosts(new SyncResponse<List<Host>>() {
-            @Override
-            public void onResponse(List<Host> hosts) throws RemoteException {
-                updateLocalEntities(hosts, Host.class);
-            }
-        });
-    }
-
-    private void updateDataCenters() {
-        oVirtClient.getDataCenters(new SyncResponse<List<DataCenter>>() {
-            @Override
-            public void onResponse(List<DataCenter> dataCenters) throws RemoteException {
-                updateLocalEntities(dataCenters, DataCenter.class);
-            }
-        });
-    }
-
-    private void updateStorageDomains() {
-        oVirtClient.getStorageDomains(new SyncResponse<List<StorageDomain>>() {
-            @Override
-            public void onResponse(List<StorageDomain> storageDomains) throws RemoteException {
-                updateLocalEntities(storageDomains, StorageDomain.class);
-            }
-        });
+        };
     }
 
     private void applyBatch(ProviderFacade.BatchBuilder batch) {
@@ -186,7 +159,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    private <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz)
+    public <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz) throws RemoteException {
+        updateLocalEntities(remoteEntities, clazz, new Predicate<E>() {
+            @Override
+            public boolean apply(E entity) {
+                return true;
+            }
+        });
+    }
+
+    public <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz, Predicate<E> scopePredicate)
             throws RemoteException {
         final Map<String, E> entityMap = groupEntitiesById(remoteEntities);
         final EntityMapper<E> mapper = EntityMapper.forEntity(clazz);
@@ -206,13 +188,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         while (cursor.moveToNext()) {
             E localEntity = mapper.fromCursor(cursor);
-            E remoteEntity = entityMap.get(localEntity.getId());
-            if (remoteEntity == null) { // local entity obsolete, schedule delete from db
-                Log.i(TAG, "Scheduling delete for URI" + localEntity.getUri());
-                batch.delete(localEntity);
-            } else { // existing entity, update stats if changed
-                entityMap.remove(localEntity.getId());
-                entities.add(new Pair<>(localEntity, remoteEntity));
+            if (scopePredicate.apply(localEntity)) {
+                E remoteEntity = entityMap.get(localEntity.getId());
+                if (remoteEntity == null) { // local entity obsolete, schedule delete from db
+                    Log.i(TAG, "Scheduling delete for URI" + localEntity.getUri());
+                    batch.delete(localEntity);
+                } else { // existing entity, update stats if changed
+                    entityMap.remove(localEntity.getId());
+                    entities.add(new Pair<>(localEntity, remoteEntity));
+                }
             }
         }
 
@@ -293,11 +277,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         );
     }
 
-    private void sendSyncIntent(boolean syncing) {
-        inSync = syncing;
+    private void sendSyncIntent(boolean sync) {
+        inSync = sync;
         Intent intent = new Intent(Broadcasts.IN_SYNC);
-        intent.putExtra(Broadcasts.Extras.SYNCING, syncing);
+        intent.putExtra(Broadcasts.Extras.SYNCING, sync);
         context.sendBroadcast(intent);
     }
-
 }

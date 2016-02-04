@@ -87,7 +87,7 @@ public class StorageDomainDetailGeneralFragment extends RefreshableLoaderFragmen
     @Override
     @Background
     public void onRefresh() {
-        storageDomainFacade.sync(storageDomainId, new ProgressBarResponse<StorageDomain>(this));
+        storageDomainFacade.syncOne(new ProgressBarResponse<StorageDomain>(this), storageDomainId);
     }
 
     @Override

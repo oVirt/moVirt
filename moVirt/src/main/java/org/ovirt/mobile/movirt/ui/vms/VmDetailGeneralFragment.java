@@ -157,11 +157,11 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
             case HOST_LOADER:
                 if (vm != null) {
                     loader = provider.query(Host.class).id(vm.getHostId()).asLoader();
-                };
+                }
                 break;
             default:
                 break;
-       }
+        }
 
         return loader;
     }
@@ -190,14 +190,14 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
                 }
                 break;
             case CLUSTER_LOADER:
-                cluster = EntityMapper.forEntity(Cluster.class).fromCursor(data);;
+                cluster = EntityMapper.forEntity(Cluster.class).fromCursor(data);
                 renderCluster(cluster);
                 if (getLoaderManager().getLoader(DATA_CENTER_LOADER) == null) {
                     getLoaderManager().initLoader(DATA_CENTER_LOADER, null, this);
                 }
                 break;
             case DATA_CENTER_LOADER:
-                dataCenter = EntityMapper.forEntity(DataCenter.class).fromCursor(data);;
+                dataCenter = EntityMapper.forEntity(DataCenter.class).fromCursor(data);
                 renderDataCenter(dataCenter);
                 if (getLoaderManager().getLoader(HOST_LOADER) == null) {
                     getLoaderManager().initLoader(HOST_LOADER, null, this);
@@ -224,10 +224,9 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         statusView.setText(vm.getStatus().toString().toLowerCase());
         cpuView.setText(String.format("%.2f%%", vm.getCpuUsage()));
         memView.setText(String.format("%.2f%%", vm.getMemoryUsage()));
-        if(vm.getMemorySizeMb() != -1) {
+        if (vm.getMemorySizeMb() != -1) {
             memoryView.setText(vm.getMemorySizeMb() + " MB");
-        }
-        else {
+        } else {
             memoryView.setText("N/A");
         }
         socketView.setText(String.valueOf(vm.getSockets()));
@@ -235,8 +234,7 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         osView.setText(vm.getOsType());
         if (vm.getDisplayType() != null) {
             displayView.setText(vm.getDisplayType().toString());
-        }
-        else {
+        } else {
             displayView.setText("N/A");
         }
 
@@ -276,6 +274,6 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     @Override
     @Background
     public void onRefresh() {
-        vmFacade.sync(vmId, new ProgressBarResponse<Vm>(this));
+        vmFacade.syncOne(new ProgressBarResponse<Vm>(this), vmId);
     }
 }
