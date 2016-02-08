@@ -1,7 +1,5 @@
 package org.ovirt.mobile.movirt.ui.dashboard;
 
-import android.content.Intent;
-import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 
@@ -12,7 +10,6 @@ import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
 
 @EActivity(R.layout.activity_dashboard)

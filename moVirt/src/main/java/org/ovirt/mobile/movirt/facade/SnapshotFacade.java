@@ -2,20 +2,14 @@ package org.ovirt.mobile.movirt.facade;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-
-import com.android.internal.util.Predicate;
 
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.model.EntityMapper;
-import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.util.ObjectUtils.*;
+import static org.ovirt.mobile.movirt.util.ObjectUtils.requireSignature;
 
 @EBean
 public class SnapshotFacade extends BaseEntityFacade<Snapshot> {

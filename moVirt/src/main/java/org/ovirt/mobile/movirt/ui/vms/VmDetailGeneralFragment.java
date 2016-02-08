@@ -172,8 +172,9 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
             if (loader.getId() == HOST_LOADER) {
                 host = null;
                 renderHost(host);
+            } else {
+                Log.e(TAG, "Error loading data: id=" + loader.getId());
             }
-            Log.e(TAG, "Error loading data: id=" + loader.getId());
             return;
         }
 

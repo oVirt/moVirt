@@ -2,8 +2,6 @@ package org.ovirt.mobile.movirt.facade;
 
 import android.database.Cursor;
 
-import com.android.internal.util.Predicate;
-
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.model.EntityMapper;
@@ -12,7 +10,6 @@ import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.SyncAdapter;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;

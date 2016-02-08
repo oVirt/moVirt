@@ -2,8 +2,6 @@ package org.ovirt.mobile.movirt.rest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.io.Serializable;
-
 /**
  * Created by suomiy on 11/25/15.
  */
