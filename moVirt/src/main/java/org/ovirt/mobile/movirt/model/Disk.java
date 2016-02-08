@@ -13,7 +13,7 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Disk extends OVirtEntity implements OVirtContract.Disk {
+public class Disk extends SnapshotEmbeddableEntity implements OVirtContract.Disk {
 
     @Override
     public Uri getBaseUri() {

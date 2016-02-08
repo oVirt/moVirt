@@ -17,7 +17,7 @@ import java.util.List;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Vm extends OVirtEntity implements OVirtContract.Vm {
+public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
 
     @Override
     public Uri getBaseUri() {

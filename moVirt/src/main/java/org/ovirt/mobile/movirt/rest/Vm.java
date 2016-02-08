@@ -2,10 +2,10 @@ package org.ovirt.mobile.movirt.rest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.ovirt.mobile.movirt.util.RestHelper;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -110,8 +110,13 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
             vm.setDisplaySecurePort(-1);
         }
 
-        vm.setNics(mapToEntities(nics.nic));
-        vm.setDisks(mapToEntities(disks.disk));
+        if (nics != null) {
+            vm.setNics(RestHelper.mapToEntities(nics.nic));
+        }
+
+        if (nics != null) {
+            vm.setDisks(RestHelper.mapToEntities(disks.disk));
+        }
 
         return vm;
     }
@@ -140,17 +145,5 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
             }
         }
         return BigDecimal.ZERO;
-    }
-
-    private <E, R extends RestEntityWrapper<E>> List<E> mapToEntities(List<R> wrappers) {
-        if (wrappers == null) {
-            return Collections.emptyList();
-        }
-
-        List<E> entities = new ArrayList<>();
-        for (R rest : wrappers) {
-            entities.add(rest.toEntity());
-        }
-        return entities;
     }
 }

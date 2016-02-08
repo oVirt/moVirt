@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.androidannotations.annotations.EBean;
+import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 
@@ -46,6 +47,7 @@ public class SnapshotFacade extends BaseEntityFacade<Snapshot> {
     protected OVirtClient.CompositeResponse<List<Snapshot>> getSyncAllResponse(final OVirtClient.Response<List<Snapshot>> response, final String... ids) {
         requireSignature(ids, "vmId");
         String vmId = ids[0];
+
         return new OVirtClient.CompositeResponse<>(syncAdapter.getUpdateEntitiesResponse(Snapshot.class, new VmIdPredicate<Snapshot>(vmId)), response);
     }
 }

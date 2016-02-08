@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.androidannotations.annotations.EBean;
+import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
 import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 
