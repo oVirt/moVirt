@@ -26,7 +26,7 @@ public class Disk extends SnapshotEmbeddableEntity implements OVirtContract.Disk
     @DatabaseField(columnName = STATUS)
     private String status;
 
-    @DatabaseField(columnName = VM_ID, canBeNull = false)
+    @DatabaseField(columnName = VM_ID)
     private String vmId;
 
 

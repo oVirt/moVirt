@@ -79,8 +79,14 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/vms/{vmId}/disks/{id}")
     Disk getDisk(String vmId, String id);
 
+    @Get("/vms/{vmId}/snapshots/{snapshotId}/disks/{id}")
+    Disk getDisk(String vmId, String snapshotId, String id);
+
     @Get("/vms/{id}/disks")
     Disks getDisks(String id);
+
+    @Get("/vms/{vmId}/snapshots/{snapshotId}/disks")
+    Disks getDisks(String vmId, String snapshotId);
 
     @Get("/vms/{vmId}/nics/{id}")
     Nic getNic(String vmId, String id);

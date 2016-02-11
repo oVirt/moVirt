@@ -60,6 +60,7 @@
 
     <string-array name="snapshot_detail_pager_titles">
         <item>General</item>
+        <item>Disks</item>
     </string-array>
 
     <string-array name="storage_domain_detail_pager_titles">

@@ -246,22 +246,30 @@ public class OVirtClient {
         }, response);
     }
 
-    @NonNull
     public Request<Disk> getDiskRequest(final String vmId, final String id) {
+        return getDiskRequest(vmId, null, id);
+    }
+
+    @NonNull
+    public Request<Disk> getDiskRequest(final String vmId, final String snapshotId, final String id) {
         return new Request<Disk>() {
             @Override
             public Disk fire() {
-                org.ovirt.mobile.movirt.rest.Disk disk = restClient.getDisk(vmId, id);
+                org.ovirt.mobile.movirt.rest.Disk disk = snapshotId == null ? restClient.getDisk(vmId, id) : restClient.getDisk(vmId, snapshotId, id);
                 return disk.toEntity();
             }
         };
     }
 
     public Request<List<Disk>> getDisksRequest(final String vmId) {
+        return getDisksRequest(vmId, null);
+    }
+
+    public Request<List<Disk>> getDisksRequest(final String vmId, final String snapshotId) {
         return new Request<List<Disk>>() {
             @Override
             public List<Disk> fire() {
-                Disks loadedDisks = restClient.getDisks(vmId);
+                Disks loadedDisks = snapshotId == null ? restClient.getDisks(vmId) : restClient.getDisks(vmId, snapshotId);
                 if (loadedDisks == null) {
                     return Collections.emptyList();
                 }
