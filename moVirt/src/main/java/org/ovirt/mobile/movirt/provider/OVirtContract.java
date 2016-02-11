@@ -18,7 +18,7 @@ public interface OVirtContract {
         String NAME = "name";
     }
 
-    interface SnapshotEmbeddableEntity extends NamedEntity{
+    interface SnapshotEmbeddableEntity extends NamedEntity {
         String SNAPSHOT_ID = "snapshot_id";
     }
 
@@ -190,6 +190,7 @@ public interface OVirtContract {
         String TABLE = "snapshots";
 
         String SNAPSHOT_STATUS = "snapshot_status";
+        String TYPE = "type";
         String DATE = "date";
         String PERSIST_MEMORYSTATE = "persist_memorystate";
     }

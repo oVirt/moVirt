@@ -6,6 +6,8 @@ import android.os.RemoteException;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.ovirt.mobile.movirt.facade.predicates.NotSnapshotEmbeddedPredicate;
+import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
 import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.model.Vm;
@@ -57,7 +59,10 @@ public class VmFacade extends BaseEntityFacade<Vm> {
     @Override
     protected OVirtClient.CompositeResponse<List<Vm>> getSyncAllResponse(final OVirtClient.Response<List<Vm>> response, String... ids) {
         requireSignature(ids);
-        OVirtClient.CompositeResponse<List<Vm>> res = super.getSyncAllResponse(response);
+        OVirtClient.CompositeResponse<List<Vm>> res = new OVirtClient.CompositeResponse<>(
+                syncAdapter.getUpdateEntitiesResponse(Vm.class, new NotSnapshotEmbeddedPredicate<Vm>()),
+                response);
+
         res.addResponse(new OVirtClient.SimpleResponse<List<Vm>>() {
             @Override
             public void onResponse(List<Vm> entities) throws RemoteException {

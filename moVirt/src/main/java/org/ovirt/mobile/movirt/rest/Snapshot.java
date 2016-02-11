@@ -2,6 +2,9 @@ package org.ovirt.mobile.movirt.rest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.ovirt.mobile.movirt.model.Snapshot.SnapshotStatus;
+import org.ovirt.mobile.movirt.model.Snapshot.SnapshotType;
+
 /**
  * Created by suomiy on 11/25/15.
  */
@@ -10,8 +13,10 @@ public class Snapshot implements RestEntityWrapper<org.ovirt.mobile.movirt.model
     public String id;
     public String description;
     public String snapshot_status;
+    public String type;
     public long date;
     public boolean persist_memorystate;
+    public Vm vm;
 
     @Override
     public String toString() {
@@ -23,9 +28,14 @@ public class Snapshot implements RestEntityWrapper<org.ovirt.mobile.movirt.model
         org.ovirt.mobile.movirt.model.Snapshot snapshot = new org.ovirt.mobile.movirt.model.Snapshot();
         snapshot.setId(id);
         snapshot.setName(description);
-        snapshot.setSnapshotStatus(snapshot_status);
+        snapshot.setSnapshotStatus(SnapshotStatus.valueOf(snapshot_status.toUpperCase()));
+        snapshot.setType(SnapshotType.valueOf(type.toUpperCase()));
         snapshot.setDate(date);
         snapshot.setPersistMemorystate(persist_memorystate);
+
+        if (vm != null) {
+            snapshot.setVm(vm.toEntity());
+        }
 
         return snapshot;
     }

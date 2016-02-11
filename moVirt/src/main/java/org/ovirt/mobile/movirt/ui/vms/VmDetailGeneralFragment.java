@@ -181,6 +181,9 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         switch (loader.getId()) {
             case VMS_LOADER:
                 vm = vmFacade.mapFromCursor(data);
+                if (vm.isSnapshotEmbedded()) {
+                    swipeGeneralContainer.setEnabled(false);
+                }
                 renderVm(vm);
                 if (getLoaderManager().getLoader(CLUSTER_LOADER) == null) {
                     getLoaderManager().initLoader(CLUSTER_LOADER, null, this);
@@ -221,7 +224,10 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
 
     @UiThread
     public void renderVm(Vm vm) {
-        getActivity().setTitle(String.format(VM_DETAILS, vm.getName()));
+        if (!vm.isSnapshotEmbedded()) {
+            getActivity().setTitle(String.format(VM_DETAILS, vm.getName()));
+        }
+
         statusView.setText(vm.getStatus().toString().toLowerCase());
         cpuView.setText(String.format("%.2f%%", vm.getCpuUsage()));
         memView.setText(String.format("%.2f%%", vm.getMemoryUsage()));

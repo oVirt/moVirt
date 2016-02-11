@@ -54,7 +54,7 @@ public class VmSnapshotsFragment extends BaseEntityListFragment<Snapshot> {
                     textView.setText(date);
                 } else if (columnIndex == cursor.getColumnIndex(SNAPSHOT_STATUS)) {
                     String status = cursor.getString(columnIndex);
-                    textView.setText(getString(R.string.snapshot_status, status.toUpperCase()));
+                    textView.setText(getString(R.string.snapshot_status, status.replace("_", " ").toUpperCase()));
                 } else if (columnIndex == cursor.getColumnIndex(PERSIST_MEMORYSTATE) && cursor.getInt(columnIndex) > 0) {
                     textView.setText(getString(R.string.snapshot_memory));
                     textView.setVisibility(View.VISIBLE);
