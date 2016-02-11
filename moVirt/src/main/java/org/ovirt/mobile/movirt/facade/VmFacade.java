@@ -74,7 +74,7 @@ public class VmFacade extends BaseEntityFacade<Vm> {
                 }
 
                 syncAdapter.updateLocalEntities(disks, Disk.class, new NotSnapshotEmbeddedPredicate<Disk>());
-                syncAdapter.updateLocalEntities(nics, Nic.class);
+                syncAdapter.updateLocalEntities(nics, Nic.class, new NotSnapshotEmbeddedPredicate<Nic>());
             }
         });
 

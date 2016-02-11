@@ -312,22 +312,30 @@ public class OVirtClient {
         }, response);
     }
 
-    @NonNull
     public Request<Nic> getNicRequest(final String vmId, final String id) {
+        return getNicRequest(vmId, null, id);
+    }
+
+    @NonNull
+    public Request<Nic> getNicRequest(final String vmId, final String snapshotId, final String id) {
         return new Request<Nic>() {
             @Override
             public Nic fire() {
-                org.ovirt.mobile.movirt.rest.Nic nic = restClient.getNic(vmId, id);
+                org.ovirt.mobile.movirt.rest.Nic nic = snapshotId == null ? restClient.getNic(vmId, id) : restClient.getNic(vmId, snapshotId, id);
                 return nic.toEntity();
             }
         };
     }
 
     public Request<List<Nic>> getNicsRequest(final String vmId) {
+        return getNicsRequest(vmId, null);
+    }
+
+    public Request<List<Nic>> getNicsRequest(final String vmId, final String snapshotId) {
         return new Request<List<Nic>>() {
             @Override
             public List<Nic> fire() {
-                Nics loadedNics = restClient.getNics(vmId);
+                Nics loadedNics = snapshotId == null ? restClient.getNics(vmId) : restClient.getNics(vmId, snapshotId);
                 if (loadedNics == null) {
                     return Collections.emptyList();
                 }

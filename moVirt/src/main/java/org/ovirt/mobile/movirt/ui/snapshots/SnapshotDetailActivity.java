@@ -23,6 +23,8 @@ import org.ovirt.mobile.movirt.ui.vms.VmDetailGeneralFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmDetailGeneralFragment_;
 import org.ovirt.mobile.movirt.ui.vms.VmDisksFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmDisksFragment_;
+import org.ovirt.mobile.movirt.ui.vms.VmNicsFragment;
+import org.ovirt.mobile.movirt.ui.vms.VmNicsFragment_;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -75,14 +77,18 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
 
         VmDetailGeneralFragment vmDetailFragment = new VmDetailGeneralFragment_();
         VmDisksFragment diskList = new VmDisksFragment_();
+        VmNicsFragment nicList = new VmNicsFragment_();
 
         diskList.setVmId(vmId);
         diskList.setFilterSnapshotId(snapshotId);
+        nicList.setVmId(vmId);
+        nicList.setFilterSnapshotId(snapshotId);
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
                 getSupportFragmentManager(), PAGER_TITLES,
                 vmDetailFragment,
-                diskList
+                diskList,
+                nicList
         );
 
         viewPager.setAdapter(pagerAdapter);
