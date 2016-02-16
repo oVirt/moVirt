@@ -35,7 +35,7 @@ public class EditTriggerDialogFragment extends BaseTriggerDialogFragment {
                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                    @Override
                    public void onClick(DialogInterface dialog, int which) {
-                       getDialog().cancel();
+                       dialog.cancel();
                    }
                })
                .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {

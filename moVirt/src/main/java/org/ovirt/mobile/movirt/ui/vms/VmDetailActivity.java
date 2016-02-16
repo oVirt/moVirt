@@ -3,10 +3,15 @@ package org.ovirt.mobile.movirt.ui.vms;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.RemoteException;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
@@ -25,9 +30,13 @@ import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.facade.SnapshotFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
+import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
+import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.ActionTicket;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity;
@@ -35,9 +44,12 @@ import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
+import org.ovirt.mobile.movirt.ui.NewSnapshotListener;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
+import org.ovirt.mobile.movirt.ui.dialogs.CreateSnapshotDialogFragment;
+import org.ovirt.mobile.movirt.ui.dialogs.CreateSnapshotDialogFragment_;
 import org.ovirt.mobile.movirt.ui.dialogs.ImportCertificateDialogFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
@@ -45,18 +57,22 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 
 import java.io.File;
+import java.util.List;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
-public class VmDetailActivity extends MovirtActivity
-        implements HasProgressBar, UpdateMenuItemAware<Vm>,
-        ConfirmDialogFragment.ConfirmDialogListener {
+public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
+        UpdateMenuItemAware<Vm>, ConfirmDialogFragment.ConfirmDialogListener,
+        NewSnapshotListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = VmDetailActivity.class.getSimpleName();
     private static final int REQUEST_MIGRATE = 0;
     private static final int ACTION_STOP_VM = 0;
     private static final int ACTION_REBOOT_VM = 1;
     private static final int ACTION_STOP_MIGRATE_VM = 2;
+
+    private static final int SNAPSHOTS_LOADER = 1; // 0 in MovirtActivity
+
     @ViewById
     ViewPager viewPager;
     @ViewById
@@ -65,10 +81,14 @@ public class VmDetailActivity extends MovirtActivity
     String[] PAGER_TITLES;
     @Bean
     OVirtClient client;
+    @Bean
+    ProviderFacade provider;
     @ViewById
     ProgressBar progress;
     @Bean
     VmFacade vmFacade;
+    @Bean
+    SnapshotFacade snapshotFacade;
     @App
     MoVirtApp app;
     @OptionsMenuItem(R.id.action_run)
@@ -83,8 +103,12 @@ public class VmDetailActivity extends MovirtActivity
     MenuItem menuCancelMigration;
     @OptionsMenuItem(R.id.action_console)
     MenuItem menuConsole;
+    @OptionsMenuItem(R.id.action_create_snapshot)
+    MenuItem menuCreateSnapshot;
+
     private String vmId = null;
     private Vm currentVm = null;
+    private boolean menuCreateSnapshotVisibility = false;
 
     @AfterViews
     void init() {
@@ -92,6 +116,7 @@ public class VmDetailActivity extends MovirtActivity
         vmId = vmUri.getLastPathSegment();
 
         initPagers();
+        initLoaders();
         setProgressBar(progress);
     }
 
@@ -107,6 +132,7 @@ public class VmDetailActivity extends MovirtActivity
         nicList.setFilterVmId(vmId);
         nicList.setFilterSnapshotId("");
         snapshotList.setFilterVmId(vmId);
+        snapshotList.setOrderByAscending(OVirtContract.Snapshot.SNAPSHOT_STATUS);
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
                 getSupportFragmentManager(), PAGER_TITLES,
@@ -120,6 +146,52 @@ public class VmDetailActivity extends MovirtActivity
         pagerTabStrip.setTabIndicatorColorResource(R.color.material_deep_teal_200);
     }
 
+    private void initLoaders() {
+        getSupportLoaderManager().initLoader(SNAPSHOTS_LOADER, null, this);
+    }
+
+    @Override
+    public void restartLoader() {
+        super.restartLoader();
+        getSupportLoaderManager().restartLoader(SNAPSHOTS_LOADER, null, this);
+    }
+
+    @Override
+    public void destroyLoader() {
+        super.destroyLoader();
+        getSupportLoaderManager().destroyLoader(SNAPSHOTS_LOADER);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Loader<Cursor> loader = null;
+
+        if (id == SNAPSHOTS_LOADER) {
+            loader = provider.query(Snapshot.class).where(OVirtContract.Snapshot.VM_ID, vmId).asLoader();
+        }
+
+        return loader;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (!data.moveToNext()) {
+            Log.e(TAG, "Error loading Host");
+            return;
+        }
+
+        if (loader.getId() == SNAPSHOTS_LOADER) {
+            List<Snapshot> snapshots = snapshotFacade.mapAllFromCursor(data);
+            menuCreateSnapshotVisibility = !Snapshot.containsOneOfStatuses(snapshots, Snapshot.SnapshotStatus.LOCKED, Snapshot.SnapshotStatus.IN_PREVIEW);
+            invalidateOptionsMenu();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        // do nothing
+    }
+
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (currentVm != null) {
@@ -130,6 +202,7 @@ public class VmDetailActivity extends MovirtActivity
             menuStartMigration.setVisible(Vm.Command.START_MIGRATION.canExecute(status));
             menuCancelMigration.setVisible(Vm.Command.CANCEL_MIGRATION.canExecute(status));
             menuConsole.setVisible(Vm.Command.CONSOLE.canExecute(status));
+            menuCreateSnapshot.setVisible(menuCreateSnapshotVisibility);
         }
 
         return super.onPrepareOptionsMenu(menu);
@@ -143,6 +216,7 @@ public class VmDetailActivity extends MovirtActivity
         intent.putExtra(EditTriggersActivity.EXTRA_SCOPE, Trigger.Scope.ITEM);
         startActivity(intent);
     }
+
 
     @OptionsItem(R.id.action_run)
     @Background
@@ -238,6 +312,25 @@ public class VmDetailActivity extends MovirtActivity
     public void doMigrationTo(String hostId) {
         client.migrateVmToHost(vmId, hostId, new SyncVmResponse());
     }
+
+    @OptionsItem(R.id.action_create_snapshot)
+    void createSnapshot() {
+        CreateSnapshotDialogFragment dialog = new CreateSnapshotDialogFragment_();
+        dialog.setVmId(vmId);
+        dialog.show(getFragmentManager(), "createSnapshot");
+    }
+
+    @Override
+    @Background
+    public void onDialogResult(org.ovirt.mobile.movirt.rest.Snapshot snapshot) {
+        client.createSnapshot(snapshot, vmId, new OVirtClient.SimpleResponse<Void>() {
+            @Override
+            public void onResponse(Void aVoid) throws RemoteException {
+                snapshotFacade.syncAll(vmId);
+            }
+        });
+    }
+
 
     @OptionsItem(R.id.action_console)
     @Background

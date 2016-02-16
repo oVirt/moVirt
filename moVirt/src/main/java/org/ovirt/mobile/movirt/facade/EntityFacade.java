@@ -19,6 +19,8 @@ public interface EntityFacade<E extends OVirtEntity> extends TriggerResolver<E> 
 
     E mapFromCursor(Cursor cursor);
 
+    List<E> mapAllFromCursor(Cursor cursor);
+
     Intent getDetailIntent(E entity, Context context);
 
     void syncOne(OVirtClient.Response<E> response, String id, String... ids);

@@ -10,6 +10,12 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.TABLE;
 
 @DatabaseTable(tableName = TABLE)
@@ -97,6 +103,20 @@ public class Snapshot extends OVirtEntity implements OVirtContract.Snapshot {
 
     public void setVm(Vm vm) {
         this.vm = vm;
+    }
+
+    public static boolean containsOneOfStatuses(Collection<Snapshot> snapshots, SnapshotStatus... statuses) {
+        if (statuses.length == 0) {
+            return false;
+        }
+        Set<SnapshotStatus> statusSet = new HashSet<>(Arrays.asList(statuses));
+
+        for (Snapshot snapshot : snapshots) {
+            if (statusSet.contains(snapshot.getSnapshotStatus())){
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

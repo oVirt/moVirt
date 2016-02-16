@@ -72,7 +72,12 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
                 Status.SAVING_STATE, Status.SUSPENDED, Status.IMAGE_LOCKED, Status.POWERING_DOWN),
         CANCEL_MIGRATION(Status.MIGRATING),
         CONSOLE(Status.UP, Status.POWERING_UP, Status.REBOOT_IN_PROGRESS, Status.POWERING_DOWN,
-                Status.PAUSED);
+                Status.PAUSED),
+        // used in snapshots
+        SAVE_MEMORY(Status.UNASSIGNED, Status.UP, Status.POWERING_UP, Status.PAUSED,
+                Status.MIGRATING, Status.UNKNOWN, Status.NOT_RESPONDING, Status.REBOOT_IN_PROGRESS,
+                Status.SAVING_STATE, Status.SUSPENDED, Status.IMAGE_LOCKED, Status.POWERING_DOWN),
+        NOT_RUNNING(Status.DOWN);
 
         private final List<Status> validStates;
 

@@ -1,6 +1,7 @@
 package org.ovirt.mobile.movirt.rest;
 
 import org.androidannotations.annotations.rest.Accept;
+import org.androidannotations.annotations.rest.Delete;
 import org.androidannotations.annotations.rest.Get;
 import org.androidannotations.annotations.rest.Post;
 import org.androidannotations.annotations.rest.RequiresAuthentication;
@@ -51,6 +52,24 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
 
     @Post("/hosts/{hostId}/deactivate")
     void deactivateHost(Action action, String hostId);
+
+    @Post("/vms/{vmId}/snapshots")
+    void createSnapshot(Snapshot snapshot, String vmId);
+
+    @Delete("/vms/{vmId}/snapshots/{snapshotId}")
+    void deleteSnapshot(String vmId, String snapshotId);
+
+    @Post("/vms/{vmId}/preview_snapshot")
+    void previewSnapshot(SnapshotAction snapshotAction, String vmId);
+
+    @Post("/vms/{vmId}/undo_snapshot")
+    void undoSnapshot(Action action, String vmId);
+
+    @Post("/vms/{vmId}/commit_snapshot")
+    void commitSnapshot(Action action, String vmId);
+
+    @Post("/vms/{vmId}/snapshots/{snapshotId}/restore")
+    void restoreSnapshot(SnapshotAction action, String vmId, String snapshotId);
 
     @Get("/clusters")
     Clusters getClusters();
@@ -108,6 +127,9 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
 
     @Get("/vms/{vmId}/snapshots")
     Snapshots getSnapshots(String vmId);
+
+    @Get("/vms/{vmId}/snapshots/{snapshotId}")
+    Snapshot getSnapshot(String vmId, String snapshotId);
 
     @Get("/")
     EmptyResult login();

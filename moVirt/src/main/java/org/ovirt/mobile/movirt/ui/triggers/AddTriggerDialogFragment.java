@@ -29,7 +29,7 @@ public class AddTriggerDialogFragment extends BaseTriggerDialogFragment {
                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                    @Override
                    public void onClick(DialogInterface dialog, int which) {
-                       getDialog().cancel();
+                       dialog.cancel();
                    }
                });
         return builder.create();

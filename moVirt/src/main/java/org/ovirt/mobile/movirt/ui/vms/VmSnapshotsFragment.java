@@ -54,10 +54,10 @@ public class VmSnapshotsFragment extends ResumeSyncableBaseEntityListFragment<Sn
                     textView.setText(date);
                 } else if (columnIndex == cursor.getColumnIndex(SNAPSHOT_STATUS)) {
                     String status = cursor.getString(columnIndex);
-                    textView.setText(getString(R.string.snapshot_status, status.replace("_", " ").toUpperCase()));
-                } else if (columnIndex == cursor.getColumnIndex(PERSIST_MEMORYSTATE) && cursor.getInt(columnIndex) > 0) {
+                    textView.setText(status.replace("_", " ").toUpperCase());
+                } else if (columnIndex == cursor.getColumnIndex(PERSIST_MEMORYSTATE)) {
                     textView.setText(getString(R.string.snapshot_memory));
-                    textView.setVisibility(View.VISIBLE);
+                    textView.setVisibility(cursor.getInt(columnIndex) > 0 ? View.VISIBLE : View.GONE);
                 }
 
                 return true;
