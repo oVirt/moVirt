@@ -44,7 +44,7 @@ public class VmDisksFragment extends BaseEntityListFragment<Disk> {
 
                 if (columnIndex == cursor.getColumnIndex(NAME)) {
                     String name = cursor.getString(columnIndex);
-                    textView.setText(getString(R.string.disk_name, name));
+                    textView.setText(name);
                 } else if (columnIndex == cursor.getColumnIndex(SIZE)) {
                     String size = cursor.getString(columnIndex);
                     try {
@@ -57,7 +57,7 @@ public class VmDisksFragment extends BaseEntityListFragment<Disk> {
                     textView.setText(size);
                 } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
                     String status = cursor.getString(columnIndex);
-                    textView.setText(getString(R.string.disk_status, status.toUpperCase()));
+                    textView.setText(status.toUpperCase());
                 }
 
                 return true;
