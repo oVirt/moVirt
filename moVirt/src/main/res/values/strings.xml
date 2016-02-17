@@ -141,10 +141,8 @@
     <string name="snapshot_memory">Memory: true</string>
     <string name="snapshot_status">Status: %1$s</string>
 
-    <string name="disk_name">Name: %1$s</string>
-    <string name="disk_size">Size: %1$s MB</string>
+    <string name="disk_size">%1$s MB</string>
     <string name="disk_unknown_size">Size: N/A</string>
-    <string name="disk_status">Status: %1$s</string>
 
     <string name="title_activity_host_details">Host Details</string>
     <string name="title_activity_snapshot_details">Snapshot Details</string>
