@@ -18,6 +18,10 @@ public interface OVirtContract {
         String NAME = "name";
     }
 
+    interface SnapshotEmbeddableEntity extends NamedEntity {
+        String SNAPSHOT_ID = "snapshot_id";
+    }
+
     interface HasStatus {
         String STATUS = "status";
     }
@@ -44,7 +48,7 @@ public interface OVirtContract {
     String PATH_VMS = "vms";
     String PATH_VM = "vms/*";
 
-    interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost {
+    interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost, SnapshotEmbeddableEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_VMS).build();
 
         String TABLE = "vms";
@@ -186,6 +190,7 @@ public interface OVirtContract {
         String TABLE = "snapshots";
 
         String SNAPSHOT_STATUS = "snapshot_status";
+        String TYPE = "type";
         String DATE = "date";
         String PERSIST_MEMORYSTATE = "persist_memorystate";
     }
@@ -193,7 +198,7 @@ public interface OVirtContract {
     String PATH_DISKS = "disks";
     String PATH_DISK = "disks/*";
 
-    interface Disk extends HasVm, NamedEntity, HasStatus {
+    interface Disk extends HasVm, NamedEntity, HasStatus, SnapshotEmbeddableEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISKS).build();
 
         String TABLE = "disks";
@@ -204,7 +209,7 @@ public interface OVirtContract {
     String PATH_NICS = "nics";
     String PATH_NIC = "nics/*";
 
-    interface Nic extends HasVm, NamedEntity {
+    interface Nic extends HasVm, NamedEntity, SnapshotEmbeddableEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_NICS).build();
 
         String TABLE = "nics";

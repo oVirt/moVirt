@@ -13,7 +13,7 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Nic extends OVirtEntity implements OVirtContract.Nic {
+public class Nic extends SnapshotEmbeddableEntity implements OVirtContract.Nic {
 
     @Override
     public Uri getBaseUri() {

@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.facade;
+package org.ovirt.mobile.movirt.facade.predicates;
 
 import com.android.internal.util.Predicate;
 

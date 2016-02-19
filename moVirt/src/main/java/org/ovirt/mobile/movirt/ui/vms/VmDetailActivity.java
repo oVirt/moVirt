@@ -103,7 +103,9 @@ public class VmDetailActivity extends MovirtActivity
 
         eventList.setFilterVmId(vmId);
         diskList.setFilterVmId(vmId);
+        diskList.setFilterSnapshotId("");
         nicList.setFilterVmId(vmId);
+        nicList.setFilterSnapshotId("");
         snapshotList.setFilterVmId(vmId);
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(

@@ -2,8 +2,15 @@ package org.ovirt.mobile.movirt.facade;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.RemoteException;
+
+import com.android.internal.util.Predicate;
 
 import org.androidannotations.annotations.EBean;
+import org.ovirt.mobile.movirt.facade.predicates.AndPredicate;
+import org.ovirt.mobile.movirt.facade.predicates.NotSnapshotEmbeddedPredicate;
+import org.ovirt.mobile.movirt.facade.predicates.SnapshotIdPredicate;
+import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
 import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 
@@ -25,22 +32,52 @@ public class NicFacade extends BaseEntityFacade<Nic> {
 
     @Override
     protected OVirtClient.Request<Nic> getSyncOneRestRequest(String nicId, String... ids) {
-        requireSignature(ids, "vmId");
-        String vmId = ids[0];
-        return oVirtClient.getNicRequest(vmId, nicId);
+        if (ids.length == 2) {
+            String vmId = ids[0];
+            String snapshotId = ids[1];
+            return oVirtClient.getNicRequest(vmId, snapshotId, nicId);
+        } else {
+            requireSignature(ids, "vmId");
+            String vmId = ids[0];
+            return oVirtClient.getNicRequest(vmId, nicId);
+        }
     }
 
     @Override
     protected OVirtClient.Request<List<Nic>> getSyncAllRestRequest(String... ids) {
-        requireSignature(ids, "vmId");
-        String vmId = ids[0];
-        return oVirtClient.getNicsRequest(vmId);
+        if (ids.length == 2) {
+            String vmId = ids[0];
+            String snapshotId = ids[1];
+            return oVirtClient.getNicsRequest(vmId, snapshotId);
+        } else {
+            requireSignature(ids, "vmId");
+            String vmId = ids[0];
+            return oVirtClient.getNicsRequest(vmId);
+        }
     }
 
     @Override
     protected OVirtClient.CompositeResponse<List<Nic>> getSyncAllResponse(final OVirtClient.Response<List<Nic>> response, final String... ids) {
-        requireSignature(ids, "vmId");
-        String vmId = ids[0];
-        return new OVirtClient.CompositeResponse<>(syncAdapter.getUpdateEntitiesResponse(Nic.class, new VmIdPredicate<Nic>(vmId)), response);
+        if (ids.length == 2) {
+            final String snapshotId = ids[1];
+
+            return new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<List<Nic>>() {
+                @Override
+                public void onResponse(List<Nic> nics) throws RemoteException {
+                    for (Nic nic : nics) {
+                        nic.setSnapshotId(snapshotId);
+                    }
+                    syncAdapter.updateLocalEntities(nics, Nic.class, new SnapshotIdPredicate<Nic>(snapshotId));
+                }
+            }, response);
+        } else {
+            requireSignature(ids, "vmId");
+            String vmId = ids[0];
+            Predicate<Nic> predicate = new AndPredicate<>(new VmIdPredicate<Nic>(vmId),
+                    new NotSnapshotEmbeddedPredicate<Nic>());
+
+            return new OVirtClient.CompositeResponse<>(
+                    syncAdapter.getUpdateEntitiesResponse(Nic.class, predicate), response);
+        }
     }
 }

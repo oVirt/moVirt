@@ -49,6 +49,7 @@
     <string name="cluster_scope">Cluster %1$s</string>
     <string name="details_for_vm">Vm %1$s</string>
     <string name="details_for_host">Host %1$s</string>
+    <string name="details_for_snapshot">Snapshot %1$s</string>
     <string name="cancel">Cancel</string>
     <string name="trigger_condition_type">Condition</string>
     <string name="notification_type">Notify</string>

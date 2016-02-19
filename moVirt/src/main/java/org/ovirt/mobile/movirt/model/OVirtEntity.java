@@ -20,16 +20,18 @@ public abstract class OVirtEntity extends BaseEntity<String> implements OVirtCon
         this.name = name;
     }
 
-    @DatabaseField(columnName = ID, id = true)
+    @DatabaseField(columnName = ID, id = true, uniqueCombo = true)
     private String id;
 
     @DatabaseField(columnName = NAME, canBeNull = false)
     private String name;
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public void setId(String id) {
         this.id = id;
     }
@@ -72,7 +74,7 @@ public abstract class OVirtEntity extends BaseEntity<String> implements OVirtCon
 
     @Override
     public void initFromCursorHelper(CursorHelper cursorHelper) {
-        setId(cursorHelper.getString(ID));
+        id = cursorHelper.getString(ID);
         setName(cursorHelper.getString(NAME));
     }
 }

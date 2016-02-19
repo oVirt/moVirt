@@ -12,6 +12,7 @@ public class Disk implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Dis
     public String size;
     public Status status;
     public Vm vm;
+    public Snapshot snapshot;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public class Status {
@@ -24,7 +25,13 @@ public class Disk implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Dis
         disk.setName(name);
         disk.setSize(size);
         disk.setStatus(status.state);
-        disk.setVmId(vm.id);
+
+        if (vm != null) {
+            disk.setVmId(vm.id);
+        }
+        if (snapshot != null) {
+            disk.setSnapshotId(snapshot.id);
+        }
 
         return disk;
     }

@@ -42,7 +42,6 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
-import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.http.HttpAuthentication;
@@ -247,22 +246,30 @@ public class OVirtClient {
         }, response);
     }
 
-    @NonNull
     public Request<Disk> getDiskRequest(final String vmId, final String id) {
+        return getDiskRequest(vmId, null, id);
+    }
+
+    @NonNull
+    public Request<Disk> getDiskRequest(final String vmId, final String snapshotId, final String id) {
         return new Request<Disk>() {
             @Override
             public Disk fire() {
-                org.ovirt.mobile.movirt.rest.Disk disk = restClient.getDisk(vmId, id);
+                org.ovirt.mobile.movirt.rest.Disk disk = snapshotId == null ? restClient.getDisk(vmId, id) : restClient.getDisk(vmId, snapshotId, id);
                 return disk.toEntity();
             }
         };
     }
 
     public Request<List<Disk>> getDisksRequest(final String vmId) {
+        return getDisksRequest(vmId, null);
+    }
+
+    public Request<List<Disk>> getDisksRequest(final String vmId, final String snapshotId) {
         return new Request<List<Disk>>() {
             @Override
             public List<Disk> fire() {
-                Disks loadedDisks = restClient.getDisks(vmId);
+                Disks loadedDisks = snapshotId == null ? restClient.getDisks(vmId) : restClient.getDisks(vmId, snapshotId);
                 if (loadedDisks == null) {
                     return Collections.emptyList();
                 }
@@ -305,22 +312,30 @@ public class OVirtClient {
         }, response);
     }
 
-    @NonNull
     public Request<Nic> getNicRequest(final String vmId, final String id) {
+        return getNicRequest(vmId, null, id);
+    }
+
+    @NonNull
+    public Request<Nic> getNicRequest(final String vmId, final String snapshotId, final String id) {
         return new Request<Nic>() {
             @Override
             public Nic fire() {
-                org.ovirt.mobile.movirt.rest.Nic nic = restClient.getNic(vmId, id);
+                org.ovirt.mobile.movirt.rest.Nic nic = snapshotId == null ? restClient.getNic(vmId, id) : restClient.getNic(vmId, snapshotId, id);
                 return nic.toEntity();
             }
         };
     }
 
     public Request<List<Nic>> getNicsRequest(final String vmId) {
+        return getNicsRequest(vmId, null);
+    }
+
+    public Request<List<Nic>> getNicsRequest(final String vmId, final String snapshotId) {
         return new Request<List<Nic>>() {
             @Override
             public List<Nic> fire() {
-                Nics loadedNics = restClient.getNics(vmId);
+                Nics loadedNics = snapshotId == null ? restClient.getNics(vmId) : restClient.getNics(vmId, snapshotId);
                 if (loadedNics == null) {
                     return Collections.emptyList();
                 }

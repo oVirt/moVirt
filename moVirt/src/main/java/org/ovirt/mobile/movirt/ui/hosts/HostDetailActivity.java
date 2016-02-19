@@ -1,7 +1,6 @@
 package org.ovirt.mobile.movirt.ui.hosts;
 
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.support.v4.view.PagerTabStrip;
@@ -28,7 +27,6 @@ import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
-import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
@@ -81,6 +79,7 @@ public class HostDetailActivity extends MovirtActivity
         EventsFragment eventsFragment = new EventsFragment_();
 
         vmsFragment.setFilterHostId(hostId);
+        vmsFragment.setFilterSnapshotId("");
         eventsFragment.setFilterHostId(hostId);
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(

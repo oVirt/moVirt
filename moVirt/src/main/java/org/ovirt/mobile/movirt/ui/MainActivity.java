@@ -54,6 +54,7 @@ import org.ovirt.mobile.movirt.ui.hosts.HostsFragment_;
 import org.ovirt.mobile.movirt.ui.storage.StorageDomainFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
+import org.ovirt.mobile.movirt.ui.vms.VmsFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
@@ -133,9 +134,12 @@ public class MainActivity extends MovirtActivity
     }
 
     private void initPagers() {
+        VmsFragment vmsFragment = new VmsFragment_();
+        vmsFragment.setFilterSnapshotId("");
+
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
                 getSupportFragmentManager(), PAGER_TITLES,
-                new VmsFragment_(),
+                vmsFragment,
                 new HostsFragment_(),
                 new StorageDomainFragment_(),
                 new EventsFragment_());

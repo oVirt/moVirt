@@ -97,7 +97,8 @@
 
         <activity
             android:name=".ui.snapshots.SnapshotDetailActivity_"
-            android:label="@string/title_activity_snapshot_details" />
+            android:label="@string/title_activity_snapshot_details"
+            android:parentActivityName=".ui.vms.VmDetailActivity_"/>
         <activity
             android:name=".ui.CameraActivity_"
             android:label="@string/title_activity_camera"

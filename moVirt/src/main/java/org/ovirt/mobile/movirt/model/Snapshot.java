@@ -15,13 +15,29 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.TABLE;
 @DatabaseTable(tableName = TABLE)
 public class Snapshot extends OVirtEntity implements OVirtContract.Snapshot {
 
+    public enum SnapshotType {
+        REGULAR,
+        ACTIVE,
+        STATELESS,
+        PREVIEW
+    }
+
+    public enum SnapshotStatus {
+        OK,
+        LOCKED,
+        IN_PREVIEW
+    }
+
     @Override
     public Uri getBaseUri() {
         return CONTENT_URI;
     }
 
     @DatabaseField(columnName = SNAPSHOT_STATUS)
-    private String snapshotStatus;
+    private SnapshotStatus snapshotStatus;
+
+    @DatabaseField(columnName = TYPE)
+    private SnapshotType type;
 
     @DatabaseField(columnName = DATE)
     private long date;
@@ -32,12 +48,23 @@ public class Snapshot extends OVirtEntity implements OVirtContract.Snapshot {
     @DatabaseField(columnName = VM_ID, canBeNull = false)
     private String vmId;
 
-    public String getSnapshotStatus() {
+    // vm in a time of a snapshot
+    private transient Vm vm;
+
+    public SnapshotStatus getSnapshotStatus() {
         return snapshotStatus;
     }
 
-    public void setSnapshotStatus(String snapshot_status) {
+    public void setSnapshotStatus(SnapshotStatus snapshot_status) {
         this.snapshotStatus = snapshot_status;
+    }
+
+    public SnapshotType getType() {
+        return type;
+    }
+
+    public void setType(SnapshotType type) {
+        this.type = type;
     }
 
     public long getDate() {
@@ -64,6 +91,14 @@ public class Snapshot extends OVirtEntity implements OVirtContract.Snapshot {
         this.vmId = vmId;
     }
 
+    public Vm getVm() {
+        return vm;
+    }
+
+    public void setVm(Vm vm) {
+        this.vm = vm;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -73,6 +108,7 @@ public class Snapshot extends OVirtEntity implements OVirtContract.Snapshot {
         Snapshot snapshot = (Snapshot) o;
 
         if (!ObjectUtils.equals(snapshotStatus, snapshot.snapshotStatus)) return false;
+        if (!ObjectUtils.equals(type, snapshot.type)) return false;
         if (date != snapshot.date) return false;
         if (persistMemorystate != snapshot.persistMemorystate) return false;
         if (!ObjectUtils.equals(vmId, snapshot.vmId)) return false;
@@ -85,6 +121,7 @@ public class Snapshot extends OVirtEntity implements OVirtContract.Snapshot {
         int result = super.hashCode();
 
         result = 31 * result + (snapshotStatus != null ? snapshotStatus.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
         result = 31 * result + (int) (date ^ (date >>> 32));
         result = 31 * result + (persistMemorystate ? 1231 : 0);
         result = 31 * result + (vmId != null ? vmId.hashCode() : 0);
@@ -95,7 +132,8 @@ public class Snapshot extends OVirtEntity implements OVirtContract.Snapshot {
     @Override
     public ContentValues toValues() {
         ContentValues contentValues = super.toValues();
-        contentValues.put(SNAPSHOT_STATUS, getSnapshotStatus());
+        contentValues.put(SNAPSHOT_STATUS, getSnapshotStatus().toString());
+        contentValues.put(TYPE, getType().toString());
         contentValues.put(DATE, getDate());
         contentValues.put(PERSIST_MEMORYSTATE, getPersistMemorystate());
         contentValues.put(VM_ID, getVmId());
@@ -106,8 +144,8 @@ public class Snapshot extends OVirtEntity implements OVirtContract.Snapshot {
     @Override
     public void initFromCursorHelper(CursorHelper cursorHelper) {
         super.initFromCursorHelper(cursorHelper);
-
-        setSnapshotStatus(cursorHelper.getString(SNAPSHOT_STATUS));
+        setSnapshotStatus(cursorHelper.getEnum(SNAPSHOT_STATUS, SnapshotStatus.class));
+        setType(cursorHelper.getEnum(TYPE, SnapshotType.class));
         setDate(cursorHelper.getLong(DATE));
         setPersistMemorystate(cursorHelper.getBoolean(PERSIST_MEMORYSTATE));
         setVmId(cursorHelper.getString(VM_ID));

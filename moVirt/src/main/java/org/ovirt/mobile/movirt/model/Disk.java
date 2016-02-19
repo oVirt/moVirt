@@ -13,7 +13,7 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Disk extends OVirtEntity implements OVirtContract.Disk {
+public class Disk extends SnapshotEmbeddableEntity implements OVirtContract.Disk {
 
     @Override
     public Uri getBaseUri() {
@@ -26,7 +26,7 @@ public class Disk extends OVirtEntity implements OVirtContract.Disk {
     @DatabaseField(columnName = STATUS)
     private String status;
 
-    @DatabaseField(columnName = VM_ID, canBeNull = false)
+    @DatabaseField(columnName = VM_ID)
     private String vmId;
 
 

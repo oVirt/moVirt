@@ -28,29 +28,29 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/vms;max={maxToLoad}?search={query}")
     Vms getVms(String query, int maxToLoad);
 
-    @Get("/vms/{id}/statistics")
-    Statistics getVmStatistics(String id);
+    @Get("/vms/{vmId}/statistics")
+    Statistics getVmStatistics(String vmId);
 
-    @Post("/vms/{id}/start")
-    void startVm(Action action, String id);
+    @Post("/vms/{vmId}/start")
+    void startVm(Action action, String vmId);
 
-    @Post("/vms/{id}/stop")
-    void stopVm(Action action, String id);
+    @Post("/vms/{vmId}/stop")
+    void stopVm(Action action, String vmId);
 
-    @Post("/vms/{id}/reboot")
-    void rebootVm(Action action, String id);
+    @Post("/vms/{vmId}/reboot")
+    void rebootVm(Action action, String vmId);
 
-    @Post("/vms/{id}/migrate")
-    void migrateVmToHost(Action action, String id);
+    @Post("/vms/{vmId}/migrate")
+    void migrateVmToHost(Action action, String vmId);
 
-    @Post("/vms/{id}/cancelmigration")
-    void cancelMigration(Action action, String id);
+    @Post("/vms/{vmId}/cancelmigration")
+    void cancelMigration(Action action, String vmId);
 
-    @Post("/hosts/{id}/activate")
-    void activateHost(Action action, String id);
+    @Post("/hosts/{hostId}/activate")
+    void activateHost(Action action, String hostId);
 
-    @Post("/hosts/{id}/deactivate")
-    void deactivateHost(Action action, String id);
+    @Post("/hosts/{hostId}/deactivate")
+    void deactivateHost(Action action, String hostId);
 
     @Get("/clusters")
     Clusters getClusters();
@@ -61,8 +61,8 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/storagedomains")
     StorageDomains getStorageDomains();
 
-    @Get("/storagedomains/{id}")
-    StorageDomain getStorageDomain(String id);
+    @Get("/storagedomains/{storageDomainId}")
+    StorageDomain getStorageDomain(String storageDomainId);
 
     @Get("/events;max={maxToLoad}?from={lastEventId}&search=sortby time desc")
     Events getEventsSince(String lastEventId, int maxToLoad);
@@ -70,32 +70,44 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/events;max={maxToLoad}?from={lastEventId}&search={query}")
     Events getEventsSince(String lastEventId, String query, int maxToLoad);
 
-    @Get("/vms/{id}")
-    Vm getVm(String id);
+    @Get("/vms/{vmId}")
+    Vm getVm(String vmId);
 
-    @Post("/vms/{id}/ticket")
-    ActionTicket getConsoleTicket(Action action, String id);
+    @Post("/vms/{vmId}/ticket")
+    ActionTicket getConsoleTicket(Action action, String vmId);
 
-    @Get("/vms/{vmId}/disks/{id}")
-    Disk getDisk(String vmId, String id);
+    @Get("/vms/{vmId}/disks/{diskId}")
+    Disk getDisk(String vmId, String diskId);
 
-    @Get("/vms/{id}/disks")
-    Disks getDisks(String id);
+    @Get("/vms/{vmId}/snapshots/{snapshotId}/disks/{diskId}")
+    Disk getDisk(String vmId, String snapshotId, String diskId);
 
-    @Get("/vms/{vmId}/nics/{id}")
-    Nic getNic(String vmId, String id);
+    @Get("/vms/{vmId}/disks")
+    Disks getDisks(String vmId);
 
-    @Get("/vms/{id}/nics")
-    Nics getNics(String id);
+    @Get("/vms/{vmId}/snapshots/{snapshotId}/disks")
+    Disks getDisks(String vmId, String snapshotId);
+
+    @Get("/vms/{vmId}/nics/{nicId}")
+    Nic getNic(String vmId, String nicId);
+
+    @Get("/vms/{vmId}/snapshots/{snapshotId}/nics/{nicId}")
+    Nic getNic(String vmId, String snapshotId, String nicId);
+
+    @Get("/vms/{vmId}/nics")
+    Nics getNics(String vmId);
+
+    @Get("/vms/{vmId}/snapshots/{snapshotId}/nics")
+    Nics getNics(String vmId, String snapshotId);
 
     @Get("/hosts")
     Hosts getHosts();
 
-    @Get("/hosts/{id}")
-    Host getHost(String id);
+    @Get("/hosts/{hostId}")
+    Host getHost(String hostId);
 
-    @Get("/vms/{id}/snapshots")
-    Snapshots getSnapshots(String id);
+    @Get("/vms/{vmId}/snapshots")
+    Snapshots getSnapshots(String vmId);
 
     @Get("/")
     EmptyResult login();

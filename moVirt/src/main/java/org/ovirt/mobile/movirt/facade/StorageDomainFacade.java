@@ -7,11 +7,10 @@ import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.storage.StorageDomainDetailActivity_;
-import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.util.ObjectUtils.*;
+import static org.ovirt.mobile.movirt.util.ObjectUtils.requireSignature;
 
 @EBean
 public class StorageDomainFacade extends BaseEntityFacade<StorageDomain> {
