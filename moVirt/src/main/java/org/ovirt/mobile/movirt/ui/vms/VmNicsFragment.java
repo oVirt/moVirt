@@ -13,8 +13,8 @@ import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Nic;
-import org.ovirt.mobile.movirt.ui.BaseEntityListFragment;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
+import org.ovirt.mobile.movirt.ui.ResumeSyncableBaseEntityListFragment;
 
 import java.util.List;
 
@@ -22,13 +22,12 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.LINKED;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.MAC_ADDRESS;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.PLUGGED;
-import static org.springframework.util.StringUtils.isEmpty;
 
 /**
  * Created by suomiy on 2/2/16.
  */
 @EFragment(R.layout.fragment_base_entity_list)
-public class VmNicsFragment extends BaseEntityListFragment<Nic> {
+public class VmNicsFragment extends ResumeSyncableBaseEntityListFragment<Nic> {
     private static final String TAG = VmNicsFragment.class.getSimpleName();
 
     private String vmId;
@@ -81,26 +80,22 @@ public class VmNicsFragment extends BaseEntityListFragment<Nic> {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        onRefresh();
+    public boolean isResumeSyncable() {
+        return isSnapshotFragment();
     }
-
 
     @Background
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
-        if (syncing) {
-            if (!isEmpty(filterSnapshotId)) {
-                entityFacade.syncAll(getVmId(), filterSnapshotId);
-            }
+        if (syncing && isSnapshotFragment()) {
+            entityFacade.syncAll(getVmId(), filterSnapshotId);
         }
     }
 
     @Background
     @Override
     public void onRefresh() {
-        String[] params = isEmpty(filterSnapshotId) ? new String[]{filterVmId} : new String[]{getVmId(), filterSnapshotId};
+        String[] params = isSnapshotFragment() ? new String[]{getVmId(), filterSnapshotId} : new String[]{filterVmId};
         entityFacade.syncAll(new ProgressBarResponse<List<Nic>>(this), params);
     }
 }
