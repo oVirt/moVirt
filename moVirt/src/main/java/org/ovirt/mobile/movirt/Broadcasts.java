@@ -11,6 +11,7 @@ public interface Broadcasts {
 
     interface Extras {
         String CONNECTION_FAILURE_REASON = "org.ovirt.mobile.movirt.CONNECTION_FAILURE_REASON";
+        String REPEATED_CONNECTION_FAILURE = "org.ovirt.mobile.movirt.REPEATED_CONNECTION_FAILURE";
         String SYNCING = "org.ovirt.mobile.movirt.SYNCING";
     }
 }

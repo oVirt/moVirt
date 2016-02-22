@@ -506,7 +506,6 @@ public class OVirtClient {
         String password = authenticator.getPassword();
 
         boolean success = false;
-        boolean connectionSuccess = false;
 
         if (TextUtils.isEmpty(userName) || TextUtils.isEmpty(password) || TextUtils.isEmpty(authenticator.getApiUrl())) {
             Intent accountAuthenticatorResponse = new Intent(context, AuthenticatorActivity_.class);
@@ -526,15 +525,14 @@ public class OVirtClient {
             try {
                 T restResponse = request.fire();
                 success = true;
+                updateConnectionInfo(success);
 
                 if (response != null) {
                     response.onResponse(restResponse);
                 }
             } catch (Exception e) {
-                fireConnectionError(e);
-                connectionSuccess = !(e instanceof ResourceAccessException);
+                fireOtherConnectionError(e); // fires and displays multiple consecutive errors
             } finally {
-                updateConnectionInfo(connectionSuccess);
                 if (!success && response != null) {
                     response.onError();
                 }
@@ -565,14 +563,12 @@ public class OVirtClient {
             response.after();
         }
 
-        boolean connectionSuccess = false;
         if (result != RestCallResult.CONNECTION_ERROR) {
-            connectionSuccess = true;
+            updateConnectionInfo(true);
         }
-        updateConnectionInfo(connectionSuccess);
     }
 
-    private void updateConnectionInfo(boolean success) {
+    private ConnectionInfo updateConnectionInfo(boolean success) {
         ConnectionInfo connectionInfo;
         ConnectionInfo.State state;
         boolean prevFailed = false;
@@ -582,7 +578,8 @@ public class OVirtClient {
 
         if (size != 0) {
             connectionInfo = connectionInfos.iterator().next();
-            if (connectionInfo.getState() == ConnectionInfo.State.FAILED) {
+            ConnectionInfo.State lastState = connectionInfo.getState();
+            if (lastState == ConnectionInfo.State.FAILED || lastState == ConnectionInfo.State.FAILED_REPEATEDLY) {
                 prevFailed = true;
             }
         } else {
@@ -590,7 +587,7 @@ public class OVirtClient {
         }
 
         if (!success) {
-            state = ConnectionInfo.State.FAILED;
+            state = prevFailed ? ConnectionInfo.State.FAILED_REPEATEDLY : ConnectionInfo.State.FAILED;
         } else {
             state = ConnectionInfo.State.OK;
         }
@@ -617,6 +614,8 @@ public class OVirtClient {
             notificationHelper.showConnectionNotification(
                     context, resultPendingIntent, connectionInfo);
         }
+
+        return connectionInfo;
     }
 
     private <T> RestCallResult doFireRequestWithPersistentAuth(Request<T> request, Response<T> response) {
@@ -630,7 +629,7 @@ public class OVirtClient {
                 String authToken = result.getString(AccountManager.KEY_AUTHTOKEN);
 
                 if (TextUtils.isEmpty(authToken)) {
-                    fireConnectionError("Empty auth token");
+                    fireOtherConnectionError("Empty auth token");
                 } else {
                     restClient.setCookie(JSESSIONID, authToken);
                     restClient.setAuthentication(new HttpAuthentication() {
@@ -657,7 +656,7 @@ public class OVirtClient {
                         HttpStatus statusCode = null;
 
                         if (e instanceof ResourceAccessException) {
-                            fireConnectionError(e);
+                            fireConnectionErrorAndUpdateInfo(e);
                             return RestCallResult.CONNECTION_ERROR;
                         }
 
@@ -671,7 +670,7 @@ public class OVirtClient {
                             accountManager.setAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, null);
                             return RestCallResult.AUTH_ERROR;
                         } else {
-                            fireConnectionError(e);
+                            fireOtherConnectionError(e);
                             return RestCallResult.OTHER_ERROR;
                         }
                     }
@@ -686,10 +685,11 @@ public class OVirtClient {
                 return RestCallResult.OTHER_ERROR;
             }
         } catch (Exception e) {
-            fireConnectionError(e);
             if (e instanceof ResourceAccessException) {
+                fireConnectionErrorAndUpdateInfo(e);
                 return RestCallResult.CONNECTION_ERROR;
             }
+            fireOtherConnectionError(e);
         }
 
         if (!success) {
@@ -711,13 +711,13 @@ public class OVirtClient {
         restClient.setRootUrl(authenticator.getApiUrl());
     }
 
-    private void fireConnectionError(Exception e) {
+    private void fireOtherConnectionError(Exception e) {
         String msg = e.getMessage();
         if (e instanceof HttpClientErrorException) {
             HttpStatus statusCode = ((HttpClientErrorException) e).getStatusCode();
             if (statusCode == HttpStatus.NOT_FOUND) {
                 msg = msg + ": " + "oVirt-engine is not found on " + restClient.getRootUrl();
-                fireConnectionError(String.format(errorMsg, msg));
+                fireOtherConnectionError(msg);
                 return;
             }
 
@@ -747,13 +747,26 @@ public class OVirtClient {
             }
         }
 
-        fireConnectionError(String.format(errorMsg, msg));
+        fireOtherConnectionError(msg);
     }
 
-    private void fireConnectionError(String msg) {
-        Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
-        intent.putExtra(Broadcasts.Extras.CONNECTION_FAILURE_REASON, msg);
+    private void fireConnectionErrorAndUpdateInfo(Exception e) {
+        ConnectionInfo connectionInfo = updateConnectionInfo(false);
+        Intent intent = getConnectionFailiureIntent(e.getMessage());
+        boolean failedRepeatedly = connectionInfo.getState() == ConnectionInfo.State.FAILED_REPEATEDLY;
+        intent.putExtra(Broadcasts.Extras.REPEATED_CONNECTION_FAILURE, failedRepeatedly);
         context.sendBroadcast(intent);
+    }
+
+    private void fireOtherConnectionError(String msg) {
+        final Intent intent = getConnectionFailiureIntent(msg);
+        context.sendBroadcast(intent);
+    }
+
+    private Intent getConnectionFailiureIntent(String msg) {
+        Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
+        intent.putExtra(Broadcasts.Extras.CONNECTION_FAILURE_REASON, String.format(errorMsg, msg));
+        return intent;
     }
 
     enum RestCallResult {

@@ -86,7 +86,6 @@ public class VmNicsFragment extends BaseEntityListFragment<Nic> {
         onRefresh();
     }
 
-
     @Background
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
