@@ -42,6 +42,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.HasVm.VM_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
+import static org.springframework.util.StringUtils.isEmpty;
 
 @EFragment(R.layout.fragment_base_entity_list)
 public abstract class BaseEntityListFragment<E extends OVirtEntity> extends RefreshableLoaderFragment
@@ -152,13 +153,16 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         this.filterVmId = filterVmId;
     }
 
-
     public String getFilterSnapshotId() {
         return filterSnapshotId;
     }
 
     public void setFilterSnapshotId(String filterSnapshotId) {
         this.filterSnapshotId = filterSnapshotId;
+    }
+
+    public boolean isSnapshotFragment() {
+        return !isEmpty(filterSnapshotId);
     }
 
     @Override
@@ -214,7 +218,7 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
                     query.where(VM_ID, filterVmId);
                 }
 
-                if(filterSnapshotId != null){
+                if (filterSnapshotId != null) {
                     query.where(SNAPSHOT_ID, filterSnapshotId);
                 }
 

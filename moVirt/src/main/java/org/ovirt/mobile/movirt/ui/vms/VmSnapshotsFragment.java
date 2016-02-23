@@ -12,8 +12,8 @@ import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Snapshot;
-import org.ovirt.mobile.movirt.ui.BaseEntityListFragment;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
+import org.ovirt.mobile.movirt.ui.ResumeSyncableBaseEntityListFragment;
 import org.ovirt.mobile.movirt.util.DateUtils;
 
 import java.util.List;
@@ -27,7 +27,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.SNAPSHOT_S
  * Created by suomiy on 11/25/15.
  */
 @EFragment(R.layout.fragment_base_entity_list)
-public class VmSnapshotsFragment extends BaseEntityListFragment<Snapshot> {
+public class VmSnapshotsFragment extends ResumeSyncableBaseEntityListFragment<Snapshot> {
     private static final String TAG = VmSnapshotsFragment.class.getSimpleName();
 
     public VmSnapshotsFragment() {
@@ -65,12 +65,6 @@ public class VmSnapshotsFragment extends BaseEntityListFragment<Snapshot> {
         });
 
         return snapshotListAdapter;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        onRefresh();
     }
 
     @Background
