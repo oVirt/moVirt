@@ -73,7 +73,9 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem connection = menu.findItem(R.id.menu_connection);
-        connection.setVisible(connectionInfo.getState() == ConnectionInfo.State.FAILED);
+        ConnectionInfo.State state = connectionInfo.getState();
+        boolean connectionVisibility = state == ConnectionInfo.State.FAILED || state == ConnectionInfo.State.FAILED_REPEATEDLY;
+        connection.setVisible(connectionVisibility);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -119,10 +121,13 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
     @Receiver(actions = Broadcasts.CONNECTION_FAILURE,
             registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void connectionFailure(
-            @Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
-        DialogFragment dialogFragment = ErrorDialogFragment
-                .newInstance(this, authenticator, providerFacade, reason);
-        dialogFragment.show(getFragmentManager(), "error");
+            @Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason,
+            @Receiver.Extra(Broadcasts.Extras.REPEATED_CONNECTION_FAILURE) boolean repeatedFailure) {
+        if (!repeatedFailure) {
+            DialogFragment dialogFragment = ErrorDialogFragment
+                    .newInstance(this, authenticator, providerFacade, reason);
+            dialogFragment.show(getFragmentManager(), "error");
+        }
     }
 
     @UiThread

@@ -114,7 +114,7 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
     }
 
     public String getMessage(Context context) {
-        return "Connection: " + state +
+        return "Connection: " + state.toString().replace('_', ' ') +
                 ".\nLast Attempt: " + getLastAttemptWithTimeZone(context) +
                 ".\nLast Successful: " + getLastSuccessfulWithTimeZone(context) +
                 '.';
@@ -131,6 +131,7 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
     public enum State {
         OK,
         FAILED,
+        FAILED_REPEATEDLY,
         UNKNOWN
     }
 }
