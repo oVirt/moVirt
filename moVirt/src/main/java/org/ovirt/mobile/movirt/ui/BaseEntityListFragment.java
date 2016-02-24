@@ -10,6 +10,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -36,6 +37,7 @@ import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.HasCluster.CLUSTER_ID;
@@ -64,7 +66,7 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     protected String filterSnapshotId;
 
     @InstanceState
-    protected String orderByAscending;
+    protected ArrayList<String> orderingList = new ArrayList<>();
 
     @InstanceState
     protected String selectedClusterId;
@@ -98,6 +100,9 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
     @ViewById
     public LinearLayout searchbox;
+
+    @ViewById
+    public LinearLayout orderingLayout;
 
     @InstanceState
     public boolean searchtoggle;
@@ -169,8 +174,13 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         return !isEmpty(filterSnapshotId);
     }
 
-    public void setOrderByAscending(String orderByAscending) {
-        this.orderByAscending = orderByAscending;
+    /**
+     * Adds ascending ordering of OVirtEntity
+     *
+     * @param ordering name of column in db
+     */
+    public void addOrdering(String ordering) {
+        orderingList.add(ordering);
     }
 
     @Override
@@ -200,10 +210,26 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     }
 
     @AfterViews
+    protected void init() {
+        entityFacade = entityFacadeLocator.getFacade(entityClass);
+
+        if (!hasStatusField()) { // hide status ordering field
+            String[] spinnerValues = getResources().getStringArray(R.array.nic_sort_by);
+            ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(getActivity(),
+                    android.R.layout.simple_spinner_item, spinnerValues);
+            orderBySpinner.setAdapter(spinnerArrayAdapter);
+        }
+
+        if (!orderingList.isEmpty()) { // hide ordering
+            orderingLayout.setVisibility(View.GONE);
+        }
+
+        initAdapters();
+        initListeners();
+    }
+
     protected void initAdapters() {
         CursorAdapter cursorAdapter = createCursorAdapter();
-
-        entityFacade = entityFacadeLocator.getFacade(entityClass);
 
         listView.setAdapter(cursorAdapter);
         listView.setEmptyView(getActivity().findViewById(android.R.id.empty));
@@ -231,27 +257,33 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
                 }
 
                 String searchNameString = searchText.getText().toString();
-                if (!"".equals(searchNameString)) {
+                if (!StringUtils.isEmpty(searchNameString)) {
                     query.whereLike(NAME, "%" + searchNameString + "%");
                 }
 
-                if(!StringUtils.isEmpty(orderByAscending)){
-                    query.orderByAscending(orderByAscending);
+                if (!orderingList.isEmpty()) { // fragment with customized ordering
+                    for (String ordering : orderingList) {
+                        query.orderByAscending(ordering);
+                    }
+                } else {
+                    String orderBy = (String) orderBySpinner.getSelectedItem();
+
+                    if (StringUtils.isEmpty(orderBy)) {
+                        orderBy = NAME;
+                    }
+
+                    SortOrder order = SortOrder.from((String) orderSpinner.getSelectedItem());
+                    query.orderBy(orderBy, order);
                 }
 
-                String orderBy = (String) orderBySpinner.getSelectedItem();
-
-                if (StringUtils.isEmpty(orderBy)) {
-                    orderBy = NAME;
-                }
-
-                SortOrder order = SortOrder.from((String) orderSpinner.getSelectedItem());
-                return query.orderBy(orderBy, order).limit(page * ITEMS_PER_PAGE).asLoader();
+                return query.limit(page * ITEMS_PER_PAGE).asLoader();
             }
         };
 
         getLoaderManager().initLoader(0, null, cursorAdapterLoader);
+    }
 
+    protected void initListeners() {
         listView.setOnScrollListener(endlessScrollListener);
 
         searchText.removeTextChangedListener(textWatcher);
@@ -271,6 +303,10 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
                 toggleSearchBoxVisibility();
             }
         });
+    }
+
+    public boolean hasStatusField() {
+        return true;
     }
 
     @UiThread

@@ -67,6 +67,11 @@ public class VmSnapshotsFragment extends ResumeSyncableBaseEntityListFragment<Sn
         return snapshotListAdapter;
     }
 
+    @Override
+    public boolean hasStatusField() {
+        return false;
+    }
+
     @Background
     @Override
     public void onRefresh() {

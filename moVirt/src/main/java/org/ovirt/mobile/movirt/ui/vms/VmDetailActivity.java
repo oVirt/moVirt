@@ -132,7 +132,9 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         nicList.setFilterVmId(vmId);
         nicList.setFilterSnapshotId("");
         snapshotList.setFilterVmId(vmId);
-        snapshotList.setOrderByAscending(OVirtContract.Snapshot.SNAPSHOT_STATUS);
+        snapshotList.addOrdering(OVirtContract.Snapshot.SNAPSHOT_STATUS);
+        snapshotList.addOrdering(OVirtContract.Snapshot.TYPE);
+        snapshotList.addOrdering(OVirtContract.Snapshot.NAME);
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
                 getSupportFragmentManager(), PAGER_TITLES,
