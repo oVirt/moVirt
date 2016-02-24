@@ -34,6 +34,7 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -61,6 +62,9 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
     @InstanceState
     protected String filterSnapshotId;
+
+    @InstanceState
+    protected String orderByAscending;
 
     @InstanceState
     protected String selectedClusterId;
@@ -165,6 +169,10 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         return !isEmpty(filterSnapshotId);
     }
 
+    public void setOrderByAscending(String orderByAscending) {
+        this.orderByAscending = orderByAscending;
+    }
+
     @Override
     public void updateSelectedClusterId(String selectedClusterId) {
         resetListViewPosition();
@@ -227,9 +235,13 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
                     query.whereLike(NAME, "%" + searchNameString + "%");
                 }
 
+                if(!StringUtils.isEmpty(orderByAscending)){
+                    query.orderByAscending(orderByAscending);
+                }
+
                 String orderBy = (String) orderBySpinner.getSelectedItem();
 
-                if ("".equals(orderBy)) {
+                if (StringUtils.isEmpty(orderBy)) {
                     orderBy = NAME;
                 }
 

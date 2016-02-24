@@ -119,17 +119,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     public <E extends OVirtEntity> OVirtClient.SimpleResponse<E> getUpdateEntityResponse(final Class<E> clazz) {
-        final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
-        final ProviderFacade.BatchBuilder batch = provider.batch();
-
         return new OVirtClient.SimpleResponse<E>() {
             @Override
             public void onResponse(E entity) throws RemoteException {
-                Collection<Trigger<E>> allTriggers = entityFacade.getAllTriggers();
-                updateLocalEntity(entity, clazz, allTriggers, batch);
-                applyBatch(batch);
+                updateLocalEntity(entity, clazz);
             }
         };
+    }
+
+    public <E extends OVirtEntity> void updateLocalEntity(E entity, final Class<E> clazz) {
+        final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
+        final ProviderFacade.BatchBuilder batch = provider.batch();
+
+        Collection<Trigger<E>> allTriggers = entityFacade.getAllTriggers();
+        updateLocalEntity(entity, clazz, allTriggers, batch);
+        applyBatch(batch);
     }
 
     public <E extends OVirtEntity> OVirtClient.SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz) {

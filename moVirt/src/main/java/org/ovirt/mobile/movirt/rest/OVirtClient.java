@@ -209,6 +209,69 @@ public class OVirtClient {
         }, response);
     }
 
+    public void deleteSnapshot(final String vmId, final String snapshotId, Response<Void> response) {
+        fireRestRequest(new Request<Void>() {
+            @Override
+            public Void fire() {
+                restClient.deleteSnapshot(vmId, snapshotId);
+                return null;
+            }
+        }, response);
+    }
+
+    public void restoreSnapshot(final SnapshotAction snapshotAction, final String vmId, Response<Void> response) {
+        fireRestRequest(new Request<Void>() {
+            @Override
+            public Void fire() {
+                String snapshotId = snapshotAction.snapshot.id;
+                SnapshotAction restAction = new SnapshotAction(snapshotAction.restore_memory);
+
+                restClient.restoreSnapshot(restAction, vmId, snapshotId);
+                return null;
+            }
+        }, response);
+    }
+
+    public void previewSnapshot(final SnapshotAction snapshotAction, final String vmId, Response<Void> response) {
+        fireRestRequest(new Request<Void>() {
+            @Override
+            public Void fire() {
+                restClient.previewSnapshot(snapshotAction, vmId);
+                return null;
+            }
+        }, response);
+    }
+
+    public void createSnapshot(final org.ovirt.mobile.movirt.rest.Snapshot snapshot, final String vmId, Response<Void> response) {
+        fireRestRequest(new Request<Void>() {
+            @Override
+            public Void fire() {
+                restClient.createSnapshot(snapshot, vmId);
+                return null;
+            }
+        }, response);
+    }
+
+    public void commitSnapshot(final String vmId, Response<Void> response) {
+        fireRestRequest(new Request<Void>() {
+            @Override
+            public Void fire() {
+                restClient.commitSnapshot(new Action(), vmId);
+                return null;
+            }
+        }, response);
+    }
+
+    public void undoSnapshot(final String vmId, Response<Void> response) {
+        fireRestRequest(new Request<Void>() {
+            @Override
+            public Void fire() {
+                restClient.undoSnapshot(new Action(), vmId);
+                return null;
+            }
+        }, response);
+    }
+
     @NonNull
     public Request<Host> getHostRequest(final String hostId) {
         return new Request<Host>() {
@@ -432,8 +495,17 @@ public class OVirtClient {
         };
     }
 
-    public Request<Snapshot> getSnapshotRequest(String vmId, String snapshotId) {
-        return null;
+    public Request<Snapshot> getSnapshotRequest(final String vmId, final String snapshotId) {
+        return new Request<Snapshot>() {
+            @Override
+            public Snapshot fire() {
+                Snapshot snapshot = restClient.getSnapshot(vmId, snapshotId).toEntity();
+                if(snapshot != null){
+                    snapshot.setVmId(vmId);
+                }
+                return snapshot;
+            }
+        };
     }
 
     public String login(String apiUrl, String username, String password, final boolean hasAdminPrivileges) {

@@ -37,6 +37,13 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
     <string name="edit_triggers">Triggers</string>
+    <string name="create_snapshot">Create Snapshot</string>
+    <string name="restore">Restore</string>`
+    <string name="commit">Commit</string>`
+    <string name="undo">Undo</string>`
+    <string name="preview">Preview</string>
+    <string name="snapshot">Snapshot</string>
+    <string name="create">Create</string>
     <string name="save">Save</string>
     <string name="save_acc">Save Account</string>
     <string name="done_advanced_settings">Done</string>
@@ -95,7 +102,7 @@
     <string name="trigger_title_format">Triggers - %1$s</string>
     <string name="when">when</string>
     <string name="moVirt_license">Apache License, Version 2.0</string>
-    <string name="moVirt_version">App Version 1.2</string>
+    <string name="moVirt_version">App Version 1.3</string>
     <string name="moVirt_docs">https://github.com/matobet/moVirt/blob/master/README.md"</string>
     <string name="downloadEvents">Load</string>
     <string name="clearEvents">Clear</string>
@@ -140,7 +147,6 @@
     <string name="nic_name_and_address">%1$s: %2$s</string>
 
     <string name="snapshot_memory">Memory: true</string>
-    <string name="snapshot_status">Status: %1$s</string>
 
     <string name="disk_size">%1$s MB</string>
     <string name="disk_unknown_size">Size: N/A</string>
@@ -197,6 +203,7 @@
     <string name="dialog_certificate_missing_end">\nDo you want to configure it now?</string>
     <string name="dialog_action_clear_events">delete all the events stored locally</string>
     <string name="dialog_confirm_message">Are you sure you want to %1$s?</string>
+    <string name="dialog_action_delete_snapshot">delete this snapshot</string>
 
     <string name="domain_type">Domain Type:</string>
     <string name="storage_type">Storage Type:</string>
@@ -205,5 +212,9 @@
     <string name="total_space">Total Space:</string>
     <string name="details_for_storage_domain">Storage %1$s</string>
     <string name="title_activity_storage_domain_details">Storage Domain</string>
+
+    <string name="description">Description</string>
+    <string name="save_memory">Save Memory</string>
+    <string name="restore_memory">Restore Memory</string>
 
 </resources>

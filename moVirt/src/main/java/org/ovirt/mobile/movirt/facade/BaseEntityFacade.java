@@ -47,6 +47,11 @@ public abstract class BaseEntityFacade<E extends OVirtEntity> implements EntityF
     }
 
     @Override
+    public List<E> mapAllFromCursor(Cursor cursor) {
+        return EntityMapper.forEntity(clazz).listFromCursor(cursor);
+    }
+
+    @Override
     public void syncOne(OVirtClient.Response<E> response, String id, String... ids) {
         oVirtClient.fireRestRequest(getSyncOneRestRequest(id, ids), getSyncOneResponse(response, ids));
     }

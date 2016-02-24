@@ -20,11 +20,13 @@ import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.HostFacade;
+import org.ovirt.mobile.movirt.facade.SnapshotFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Host;
+import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
@@ -91,6 +93,9 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
 
     @Bean
     HostFacade hostFacade;
+
+    @Bean
+    SnapshotFacade snapshotFacade;
 
     @StringRes(R.string.details_for_vm)
     String VM_DETAILS;
@@ -181,9 +186,6 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         switch (loader.getId()) {
             case VMS_LOADER:
                 vm = vmFacade.mapFromCursor(data);
-                if (vm.isSnapshotEmbedded()) {
-                    swipeGeneralContainer.setEnabled(false);
-                }
                 renderVm(vm);
                 if (getLoaderManager().getLoader(CLUSTER_LOADER) == null) {
                     getLoaderManager().initLoader(CLUSTER_LOADER, null, this);
@@ -281,6 +283,12 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     @Override
     @Background
     public void onRefresh() {
-        vmFacade.syncOne(new ProgressBarResponse<Vm>(this), vmId);
+        if (vm.isSnapshotEmbedded()) {
+            String snapshotId = vm.getSnapshotId();
+            String vmId = provider.query(Snapshot.class).id(snapshotId).first().getVmId();
+            snapshotFacade.syncOne(new ProgressBarResponse<Snapshot>(this), snapshotId, vmId);
+        } else {
+            vmFacade.syncOne(new ProgressBarResponse<Vm>(this), vmId);
+        }
     }
 }

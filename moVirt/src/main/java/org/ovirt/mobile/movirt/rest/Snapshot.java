@@ -18,6 +18,14 @@ public class Snapshot implements RestEntityWrapper<org.ovirt.mobile.movirt.model
     public boolean persist_memorystate;
     public Vm vm;
 
+    public Snapshot() {
+    }
+
+    public Snapshot(String description, boolean persistMemoryState) {
+        this.description = description;
+        this.persist_memorystate = persistMemoryState;
+    }
+
     @Override
     public String toString() {
         return String.format("Snapshot: id=%id, description=%s, snapshot_status=%s, date=%d, persist_memorystate=%b",

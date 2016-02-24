@@ -25,6 +25,12 @@
         app:showAsAction="ifRoom|withText" />
 
     <item
+        android:id="@+id/action_create_snapshot"
+        android:title="@string/create_snapshot"
+        android:visible="false"
+        app:showAsAction="ifRoom|withText" />
+
+    <item
         android:id="@+id/action_start_migration"
         android:icon="@drawable/vm_migrating"
         android:title="@string/start_migration"

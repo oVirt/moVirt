@@ -7,8 +7,11 @@ import android.os.RemoteException;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.facade.predicates.SnapshotsIdPredicate;
 import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
+import org.ovirt.mobile.movirt.model.Disk;
+import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.rest.OVirtClient.CompositeResponse;
 import org.ovirt.mobile.movirt.rest.OVirtClient.SimpleResponse;
@@ -33,6 +36,7 @@ public class SnapshotFacade extends BaseEntityFacade<Snapshot> {
             intent = new Intent(context, SnapshotDetailActivity_.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.setData(entity.getUri());
+            intent.putExtra(OVirtContract.HasVm.VM_ID, entity.getVmId());
         }
         return intent;
     }
@@ -49,6 +53,24 @@ public class SnapshotFacade extends BaseEntityFacade<Snapshot> {
         requireSignature(ids, "vmId");
         String vmId = ids[0];
         return oVirtClient.getSnapshotsRequest(vmId);
+    }
+
+    @Override
+    protected CompositeResponse<Snapshot> getSyncOneResponse(final OVirtClient.Response<Snapshot> response, final String... ids) {
+        requireSignature(ids, "vmId");
+
+        OVirtClient.CompositeResponse<Snapshot> res = super.getSyncOneResponse(response);
+        res.addResponse(new SimpleResponse<Snapshot>() {
+            @Override
+            public void onResponse(Snapshot snapshot) throws RemoteException {
+                Vm vm = snapshot.getVm();
+                if (vm != null) {
+                    vm.setSnapshotId(snapshot.getId());
+                    syncAdapter.updateLocalEntity(vm, Vm.class);
+                }
+            }
+        });
+        return res;
     }
 
     @Override

@@ -1,24 +1,49 @@
 package org.ovirt.mobile.movirt.ui.snapshots;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.RemoteException;
+import android.support.annotation.NonNull;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ProgressBar;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.OptionsItem;
+import org.androidannotations.annotations.OptionsMenu;
+import org.androidannotations.annotations.OptionsMenuItem;
+import org.androidannotations.annotations.Receiver;
+import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
 import org.androidannotations.annotations.res.StringRes;
+import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.facade.SnapshotFacade;
+import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Snapshot;
+import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.SnapshotAction;
+import org.ovirt.mobile.movirt.ui.BooleanListener;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
+import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
+import org.ovirt.mobile.movirt.ui.dialogs.PreviewRestoreSnapshotDialogFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmDetailGeneralFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmDetailGeneralFragment_;
 import org.ovirt.mobile.movirt.ui.vms.VmDisksFragment;
@@ -27,12 +52,23 @@ import org.ovirt.mobile.movirt.ui.vms.VmNicsFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmNicsFragment_;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 @EActivity(R.layout.activity_snapshot_detail)
-public class SnapshotDetailActivity extends MovirtActivity implements HasProgressBar {
+@OptionsMenu(R.menu.snapshot)
+public class SnapshotDetailActivity extends MovirtActivity implements HasProgressBar,
+        LoaderManager.LoaderCallbacks<Cursor>,
+        ConfirmDialogFragment.ConfirmDialogListener, BooleanListener {
 
     private static final String TAG = SnapshotDetailActivity.class.getSimpleName();
+
+    private static final int DELETE_ACTION = 0;
+    private static final int PREVIEW_ACTION = 1;
+    private static final int RESTORE_ACTION = 2;
+
+    private static final int SNAPSHOT_LOADER = 1; // 0 in MovirtActivity
+    private static final int SNAPSHOTS_LOADER = 2;
+    private static final int VMS_LOADER = 3;
+
     @ViewById
     ViewPager viewPager;
     @ViewById
@@ -48,29 +84,118 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
     @Bean
     ProviderFacade provider;
 
-    private String snapshotId = null;
-    private Snapshot currentSnapshot = null;
+    @Bean
+    VmFacade vmFacade;
+
+    @Bean
+    SnapshotFacade snapshotFacade;
+
+    @Bean
+    OVirtClient client;
+
+    @OptionsMenuItem(R.id.action_delete)
+    MenuItem menuDelete;
+
+    @OptionsMenuItem(R.id.action_preview)
+    MenuItem menuPreview;
+
+    @OptionsMenuItem(R.id.action_restore)
+    MenuItem menuRestore;
+
+    @OptionsMenuItem(R.id.action_commit)
+    MenuItem menuCommit;
+
+    @OptionsMenuItem(R.id.action_undo)
+    MenuItem menuUndo;
+
+    private String snapshotId;
+    private Snapshot currentSnapshot;
     private String vmId;
+    private Vm vm;
+    private Collection<Snapshot> snapshots;
 
     @AfterViews
-    void init() {
+    public void init() {
         Intent intent = getIntent();
         Uri snapshotUri = intent.getData();
         snapshotId = snapshotUri.getLastPathSegment();
+        vmId = intent.getExtras().getString(OVirtContract.HasVm.VM_ID);
 
-        Collection<Snapshot> snapshots = provider.query(Snapshot.class).id(snapshotId).all();
-        Iterator<Snapshot> it = snapshots.iterator();
+        // for vm fragment
+        Uri vmUri = OVirtContract.Vm.CONTENT_URI.buildUpon().appendPath(vmId + snapshotId).build();
+        intent.setData(vmUri);
 
-        if (it.hasNext()) {
-            currentSnapshot = it.next();
-            setTitle(String.format(SNAPSHOT_DETAILS, currentSnapshot.getName()));
-            vmId = currentSnapshot.getVmId();
-            Uri vmUri = OVirtContract.Vm.CONTENT_URI.buildUpon().appendPath(vmId + snapshotId).build();
-            intent.setData(vmUri);
-        }
-
+        initLoaders();
         initPagers();
         setProgressBar(progress);
+    }
+
+    private void initLoaders() {
+        getSupportLoaderManager().initLoader(SNAPSHOT_LOADER, null, this);
+        getSupportLoaderManager().initLoader(SNAPSHOTS_LOADER, null, this);
+        getSupportLoaderManager().initLoader(VMS_LOADER, null, this);
+    }
+
+    @Override
+    public void restartLoader() {
+        super.restartLoader();
+        getSupportLoaderManager().restartLoader(SNAPSHOT_LOADER, null, this);
+        getSupportLoaderManager().restartLoader(SNAPSHOTS_LOADER, null, this);
+        getSupportLoaderManager().restartLoader(VMS_LOADER, null, this);
+    }
+
+    @Override
+    public void destroyLoader() {
+        super.destroyLoader();
+        getSupportLoaderManager().destroyLoader(SNAPSHOT_LOADER);
+        getSupportLoaderManager().destroyLoader(SNAPSHOTS_LOADER);
+        getSupportLoaderManager().destroyLoader(VMS_LOADER);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Loader<Cursor> loader = null;
+
+        switch (id) {
+            case SNAPSHOT_LOADER:
+                loader = provider.query(Snapshot.class).id(snapshotId).asLoader();
+                break;
+            case SNAPSHOTS_LOADER:
+                loader = provider.query(Snapshot.class).where(OVirtContract.Snapshot.VM_ID, vmId).asLoader();
+                break;
+            case VMS_LOADER:
+                loader = provider.query(Vm.class).id(vmId).asLoader();
+                break;
+        }
+
+        return loader;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (!data.moveToNext()) {
+            Log.e(TAG, "Error loading Snapshot");
+            return;
+        }
+
+        switch (loader.getId()) {
+            case SNAPSHOT_LOADER:
+                currentSnapshot = snapshotFacade.mapFromCursor(data);
+                setTitle(String.format(SNAPSHOT_DETAILS, currentSnapshot.getName()));
+                break;
+            case SNAPSHOTS_LOADER:
+                snapshots = snapshotFacade.mapAllFromCursor(data);
+                break;
+            case VMS_LOADER:
+                vm = vmFacade.mapFromCursor(data);
+                break;
+        }
+        invalidateOptionsMenu();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        // do nothing
     }
 
     private void initPagers() {
@@ -96,11 +221,132 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
     }
 
 
-    /** Refreshes Snapshot upon success */
-   /* private class SyncHostResponse extends OVirtClient.SimpleResponse<Void> {
-        @Override
-        public void onResponse(Void aVoid) throws RemoteException {
-            syncHost();
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (currentSnapshot != null && snapshots != null) {
+            boolean allOk = !Snapshot.containsOneOfStatuses(snapshots, Snapshot.SnapshotStatus.LOCKED, Snapshot.SnapshotStatus.IN_PREVIEW);
+
+            if (vm != null && Vm.Command.NOT_RUNNING.canExecute(vm.getStatus())) {
+                boolean commitUndoVisible = Snapshot.SnapshotStatus.IN_PREVIEW.equals(currentSnapshot.getSnapshotStatus());
+
+                menuPreview.setVisible(allOk);
+                menuRestore.setVisible(allOk);
+                menuCommit.setVisible(commitUndoVisible);
+                menuUndo.setVisible(commitUndoVisible);
+            }
+
+            menuDelete.setVisible(allOk);
         }
-    }*/
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @OptionsItem(R.id.action_delete)
+    @UiThread
+    void delete() {
+        ConfirmDialogFragment confirmDialog = ConfirmDialogFragment
+                .newInstance(DELETE_ACTION, getString(R.string.dialog_action_delete_snapshot));
+        confirmDialog.show(getFragmentManager(), "confirmDeleteSnapshot");
+    }
+
+    @OptionsItem(R.id.action_preview)
+    @UiThread
+    public void preview() {
+        if (currentSnapshot.getPersistMemorystate()) {
+            PreviewRestoreSnapshotDialogFragment dialog = PreviewRestoreSnapshotDialogFragment
+                    .newInstance(PREVIEW_ACTION, getString(R.string.preview));
+            dialog.show(getFragmentManager(), "previewSnapshot");
+        } else {
+            doPreviewSnapshot(false);
+        }
+    }
+
+
+    @OptionsItem(R.id.action_restore)
+    @UiThread
+    public void restore() {
+        if (currentSnapshot.getPersistMemorystate()) {
+            PreviewRestoreSnapshotDialogFragment dialog = PreviewRestoreSnapshotDialogFragment
+                    .newInstance(RESTORE_ACTION, getString(R.string.restore));
+            dialog.show(getFragmentManager(), "restoreSnapshot");
+        } else {
+            doRestoreSnapshot(false);
+        }
+    }
+
+    @OptionsItem(R.id.action_commit)
+    @Background
+    public void doCommit() {
+        client.commitSnapshot(vmId, getSyncSnapshotsResponse());
+    }
+
+    @OptionsItem(R.id.action_undo)
+    @Background
+    public void doUndo() {
+        client.undoSnapshot(vmId, getSyncSnapshotsResponse());
+    }
+
+    @Override
+    public void onDialogResult(int dialogButton, int actionId) {
+        if (dialogButton == DialogInterface.BUTTON_POSITIVE) {
+            doDelete();
+        }
+    }
+
+    @Override
+    public void onDialogResult(int actionId, boolean restoreMemory) {
+        switch (actionId) {
+            case PREVIEW_ACTION:
+                doPreviewSnapshot(restoreMemory);
+                break;
+            case RESTORE_ACTION:
+                doRestoreSnapshot(restoreMemory);
+                break;
+        }
+    }
+
+    @Background
+    public void doDelete() {
+        client.deleteSnapshot(vmId, snapshotId, new OVirtClient.SimpleResponse<Void>() {
+            @Override
+            public void onResponse(Void aVoid) throws RemoteException {
+                snapshotFacade.syncAll(vmId);
+                startActivity(vmFacade.getDetailIntent(vm, getApplicationContext()));
+            }
+        });
+    }
+
+    @Background
+    public void doPreviewSnapshot(boolean restoreMemory) {
+        SnapshotAction action = new SnapshotAction(snapshotId, restoreMemory);
+        client.previewSnapshot(action, vmId, getSyncSnapshotsResponse());
+    }
+
+    @Background
+    public void doRestoreSnapshot(boolean restoreMemory) {
+        SnapshotAction action = new SnapshotAction(snapshotId, restoreMemory);
+        client.restoreSnapshot(action, vmId, getSyncSnapshotsResponse());
+    }
+
+    @Background
+    @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    public void syncing(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
+        if (syncing) {
+            syncSnapshots();
+        }
+    }
+
+    @NonNull
+    private OVirtClient.SimpleResponse<Void> getSyncSnapshotsResponse() {
+        return new OVirtClient.SimpleResponse<Void>() {
+            @Override
+            public void onResponse(Void aVoid) throws RemoteException {
+                syncSnapshots();
+            }
+        };
+    }
+
+    private void syncSnapshots() {
+        snapshotFacade.syncAll(vmId);
+    }
 }

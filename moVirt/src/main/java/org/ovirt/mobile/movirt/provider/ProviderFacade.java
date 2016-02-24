@@ -118,6 +118,9 @@ public class ProviderFacade {
         public QueryBuilder<E> orderBy(String columnName, SortOrder order) {
             assert !columnName.equals("") : "columnName cannot be empty or null";
 
+            if (sortOrder.length() > 0) {
+                sortOrder.append(", ");
+            }
             sortOrder.append(columnName);
             sortOrder.append(order == SortOrder.ASCENDING ? " ASC " : " DESC ");
 
@@ -127,10 +130,10 @@ public class ProviderFacade {
         public Cursor asCursor() {
             try {
                 return contentClient.query(baseUri,
-                                           null,
-                                           selection.toString(),
-                                           selectionArgs.toArray(new String[selectionArgs.size()]),
-                                           sortOrderWithLimit());
+                        null,
+                        selection.toString(),
+                        selectionArgs.toArray(new String[selectionArgs.size()]),
+                        sortOrderWithLimit());
             } catch (RemoteException e) {
                 Log.e(TAG, "Error querying " + baseUri, e);
                 throw new RuntimeException(e);
@@ -139,11 +142,11 @@ public class ProviderFacade {
 
         public Loader<Cursor> asLoader() {
             return new CursorLoader(context,
-                                    baseUri,
-                                    null,
-                                    selection.toString(),
-                                    selectionArgs.toArray(new String[selectionArgs.size()]),
-                                    sortOrderWithLimit());
+                    baseUri,
+                    null,
+                    selection.toString(),
+                    selectionArgs.toArray(new String[selectionArgs.size()]),
+                    sortOrderWithLimit());
         }
 
         public Collection<E> all() {
@@ -159,6 +162,18 @@ public class ProviderFacade {
 
             cursor.close();
             return result;
+        }
+
+        public E first() {
+            Cursor cursor = asCursor();
+            if (cursor == null) {
+                return null;
+            }
+
+            E entity = cursor.moveToNext() ? EntityMapper.forEntity(clazz).fromCursor(cursor) : null;
+            cursor.close();
+
+            return entity;
         }
     }
 
@@ -233,8 +248,8 @@ public class ProviderFacade {
             try {
                 contentClient.delete(OVirtContract.Event.CONTENT_URI,
                         OVirtContract.Event.ID + " < ?",
-                        new String[] {Integer.toString(id)}
-                        );
+                        new String[]{Integer.toString(id)}
+                );
             } catch (RemoteException e) {
                 Log.e(TAG, "Error deleting events", e);
                 throw new RuntimeException(e);
@@ -290,10 +305,10 @@ public class ProviderFacade {
     public int getLastEventId() {
         try {
             Cursor cursor = contentClient.query(OVirtContract.Event.CONTENT_URI,
-                                                new String[]{"MAX(" + OVirtContract.Event.ID + ")"},
-                                                null,
-                                                null,
-                                                null);
+                    new String[]{"MAX(" + OVirtContract.Event.ID + ")"},
+                    null,
+                    null,
+                    null);
             if (cursor.moveToNext()) {
                 return cursor.getInt(0);
             }
