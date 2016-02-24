@@ -27,6 +27,7 @@ import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
+import org.ovirt.mobile.movirt.model.SnapshotEmbeddableEntity;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
@@ -242,7 +243,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             E remoteEntity = pair.second;
 
             if (!localEntity.equals(remoteEntity)) {
-                if (entityFacade != null) {
+                boolean processTriggers = true;
+
+                if (remoteEntity instanceof SnapshotEmbeddableEntity) {
+                    SnapshotEmbeddableEntity snapshotEmbeddableEntity = (SnapshotEmbeddableEntity) localEntity;
+                    processTriggers = !snapshotEmbeddableEntity.isSnapshotEmbedded();
+                }
+
+                if (processTriggers && entityFacade != null) {
                     final List<Trigger<E>> triggers = entityFacade.getTriggers(localEntity, allTriggers);
                     Log.i(TAG, "Processing triggers for entity: " + remoteEntity.getId());
 
