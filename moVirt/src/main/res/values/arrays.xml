@@ -32,6 +32,10 @@
         <item>status</item>
     </string-array>
 
+    <string-array name="nic_sort_by">
+        <item>name</item>
+    </string-array>
+
     <string-array name="asc_desc">
         <item>ASC</item>
         <item>DESC</item>

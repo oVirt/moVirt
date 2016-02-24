@@ -80,6 +80,11 @@ public class VmNicsFragment extends ResumeSyncableBaseEntityListFragment<Nic> {
     }
 
     @Override
+    public boolean hasStatusField() {
+        return false;
+    }
+
+    @Override
     public boolean isResumeSyncable() {
         return isSnapshotFragment();
     }
