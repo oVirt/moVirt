@@ -296,7 +296,6 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
         fab.setColorPressed(Color.parseColor("#80cbc4"));
         fab.setColorRipple(getResources().getColor(R.color.abc_search_url_text_selected));
-        fab.attachToListView(list);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
