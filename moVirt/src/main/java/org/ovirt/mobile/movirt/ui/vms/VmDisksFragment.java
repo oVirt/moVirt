@@ -28,8 +28,6 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.STATUS;
 public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> {
     private static final String TAG = VmDisksFragment.class.getSimpleName();
 
-    private String vmId;
-
     public VmDisksFragment() {
         super(Disk.class);
     }
@@ -71,14 +69,6 @@ public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> 
         return diskListAdapter;
     }
 
-    public String getVmId() {
-        return vmId;
-    }
-
-    public void setVmId(String vmId) {
-        this.vmId = vmId;
-    }
-
     @Override
     public boolean isResumeSyncable() {
         return isSnapshotFragment();
@@ -88,14 +78,14 @@ public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> 
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
         if (syncing && isSnapshotFragment()) {
-            entityFacade.syncAll(getVmId(), filterSnapshotId);
+            entityFacade.syncAll(filterVmId, filterSnapshotId);
         }
     }
 
     @Background
     @Override
     public void onRefresh() {
-        String[] params = isSnapshotFragment() ? new String[]{getVmId(), filterSnapshotId} : new String[]{filterVmId};
+        String[] params = isSnapshotFragment() ? new String[]{filterVmId, filterSnapshotId} : new String[]{filterVmId};
         entityFacade.syncAll(new ProgressBarResponse<List<Disk>>(this), params);
     }
 }

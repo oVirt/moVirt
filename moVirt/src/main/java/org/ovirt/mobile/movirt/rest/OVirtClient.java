@@ -38,6 +38,7 @@ import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
@@ -315,11 +316,19 @@ public class OVirtClient {
 
     @NonNull
     public Request<Disk> getDiskRequest(final String vmId, final String snapshotId, final String id) {
+        final boolean isSnapshotEmbedded = snapshotId != null;
+
         return new Request<Disk>() {
             @Override
             public Disk fire() {
-                org.ovirt.mobile.movirt.rest.Disk disk = snapshotId == null ? restClient.getDisk(vmId, id) : restClient.getDisk(vmId, snapshotId, id);
-                return disk.toEntity();
+                org.ovirt.mobile.movirt.rest.Disk disk = isSnapshotEmbedded ? restClient.getDisk(vmId, snapshotId, id) : restClient.getDisk(vmId, id);
+                Disk entity = disk.toEntity();
+
+                if (isSnapshotEmbedded) {
+                    setVmId(entity, vmId);
+                }
+
+                return entity;
             }
         };
     }
@@ -329,15 +338,23 @@ public class OVirtClient {
     }
 
     public Request<List<Disk>> getDisksRequest(final String vmId, final String snapshotId) {
+        final boolean isSnapshotEmbedded = snapshotId != null;
+
         return new Request<List<Disk>>() {
             @Override
             public List<Disk> fire() {
-                Disks loadedDisks = snapshotId == null ? restClient.getDisks(vmId) : restClient.getDisks(vmId, snapshotId);
+                Disks loadedDisks = isSnapshotEmbedded ? restClient.getDisks(vmId, snapshotId) : restClient.getDisks(vmId);
+
                 if (loadedDisks == null) {
                     return Collections.emptyList();
                 }
 
-                return mapRestWrappers(loadedDisks.disk, null);
+                List<Disk> entities = mapRestWrappers(loadedDisks.disk, null);
+                if (isSnapshotEmbedded) {
+                    setVmId(entities, vmId);
+                }
+
+                return entities;
             }
         };
     }
@@ -485,12 +502,10 @@ public class OVirtClient {
                     return Collections.emptyList();
                 }
 
-                List<Snapshot> result = mapRestWrappers(loadedSnapshots.snapshot, null);
-                for (Snapshot s : result) {
-                    s.setVmId(vmId); // Active VM Snapshot doesn't include this
-                }
+                List<Snapshot> entities = mapRestWrappers(loadedSnapshots.snapshot, null);
+                setVmId(entities, vmId); // Active VM Snapshot doesn't include this
 
-                return result;
+                return entities;
             }
         };
     }
@@ -500,9 +515,7 @@ public class OVirtClient {
             @Override
             public Snapshot fire() {
                 Snapshot snapshot = restClient.getSnapshot(vmId, snapshotId).toEntity();
-                if(snapshot != null){
-                    snapshot.setVmId(vmId);
-                }
+                setVmId(snapshot, vmId);
                 return snapshot;
             }
         };
@@ -553,6 +566,20 @@ public class OVirtClient {
                 });
             }
         }, response);
+    }
+
+    private <E extends OVirtContract.HasVm> void setVmId(E entity, String vmId) {
+        if (entity != null && !StringUtils.isEmpty(vmId)) {
+            entity.setVmId(vmId);
+        }
+    }
+
+    private <E extends OVirtContract.HasVm> void setVmId(List<E> entities, String vmId) {
+        if (entities != null && !StringUtils.isEmpty(vmId)) {
+            for (E entity : entities) {
+                entity.setVmId(vmId);
+            }
+        }
     }
 
     @AfterInject
