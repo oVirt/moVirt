@@ -30,8 +30,6 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.PLUGGED;
 public class VmNicsFragment extends ResumeSyncableBaseEntityListFragment<Nic> {
     private static final String TAG = VmNicsFragment.class.getSimpleName();
 
-    private String vmId;
-
     public VmNicsFragment() {
         super(Nic.class);
     }
@@ -70,15 +68,6 @@ public class VmNicsFragment extends ResumeSyncableBaseEntityListFragment<Nic> {
         return nicListAdapter;
     }
 
-
-    public String getVmId() {
-        return vmId;
-    }
-
-    public void setVmId(String vmId) {
-        this.vmId = vmId;
-    }
-
     @Override
     public boolean hasStatusField() {
         return false;
@@ -93,14 +82,14 @@ public class VmNicsFragment extends ResumeSyncableBaseEntityListFragment<Nic> {
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
         if (syncing && isSnapshotFragment()) {
-            entityFacade.syncAll(getVmId(), filterSnapshotId);
+            entityFacade.syncAll(filterVmId, filterSnapshotId);
         }
     }
 
     @Background
     @Override
     public void onRefresh() {
-        String[] params = isSnapshotFragment() ? new String[]{getVmId(), filterSnapshotId} : new String[]{filterVmId};
+        String[] params = isSnapshotFragment() ? new String[]{filterVmId, filterSnapshotId} : new String[]{filterVmId};
         entityFacade.syncAll(new ProgressBarResponse<List<Nic>>(this), params);
     }
 }

@@ -20,6 +20,7 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.OptionsMenuItem;
@@ -52,6 +53,8 @@ import org.ovirt.mobile.movirt.ui.vms.VmNicsFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmNicsFragment_;
 
 import java.util.Collection;
+
+import static org.springframework.util.StringUtils.isEmpty;
 
 @EActivity(R.layout.activity_snapshot_detail)
 @OptionsMenu(R.menu.snapshot)
@@ -108,22 +111,29 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
     @OptionsMenuItem(R.id.action_undo)
     MenuItem menuUndo;
 
-    private String snapshotId;
+    @InstanceState
+    protected String snapshotId;
+
+    @InstanceState
+    protected String vmId;
+
     private Snapshot currentSnapshot;
-    private String vmId;
     private Vm vm;
     private Collection<Snapshot> snapshots;
 
     @AfterViews
     public void init() {
-        Intent intent = getIntent();
-        Uri snapshotUri = intent.getData();
-        snapshotId = snapshotUri.getLastPathSegment();
-        vmId = intent.getExtras().getString(OVirtContract.HasVm.VM_ID);
+        if (isEmpty(snapshotId) && isEmpty(vmId)) {
+            Intent intent = getIntent();
+            Uri snapshotUri = intent.getData();
+            snapshotId = snapshotUri.getLastPathSegment();
+            vmId = intent.getExtras().getString(OVirtContract.HasVm.VM_ID);
 
-        // for vm fragment
-        Uri vmUri = OVirtContract.Vm.CONTENT_URI.buildUpon().appendPath(vmId + snapshotId).build();
-        intent.setData(vmUri);
+            // for vm fragment
+            Uri vmUri = OVirtContract.Vm.CONTENT_URI.buildUpon().appendPath(vmId + snapshotId).build();
+            intent.setData(vmUri);
+        }
+
 
         initLoaders();
         initPagers();
@@ -204,9 +214,9 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
         VmDisksFragment diskList = new VmDisksFragment_();
         VmNicsFragment nicList = new VmNicsFragment_();
 
-        diskList.setVmId(vmId);
+        diskList.setFilterVmId(vmId);
         diskList.setFilterSnapshotId(snapshotId);
-        nicList.setVmId(vmId);
+        nicList.setFilterVmId(vmId);
         nicList.setFilterSnapshotId(snapshotId);
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
@@ -311,7 +321,9 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
             @Override
             public void onResponse(Void aVoid) throws RemoteException {
                 snapshotFacade.syncAll(vmId);
-                startActivity(vmFacade.getDetailIntent(vm, getApplicationContext()));
+                if (vm != null) {
+                    startActivity(vmFacade.getDetailIntent(vm, getApplicationContext()));
+                }
             }
         });
     }

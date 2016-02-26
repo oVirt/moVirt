@@ -38,6 +38,8 @@ public interface OVirtContract {
         String VM_ID = "vm_id";
 
         String getVmId();
+
+        void setVmId(String vmId);
     }
 
 
