@@ -114,7 +114,7 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
             vm.setNics(RestHelper.mapToEntities(nics.nic));
         }
 
-        if (nics != null) {
+        if (disks != null) {
             vm.setDisks(RestHelper.mapToEntities(disks.disk));
         }
 
