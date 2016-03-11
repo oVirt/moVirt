@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.rest;
 
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -40,6 +41,7 @@ import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
@@ -784,7 +786,7 @@ public class OVirtClient {
                 return RestCallResult.OTHER_ERROR;
             }
         } catch (Exception e) {
-            if (e instanceof ResourceAccessException) {
+            if (e instanceof ResourceAccessException || e instanceof AuthenticatorException) {
                 fireConnectionErrorAndUpdateInfo(e);
                 return RestCallResult.CONNECTION_ERROR;
             }

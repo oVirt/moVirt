@@ -382,9 +382,12 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     @Receiver(actions = {Broadcasts.CONNECTION_FAILURE},
             registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void connectionFailure(
-            @Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason) {
-        DialogFragment dialogFragment = ErrorDialogFragment
-                .newInstance(this, authenticator, providerFacade, reason);
-        dialogFragment.show(getFragmentManager(), "error");
+            @Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason,
+            @Receiver.Extra(Broadcasts.Extras.REPEATED_CONNECTION_FAILURE) boolean repeatedFailure) {
+        if (!repeatedFailure) {
+            DialogFragment dialogFragment = ErrorDialogFragment
+                    .newInstance(this, authenticator, providerFacade, reason);
+            dialogFragment.show(getFragmentManager(), "error");
+        }
     }
 }
