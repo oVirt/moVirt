@@ -5,7 +5,7 @@ moVirt
 
 A mobile client for [oVirt](http://www.ovirt.org). 
 
-Current version: 1.2
+Current version: 1.3
 You can install it from [Google Play Store](https://play.google.com/store/apps/details?id=org.ovirt.mobile.movirt)
 Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/moVirt-release.apk?raw=true)
 
