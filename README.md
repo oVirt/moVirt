@@ -16,6 +16,7 @@ Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/
 * Added support for snapshots
 * Enhanced UI (added search button, alignments, colors)
 * Disks and Nics are downloaded in the main download loop making them browsable in offline mode
+* Minimal Android version moved to 4.1
 
 ####v1.2:
 * Added basic support for storage
@@ -38,7 +39,7 @@ Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/
 * Enriched VM activity with cluster and host information.
 
 ###Known issues:
-####v0.2, v1.0, v1.1:
+####v0.2, v1.0, v1.1, v1.2, v1.3:
 * Non-admin users support currently disabled.
 * SPICE may not work well with SSL on Android 5.+
 * Certificates may not work on Android 4.1 (use "Ignore certificate checking" in advanced connection settings).
