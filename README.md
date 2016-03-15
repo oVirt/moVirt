@@ -43,6 +43,11 @@ Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/
 * Non-admin users support currently disabled.
 * SPICE may not work well with SSL on Android 5.+
 * Certificates may not work on Android 4.1 (use "Ignore certificate checking" in advanced connection settings).
+
+####v0.2, v1.0, v1.1, v1.2:
+* Non-admin users support currently disabled.
+* SPICE may not work well with SSL on Android 5.+
+* Certificates may not work on Android 4.1 (use "Ignore certificate checking" in advanced connection settings).
 * Event triggers may spam you with notifications about old events.
 
 ###User's guide:    
