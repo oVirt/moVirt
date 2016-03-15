@@ -12,6 +12,11 @@ Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/
 <img src = /images/screenshots/Screenshot_2015-07-15-23-55-52.png><img src = /images/screenshots/Screenshot_2015-07-15-23-56-12.png><img src = /images/screenshots/Screenshot_2015-07-15-23-57-21.png><img src = /images/screenshots/7inchDashoard.png>
 
 ###Changelog:
+####v1.3:
+* Added support for snapshots
+* Enhanced UI (added search button, alignments, colors)
+* Disks and Nics are downloaded in the main download loop making them browsable in offline mode
+
 ####v1.2:
 * Added basic support for storage
 * Fixes in augmented reality (scan code) part
