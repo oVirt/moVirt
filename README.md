@@ -9,6 +9,21 @@ Current version: 1.3
 You can install it from [Google Play Store](https://play.google.com/store/apps/details?id=org.ovirt.mobile.movirt)
 Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/moVirt-release.apk?raw=true)
 
+###Supported oVirt and Android per moVirt version
+| oVirt \ moVirt  | 1.1<sup>1</sup>  | 1.2<sup>1</sup> | 1.3<sup>2</sup> |
+| --------------- | ---- | --- | ----|
+| **3.4**         | yes  | yes | no<sup>3</sup>  |
+| **3.5**         |  no  | yes | yes |
+| **3.6**         |  no  | no  | yes |
+
+**[1]**: works on Android 4.0+
+
+**[2]**: works on Android 4.1+
+
+**[3]**: may work but no longer tested
+
+###Screenshots
+
 <img src = /images/screenshots/Screenshot_2015-07-15-23-55-52.png><img src = /images/screenshots/Screenshot_2015-07-15-23-56-12.png><img src = /images/screenshots/Screenshot_2015-07-15-23-57-21.png><img src = /images/screenshots/7inchDashoard.png>
 
 ###Changelog:
