@@ -27,13 +27,20 @@
         <item>POWERING_DOWN</item>
     </string-array>
 
-    <string-array name="vm_sort_by">
+    <string-array name="nic_sort_entries">
+        <item>name</item>
+    </string-array>
+
+    <string-array name="base_entity_sort_entries">
         <item>name</item>
         <item>status</item>
     </string-array>
 
-    <string-array name="nic_sort_by">
+    <string-array name="usage_stats_entity_sort_entries">
         <item>name</item>
+        <item>status</item>
+        <item>cpu usage</item>
+        <item>mem usage</item>
     </string-array>
 
     <string-array name="asc_desc">

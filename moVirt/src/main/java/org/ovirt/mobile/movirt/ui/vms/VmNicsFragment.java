@@ -69,8 +69,8 @@ public class VmNicsFragment extends ResumeSyncableBaseEntityListFragment<Nic> {
     }
 
     @Override
-    public boolean hasStatusField() {
-        return false;
+    public String[] getSortEntries() {
+        return getResources().getStringArray(R.array.nic_sort_entries);
     }
 
     @Override
