@@ -231,12 +231,12 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         }
 
         statusView.setText(vm.getStatus().toString().toLowerCase());
-        cpuView.setText(String.format("%.2f%%", vm.getCpuUsage()));
-        memView.setText(String.format("%.2f%%", vm.getMemoryUsage()));
+        cpuView.setText(getString(R.string.percentage, vm.getCpuUsage()));
+        memView.setText(getString(R.string.percentage, vm.getMemoryUsage()));
         if (vm.getMemorySizeMb() != -1) {
-            memoryView.setText(vm.getMemorySizeMb() + " MB");
+            memoryView.setText(getString(R.string.memory_size_mb, vm.getMemorySizeMb()));
         } else {
-            memoryView.setText("N/A");
+            memoryView.setText(getString(R.string.NA));
         }
         socketView.setText(String.valueOf(vm.getSockets()));
         coreView.setText(String.valueOf(vm.getCoresPerSocket()));
@@ -244,7 +244,7 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         if (vm.getDisplayType() != null) {
             displayView.setText(vm.getDisplayType().toString());
         } else {
-            displayView.setText("N/A");
+            displayView.setText(getString(R.string.NA));
         }
 
         if (getActivity() instanceof UpdateMenuItemAware) {
@@ -258,19 +258,19 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
             hostButton.setText(host.getName());
             hostButton.setEnabled(true);
         } else {
-            hostButton.setText("N/A");
+            hostButton.setText(getString(R.string.NA));
             hostButton.setEnabled(false);
         }
     }
 
     @UiThread
     public void renderCluster(Cluster cluster) {
-        clusterView.setText(cluster.getName() + " | " + cluster.getVersion());
+        clusterView.setText(getString(R.string.two_separated_strings, cluster.getName(), cluster.getVersion()));
     }
 
     @UiThread
     public void renderDataCenter(DataCenter dataCenter) {
-        dataCenterView.setText(dataCenter.getName() + " | " + dataCenter.getVersion());
+        dataCenterView.setText(getString(R.string.two_separated_strings, dataCenter.getName(), dataCenter.getVersion()));
     }
 
     @Click(R.id.hostButton)

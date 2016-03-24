@@ -120,15 +120,14 @@ public class HostDetailGeneralFragment extends RefreshableLoaderFragment impleme
     private void renderHost(Host host) {
         getActivity().setTitle(String.format(HOST_DETAILS, host.getName()));
         statusView.setText(host.getStatus().toString().toLowerCase());
-        cpuView.setText(String.format("%.2f%%", host.getCpuUsage()));
-        memView.setText(String.format("%.2f%%", host.getMemoryUsage()));
+        cpuView.setText(getString(R.string.percentage, host.getCpuUsage()));
+        memView.setText(getString(R.string.percentage, host.getMemoryUsage()));
         if (host.getMemorySizeMb() != -1) {
-            memoryView.setText(host.getMemorySizeMb() + " MB");
+            memoryView.setText(getString(R.string.memory_size_mb, host.getMemorySizeMb()));
         } else {
-            memoryView.setText("N/A");
+            memoryView.setText(getString(R.string.NA));
         }
-        summaryView.setText(host.getActive() + " | " + host.getMigrating()
-                + " | " + host.getTotal());
+        summaryView.setText(getString(R.string.three_separated_ints, host.getActive(), host.getMigrating(), host.getTotal()));
         socketView.setText(String.valueOf(host.getSockets()));
         coreView.setText(String.valueOf(host.getCoresPerSocket()));
         threadView.setText(String.valueOf(host.getThreadsPerCore()));

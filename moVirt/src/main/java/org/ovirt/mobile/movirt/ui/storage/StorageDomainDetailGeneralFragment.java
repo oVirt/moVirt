@@ -111,23 +111,26 @@ public class StorageDomainDetailGeneralFragment extends RefreshableLoaderFragmen
         if (storageDomain.getType() != null) {
             domainTypeView.setText(storageDomain.getType().toString());
         } else {
-            domainTypeView.setText("N/A");
+            domainTypeView.setText(getString(R.string.NA));
         }
         if (storageDomain.getStorageType() != null) {
             storageTypeView.setText(storageDomain.getStorageType().toString());
         } else {
-            storageTypeView.setText("N/A");
+            storageTypeView.setText(getString(R.string.NA));
         }
         formatView.setText(storageDomain.getStorageFormat());
 
-        DecimalFormat decimalFormat = new DecimalFormat("0.#");
         if ((storageDomain.getUsedSizeMb() != -1 && storageDomain.getAvailableSizeMb() != -1)
                 && (storageDomain.getUsedSizeMb() != 0 || storageDomain.getAvailableSizeMb() != 0)) {
-            freeSpaceView.setText(decimalFormat.format(storageDomain.getAvailableSizeMb() / 1024f) + " GB");
-            totalSpaceView.setText(decimalFormat.format((storageDomain.getUsedSizeMb() + storageDomain.getAvailableSizeMb()) / 1024f) + " GB");
+            DecimalFormat decimalFormat = new DecimalFormat("0.#");
+            String freeSpace = decimalFormat.format(storageDomain.getAvailableSizeMb() / 1024f);
+            String totalSpace = decimalFormat.format((storageDomain.getUsedSizeMb() + storageDomain.getAvailableSizeMb()) / 1024f);
+
+            freeSpaceView.setText(getString(R.string.memory_size_gb, freeSpace));
+            totalSpaceView.setText(getString(R.string.memory_size_gb, totalSpace));
         } else {
-            freeSpaceView.setText("N/A");
-            totalSpaceView.setText("N/A");
+            freeSpaceView.setText(getString(R.string.NA));
+            totalSpaceView.setText(getString(R.string.NA));
         }
     }
 

@@ -9,7 +9,7 @@ public class ParseUtils {
         }
 
         if (version != null && version.minor != null) {
-            versionString = "." + version.minor;
+            versionString += "." + version.minor;
         }
 
         return versionString;
