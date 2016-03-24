@@ -37,7 +37,6 @@ import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 import org.springframework.util.StringUtils;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +52,7 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         implements SelectedClusterAware, HasLoader {
 
     private static final int ITEMS_PER_PAGE = 20;
+    private static final int FIRST_INDEX = 0, SECOND_INDEX = 1; // spinner indexes
 
     @Bean
     protected SyncUtils syncUtils;
@@ -153,6 +153,22 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         endlessScrollListener.resetListener();
     }
 
+    public void setOrderingSpinners(String orderBy, SortOrder order) {
+        if (orderBy != null) {
+            ArrayAdapter<String> spinnerArrayAdapter = (ArrayAdapter<String>) orderBySpinner.getAdapter();
+            int position = spinnerArrayAdapter.getPosition(orderBy.replace('_', ' '));
+            if (position != -1) {
+                orderBySpinner.setSelection(position);
+            }
+        }
+
+        if (order != null) {
+            String firstOrderItem = (String) orderSpinner.getAdapter().getItem(FIRST_INDEX); // order Spinner has only 2 values (ASC and DESC)
+            int orderSpinnerSelection = order.equalsOrder(firstOrderItem) ? FIRST_INDEX : SECOND_INDEX;
+            orderSpinner.setSelection(orderSpinnerSelection);
+        }
+    }
+
     public void setFilterHostId(String filterHostId) {
         this.filterHostId = filterHostId;
     }
@@ -212,7 +228,14 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     protected void init() {
         entityFacade = entityFacadeLocator.getFacade(entityClass);
 
+        initSpinners();
+        initAdapters();
+        initListeners();
+    }
+
+    private void initSpinners() {
         String[] spinnerValues = getSortEntries();
+
         if (spinnerValues == null || spinnerValues.length == 0) {
             orderingLayout.setVisibility(View.GONE);
         } else {
@@ -220,9 +243,6 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
                     android.R.layout.simple_spinner_item, spinnerValues);
             orderBySpinner.setAdapter(spinnerArrayAdapter);
         }
-
-        initAdapters();
-        initListeners();
     }
 
     protected void initAdapters() {

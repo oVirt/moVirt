@@ -44,6 +44,7 @@ import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.dashboard.DashboardActivity_;
@@ -57,6 +58,7 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -299,11 +301,42 @@ public class MainActivity extends MovirtActivity
         showAccountDialog();
     }
 
+    /**
+     * Displays fragment based on intent's action
+     * Sets ordering for BaseEntityListFragment based on intent's extras
+     *
+     * @param intent intent
+     */
     @Override
     public void onNewIntent(Intent intent) {
+
         String action = intent.getAction();
         if (action != null && !action.isEmpty()) {
             viewPager.setCurrentItem(MainActivityFragments.valueOf(intent.getAction()).ordinal());
         }
+
+        Bundle extras = intent.getExtras();
+
+        // sets ordering for BaseEntityListFragment
+        if (extras != null) {
+            MainActivityFragments fragmentPosition = (MainActivityFragments) extras.getSerializable(Extras.FRAGMENT.name());
+            String orderBy = extras.getString(Extras.ORDER_BY.name());
+            SortOrder order = (SortOrder) extras.getSerializable(Extras.ORDER.name());
+
+            if (fragmentPosition != null && order != null && !StringUtils.isEmpty(orderBy)) {
+                Fragment fragment = getSupportFragmentManager().getFragments().get(fragmentPosition.ordinal());
+
+                if (fragment != null && fragment instanceof BaseEntityListFragment) {
+                    BaseEntityListFragment baseEntityListFragment = (BaseEntityListFragment) fragment;
+                    baseEntityListFragment.setOrderingSpinners(orderBy, order);
+                }
+            }
+        }
+    }
+
+    public enum Extras {
+        ORDER,
+        ORDER_BY,
+        FRAGMENT
     }
 }
