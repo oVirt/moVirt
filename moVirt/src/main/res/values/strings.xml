@@ -30,6 +30,7 @@
     <string name="default_password">engine</string>
     <string name="action_refresh">Refresh</string>
     <string name="title_activity_edit_filters">EditFiltersActivity</string>
+    <string name="title_add_trigger">Add Trigger</string>
     <string name="title_section1">Section 1</string>
     <string name="title_section2">Section 2</string>
     <string name="title_section3">Section 3</string>
@@ -52,6 +53,9 @@
     <string name="advanced_settings">Advanced Settings</string>
     <string name="trigger_scope">Editing triggers for: </string>
     <string name="add_trigger">Add Trigger</string>
+    <string name="ADD">ADD</string>
+    <string name="DELETE">DELETE</string>
+    <string name="SAVE">SAVE</string>
     <string name="whole_datacenter">Whole datacenter</string>
     <string name="cluster_scope">Cluster %1$s</string>
     <string name="details_for_vm">Vm %1$s</string>
@@ -59,10 +63,10 @@
     <string name="details_for_snapshot">Snapshot %1$s</string>
     <string name="cancel">Cancel</string>
     <string name="trigger_condition_type">Condition</string>
-    <string name="notification_type">Notify</string>
-    <string name="status">When status:</string>
-    <string name="above">Above:</string>
-    <string name="regex">Regex to match:</string>
+    <string name="notification_type">Notification</string>
+    <string name="status">When status</string>
+    <string name="threshold">Threshold</string>
+    <string name="regex">Regex to match</string>
     <string name="percentage_sign">%</string>
     <string name="edit_trigger">Edit Trigger</string>
     <string name="run">Run</string>
@@ -212,6 +216,7 @@
     <string name="dialog_action_clear_events">delete all the events stored locally</string>
     <string name="dialog_confirm_message">Are you sure you want to %1$s?</string>
     <string name="dialog_action_delete_snapshot">delete this snapshot</string>
+    <string name="dialog_action_delete_trigger">delete this trigger</string>
 
     <string name="domain_type">Domain Type:</string>
     <string name="storage_type">Storage Type:</string>
@@ -224,5 +229,13 @@
     <string name="description">Description</string>
     <string name="save_memory">Save Memory</string>
     <string name="restore_memory">Restore Memory</string>
+
+    <string name="radio_button_cpu">CPU</string>
+    <string name="radio_button_memory">Memory</string>
+    <string name="radio_button_status">Status</string>
+    <string name="radio_button_event">Event</string>
+    <string name="radio_button_blink">Blink</string>
+    <string name="radio_button_vibrate">Vibrate</string>
+
 
 </resources>

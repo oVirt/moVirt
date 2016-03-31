@@ -1,6 +1,8 @@
 package org.ovirt.mobile.movirt.ui.triggers;
 
+import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.view.View;
@@ -18,7 +20,6 @@ import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityMapper;
-import org.ovirt.mobile.movirt.model.EntityType;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.EventCondition;
@@ -35,12 +36,12 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.TARGET_ID;
 
 @EActivity(R.layout.activity_edit_triggers)
 @OptionsMenu(R.menu.triggers)
-public class EditTriggersActivity extends ActionBarLoaderActivity implements BaseTriggerDialogFragment.TriggerActivity {
+public class EditTriggersActivity extends ActionBarLoaderActivity {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
     public static final String EXTRA_SCOPE = "scope";
 
-    private static final String[] PROJECTION = new String[] {
+    private static final String[] PROJECTION = new String[]{
             OVirtContract.Trigger.CONDITION,
             OVirtContract.Trigger.NOTIFICATION,
     };
@@ -75,10 +76,10 @@ public class EditTriggersActivity extends ActionBarLoaderActivity implements Bas
         setTitle(String.format(TITLE_FORMAT, getScopeText()));
 
         SimpleCursorAdapter triggerAdapter = new SimpleCursorAdapter(this,
-                                                                     R.layout.trigger_item,
-                                                                     null,
-                                                                     PROJECTION,
-                                                                     new int[]{R.id.trigger_condition, R.id.trigger_notification}, 0);
+                R.layout.trigger_item,
+                null,
+                PROJECTION,
+                new int[]{R.id.trigger_condition, R.id.trigger_notification}, 0);
         triggerAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
@@ -99,8 +100,8 @@ public class EditTriggersActivity extends ActionBarLoaderActivity implements Bas
                 return provider
                         .query(Trigger.class)
                         //.where(ENTITY_TYPE, getEntityType().toString()) //do not filter trigger by entity type
-                        .where(SCOPE, getScope().toString())
-                        .where(TARGET_ID, getTargetId())
+                        .where(SCOPE, triggerScope.toString())
+                        .where(TARGET_ID, targetEntityId)
                         .asLoader();
             }
         };
@@ -134,7 +135,7 @@ public class EditTriggersActivity extends ActionBarLoaderActivity implements Bas
     }
 
     private String getConditionString(Condition triggerCondition) {
-        StringBuilder builder =  new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         if (triggerCondition instanceof CpuThresholdCondition) {
             CpuThresholdCondition condition = (CpuThresholdCondition) triggerCondition;
             builder.append("CPU above ").append(condition.getPercentageLimit()).append("%");
@@ -156,38 +157,34 @@ public class EditTriggersActivity extends ActionBarLoaderActivity implements Bas
 
     @OptionsItem(R.id.action_add_trigger)
     void addTrigger() {
-        AddTriggerDialogFragment dialog = new AddTriggerDialogFragment_();
-        dialog.show(getFragmentManager(), "");
+        Intent intent = getTriggerActivityIntent(AddTriggerActivity_.class);
+        startActivity(intent);
     }
 
     @ItemClick
     void triggersListViewItemClicked(Cursor cursor) {
-        EditTriggerDialogFragment dialog = new EditTriggerDialogFragment_();
-        dialog.setTrigger((Trigger) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor));
-        dialog.show(getFragmentManager(), "");
+        Trigger trigger = (Trigger) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor);
+        Intent intent = getTriggerActivityIntent(EditTriggerActivity_.class, trigger.getUri());
+        startActivity(intent);
     }
 
-    @Override
-    public EntityType getEntityType(Condition triggerCondition) {
-        if( triggerCondition instanceof EventCondition )
-        {
-            return EntityType.EVENT;
-        } // add else if when more Entity types will be added to Add Trigger menu
-        return EntityType.VM;
+    private Intent getTriggerActivityIntent(Class<?> clazz) {
+        return getTriggerActivityIntent(clazz, null);
+    }
+
+    private Intent getTriggerActivityIntent(Class<?> clazz, Uri uri) {
+        Intent intent = new Intent(getApplicationContext(), clazz);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.putExtras(getIntent());
+        if (uri != null) {
+            intent.setData(uri);
+        }
+
+        return intent;
     }
 
     @OptionsItem(android.R.id.home)
     public void homeSelected() {
         onBackPressed(); // home behaves like back button - we need to return to vm from triggers
-    }
-
-    @Override
-    public Trigger.Scope getScope() {
-        return triggerScope;
-    }
-
-    @Override
-    public String getTargetId() {
-        return targetEntityId;
     }
 }

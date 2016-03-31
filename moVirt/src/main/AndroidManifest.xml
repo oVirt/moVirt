@@ -83,6 +83,20 @@
         </activity>
 
         <activity
+            android:name=".ui.triggers.AddTriggerActivity_"
+            android:label="@string/add_trigger"
+            android:windowSoftInputMode="stateHidden"
+            android:parentActivityName=".ui.triggers.EditTriggersActivity_" >
+        </activity>
+
+        <activity
+            android:name=".ui.triggers.EditTriggerActivity_"
+            android:label="@string/edit_trigger"
+            android:windowSoftInputMode="stateHidden"
+            android:parentActivityName=".ui.triggers.EditTriggersActivity_" >
+        </activity>
+
+        <activity
             android:name=".ui.vms.VmDetailActivity_"
             android:label="@string/title_activity_vm_details"
             android:parentActivityName=".ui.MainActivity_"
