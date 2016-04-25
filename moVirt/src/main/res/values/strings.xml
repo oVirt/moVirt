@@ -180,15 +180,13 @@
     <string name="title_activity_dashboard">Dashboard</string>
     <string name="dashboard">Dashboard</string>
     <string name="title_cpu_percentage_circle">CPU</string>
-    <string name="summary_cpu_percentage_circle_mhz">%1$d Available of %2$d MHz</string>
-    <string name="summary_cpu_percentage_circle_ghz">%1$s Available of %2$s GHz</string>
+    <string name="summary_cpu_percentage_circle">%1$d%% Available of %2$d%%</string>
     <string name="title_memory_percentage_circle">Memory</string>
     <string name="summary_memory_percentage_circle_mb">%1$d Available of %2$d MB</string>
     <string name="summary_memory_percentage_circle_gb">%1$s Available of %2$s GB</string>
     <string name="title_storage_percentage_circle">Storage</string>
     <string name="summary_storage_percentage_circle">%1$s Available of %2$s GB</string>
-    <string name="mhz_used">MHz Used</string>
-    <string name="ghz_used">GHz Used</string>
+    <string name="used">Used</string>
     <string name="mb_used">MB Used</string>
     <string name="gb_used">GB Used</string>
     <string name="most_utilized_vms">Most Utilized VMs</string>

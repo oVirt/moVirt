@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import org.ovirt.mobile.movirt.R;
+import org.springframework.util.StringUtils;
 
 import java.text.DecimalFormat;
 
@@ -49,6 +50,7 @@ public class PercentageCircleView extends View {
     private float percentageValue = 0;
     private DecimalFormat decimalFormat = new DecimalFormat(DEFAULT_DECIMAL_FORMAT_PATTERN);
     private String summary = "";
+    private String numberUnits = "";
 
     public PercentageCircleView(Context context) {
         super(context);
@@ -208,7 +210,7 @@ public class PercentageCircleView extends View {
     private void drawTextAndSummary(Canvas canvas) {
         if (!needShowText) return;
         //draw progress text
-        String text = decimalFormat.format(percentageValue);
+        String text = decimalFormat.format(percentageValue) + numberUnits;
         int textSize = (int) ((minWidth - strokeWidth * 2) / 3.5);
         textPaint.setTextSize(textSize);
         Paint.FontMetrics fm = textPaint.getFontMetrics();
@@ -313,6 +315,12 @@ public class PercentageCircleView extends View {
 
     public String getSummary() {
         return summary;
+    }
+
+    public void setNumberUnits(String numberUnits) {
+        if (numberUnits != null) {
+            this.numberUnits = numberUnits;
+        }
     }
 
     /**

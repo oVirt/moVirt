@@ -122,26 +122,21 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
     }
 
     private void renderCpuPercentageCircle(List<Host> hostList) {
-        long cpuSpeed = 0;
-        long usedCpuSpeed = 0;
+        long totalCpuUsage = 100;
+        long usedCpuUsage = 0;
         for (Host host : hostList) {
-            cpuSpeed += host.getCpuSpeed();
-            usedCpuSpeed += host.getCpuSpeed() * host.getCpuUsage() / 100;
+            usedCpuUsage += host.getCpuUsage();
+        }
+        if(hostList.size() > 0){
+            usedCpuUsage = usedCpuUsage / hostList.size();
         }
 
-        if (cpuSpeed < 1000) {
-            cpuPercentageCircle.setMaxPercentageValue(cpuSpeed);
-            cpuPercentageCircle.setPercentageValue(usedCpuSpeed);
-            cpuPercentageCircle.setSummary(getString(R.string.mhz_used));
-            summaryCpuPercentageCircle.setText(getString(
-                    R.string.summary_cpu_percentage_circle_mhz, cpuSpeed - usedCpuSpeed, cpuSpeed));
-        } else {
-            cpuPercentageCircle.setMaxPercentageValue(cpuSpeed / 1000f);
-            cpuPercentageCircle.setPercentageValue(usedCpuSpeed / 1000f, decimalFormat);
-            cpuPercentageCircle.setSummary(getString(R.string.ghz_used));
-            summaryCpuPercentageCircle.setText(getString(R.string.summary_cpu_percentage_circle_ghz,
-                    decimalFormat.format((cpuSpeed - usedCpuSpeed) / 1000f), decimalFormat.format(cpuSpeed / 1000f)));
-        }
+        cpuPercentageCircle.setMaxPercentageValue(totalCpuUsage);
+        cpuPercentageCircle.setPercentageValue(usedCpuUsage);
+        cpuPercentageCircle.setSummary(getString(R.string.used));
+        cpuPercentageCircle.setNumberUnits("%");
+        summaryCpuPercentageCircle.setText(getString(
+                R.string.summary_cpu_percentage_circle, totalCpuUsage - usedCpuUsage, totalCpuUsage));
 
         cpuPercentageCircle.setOnTouchListener(new View.OnTouchListener() {
             @Override
