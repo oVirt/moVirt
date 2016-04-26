@@ -37,6 +37,7 @@ import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,12 +115,10 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     private final TextWatcher textWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-
         }
 
         @Override
         public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-
         }
 
         @Override
@@ -213,15 +212,13 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     protected void init() {
         entityFacade = entityFacadeLocator.getFacade(entityClass);
 
-        if (!hasStatusField()) { // hide status ordering field
-            String[] spinnerValues = getResources().getStringArray(R.array.nic_sort_by);
+        String[] spinnerValues = getSortEntries();
+        if (spinnerValues == null || spinnerValues.length == 0) {
+            orderingLayout.setVisibility(View.GONE);
+        } else {
             ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(getActivity(),
                     android.R.layout.simple_spinner_item, spinnerValues);
             orderBySpinner.setAdapter(spinnerArrayAdapter);
-        }
-
-        if (!orderingList.isEmpty()) { // hide ordering
-            orderingLayout.setVisibility(View.GONE);
         }
 
         initAdapters();
@@ -270,6 +267,8 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
                     if (StringUtils.isEmpty(orderBy)) {
                         orderBy = NAME;
+                    } else {
+                        orderBy = orderBy.replace(' ', '_');
                     }
 
                     SortOrder order = SortOrder.from((String) orderSpinner.getSelectedItem());
@@ -304,8 +303,9 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         });
     }
 
-    public boolean hasStatusField() {
-        return true;
+    // override for different behaviour
+    public String[] getSortEntries() {
+        return getResources().getStringArray(R.array.base_entity_sort_entries);
     }
 
     @UiThread

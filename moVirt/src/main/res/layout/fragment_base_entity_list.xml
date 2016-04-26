@@ -62,8 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_gravity="bottom"
-            android:entries="@array/vm_sort_by" />
+            android:layout_gravity="bottom"/>
 
         <Spinner
             android:id="@+id/orderSpinner"

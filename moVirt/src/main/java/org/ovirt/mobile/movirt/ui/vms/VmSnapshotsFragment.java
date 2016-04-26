@@ -16,6 +16,7 @@ import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.ResumeSyncableBaseEntityListFragment;
 import org.ovirt.mobile.movirt.util.DateUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.DATE;
@@ -68,8 +69,8 @@ public class VmSnapshotsFragment extends ResumeSyncableBaseEntityListFragment<Sn
     }
 
     @Override
-    public boolean hasStatusField() {
-        return false;
+    public String[] getSortEntries() {
+        return null;
     }
 
     @Background

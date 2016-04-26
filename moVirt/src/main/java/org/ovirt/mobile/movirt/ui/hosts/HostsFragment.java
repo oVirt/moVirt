@@ -12,6 +12,8 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.ui.BaseEntityListFragment;
 
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.CPU_USAGE;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.MEMORY_USAGE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.STATUS;
 
@@ -25,10 +27,10 @@ public class HostsFragment extends BaseEntityListFragment<Host> {
     @Override
     protected CursorAdapter createCursorAdapter() {
         SimpleCursorAdapter hostListAdapter = new SimpleCursorAdapter(getActivity(),
-                R.layout.host_list_item,
+                R.layout.usage_stats_entity_list_item,
                 null,
-                new String[]{NAME, STATUS},
-                new int[]{R.id.host_name, R.id.host_status}, 0);
+                new String[]{NAME, STATUS, CPU_USAGE},
+                new int[]{R.id.name, R.id.status, R.id.statistics}, 0);
 
         hostListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
@@ -41,6 +43,12 @@ public class HostsFragment extends BaseEntityListFragment<Host> {
                     ImageView imageView = (ImageView) view;
                     Host.Status status = Host.Status.valueOf(cursor.getString(cursor.getColumnIndex(STATUS)));
                     imageView.setImageResource(status.getResource());
+                } else if (columnIndex == cursor.getColumnIndex(CPU_USAGE)) {
+                    TextView textView = (TextView) view;
+                    double cpuUsage = cursor.getDouble(cursor.getColumnIndex(CPU_USAGE));
+                    double memUsage = cursor.getDouble(cursor.getColumnIndex(MEMORY_USAGE));
+
+                    textView.setText(getString(R.string.statistics, cpuUsage, memUsage));
                 }
 
                 return true;
@@ -48,6 +56,11 @@ public class HostsFragment extends BaseEntityListFragment<Host> {
         });
 
         return hostListAdapter;
+    }
+
+    @Override
+    public String[] getSortEntries() {
+        return getResources().getStringArray(R.array.usage_stats_entity_sort_entries);
     }
 }
 

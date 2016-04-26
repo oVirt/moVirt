@@ -12,6 +12,8 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.ui.BaseEntityListFragment;
 
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.MEMORY_USAGE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 
@@ -27,10 +29,10 @@ public class VmsFragment extends BaseEntityListFragment<Vm> {
     @Override
     protected CursorAdapter createCursorAdapter() {
         SimpleCursorAdapter vmListAdapter = new SimpleCursorAdapter(getActivity(),
-                R.layout.vm_list_item,
+                R.layout.usage_stats_entity_list_item,
                 null,
-                new String[]{NAME, STATUS},
-                new int[]{R.id.vm_name, R.id.vm_status}, 0);
+                new String[]{NAME, STATUS, CPU_USAGE},
+                new int[]{R.id.name, R.id.status, R.id.statistics}, 0);
         vmListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
@@ -42,6 +44,12 @@ public class VmsFragment extends BaseEntityListFragment<Vm> {
                     ImageView imageView = (ImageView) view;
                     Vm.Status status = Vm.Status.valueOf(cursor.getString(cursor.getColumnIndex(STATUS)));
                     imageView.setImageResource(status.getResource());
+                } else if (columnIndex == cursor.getColumnIndex(CPU_USAGE)) {
+                    TextView textView = (TextView) view;
+                    double cpuUsage = cursor.getDouble(cursor.getColumnIndex(CPU_USAGE));
+                    double memUsage = cursor.getDouble(cursor.getColumnIndex(MEMORY_USAGE));
+
+                    textView.setText(getString(R.string.statistics, cpuUsage, memUsage));
                 }
 
                 return true;
@@ -49,5 +57,10 @@ public class VmsFragment extends BaseEntityListFragment<Vm> {
         });
 
         return vmListAdapter;
+    }
+
+    @Override
+    public String[] getSortEntries() {
+        return getResources().getStringArray(R.array.usage_stats_entity_sort_entries);
     }
 }
