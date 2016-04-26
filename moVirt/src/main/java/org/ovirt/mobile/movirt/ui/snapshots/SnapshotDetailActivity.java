@@ -298,7 +298,7 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
 
     @Override
     public void onDialogResult(int dialogButton, int actionId) {
-        if (dialogButton == DialogInterface.BUTTON_POSITIVE) {
+        if (actionId == DELETE_ACTION && dialogButton == DialogInterface.BUTTON_POSITIVE) {
             doDelete();
         }
     }
