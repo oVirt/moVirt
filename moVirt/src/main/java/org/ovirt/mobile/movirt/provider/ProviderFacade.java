@@ -121,8 +121,8 @@ public class ProviderFacade {
             if (sortOrder.length() > 0) {
                 sortOrder.append(", ");
             }
-            sortOrder.append(columnName);
-            sortOrder.append(order == SortOrder.ASCENDING ? " ASC " : " DESC ");
+            sortOrder.append(columnName).append(" ");
+            sortOrder.append(order).append(" ");
 
             return this;
         }

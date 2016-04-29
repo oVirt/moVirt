@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Looper;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 import org.ovirt.mobile.movirt.R;
@@ -169,6 +170,41 @@ public class PercentageCircleView extends View {
         canvas.drawCircle(foregroundRectF.centerX(), foregroundRectF.centerY(), foregroundRectF.height() / 2, wholeBackgroundPaint);
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+        float x = e.getX();
+        float y = e.getY();
+
+        switch (e.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if (isInCircle(x, y)) {
+                    setActivated(true);
+                    invalidate();
+                }
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (!isInCircle(x, y)) {
+                    setActivated(false);
+                    invalidate();
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                setActivated(false);
+                invalidate();
+                break;
+        }
+
+        return true;
+    }
+
+    private boolean isInCircle(float x, float y) {
+        float dx = foregroundRectF.centerX() - x;
+        float dy = foregroundRectF.centerY() - y;
+
+        return Math.pow(dx, 2) + Math.pow(dy, 2) <= Math.pow(foregroundRectF.height() / 2, 2);
+    }
+
+
     private void drawTextAndSummary(Canvas canvas) {
         if (!needShowText) return;
         //draw progress text
@@ -202,11 +238,12 @@ public class PercentageCircleView extends View {
         } else {
             currentForegroundColor = foregroundColorC;
         }
-        foregroundPaint.setColor(currentForegroundColor);
+        foregroundPaint.setColor(adjustColor(currentForegroundColor));
         canvas.drawArc(foregroundRectF, startAngle, sweepAngle, false, foregroundPaint);
     }
 
     private void drawBackground(Canvas canvas) {
+        backgroundPaint.setColor(adjustColor(backgroundColor));
         canvas.drawArc(backgroundRectF, startAngle, MAX_ANGLE, false, backgroundPaint);
     }
 
@@ -227,7 +264,6 @@ public class PercentageCircleView extends View {
     }
 
     /**
-     *
      * @param maxPercentageValue >0
      */
     public void setMaxPercentageValue(float maxPercentageValue) {
@@ -243,7 +279,6 @@ public class PercentageCircleView extends View {
     }
 
     /**
-     *
      * @param percentageValue >=0
      */
     public void setPercentageValue(float percentageValue) {
@@ -255,7 +290,6 @@ public class PercentageCircleView extends View {
     }
 
     /**
-     *
      * @param percentageValue >=0
      * @param decimalFormat
      */
@@ -267,7 +301,7 @@ public class PercentageCircleView extends View {
         }
     }
 
-    public float getPercentageValue(){
+    public float getPercentageValue() {
         return percentageValue;
     }
 
@@ -279,5 +313,23 @@ public class PercentageCircleView extends View {
 
     public String getSummary() {
         return summary;
+    }
+
+    /**
+     * Used for altering color in touch up/down events
+     *
+     * @param color color
+     * @return adjusted color
+     */
+    private int adjustColor(int color) {
+        if (isActivated()) {
+            final double valueShift = 0.07;
+            float[] hsbVals = new float[3];
+
+            Color.colorToHSV(color, hsbVals);
+            hsbVals[2] += valueShift;
+            color = Color.HSVToColor(hsbVals);
+        }
+        return color;
     }
 }
