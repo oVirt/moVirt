@@ -179,6 +179,8 @@
 
     <string name="title_activity_dashboard">Dashboard</string>
     <string name="dashboard">Dashboard</string>
+    <string name="show_physical">Show Physical</string>
+    <string name="show_virtual">Show Virtual</string>
     <string name="title_cpu_percentage_circle">CPU</string>
     <string name="summary_cpu_percentage_circle">%1$d%% Available of %2$d%%</string>
     <string name="title_memory_percentage_circle">Memory</string>

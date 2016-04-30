@@ -18,7 +18,7 @@ import org.ovirt.mobile.movirt.ui.ResumeSyncableBaseEntityListFragment;
 import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.NAME;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.SIZE;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.SIZE_MB;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.STATUS;
 
 /**
@@ -37,7 +37,7 @@ public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> 
         SimpleCursorAdapter diskListAdapter = new SimpleCursorAdapter(getActivity(),
                 R.layout.disk_list_item,
                 null,
-                new String[]{NAME, SIZE, STATUS},
+                new String[]{NAME, SIZE_MB, STATUS},
                 new int[]{R.id.disk_name, R.id.disk_size, R.id.disk_status}, 0);
         diskListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
@@ -47,16 +47,11 @@ public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> 
                 if (columnIndex == cursor.getColumnIndex(NAME)) {
                     String name = cursor.getString(columnIndex);
                     textView.setText(name);
-                } else if (columnIndex == cursor.getColumnIndex(SIZE)) {
-                    String size = cursor.getString(columnIndex);
-                    try {
-                        Long diskSizeMB = Long.parseLong(size);
-                        diskSizeMB = diskSizeMB / (1024 * 1024);
-                        size = getString(R.string.disk_size, diskSizeMB);
-                    } catch (Exception e) {
-                        size = getString(R.string.disk_unknown_size);
-                    }
-                    textView.setText(size);
+                } else if (columnIndex == cursor.getColumnIndex(SIZE_MB)) {
+                    long size = cursor.getLong(columnIndex);
+                    String sizeText = (size == -1) ? getString(R.string.disk_unknown_size) :
+                            getString(R.string.disk_size, size);
+                    textView.setText(sizeText);
                 } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
                     String status = cursor.getString(columnIndex);
                     textView.setText(status.toUpperCase());
