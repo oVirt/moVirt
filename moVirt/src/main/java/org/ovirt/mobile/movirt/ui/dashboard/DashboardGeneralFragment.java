@@ -174,7 +174,11 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (MotionEvent.ACTION_UP == event.getAction() && cpuPercentageCircle.isActivated()) {
-                    startMainActivity(MainActivityFragments.HOSTS, OVirtContract.Host.CPU_USAGE, SortOrder.DESCENDING);
+                    if (virtualView) {
+                        startMainActivity(MainActivityFragments.VMS, OVirtContract.Vm.CPU_USAGE, SortOrder.DESCENDING);
+                    } else {
+                        startMainActivity(MainActivityFragments.HOSTS, OVirtContract.Host.CPU_USAGE, SortOrder.DESCENDING);
+                    }
                 }
                 return false;
             }
@@ -212,7 +216,11 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (MotionEvent.ACTION_UP == event.getAction() && memoryPercentageCircle.isActivated()) {
-                    startMainActivity(MainActivityFragments.HOSTS, OVirtContract.Host.MEMORY_USAGE, SortOrder.DESCENDING);
+                    if (virtualView) {
+                        startMainActivity(MainActivityFragments.VMS, OVirtContract.Vm.MEMORY_USAGE, SortOrder.DESCENDING);
+                    } else {
+                        startMainActivity(MainActivityFragments.HOSTS, OVirtContract.Host.MEMORY_USAGE, SortOrder.DESCENDING);
+                    }
                 }
                 return false;
             }
