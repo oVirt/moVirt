@@ -10,6 +10,7 @@ public class Disk implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Dis
     public String id;
     public String name;
     public String size;
+    public String actual_size;
     public Status status;
     public Vm vm;
     public Snapshot snapshot;
@@ -34,6 +35,18 @@ public class Disk implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Dis
         if (snapshot != null) {
             disk.setSnapshotId(snapshot.id);
         }
+
+        try {
+            disk.setSizeMb(Long.parseLong(size) / (1024 * 1024));
+        } catch (Exception e) {
+            disk.setSizeMb(-1);
+        }
+        try {
+            disk.setUsedSizeMb(Long.parseLong(actual_size) / (1024 * 1024));
+        } catch (Exception e) {
+            disk.setUsedSizeMb(-1);
+        }
+
 
         return disk;
     }

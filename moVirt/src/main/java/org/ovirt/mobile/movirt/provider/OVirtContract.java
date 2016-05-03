@@ -47,17 +47,49 @@ public interface OVirtContract {
         String DATA_CENTER_ID = "data_center_id";
     }
 
+    interface HasCpuUsage {
+        String CPU_USAGE = "cpu_usage";
+
+        double getCpuUsage();
+
+        void setCpuUsage(double cpuUsage);
+    }
+
+    interface HasMemory {
+        String MEMORY_USAGE = "mem_usage";
+        String MEMORY_SIZE_MB = "mem_size_mb";
+
+        double getMemoryUsage();
+
+        void setMemoryUsage(double memoryUsage);
+
+        long getMemorySizeMb();
+
+        void setMemorySizeMb(long memorySizeMb);
+    }
+
+    interface HasSizeMb {
+        String SIZE_MB = "size_mb";
+
+        void setSizeMb(long sizeMb);
+        long getSizeMb();
+    }
+
+    interface HasUsedSizeMb {
+        String USED_SIZE_MB = "used_size_mb";
+
+        void setUsedSizeMb(long usedSizeMb);
+        long getUsedSizeMb();
+    }
+
     String PATH_VMS = "vms";
     String PATH_VM = "vms/*";
 
-    interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost, SnapshotEmbeddableEntity {
+    interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost, SnapshotEmbeddableEntity, HasCpuUsage, HasMemory {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_VMS).build();
 
         String TABLE = "vms";
 
-        String CPU_USAGE = "cpu_usage";
-        String MEMORY_USAGE = "mem_usage";
-        String MEMORY_SIZE_MB = "mem_size_mb";
         String SOCKETS = "sockets";
         String CORES_PER_SOCKET = "cores_per_socket";
         String OS_TYPE = "os_type";
@@ -71,14 +103,11 @@ public interface OVirtContract {
     String PATH_HOSTS = "hosts";
     String PATH_HOST = "hosts/*";
 
-    interface Host extends NamedEntity, HasStatus, HasCluster {
+    interface Host extends NamedEntity, HasStatus, HasCluster, HasCpuUsage, HasMemory {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_HOSTS).build();
 
         String TABLE = "hosts";
 
-        String CPU_USAGE = "cpu_usage";
-        String MEMORY_USAGE = "mem_usage";
-        String MEMORY_SIZE_MB = "mem_size_mb";
         String SOCKETS = "sockets";
         String CORES_PER_SOCKET = "cores_per_socket";
         String THREADS_PER_CORE = "threads_per_core";
@@ -200,7 +229,7 @@ public interface OVirtContract {
     String PATH_DISKS = "disks";
     String PATH_DISK = "disks/*";
 
-    interface Disk extends HasVm, NamedEntity, HasStatus, SnapshotEmbeddableEntity {
+    interface Disk extends HasVm, NamedEntity, HasStatus, SnapshotEmbeddableEntity, HasSizeMb, HasUsedSizeMb {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISKS).build();
 
         String TABLE = "disks";
