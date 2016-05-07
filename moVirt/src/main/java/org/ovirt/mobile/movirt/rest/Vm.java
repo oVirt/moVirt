@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.rest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.RestHelper;
 
 import java.math.BigDecimal;
@@ -72,11 +73,7 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
             }
         }
 
-        try {
-            vm.setMemorySizeMb(Long.parseLong(memory) / (1024 * 1024));
-        } catch (Exception e) {
-            vm.setMemorySizeMb(-1);
-        }
+        vm.setMemorySize(ObjectUtils.parseLong(memory));
 
         if (cpu != null && cpu.topology != null) {
             vm.setSockets(ParseUtils.intOrDefault(cpu.topology.sockets));
@@ -104,6 +101,7 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
         } catch (Exception e) {
             vm.setDisplayPort(-1);
         }
+
         try {
             vm.setDisplaySecurePort(Integer.parseInt(display.secure_port));
         } catch (Exception e) {

@@ -2,6 +2,8 @@ package org.ovirt.mobile.movirt.rest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.ovirt.mobile.movirt.util.ObjectUtils;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -67,11 +69,7 @@ class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
             }
         }
 
-        try {
-            host.setMemorySizeMb(Long.parseLong(memory) / (1024 * 1024));
-        } catch (Exception e) {
-            host.setMemorySizeMb(-1);
-        }
+        host.setMemorySize(ObjectUtils.parseLong(memory));
 
         if (cpu != null && cpu.topology != null) {
             host.setSockets(ParseUtils.intOrDefault(cpu.topology.sockets));
@@ -83,12 +81,8 @@ class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
             host.setThreadsPerCore(-1);
         }
 
-        try {
-            host.setCpuSpeed(Long.parseLong(cpu.speed));
-        } catch (Exception e) {
-            host.setCpuSpeed(-1);
-        }
 
+        host.setCpuSpeed(ObjectUtils.parseLong(cpu.speed));
         String osString = "";
         if (os != null && os.type != null) {
             osString = os.type;

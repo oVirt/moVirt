@@ -2,6 +2,8 @@ package org.ovirt.mobile.movirt.rest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.ovirt.mobile.movirt.util.ObjectUtils;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class StorageDomain implements RestEntityWrapper<org.ovirt.mobile.movirt.model.StorageDomain> {
     public String id;
@@ -46,16 +48,8 @@ public class StorageDomain implements RestEntityWrapper<org.ovirt.mobile.movirt.
         }
 
         storageDomain.setType(mapType(type));
-        try {
-            storageDomain.setAvailableSizeMb(Long.parseLong(available) / (1024 * 1024));
-        } catch (Exception e) {
-            storageDomain.setAvailableSizeMb(-1);
-        }
-        try {
-            storageDomain.setUsedSizeMb(Long.parseLong(used) / (1024 * 1024));
-        } catch (Exception e) {
-            storageDomain.setUsedSizeMb(-1);
-        }
+        storageDomain.setAvailableSize(ObjectUtils.parseLong(available));
+        storageDomain.setUsedSize(ObjectUtils.parseLong(used));
 
         return storageDomain;
     }

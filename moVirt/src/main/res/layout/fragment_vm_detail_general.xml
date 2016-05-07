@@ -55,7 +55,7 @@
                 <TextView
                     android:id="@+id/memoryLabel"
                     style="@style/VmStatsLabel"
-                    android:text="@string/memoryMb"
+                    android:text="@string/memorySize"
                     android:layout_below="@id/memLabel" />
 
                 <TextView

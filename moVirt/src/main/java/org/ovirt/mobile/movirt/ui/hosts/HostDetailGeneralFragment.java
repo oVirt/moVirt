@@ -22,6 +22,7 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
+import org.ovirt.mobile.movirt.util.MemorySize;
 
 @EFragment(R.layout.fragment_host_detail_general)
 public class HostDetailGeneralFragment extends RefreshableLoaderFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -122,11 +123,8 @@ public class HostDetailGeneralFragment extends RefreshableLoaderFragment impleme
         statusView.setText(host.getStatus().toString().toLowerCase());
         cpuView.setText(getString(R.string.percentage, host.getCpuUsage()));
         memView.setText(getString(R.string.percentage, host.getMemoryUsage()));
-        if (host.getMemorySizeMb() != -1) {
-            memoryView.setText(getString(R.string.memory_size_mb, host.getMemorySizeMb()));
-        } else {
-            memoryView.setText(getString(R.string.NA));
-        }
+        long memory = host.getMemorySize();
+        memoryView.setText((memory == -1) ? getString(R.string.NA) : new MemorySize(memory).toString());
         summaryView.setText(getString(R.string.three_separated_ints, host.getActive(), host.getMigrating(), host.getTotal()));
         socketView.setText(String.valueOf(host.getSockets()));
         coreView.setText(String.valueOf(host.getCoresPerSocket()));

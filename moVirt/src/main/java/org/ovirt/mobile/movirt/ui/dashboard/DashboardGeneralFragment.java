@@ -30,8 +30,9 @@ import org.ovirt.mobile.movirt.ui.LoaderFragment;
 import org.ovirt.mobile.movirt.ui.MainActivity;
 import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
+import org.ovirt.mobile.movirt.util.MemorySize;
+import org.ovirt.mobile.movirt.util.Percentage;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,8 +72,6 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
 
     @InstanceState
     boolean virtualView = false;
-
-    private DecimalFormat decimalFormat = new DecimalFormat("0.#");
 
     @AfterViews
     void init() {
@@ -124,14 +123,7 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
                 break;
             case STORAGE_DOMAIN_LOADER:
                 List<StorageDomain> storageDomainList = EntityMapper.forEntity(StorageDomain.class).listFromCursor(data);
-                List<StorageObject> storageObjectList = new ArrayList<>();
-
-                for (StorageDomain sd : storageDomainList) {
-                    StorageObject so = new StorageObject(sd.getAvailableSizeMb(), sd.getUsedSizeMb());
-                    storageObjectList.add(so);
-                }
-
-                renderStoragePercentageCircle(storageObjectList);
+                renderStoragePercentageCircle(storageDomainList);
                 break;
             case VM_LOADER:
                 List<Vm> vmList = vmFacade.mapAllFromCursor(data);
@@ -140,7 +132,14 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
                 break;
             case DISK_LOADER:
                 List<Disk> diskList = diskFacade.mapAllFromCursor(data);
-                renderStoragePercentageCircle(diskList);
+                List<StorageObject> storageObjectList = new ArrayList<>();
+
+                for (Disk d : diskList) {
+                    StorageObject so = new StorageObject(d.getSize() - d.getUsedSize(), d.getUsedSize());
+                    storageObjectList.add(so);
+                }
+
+                renderStoragePercentageCircle(storageObjectList);
                 break;
             default:
                 break;
@@ -153,22 +152,26 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
     }
 
     private <T extends OVirtContract.HasCpuUsage> void renderCpuPercentageCircle(List<T> entityList) {
-        long totalCpuUsage = 100;
-        long usedCpuUsage = 0;
+        Percentage totalCpuUsage = new Percentage(100);
+        Percentage usedCpuUsage = new Percentage();
+        double usedCpuUsageTmp = 0;
 
         for (T entity : entityList) {
-            usedCpuUsage += entity.getCpuUsage();
-        }
-        if (entityList.size() > 0) {
-            usedCpuUsage = usedCpuUsage / entityList.size();
+            usedCpuUsageTmp += entity.getCpuUsage();
         }
 
-        cpuPercentageCircle.setMaxPercentageValue(totalCpuUsage);
-        cpuPercentageCircle.setPercentageValue(usedCpuUsage);
-        cpuPercentageCircle.setSummary(getString(R.string.used));
-        cpuPercentageCircle.setNumberUnits("%");
-        summaryCpuPercentageCircle.setText(getString(
-                R.string.summary_cpu_percentage_circle, totalCpuUsage - usedCpuUsage, totalCpuUsage));
+        if (entityList.size() > 0) {
+            usedCpuUsage.setValue((long) (usedCpuUsageTmp / entityList.size()));
+        }
+
+        cpuPercentageCircle.setMaxResource(totalCpuUsage);
+        cpuPercentageCircle.setUsedResource(usedCpuUsage);
+        cpuPercentageCircle.setUsedResourceDescription(getString(R.string.used));
+        String summary = getString(R.string.summary_available_of,
+                totalCpuUsage.getValue() - usedCpuUsage.getValue(),
+                totalCpuUsage.getReadableValueAsString(),
+                totalCpuUsage.getReadableUnitAsString());
+        summaryCpuPercentageCircle.setText(summary);
 
         cpuPercentageCircle.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -186,31 +189,22 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
     }
 
     private <T extends OVirtContract.HasMemory> void renderMemoryPercentageCircle(List<T> entityList) {
-        long memorySizeMb = 0;
-        long usedMemorySizeMb = 0;
+        MemorySize memory = new MemorySize();
+        MemorySize usedMemory = new MemorySize();
+        MemorySize availableMemory;
 
         for (T entity : entityList) {
-            long memSizeMb = entity.getMemorySizeMb();
-
-            if (memSizeMb > 0) {
-                memorySizeMb += memSizeMb;
-                usedMemorySizeMb += memSizeMb * entity.getMemoryUsage() / 100;
-            }
+            long memSize = entity.getMemorySize();
+            memory.addValue(memSize);
+            usedMemory.addValue((long) (memSize * entity.getMemoryUsage() / 100));
         }
 
-        if (memorySizeMb < 1024) {
-            memoryPercentageCircle.setMaxPercentageValue(memorySizeMb);
-            memoryPercentageCircle.setPercentageValue(usedMemorySizeMb);
-            memoryPercentageCircle.setSummary(getString(R.string.mb_used));
-            summaryMemoryPercentageCircle.setText(getString(
-                    R.string.summary_memory_percentage_circle_mb, memorySizeMb - usedMemorySizeMb, memorySizeMb));
-        } else {
-            memoryPercentageCircle.setMaxPercentageValue(memorySizeMb / 1024f);
-            memoryPercentageCircle.setPercentageValue(usedMemorySizeMb / 1024f, decimalFormat);
-            memoryPercentageCircle.setSummary(getString(R.string.gb_used));
-            summaryMemoryPercentageCircle.setText(getString(R.string.summary_memory_percentage_circle_gb,
-                    decimalFormat.format((memorySizeMb - usedMemorySizeMb) / 1024f), decimalFormat.format(memorySizeMb / 1024f)));
-        }
+        availableMemory = new MemorySize(memory.getValue() - usedMemory.getValue());
+
+        memoryPercentageCircle.setMaxResource(memory);
+        memoryPercentageCircle.setUsedResource(usedMemory);
+        memoryPercentageCircle.setUsedResourceDescription(getString(R.string.unit_used, memory.getReadableUnitAsString()));
+        summaryMemoryPercentageCircle.setText(getAvailableSummary(memory, availableMemory));
 
         memoryPercentageCircle.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -227,27 +221,22 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
         });
     }
 
-    private <T extends OVirtContract.HasSizeMb & OVirtContract.HasUsedSizeMb> void renderStoragePercentageCircle(List<T> entityList) {
-        long availableStorageSizeMb = 0;
-        long usedStorageSizeMb = 0;
+    private <T extends OVirtContract.HasAvailableSize & OVirtContract.HasUsedSize> void renderStoragePercentageCircle(List<T> entityList) {
+        MemorySize availableStorage = new MemorySize();
+        MemorySize usedStorage = new MemorySize();
+        MemorySize storage;
 
         for (T entity : entityList) {
-            long size = entity.getSizeMb();
-            long usedSze = entity.getUsedSizeMb();
-
-            if (size > 0) {
-                availableStorageSizeMb += size;
-                if (usedSze > 0) {
-                    usedStorageSizeMb += usedSze;
-                }
-            }
+            availableStorage.addValue(entity.getAvailableSize());
+            usedStorage.addValue(entity.getUsedSize());
         }
 
-        storagePercentageCircle.setMaxPercentageValue((availableStorageSizeMb + usedStorageSizeMb) / 1024f);
-        storagePercentageCircle.setPercentageValue(usedStorageSizeMb / 1024f, decimalFormat);
-        storagePercentageCircle.setSummary(getString(R.string.gb_used));
-        summaryStoragePercentageCircle.setText(getString(R.string.summary_storage_percentage_circle,
-                decimalFormat.format(availableStorageSizeMb / 1024f), decimalFormat.format((availableStorageSizeMb + usedStorageSizeMb) / 1024f)));
+        storage = new MemorySize(availableStorage.getValue() + usedStorage.getValue());
+
+        storagePercentageCircle.setMaxResource(storage);
+        storagePercentageCircle.setUsedResource(usedStorage);
+        storagePercentageCircle.setUsedResourceDescription(getString(R.string.unit_used, storage.getReadableUnitAsString()));
+        summaryStoragePercentageCircle.setText(getAvailableSummary(storage, availableStorage));
 
         storagePercentageCircle.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -255,6 +244,13 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
                 return true; // disable all touch events on storage
             }
         });
+    }
+
+    private String getAvailableSummary(MemorySize memory, MemorySize availableMemory) {
+        return getString(R.string.summary_available_of,
+                availableMemory.getReadableValueAsString(memory.getReadableUnit()),
+                memory.getReadableValueAsString(),
+                memory.getReadableUnitAsString());
     }
 
     @Override
@@ -289,29 +285,29 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
         this.virtualView = virtualView;
     }
 
-    private class StorageObject implements OVirtContract.HasSizeMb, OVirtContract.HasUsedSizeMb {
-        private long sizeMb;
-        private long usedSizeMb;
+    private class StorageObject implements OVirtContract.HasAvailableSize, OVirtContract.HasUsedSize {
+        private long availableSize;
+        private long usedSize;
 
-        public StorageObject(long sizeMb, long usedSizeMb) {
-            this.sizeMb = sizeMb;
-            this.usedSizeMb = usedSizeMb;
+        public StorageObject(long availableSize, long usedSize) {
+            this.availableSize = availableSize;
+            this.usedSize = usedSize;
         }
 
-        public long getSizeMb() {
-            return sizeMb;
+        public long getAvailableSize() {
+            return availableSize;
         }
 
-        public void setSizeMb(long sizeMb) {
-            this.sizeMb = sizeMb;
+        public void setAvailableSize(long availableSize) {
+            this.availableSize = availableSize;
         }
 
-        public long getUsedSizeMb() {
-            return usedSizeMb;
+        public long getUsedSize() {
+            return usedSize;
         }
 
-        public void setUsedSizeMb(long usedSizeMb) {
-            this.usedSizeMb = usedSizeMb;
+        public void setUsedSize(long usedSize) {
+            this.usedSize = usedSize;
         }
     }
 }

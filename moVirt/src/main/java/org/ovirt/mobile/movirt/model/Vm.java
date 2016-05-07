@@ -109,8 +109,8 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
     @DatabaseField(columnName = MEMORY_USAGE)
     private double memoryUsage;
 
-    @DatabaseField(columnName = MEMORY_SIZE_MB)
-    private long memorySizeMb;
+    @DatabaseField(columnName = MEMORY_SIZE)
+    private long memorySize;
 
     @DatabaseField(columnName = SOCKETS)
     private int sockets;
@@ -180,12 +180,12 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
         this.memoryUsage = memoryUsage;
     }
 
-    public long getMemorySizeMb() {
-        return memorySizeMb;
+    public long getMemorySize() {
+        return memorySize;
     }
 
-    public void setMemorySizeMb(long memorySizeMb) {
-        this.memorySizeMb = memorySizeMb;
+    public void setMemorySize(long memorySize) {
+        this.memorySize = memorySize;
     }
 
     public int getSockets() {
@@ -281,7 +281,7 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
         if (displayPort != vm.displayPort) return false;
         if (displaySecurePort != vm.displaySecurePort) return false;
         if (!ObjectUtils.equals(certificateSubject, vm.certificateSubject)) return false;
-        if (memorySizeMb != vm.memorySizeMb) return false;
+        if (memorySize != vm.memorySize) return false;
         if (Double.compare(vm.memoryUsage, memoryUsage) != 0) return false;
         if (sockets != vm.sockets) return false;
         if (!ObjectUtils.equals(hostId, vm.hostId)) return false;
@@ -305,7 +305,7 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(memoryUsage);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
-        result = 31 * result + (int) (memorySizeMb ^ (memorySizeMb >>> 32));
+        result = 31 * result + (int) (memorySize ^ (memorySize >>> 32));
         result = 31 * result + sockets;
         result = 31 * result + coresPerSocket;
         result = 31 * result + (osType != null ? osType.hashCode() : 0);
@@ -325,7 +325,7 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
         contentValues.put(CLUSTER_ID, getClusterId());
         contentValues.put(CPU_USAGE, getCpuUsage());
         contentValues.put(MEMORY_USAGE, getMemoryUsage());
-        contentValues.put(MEMORY_SIZE_MB, getMemorySizeMb());
+        contentValues.put(MEMORY_SIZE, getMemorySize());
         contentValues.put(SOCKETS, getSockets());
         contentValues.put(CORES_PER_SOCKET, getCoresPerSocket());
         contentValues.put(OS_TYPE, getOsType());
@@ -346,7 +346,7 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
         setClusterId(cursorHelper.getString(CLUSTER_ID));
         setCpuUsage(cursorHelper.getDouble(CPU_USAGE));
         setMemoryUsage(cursorHelper.getDouble(MEMORY_USAGE));
-        setMemorySizeMb(cursorHelper.getLong(MEMORY_SIZE_MB));
+        setMemorySize(cursorHelper.getLong(MEMORY_SIZE));
         setSockets(cursorHelper.getInt(SOCKETS));
         setCoresPerSocket(cursorHelper.getInt(CORES_PER_SOCKET));
         setOsType(cursorHelper.getString(OS_TYPE));

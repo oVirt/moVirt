@@ -12,18 +12,16 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import org.ovirt.mobile.movirt.R;
-import org.springframework.util.StringUtils;
-
-import java.text.DecimalFormat;
+import org.ovirt.mobile.movirt.util.MemorySize;
+import org.ovirt.mobile.movirt.util.Percentage;
+import org.ovirt.mobile.movirt.util.UsageResource;
 
 public class PercentageCircleView extends View {
 
-    private static final float FOREGROUND_COLOR_A_MAX_PERCENTAGE = 0.5f;
-    private static final float FOREGROUND_COLOR_B_MAX_PERCENTAGE = 0.75f;
-    private static final float FOREGROUND_COLOR_C_MAX_PERCENTAGE = 1.0f;
+    private static final double FOREGROUND_COLOR_A_MAX_PERCENTAGE = 0.5f;
+    private static final double FOREGROUND_COLOR_B_MAX_PERCENTAGE = 0.75f;
+    private static final double FOREGROUND_COLOR_C_MAX_PERCENTAGE = 1.0f;
 
-    private static final float DEFAULT_MAX_PERCENTAGE_VALUE = 100f;
-    private static final String DEFAULT_DECIMAL_FORMAT_PATTERN = "#";
     private static final int MAX_ANGLE = 360;
 
     //attr
@@ -46,11 +44,9 @@ public class PercentageCircleView extends View {
     private int currentForegroundColor = foregroundColorA;
     private int angleStep = 0;
     private int minWidth;
-    private float maxPercentageValue = DEFAULT_MAX_PERCENTAGE_VALUE;
-    private float percentageValue = 0;
-    private DecimalFormat decimalFormat = new DecimalFormat(DEFAULT_DECIMAL_FORMAT_PATTERN);
-    private String summary = "";
-    private String numberUnits = "";
+    private UsageResource maxResource = new MemorySize();
+    private UsageResource usedResource = new MemorySize();
+    private String usedResourceDescription = "";
 
     public PercentageCircleView(Context context) {
         super(context);
@@ -210,7 +206,13 @@ public class PercentageCircleView extends View {
     private void drawTextAndSummary(Canvas canvas) {
         if (!needShowText) return;
         //draw progress text
-        String text = decimalFormat.format(percentageValue) + numberUnits;
+        String text = "";
+        if (usedResource instanceof MemorySize) {
+            text = ((MemorySize) usedResource).getReadableValueAsString(1, ((MemorySize) maxResource).getReadableUnit());
+        } else if (usedResource instanceof Percentage) {
+            text = usedResource.toString();
+        }
+
         int textSize = (int) ((minWidth - strokeWidth * 2) / 3.5);
         textPaint.setTextSize(textSize);
         Paint.FontMetrics fm = textPaint.getFontMetrics();
@@ -221,21 +223,21 @@ public class PercentageCircleView extends View {
         canvas.drawText(text, x, y, textPaint);
 
         //draw summary
-        String summary = String.valueOf(this.summary);
         int summaryTextSize = (int) ((minWidth - strokeWidth * 2) / 11.0);
         textPaint.setTextSize(summaryTextSize);
-        float summaryTextWidth = textPaint.measureText(summary);
+        float summaryTextWidth = textPaint.measureText(usedResourceDescription);
         float summaryX = (minWidth - summaryTextWidth) / 2;
         float summaryY = y + summaryTextSize * 3 / 2;
-        canvas.drawText(summary, summaryX, summaryY, textPaint);
+        canvas.drawText(usedResourceDescription, summaryX, summaryY, textPaint);
     }
 
     private void drawForeground(Canvas canvas) {
+        double resourcePercentageRatio = usedResource.getValue() / (double) maxResource.getValue();
         int startAngle = angleStep + this.startAngle;
-        int sweepAngle = (int) ((percentageValue / maxPercentageValue) * MAX_ANGLE);
-        if (Float.compare(percentageValue / maxPercentageValue, FOREGROUND_COLOR_A_MAX_PERCENTAGE) < 0) {
+        int sweepAngle = (int) (resourcePercentageRatio * MAX_ANGLE);
+        if (Double.compare(resourcePercentageRatio, FOREGROUND_COLOR_A_MAX_PERCENTAGE) < 0) {
             currentForegroundColor = foregroundColorA;
-        } else if (Float.compare(percentageValue / maxPercentageValue, FOREGROUND_COLOR_B_MAX_PERCENTAGE) < 0) {
+        } else if (Double.compare(resourcePercentageRatio, FOREGROUND_COLOR_B_MAX_PERCENTAGE) < 0) {
             currentForegroundColor = foregroundColorB;
         } else {
             currentForegroundColor = foregroundColorC;
@@ -265,62 +267,36 @@ public class PercentageCircleView extends View {
         }
     }
 
-    /**
-     * @param maxPercentageValue >0
-     */
-    public void setMaxPercentageValue(float maxPercentageValue) {
-        if (Float.compare(maxPercentageValue, 0) > 0) {
-            this.maxPercentageValue = maxPercentageValue;
-        } else {
-            this.maxPercentageValue = DEFAULT_MAX_PERCENTAGE_VALUE;
+
+    public void setMaxResource(UsageResource maxResource) {
+        if (maxResource != null) {
+            this.maxResource = maxResource;
         }
     }
 
-    public float getMaxPercentageValue() {
-        return maxPercentageValue;
+    public UsageResource getMaxResource() {
+        return maxResource;
     }
 
-    /**
-     * @param percentageValue >=0
-     */
-    public void setPercentageValue(float percentageValue) {
-        if (Float.compare(percentageValue, 0) >= 0) {
-            this.decimalFormat = new DecimalFormat(DEFAULT_DECIMAL_FORMAT_PATTERN);
-            this.percentageValue = Float.compare(percentageValue, maxPercentageValue) > 0 ? maxPercentageValue : percentageValue;
+    public void setUsedResource(UsageResource usedResource) {
+        if (maxResource != null) {
+            this.usedResource = usedResource;
             invalidateUi();
         }
     }
 
-    /**
-     * @param percentageValue >=0
-     * @param decimalFormat
-     */
-    public void setPercentageValue(float percentageValue, DecimalFormat decimalFormat) {
-        if (Float.compare(percentageValue, 0) >= 0) {
-            this.decimalFormat = decimalFormat != null ? decimalFormat : new DecimalFormat(DEFAULT_DECIMAL_FORMAT_PATTERN);
-            this.percentageValue = Float.compare(percentageValue, maxPercentageValue) > 0 ? maxPercentageValue : percentageValue;
-            invalidateUi();
+    public UsageResource getUsedResource() {
+        return usedResource;
+    }
+
+    public void setUsedResourceDescription(String usedResourceDescription) {
+        if (usedResourceDescription != null) {
+            this.usedResourceDescription = usedResourceDescription;
         }
     }
 
-    public float getPercentageValue() {
-        return percentageValue;
-    }
-
-    public void setSummary(String summary) {
-        if (summary != null) {
-            this.summary = summary;
-        }
-    }
-
-    public String getSummary() {
-        return summary;
-    }
-
-    public void setNumberUnits(String numberUnits) {
-        if (numberUnits != null) {
-            this.numberUnits = numberUnits;
-        }
+    public String getUsedResourceDescription() {
+        return usedResourceDescription;
     }
 
     /**

@@ -57,29 +57,31 @@ public interface OVirtContract {
 
     interface HasMemory {
         String MEMORY_USAGE = "mem_usage";
-        String MEMORY_SIZE_MB = "mem_size_mb";
+        String MEMORY_SIZE = "mem_size";
 
         double getMemoryUsage();
 
         void setMemoryUsage(double memoryUsage);
 
-        long getMemorySizeMb();
+        long getMemorySize();
 
-        void setMemorySizeMb(long memorySizeMb);
+        void setMemorySize(long memorySize);
     }
 
-    interface HasSizeMb {
-        String SIZE_MB = "size_mb";
+    interface HasAvailableSize {
+        String AVAILABLE_SIZE = "available_size";
 
-        void setSizeMb(long sizeMb);
-        long getSizeMb();
+        void setAvailableSize(long availableSize);
+
+        long getAvailableSize();
     }
 
-    interface HasUsedSizeMb {
-        String USED_SIZE_MB = "used_size_mb";
+    interface HasUsedSize {
+        String USED_SIZE = "used_size";
 
-        void setUsedSizeMb(long usedSizeMb);
-        long getUsedSizeMb();
+        void setUsedSize(long usedSize);
+
+        long getUsedSize();
     }
 
     String PATH_VMS = "vms";
@@ -142,13 +144,11 @@ public interface OVirtContract {
     String PATH_STORAGE_DOMAINS = "storagedomains";
     String PATH_STORAGE_DOMAIN = "storagedomains/*";
 
-    interface StorageDomain extends NamedEntity {
+    interface StorageDomain extends NamedEntity, HasAvailableSize, HasUsedSize {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_STORAGE_DOMAINS).build();
 
         String TABLE = "storagedomains";
         String TYPE = "type";
-        String AVAILABLE_SIZE_MB = "available_size_mb";
-        String USED_SIZE_MB = "used_size_mb";
         String STATUS = "status";
         String STORAGE_ADDRESS = "storage_address";
         String STORAGE_TYPE = "storage_type";
@@ -229,7 +229,7 @@ public interface OVirtContract {
     String PATH_DISKS = "disks";
     String PATH_DISK = "disks/*";
 
-    interface Disk extends HasVm, NamedEntity, HasStatus, SnapshotEmbeddableEntity, HasSizeMb, HasUsedSizeMb {
+    interface Disk extends HasVm, NamedEntity, HasStatus, SnapshotEmbeddableEntity, HasUsedSize {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISKS).build();
 
         String TABLE = "disks";

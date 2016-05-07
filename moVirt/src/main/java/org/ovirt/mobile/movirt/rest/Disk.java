@@ -2,6 +2,8 @@ package org.ovirt.mobile.movirt.rest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.ovirt.mobile.movirt.util.ObjectUtils;
+
 /**
  * Created by sphoorti on 5/2/15.
  */
@@ -24,7 +26,6 @@ public class Disk implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Dis
         org.ovirt.mobile.movirt.model.Disk disk = new org.ovirt.mobile.movirt.model.Disk();
         disk.setId(id);
         disk.setName(name);
-        disk.setSize(size);
         if (status != null && status.state != null) {
             disk.setStatus(status.state);
         }
@@ -32,21 +33,13 @@ public class Disk implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Dis
         if (vm != null) {
             disk.setVmId(vm.id);
         }
+
         if (snapshot != null) {
             disk.setSnapshotId(snapshot.id);
         }
 
-        try {
-            disk.setSizeMb(Long.parseLong(size) / (1024 * 1024));
-        } catch (Exception e) {
-            disk.setSizeMb(-1);
-        }
-        try {
-            disk.setUsedSizeMb(Long.parseLong(actual_size) / (1024 * 1024));
-        } catch (Exception e) {
-            disk.setUsedSizeMb(-1);
-        }
-
+        disk.setSize(ObjectUtils.parseLong(size));
+        disk.setUsedSize(ObjectUtils.parseLong(actual_size));
 
         return disk;
     }
