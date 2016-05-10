@@ -184,6 +184,9 @@
     <string name="summary_available_of">%1$s Available of %2$s %3$s</string>
     <string name="used">Used</string>
     <string name="unit_used">%1$s Used</string>
+    <string name="over_commit">Over commit</string>
+    <string name="allocated">Allocated</string>
+    <string name="over_commit_allocated">%1$d%% (Allocated %2$d%%)</string>
     <string name="most_utilized_vms">Most Utilized VMs</string>
     <string name="most_utilized_hosts">Most Utilized Hosts</string>
     <string name="data_centers">Data Centers</string>

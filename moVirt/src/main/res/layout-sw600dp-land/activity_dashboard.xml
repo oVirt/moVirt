@@ -11,35 +11,41 @@
         android:orientation="horizontal">
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="0px"
             android:layout_height="match_parent"
-            android:layout_weight="3">
+            android:layout_weight="3"
+            android:orientation="vertical">
 
-            <fragment class="org.ovirt.mobile.movirt.ui.dashboard.DashboardBoxFragment_"
+            <fragment
+                class="org.ovirt.mobile.movirt.ui.dashboard.DashboardBoxFragment_"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <View android:layout_width="match_parent"
+            <View
+                android:layout_width="match_parent"
                 android:layout_height="1px"
-                android:background="?android:attr/listDivider"
-                android:layout_marginTop="5dp" />
+                android:layout_marginTop="5dp"
+                android:background="?android:attr/listDivider" />
 
-            <fragment class="org.ovirt.mobile.movirt.ui.dashboard.DashboardGeneralFragment_"
+            <fragment
+                android:id="@+id/dashboard_general_fragment"
+                class="org.ovirt.mobile.movirt.ui.dashboard.DashboardGeneralFragment_"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
         </LinearLayout>
 
-        <View android:layout_width="1px"
+        <View
+            android:layout_width="1px"
             android:layout_height="match_parent"
-            android:background="?android:attr/listDivider"/>
+            android:background="?android:attr/listDivider" />
 
-        <fragment class="org.ovirt.mobile.movirt.ui.dashboard.DashboardMostUtilizedFragment_"
+        <fragment
+            class="org.ovirt.mobile.movirt.ui.dashboard.DashboardMostUtilizedFragment_"
             android:layout_width="0px"
             android:layout_height="match_parent"
-            android:layout_weight="2"/>
+            android:layout_weight="2" />
 
-     </LinearLayout>
+    </LinearLayout>
 
 </RelativeLayout>

@@ -163,11 +163,11 @@ public class DashboardMostUtilizedFragment extends LoaderFragment implements OVi
 
             try {
                 if (Double.compare(Double.parseDouble(usage), 50) < 0) {
-                    usageView.setTextColor(Color.parseColor("#99cc03"));
+                    usageView.setTextColor(Color.parseColor("#3f9c35"));
                 } else if (Double.compare(Double.parseDouble(usage), 75) < 0) {
-                    usageView.setTextColor(Color.parseColor("#ec7108"));
+                    usageView.setTextColor(Color.parseColor("#ec7a08"));
                 } else {
-                    usageView.setTextColor(Color.parseColor("#ce0000"));
+                    usageView.setTextColor(Color.parseColor("#cc0000"));
                 }
             } catch (Exception e) {
             }

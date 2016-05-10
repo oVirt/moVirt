@@ -94,21 +94,44 @@
     <style name="overlayActionBar" parent="@style/Widget.AppCompat.ActionBar">
     </style>
 
-    <style name="percentageCircleTitle">
+
+    <style name="horizontallyCenteredContent">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">25sp</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:layout_gravity">center_horizontal</item>
+    </style>
+
+
+    <style name="percentageCircleBase">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">12sp</item>
         <item name="android:layout_gravity">center</item>
     </style>
 
-    <style name="percentageCircleSummary"  parent="@style/percentageCircleTitle">
-        <item name="android:layout_marginTop">3dp</item>
-        <item name="android:layout_marginBottom">10dp</item>
-        <item name="android:textSize">15sp</item>
+    <style name="percentageCircleTitle" parent="@style/percentageCircleBase">
+        <item name="android:textSize">22sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginBottom">3dp</item>
+    </style>
+
+    <style name="percentageCircleSummaryTitle"  parent="@style/percentageCircleBase">
+        <item name="android:text">@string/allocated</item>
+    </style>
+
+    <style name="percentageCircleSummary"  parent="@style/percentageCircleBase">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="percentageCircleOverCommitTitle"  parent="@style/percentageCircleBase">
+        <item name="android:text">@string/over_commit</item>
     </style>
 
     <style name="percentageCircleView">
+        <item name="android:layout_marginTop">10dp</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">match_parent</item>
         <item name="stroke_width">25</item>
