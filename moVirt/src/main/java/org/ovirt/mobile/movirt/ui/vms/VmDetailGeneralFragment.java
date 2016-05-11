@@ -33,6 +33,7 @@ import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
 import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
+import org.ovirt.mobile.movirt.util.MemorySize;
 
 @EFragment(R.layout.fragment_vm_detail_general)
 public class VmDetailGeneralFragment extends RefreshableLoaderFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -233,11 +234,8 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         statusView.setText(vm.getStatus().toString().toLowerCase());
         cpuView.setText(getString(R.string.percentage, vm.getCpuUsage()));
         memView.setText(getString(R.string.percentage, vm.getMemoryUsage()));
-        if (vm.getMemorySizeMb() != -1) {
-            memoryView.setText(getString(R.string.memory_size_mb, vm.getMemorySizeMb()));
-        } else {
-            memoryView.setText(getString(R.string.NA));
-        }
+        long memory = vm.getMemorySize();
+        memoryView.setText((memory == -1) ? getString(R.string.NA) : new MemorySize(memory).toString());
         socketView.setText(String.valueOf(vm.getSockets()));
         coreView.setText(String.valueOf(vm.getCoresPerSocket()));
         osView.setText(vm.getOsType());

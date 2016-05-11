@@ -54,11 +54,11 @@ public class StorageDomain extends OVirtEntity implements OVirtContract.StorageD
     @DatabaseField(columnName = TYPE)
     private Type type;
 
-    @DatabaseField(columnName = AVAILABLE_SIZE_MB)
-    private long availableSizeMb;
+    @DatabaseField(columnName = AVAILABLE_SIZE)
+    private long availableSize;
 
-    @DatabaseField(columnName = USED_SIZE_MB)
-    private long usedSizeMb;
+    @DatabaseField(columnName = USED_SIZE)
+    private long usedSize;
 
     @DatabaseField(columnName = STATUS)
     private Status status;
@@ -83,20 +83,20 @@ public class StorageDomain extends OVirtEntity implements OVirtContract.StorageD
         this.type = type;
     }
 
-    public long getAvailableSizeMb() {
-        return availableSizeMb;
+    public long getAvailableSize() {
+        return availableSize;
     }
 
-    public void setAvailableSizeMb(long availableSizeMb) {
-        this.availableSizeMb = availableSizeMb;
+    public void setAvailableSize(long availableSize) {
+        this.availableSize = availableSize;
     }
 
-    public long getUsedSizeMb() {
-        return usedSizeMb;
+    public long getUsedSize() {
+        return usedSize;
     }
 
-    public void setUsedSizeMb(long usedSizeMb) {
-        this.usedSizeMb = usedSizeMb;
+    public void setUsedSize(long usedSize) {
+        this.usedSize = usedSize;
     }
 
     public Status getStatus() {
@@ -148,8 +148,8 @@ public class StorageDomain extends OVirtEntity implements OVirtContract.StorageD
         StorageDomain storageDomain = (StorageDomain) o;
 
         if (type != storageDomain.type) return false;
-        if (availableSizeMb != storageDomain.availableSizeMb) return false;
-        if (usedSizeMb != storageDomain.usedSizeMb) return false;
+        if (availableSize != storageDomain.availableSize) return false;
+        if (usedSize != storageDomain.usedSize) return false;
         if (status != storageDomain.status) return false;
         if (!ObjectUtils.equals(storageAddress, storageDomain.storageAddress)) return false;
         if (!ObjectUtils.equals(storageType, storageDomain.storageType)) return false;
@@ -163,8 +163,8 @@ public class StorageDomain extends OVirtEntity implements OVirtContract.StorageD
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (int) (availableSizeMb ^ (availableSizeMb >>> 32));
-        result = 31 * result + (int) (usedSizeMb ^ (usedSizeMb >>> 32));
+        result = 31 * result + (int) (availableSize ^ (availableSize >>> 32));
+        result = 31 * result + (int) (usedSize ^ (usedSize >>> 32));
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + (storageAddress != null ? storageAddress.hashCode() : 0);
         result = 31 * result + (storageType != null ? storageType.hashCode() : 0);
@@ -178,8 +178,8 @@ public class StorageDomain extends OVirtEntity implements OVirtContract.StorageD
     public ContentValues toValues() {
         ContentValues values = super.toValues();
         values.put(TYPE, getType().toString());
-        values.put(AVAILABLE_SIZE_MB, getAvailableSizeMb());
-        values.put(USED_SIZE_MB, getUsedSizeMb());
+        values.put(AVAILABLE_SIZE, getAvailableSize());
+        values.put(USED_SIZE, getUsedSize());
         values.put(STATUS, getStatus() != null ? getStatus().toString() : null);
         values.put(STORAGE_ADDRESS, getStorageAddress());
         values.put(STORAGE_TYPE, getStorageType());
@@ -194,8 +194,8 @@ public class StorageDomain extends OVirtEntity implements OVirtContract.StorageD
         super.initFromCursorHelper(cursorHelper);
 
         setType(cursorHelper.getEnum(TYPE, StorageDomain.Type.class));
-        setAvailableSizeMb(cursorHelper.getLong(AVAILABLE_SIZE_MB));
-        setUsedSizeMb(cursorHelper.getLong(USED_SIZE_MB));
+        setAvailableSize(cursorHelper.getLong(AVAILABLE_SIZE));
+        setUsedSize(cursorHelper.getLong(USED_SIZE));
         try {
             setStatus(cursorHelper.getEnum(STATUS, StorageDomain.Status.class));
         } catch (Exception e) {

@@ -78,7 +78,7 @@
     <string name="vm_scope">Vm %1$s</string>
     <string name="cpu">CPU usage:</string>
     <string name="memory">Memory usage:</string>
-    <string name="memoryMb">Memory in Mb:</string>
+    <string name="memorySize">Memory size:</string>
     <string name="sockets">Sockets:</string>
     <string name="cores">Cores/Socket:</string>
     <string name="os">OS Type:</string>
@@ -147,8 +147,6 @@
         Your URL missing path to api. Do you want to use default path "ovirt-engine/api"?
     </string>
 
-    <string name="memory_size_mb">%1$s MB</string>
-    <string name="memory_size_gb">%1$s GB</string>
     <string name="percentage">%1$.0f%%</string>
     <string name="NA">N/A</string>
     <string name="two_separated_strings">%1$s | %2$s</string>
@@ -160,7 +158,6 @@
 
     <string name="snapshot_memory">Memory: true</string>
 
-    <string name="disk_size">%1$s MB</string>
     <string name="disk_unknown_size">Size: N/A</string>
 
     <string name="title_activity_host_details">Host Details</string>
@@ -182,15 +179,11 @@
     <string name="show_physical">Show Physical</string>
     <string name="show_virtual">Show Virtual</string>
     <string name="title_cpu_percentage_circle">CPU</string>
-    <string name="summary_cpu_percentage_circle">%1$d%% Available of %2$d%%</string>
     <string name="title_memory_percentage_circle">Memory</string>
-    <string name="summary_memory_percentage_circle_mb">%1$d Available of %2$d MB</string>
-    <string name="summary_memory_percentage_circle_gb">%1$s Available of %2$s GB</string>
     <string name="title_storage_percentage_circle">Storage</string>
-    <string name="summary_storage_percentage_circle">%1$s Available of %2$s GB</string>
+    <string name="summary_available_of">%1$s Available of %2$s %3$s</string>
     <string name="used">Used</string>
-    <string name="mb_used">MB Used</string>
-    <string name="gb_used">GB Used</string>
+    <string name="unit_used">%1$s Used</string>
     <string name="most_utilized_vms">Most Utilized VMs</string>
     <string name="most_utilized_hosts">Most Utilized Hosts</string>
     <string name="data_centers">Data Centers</string>
@@ -236,6 +229,5 @@
     <string name="radio_button_event">Event</string>
     <string name="radio_button_blink">Blink</string>
     <string name="radio_button_vibrate">Vibrate</string>
-
 
 </resources>

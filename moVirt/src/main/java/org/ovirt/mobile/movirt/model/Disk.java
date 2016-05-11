@@ -20,26 +20,23 @@ public class Disk extends SnapshotEmbeddableEntity implements OVirtContract.Disk
         return CONTENT_URI;
     }
 
-    @DatabaseField(columnName = SIZE)
-    private String size;
-
     @DatabaseField(columnName = STATUS)
     private String status;
 
     @DatabaseField(columnName = VM_ID)
     private String vmId;
 
-    @DatabaseField(columnName = SIZE_MB)
-    private long sizeMb;
+    @DatabaseField(columnName = SIZE)
+    private long size;
 
-    @DatabaseField(columnName = USED_SIZE_MB)
-    private long usedSizeMb;
+    @DatabaseField(columnName = USED_SIZE)
+    private long usedSize;
 
-    public String getSize() {
+    public long getSize() {
         return size;
     }
 
-    public void setSize(String size) {
+    public void setSize(long size) {
         this.size = size;
     }
 
@@ -59,20 +56,14 @@ public class Disk extends SnapshotEmbeddableEntity implements OVirtContract.Disk
         this.vmId = vmId;
     }
 
-    public long getSizeMb() {
-        return sizeMb;
+    @Override
+    public long getUsedSize() {
+        return usedSize;
     }
 
-    public void setSizeMb(long sizeMb) {
-        this.sizeMb = sizeMb;
-    }
-
-    public long getUsedSizeMb() {
-        return usedSizeMb;
-    }
-
-    public void setUsedSizeMb(long usedSizeMb) {
-        this.usedSizeMb = usedSizeMb;
+    @Override
+    public void setUsedSize(long usedSize) {
+        this.usedSize = usedSize;
     }
 
     @Override
@@ -84,10 +75,9 @@ public class Disk extends SnapshotEmbeddableEntity implements OVirtContract.Disk
         Disk disk = (Disk) o;
 
         if (!ObjectUtils.equals(status, disk.status)) return false;
-        if (!ObjectUtils.equals(size, disk.size)) return false;
         if (!ObjectUtils.equals(vmId, disk.vmId)) return false;
-        if (sizeMb != disk.sizeMb) return false;
-        if (usedSizeMb != disk.usedSizeMb) return false;
+        if (size != disk.size) return false;
+        if (usedSize != disk.usedSize) return false;
 
         return true;
     }
@@ -97,10 +87,9 @@ public class Disk extends SnapshotEmbeddableEntity implements OVirtContract.Disk
         int result = super.hashCode();
 
         result = 31 * result + (status != null ? status.hashCode() : 0);
-        result = 31 * result + (size != null ? size.hashCode() : 0);
         result = 31 * result + (vmId != null ? vmId.hashCode() : 0);
-        result = 31 * result + (int) (sizeMb ^ (sizeMb >>> 32));
-        result = 31 * result + (int) (usedSizeMb ^ (usedSizeMb >>> 32));
+        result = 31 * result + (int) (size ^ (size >>> 32));
+        result = 31 * result + (int) (usedSize ^ (usedSize >>> 32));
 
         return result;
     }
@@ -109,10 +98,9 @@ public class Disk extends SnapshotEmbeddableEntity implements OVirtContract.Disk
     public ContentValues toValues() {
         ContentValues contentValues = super.toValues();
         contentValues.put(STATUS, getStatus());
-        contentValues.put(SIZE, getSize());
         contentValues.put(VM_ID, getVmId());
-        contentValues.put(SIZE_MB, getSizeMb());
-        contentValues.put(USED_SIZE_MB, getUsedSizeMb());
+        contentValues.put(SIZE, getSize());
+        contentValues.put(USED_SIZE, getUsedSize());
 
         return contentValues;
     }
@@ -122,9 +110,8 @@ public class Disk extends SnapshotEmbeddableEntity implements OVirtContract.Disk
         super.initFromCursorHelper(cursorHelper);
 
         setStatus(cursorHelper.getString(STATUS));
-        setSize(cursorHelper.getString(SIZE));
         setVmId(cursorHelper.getString(VM_ID));
-        setSizeMb(cursorHelper.getLong(SIZE_MB));
-        setUsedSizeMb(cursorHelper.getLong(USED_SIZE_MB));
+        setSize(cursorHelper.getLong(SIZE));
+        setUsedSize(cursorHelper.getLong(USED_SIZE));
     }
 }

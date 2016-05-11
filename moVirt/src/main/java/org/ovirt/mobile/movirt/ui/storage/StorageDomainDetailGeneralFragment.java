@@ -21,8 +21,7 @@ import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
-
-import java.text.DecimalFormat;
+import org.ovirt.mobile.movirt.util.MemorySize;
 
 @EFragment(R.layout.fragment_storage_domain_detail_general)
 public class StorageDomainDetailGeneralFragment extends RefreshableLoaderFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -120,14 +119,11 @@ public class StorageDomainDetailGeneralFragment extends RefreshableLoaderFragmen
         }
         formatView.setText(storageDomain.getStorageFormat());
 
-        if ((storageDomain.getUsedSizeMb() != -1 && storageDomain.getAvailableSizeMb() != -1)
-                && (storageDomain.getUsedSizeMb() != 0 || storageDomain.getAvailableSizeMb() != 0)) {
-            DecimalFormat decimalFormat = new DecimalFormat("0.#");
-            String freeSpace = decimalFormat.format(storageDomain.getAvailableSizeMb() / 1024f);
-            String totalSpace = decimalFormat.format((storageDomain.getUsedSizeMb() + storageDomain.getAvailableSizeMb()) / 1024f);
-
-            freeSpaceView.setText(getString(R.string.memory_size_gb, freeSpace));
-            totalSpaceView.setText(getString(R.string.memory_size_gb, totalSpace));
+        long usedSize = storageDomain.getUsedSize();
+        long availableSize = storageDomain.getAvailableSize();
+        if ((usedSize != -1 && availableSize != -1) && (usedSize != 0 || availableSize != 0)) {
+            freeSpaceView.setText(new MemorySize(availableSize).toString());
+            totalSpaceView.setText(new MemorySize(availableSize + usedSize).toString());
         } else {
             freeSpaceView.setText(getString(R.string.NA));
             totalSpaceView.setText(getString(R.string.NA));

@@ -29,4 +29,16 @@ public final class ObjectUtils {
             throw new IllegalArgumentException(sb.toString());
         }
     }
+
+    /**
+     * @param value value to be parsed
+     * @return long of value, -1 if it cannot be parsed
+     */
+    public static long parseLong(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (Exception e) {
+            return -1;
+        }
+    }
 }
