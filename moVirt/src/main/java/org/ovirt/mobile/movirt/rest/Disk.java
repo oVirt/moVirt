@@ -26,7 +26,7 @@ public class Disk implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Dis
         org.ovirt.mobile.movirt.model.Disk disk = new org.ovirt.mobile.movirt.model.Disk();
         disk.setId(id);
         disk.setName(name);
-        if (status != null && status.state != null) {
+        if (status != null) {
             disk.setStatus(status.state);
         }
 

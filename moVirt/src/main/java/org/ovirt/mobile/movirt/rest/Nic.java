@@ -25,11 +25,14 @@ public class Nic implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Nic>
         nic.setId(id);
         nic.setName(name);
         nic.setLinked(linked);
-        nic.setMacAddress(mac.address);
+        if (mac != null) {
+            nic.setMacAddress(mac.address);
+        }
         nic.setActive(active);
         nic.setPlugged(plugged);
-        nic.setVmId(vm.id);
-
+        if (vm != null) {
+            nic.setVmId(vm.id);
+        }
         return nic;
     }
 

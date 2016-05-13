@@ -41,9 +41,12 @@ public class VmsFragment extends BaseEntityListFragment<Vm> {
                     String vmName = cursor.getString(cursor.getColumnIndex(NAME));
                     textView.setText(vmName);
                 } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
-                    ImageView imageView = (ImageView) view;
-                    Vm.Status status = Vm.Status.valueOf(cursor.getString(cursor.getColumnIndex(STATUS)));
-                    imageView.setImageResource(status.getResource());
+                    String status = cursor.getString(cursor.getColumnIndex(STATUS));
+                    if (status != null) {
+                        ImageView imageView = (ImageView) view;
+                        Vm.Status vmStatus = Vm.Status.valueOf(status);
+                        imageView.setImageResource(vmStatus.getResource());
+                    }
                 } else if (columnIndex == cursor.getColumnIndex(CPU_USAGE)) {
                     TextView textView = (TextView) view;
                     double cpuUsage = cursor.getDouble(cursor.getColumnIndex(CPU_USAGE));

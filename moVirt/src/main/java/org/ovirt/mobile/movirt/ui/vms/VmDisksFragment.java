@@ -54,7 +54,7 @@ public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> 
                     textView.setText(sizeText);
                 } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
                     String status = cursor.getString(columnIndex);
-                    textView.setText(status.toUpperCase());
+                    textView.setText(status == null ? getString(R.string.NA) : status.toUpperCase());
                 }
 
                 return true;

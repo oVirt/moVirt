@@ -57,7 +57,9 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
         vm.setId(id);
         vm.setName(name);
         vm.setStatus(mapStatus(status));
-        vm.setClusterId(cluster.id);
+        if (cluster != null) {
+            vm.setClusterId(cluster.id);
+        }
         vm.setHostId(host != null ? host.id : "");
 
         if (statistics != null && statistics.statistic != null) {

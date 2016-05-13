@@ -53,7 +53,9 @@ class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
         host.setId(id);
         host.setName(name);
         host.setStatus(mapStatus(status));
-        host.setClusterId(cluster.id);
+        if (cluster != null) {
+            host.setClusterId(cluster.id);
+        }
 
         if (statistics != null && statistics.statistic != null) {
             BigDecimal cpu = getStatisticValueByName(USER_CPU_PERCENTAGE_STAT, statistics.statistic)

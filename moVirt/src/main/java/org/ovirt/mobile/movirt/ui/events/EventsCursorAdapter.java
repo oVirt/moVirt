@@ -33,9 +33,12 @@ public class EventsCursorAdapter extends SimpleCursorAdapter {
                     String description = cursor.getString(cursor.getColumnIndex(OVirtContract.Event.DESCRIPTION));
                     textView.setText(description);
                 } else if (columnIndex == cursor.getColumnIndex(SEVERITY)) {
-                    ImageView imageView = (ImageView) view;
-                    Event.Severity status = Event.Severity.valueOf(cursor.getString(cursor.getColumnIndex(SEVERITY)));
-                    imageView.setImageResource(status.getResource());
+                    String severity = cursor.getString(cursor.getColumnIndex(SEVERITY));
+                    if (severity != null) {
+                        ImageView imageView = (ImageView) view;
+                        Event.Severity status = Event.Severity.valueOf(severity);
+                        imageView.setImageResource(status.getResource());
+                    }
                 }
 
                 return true;

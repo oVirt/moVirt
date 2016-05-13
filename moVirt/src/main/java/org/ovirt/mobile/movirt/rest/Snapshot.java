@@ -36,8 +36,12 @@ public class Snapshot implements RestEntityWrapper<org.ovirt.mobile.movirt.model
         org.ovirt.mobile.movirt.model.Snapshot snapshot = new org.ovirt.mobile.movirt.model.Snapshot();
         snapshot.setId(id);
         snapshot.setName(description);
-        snapshot.setSnapshotStatus(SnapshotStatus.valueOf(snapshot_status.toUpperCase()));
-        snapshot.setType(SnapshotType.valueOf(type.toUpperCase()));
+        if (snapshot_status != null) {
+            snapshot.setSnapshotStatus(SnapshotStatus.valueOf(snapshot_status.toUpperCase()));
+        }
+        if (type != null) {
+            snapshot.setType(SnapshotType.valueOf(type.toUpperCase()));
+        }
         snapshot.setDate(date);
         snapshot.setPersistMemorystate(persist_memorystate);
 
