@@ -109,10 +109,10 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
                 loader = provider.query(StorageDomain.class).where(StorageDomain.TYPE, StorageDomain.Type.DATA.toString()).asLoader();
                 break;
             case VM_LOADER:
-                loader = provider.query(Vm.class).where(SNAPSHOT_ID, "").where(STATUS, Vm.Status.UP.toString()).asLoader();
+                loader = provider.query(Vm.class).empty(SNAPSHOT_ID).where(STATUS, Vm.Status.UP.toString()).asLoader();
                 break;
             case DISK_LOADER:
-                loader = provider.query(Disk.class).where(SNAPSHOT_ID, "").asLoader();
+                loader = provider.query(Disk.class).empty(SNAPSHOT_ID).asLoader();
                 break;
             default:
                 break;

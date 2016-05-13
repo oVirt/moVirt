@@ -270,7 +270,11 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
                 }
 
                 if (filterSnapshotId != null) {
-                    query.where(SNAPSHOT_ID, filterSnapshotId);
+                    if ("".equals(filterSnapshotId)) {
+                        query.empty(SNAPSHOT_ID);
+                    } else {
+                        query.where(SNAPSHOT_ID, filterSnapshotId);
+                    }
                 }
 
                 String searchNameString = searchText.getText().toString();

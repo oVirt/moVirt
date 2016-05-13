@@ -54,6 +54,7 @@ import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 import java.io.IOException;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.BaseEntity.ID;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
@@ -180,7 +181,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         cursorVmsAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
             @Override
             public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                final ProviderFacade.QueryBuilder<Vm> query = providerFacade.query(Vm.class);
+                final ProviderFacade.QueryBuilder<Vm> query = providerFacade.query(Vm.class).empty(SNAPSHOT_ID);
 
                 if (lastHost == null) {
                     return query.where(HOST_ID, "0").asLoader();
