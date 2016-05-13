@@ -27,9 +27,9 @@ public class PercentageCircleView extends View {
     //attr
     private int wholeBackgroundColor = Color.parseColor("#ffffff");
     private int backgroundColor = Color.parseColor("#666666");
-    private int foregroundColorA = Color.parseColor("#99cc03");//when percentage < FOREGROUND_COLOR_A_MAX_PERCENTAGE
-    private int foregroundColorB = Color.parseColor("#ec7108");//when percentage >= FOREGROUND_COLOR_A_MAX_PERCENTAGE && < FOREGROUND_COLOR_B_MAX_PERCENTAGE
-    private int foregroundColorC = Color.parseColor("#ce0000");//when percentage >= FOREGROUND_COLOR_C_MAX_PERCENTAGE
+    private int foregroundColorA = Color.parseColor("#3f9c35");//when percentage < FOREGROUND_COLOR_A_MAX_PERCENTAGE
+    private int foregroundColorB = Color.parseColor("#ec7a08");//when percentage >= FOREGROUND_COLOR_A_MAX_PERCENTAGE && < FOREGROUND_COLOR_B_MAX_PERCENTAGE
+    private int foregroundColorC = Color.parseColor("#cc0000");//when percentage >= FOREGROUND_COLOR_C_MAX_PERCENTAGE
     private int textColor;
     private int strokeWidth = 10;// default stroke width
     private int startAngle = -90;// default 12 o'clock

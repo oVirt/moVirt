@@ -33,7 +33,7 @@ public class DashboardActivity extends MovirtActivity {
     MenuItem menuSwitchConsumptionView;
 
     @InstanceState
-    boolean virtualView = false;
+    protected boolean virtualViewState = false;
 
     @AfterViews
     void init() {
@@ -50,19 +50,19 @@ public class DashboardActivity extends MovirtActivity {
     @OptionsItem(R.id.action_switch_consumption_view)
     @UiThread
     void switchConsumptionView() {
-        DashboardGeneralFragment dashboardFragment = (DashboardGeneralFragment) getSupportFragmentManager().findFragmentById(R.id.dashboard_general_fragment);
-        virtualView = !virtualView;
+        virtualViewState = !virtualViewState;
         invalidateOptionsMenu();
-        dashboardFragment.setVirtualView(virtualView);
-        getSupportFragmentManager().beginTransaction()
-                .detach(dashboardFragment)
-                .attach(dashboardFragment)
-                .commit();
+        DashboardGeneralFragment dashboardFragment = (DashboardGeneralFragment) getSupportFragmentManager().findFragmentById(R.id.dashboard_general_fragment);
+        dashboardFragment.render();
+    }
+
+    public boolean getVirtualViewState() {
+        return virtualViewState;
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menuSwitchConsumptionView.setTitle(virtualView ? R.string.show_physical : R.string.show_virtual);
+        menuSwitchConsumptionView.setTitle(virtualViewState ? R.string.show_physical : R.string.show_virtual);
         return super.onPrepareOptionsMenu(menu);
     }
 }
