@@ -36,6 +36,10 @@ public class CursorHelper {
         return getInt(columnName) > 0;
     }
 
+    public boolean getBoolean(int columnIndex) {
+        return cursor.getInt(columnIndex) > 0;
+    }
+
     public <E extends Enum<E>> E getEnum(String columnName, Class<E> clazz) {
         return E.valueOf(clazz, getString(columnName));
     }

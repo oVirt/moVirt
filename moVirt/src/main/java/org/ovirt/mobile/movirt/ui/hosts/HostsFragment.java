@@ -40,9 +40,12 @@ public class HostsFragment extends BaseEntityListFragment<Host> {
                     String vmName = cursor.getString(cursor.getColumnIndex(NAME));
                     textView.setText(vmName);
                 } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
-                    ImageView imageView = (ImageView) view;
-                    Host.Status status = Host.Status.valueOf(cursor.getString(cursor.getColumnIndex(STATUS)));
-                    imageView.setImageResource(status.getResource());
+                    String status = cursor.getString(cursor.getColumnIndex(STATUS));
+                    if (status != null) {
+                        ImageView imageView = (ImageView) view;
+                        Host.Status hostStatus = Host.Status.valueOf(status);
+                        imageView.setImageResource(hostStatus.getResource());
+                    }
                 } else if (columnIndex == cursor.getColumnIndex(CPU_USAGE)) {
                     TextView textView = (TextView) view;
                     double cpuUsage = cursor.getDouble(cursor.getColumnIndex(CPU_USAGE));

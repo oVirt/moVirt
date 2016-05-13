@@ -15,6 +15,7 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.ResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.util.CursorHelper;
 
 import java.util.List;
 
@@ -44,6 +45,7 @@ public class VmNicsFragment extends ResumeSyncableBaseEntityListFragment<Nic> {
         nicListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+
                 if (columnIndex == cursor.getColumnIndex(NAME)) {
                     TextView textView = (TextView) view;
                     String name = cursor.getString(columnIndex);
@@ -51,13 +53,15 @@ public class VmNicsFragment extends ResumeSyncableBaseEntityListFragment<Nic> {
                     textView.setText(getString(R.string.nic_name_and_address, name, mac));
                 } else if (columnIndex == cursor.getColumnIndex(LINKED)) {
                     ImageView imageView = (ImageView) view;
-                    boolean linked = cursor.getInt(columnIndex) > 0;
-                    boolean plugged = cursor.getInt(cursor.getColumnIndex(PLUGGED)) > 0;
+                    CursorHelper cursorHelper = new CursorHelper(cursor);
+                    boolean linked = cursorHelper.getBoolean(columnIndex);
+                    boolean plugged = cursorHelper.getBoolean(cursor.getColumnIndex(PLUGGED));
                     imageView.setImageResource((linked && plugged) ? R.drawable.icn_play : R.drawable.icn_stop);
                 } else if (columnIndex == cursor.getColumnIndex(PLUGGED)) {
                     TextView textView = (TextView) view;
-                    boolean plugged = cursor.getInt(columnIndex) > 0;
-                    boolean linked = cursor.getInt(cursor.getColumnIndex(LINKED)) > 0;
+                    CursorHelper cursorHelper = new CursorHelper(cursor);
+                    boolean plugged = cursorHelper.getBoolean(columnIndex);
+                    boolean linked = cursorHelper.getBoolean(cursor.getColumnIndex(LINKED));
                     textView.setText(getString(R.string.nic_para, linked, plugged));
                 }
 

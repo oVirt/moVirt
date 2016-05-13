@@ -14,9 +14,9 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.ResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.DateUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.DATE;
@@ -55,10 +55,10 @@ public class VmSnapshotsFragment extends ResumeSyncableBaseEntityListFragment<Sn
                     textView.setText(date);
                 } else if (columnIndex == cursor.getColumnIndex(SNAPSHOT_STATUS)) {
                     String status = cursor.getString(columnIndex);
-                    textView.setText(status.replace("_", " ").toUpperCase());
+                    textView.setText(status == null ? getString(R.string.NA) : status.replace("_", " ").toUpperCase());
                 } else if (columnIndex == cursor.getColumnIndex(PERSIST_MEMORYSTATE)) {
                     textView.setText(getString(R.string.snapshot_memory));
-                    textView.setVisibility(cursor.getInt(columnIndex) > 0 ? View.VISIBLE : View.GONE);
+                    textView.setVisibility((new CursorHelper(cursor)).getBoolean(columnIndex) ? View.VISIBLE : View.GONE);
                 }
 
                 return true;
