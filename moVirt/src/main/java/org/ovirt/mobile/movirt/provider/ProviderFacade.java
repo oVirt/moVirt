@@ -68,6 +68,17 @@ public class ProviderFacade {
             return where(columnName, value, Relation.IS_EQUAL);
         }
 
+        public QueryBuilder<E> empty(String columnName) {
+            if (selection.length() > 0) {
+                selection.append("AND ");
+            }
+            selection.append('(').append(columnName).append(" IS NULL OR ")
+                    .append(columnName).append(Relation.IS_EQUAL.getVal()).append("'')");
+
+            return this;
+        }
+
+
         public QueryBuilder<E> whereNotEqual(String columnName, String value) {
             return where(columnName, value, Relation.NOT_EQUAL);
         }

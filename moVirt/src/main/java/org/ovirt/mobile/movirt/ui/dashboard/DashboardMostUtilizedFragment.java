@@ -28,6 +28,7 @@ import org.ovirt.mobile.movirt.ui.EndlessScrollListener;
 import org.ovirt.mobile.movirt.ui.LoaderFragment;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
+import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;
 
 @EFragment(R.layout.fragment_dashboard_most_utilized)
@@ -66,7 +67,7 @@ public class DashboardMostUtilizedFragment extends LoaderFragment implements OVi
         vmCursorAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
-                return provider.query(Vm.class).orderByDescending(CPU_USAGE).limit(vmPage * ITEMS_PER_PAGE).asLoader();
+                return provider.query(Vm.class).empty(SNAPSHOT_ID).orderByDescending(CPU_USAGE).limit(vmPage * ITEMS_PER_PAGE).asLoader();
             }
         };
 

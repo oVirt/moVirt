@@ -8,14 +8,17 @@ import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
+import org.ovirt.mobile.movirt.model.SnapshotEmbeddableEntity;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.SEVERITY;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 
 public class DashboardBoxDataLoader extends AsyncTaskLoader<List<DashboardBoxData>> {
 
@@ -51,8 +54,13 @@ public class DashboardBoxDataLoader extends AsyncTaskLoader<List<DashboardBoxDat
         List<DashboardBoxData> boxDataList = new ArrayList<>();
 
         for (BoxDataEntityClass entityClass : BoxDataEntityClass.values()) {
-            DashboardBoxData boxData = new DashboardBoxData(entityClass.getEntityClass());
-            boxData.setEntityCount(provider.query(entityClass.getEntityClass()).asCursor().getCount());
+            final Class<? extends OVirtEntity> clazz = entityClass.getEntityClass();
+            DashboardBoxData boxData = new DashboardBoxData(clazz);
+            ProviderFacade.QueryBuilder query = provider.query(clazz);
+            if (SnapshotEmbeddableEntity.class.isAssignableFrom(clazz)) {
+                query.empty(SNAPSHOT_ID);
+            }
+            boxData.setEntityCount(query.asCursor().getCount());
             boxDataList.add(boxData);
         }
 
