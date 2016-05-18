@@ -72,6 +72,7 @@ public class MemorySize implements UsageResource {
     }
 
     /**
+     * @param unit unit of the size
      * @return value in units of unit
      */
     public double getValue(MemoryUnit unit) {
@@ -107,7 +108,8 @@ public class MemorySize implements UsageResource {
     }
 
     /**
-     * @param value adds value in Bytes, no operation occurs if value < 0
+     * @param value adds value in units of unit, no operation occurs if value < 0
+     * @param unit  unit of the size
      */
     public void addValue(long value, MemoryUnit unit) {
         if (value > 0) {

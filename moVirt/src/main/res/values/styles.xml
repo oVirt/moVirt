@@ -91,8 +91,7 @@
         <item name="actionBarStyle">@style/overlayActionBar</item>
     </style>
 
-    <style name="overlayActionBar" parent="@style/Widget.AppCompat.ActionBar">
-    </style>
+    <style name="overlayActionBar" parent="@style/Widget.AppCompat.ActionBar"></style>
 
 
     <style name="horizontallyCenteredContent">
@@ -117,16 +116,16 @@
         <item name="android:layout_marginBottom">3dp</item>
     </style>
 
-    <style name="percentageCircleSummaryTitle"  parent="@style/percentageCircleBase">
+    <style name="percentageCircleSummaryTitle" parent="@style/percentageCircleBase">
         <item name="android:text">@string/allocated</item>
     </style>
 
-    <style name="percentageCircleSummary"  parent="@style/percentageCircleBase">
+    <style name="percentageCircleSummary" parent="@style/percentageCircleBase">
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="percentageCircleOverCommitTitle"  parent="@style/percentageCircleBase">
+    <style name="percentageCircleOverCommitTitle" parent="@style/percentageCircleBase">
         <item name="android:text">@string/over_commit</item>
     </style>
 
@@ -138,6 +137,28 @@
         <item name="background_color">#666666</item>
         <item name="text_color">#000000</item>
         <item name="android:layout_gravity">center</item>
+    </style>
+
+    <style name="dashboardItemImage">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">22dp</item>
+        <item name="android:adjustViewBounds">true</item>
+    </style>
+
+    <style name="dashboardItemText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:inputType">text</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:layout_marginBottom">1sp</item>
+    </style>
+
+    <style name="dashboardVerticalDivider">
+        <item name="android:layout_width">1px</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_marginLeft">1dp</item>
+        <item name="android:layout_marginRight">1dp</item>
+        <item name="android:background">?android:attr/listDivider</item>
     </style>
 
 </resources>
