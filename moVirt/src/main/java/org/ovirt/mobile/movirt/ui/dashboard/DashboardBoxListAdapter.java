@@ -5,9 +5,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.ui.dashboard.maps.DashboardPosition;
 
 import java.util.List;
 
@@ -16,7 +18,7 @@ public class DashboardBoxListAdapter extends ArrayAdapter<DashboardBoxData> {
 
     public DashboardBoxListAdapter(Context context) {
         super(context, R.layout.dashboard_box_list_item);
-        inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     public void setData(List<DashboardBoxData> data) {
@@ -38,34 +40,35 @@ public class DashboardBoxListAdapter extends ArrayAdapter<DashboardBoxData> {
 
         DashboardBoxData item = getItem(position);
         TextView entityCount = (TextView) view.findViewById(R.id.entityCount);
-        TextView warningEventCount = (TextView) view.findViewById(R.id.warningEventCount);
-        TextView alertEventCount = (TextView) view.findViewById(R.id.alertEventCount);
-        TextView errorEventCount = (TextView) view.findViewById(R.id.errorEventCount);
+        ImageView entityImage = (ImageView) view.findViewById(R.id.entityImage);
 
         entityCount.setText(item.getEntityCountFormatStr(getContext()));
+        entityImage.setImageResource(item.getEntityImageId());
 
-        view.findViewById(R.id.warningEventLayout).setVisibility(View.GONE);
-        view.findViewById(R.id.alertEventLayout).setVisibility(View.GONE);
-        view.findViewById(R.id.errorEventLayout).setVisibility(View.GONE);
-        view.findViewById(R.id.normalEventLayout).setVisibility(View.GONE);
-        if (item.getWarningEventCount() == 0 && item.getAlertEventCount() == 0 && item.getErrorEventCount() == 0) {
-            view.findViewById(R.id.normalEventLayout).setVisibility(View.VISIBLE);
+        DashboardEntityStatus first = item.getStatusOnPosition(DashboardPosition.FIRST);
+        DashboardEntityStatus second = item.getStatusOnPosition(DashboardPosition.SECOND);
+        DashboardEntityStatus third = item.getStatusOnPosition(DashboardPosition.THIRD);
+
+        if (first.getCount() == 0 && second.getCount() == 0 && third.getCount() == 0) {
+            view.findViewById(R.id.normalLayout).setVisibility(View.GONE);
+            view.findViewById(R.id.naLayout).setVisibility(View.VISIBLE); // NA
         } else {
-            if (item.getWarningEventCount() > 0) {
-                view.findViewById(R.id.warningEventLayout).setVisibility(View.VISIBLE);
-                warningEventCount.setText(String.valueOf(item.getWarningEventCount()));
-            }
+            TextView firstStatusCount = (TextView) view.findViewById(R.id.firstStatusCount);
+            TextView secondStatusCount = (TextView) view.findViewById(R.id.secondStatusCount);
+            TextView thirdStatusCount = (TextView) view.findViewById(R.id.thirdStatusCount);
 
-            if (item.getAlertEventCount() > 0) {
-                view.findViewById(R.id.alertEventLayout).setVisibility(View.VISIBLE);
-                alertEventCount.setText(String.valueOf(item.getAlertEventCount()));
-            }
+            ImageView firstStatusImage = (ImageView) view.findViewById(R.id.firstStatusImage);
+            ImageView secondStatusImage = (ImageView) view.findViewById(R.id.secondStatusImage);
+            ImageView thirdStatusImage = (ImageView) view.findViewById(R.id.thirdStatusImage);
 
-            if (item.getErrorEventCount() > 0) {
-                view.findViewById(R.id.errorEventLayout).setVisibility(View.VISIBLE);
-                errorEventCount.setText(String.valueOf(item.getErrorEventCount()));
-            }
+            firstStatusCount.setText(String.valueOf(first.getCount()));
+            firstStatusImage.setImageResource(first.getIconResourceId());
+            secondStatusCount.setText(String.valueOf(second.getCount()));
+            secondStatusImage.setImageResource(second.getIconResourceId());
+            thirdStatusCount.setText(String.valueOf(third.getCount()));
+            thirdStatusImage.setImageResource(third.getIconResourceId());
         }
+
 
         return view;
     }

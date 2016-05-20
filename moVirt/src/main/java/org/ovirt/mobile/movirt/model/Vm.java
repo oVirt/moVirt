@@ -38,7 +38,8 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
         SAVING_STATE(R.drawable.vm_wait),
         SUSPENDED(R.drawable.vm_suspened),
         IMAGE_LOCKED(R.drawable.vm_wait),
-        POWERING_DOWN(R.drawable.vm_powering_down);
+        POWERING_DOWN(R.drawable.vm_powering_down),
+        RESTORING_STATE(R.drawable.vm_powering_up);
 
         Status(int resource) {
             this.resource = resource;

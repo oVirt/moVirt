@@ -3,6 +3,8 @@ package org.ovirt.mobile.movirt.ui.dashboard;
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
 
+import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.model.BaseEntity;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Event;
@@ -15,6 +17,7 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.SEVERITY;
@@ -35,15 +38,16 @@ public class DashboardBoxDataLoader extends AsyncTaskLoader<List<DashboardBoxDat
         CLUSTER(Cluster.class),
         HOST(Host.class),
         STORAGE_DOMAIN(StorageDomain.class),
-        VM(Vm.class);
+        VM(Vm.class),
+        EVENT(Event.class);
 
-        private final Class<? extends OVirtEntity> entityClass;
+        private final Class<? extends BaseEntity> entityClass;
 
-        BoxDataEntityClass(Class<? extends OVirtEntity> entityClass) {
+        BoxDataEntityClass(Class<? extends BaseEntity> entityClass) {
             this.entityClass = entityClass;
         }
 
-        public Class<? extends OVirtEntity> getEntityClass() {
+        public Class<? extends BaseEntity> getEntityClass() {
             return entityClass;
         }
 
@@ -54,43 +58,16 @@ public class DashboardBoxDataLoader extends AsyncTaskLoader<List<DashboardBoxDat
         List<DashboardBoxData> boxDataList = new ArrayList<>();
 
         for (BoxDataEntityClass entityClass : BoxDataEntityClass.values()) {
-            final Class<? extends OVirtEntity> clazz = entityClass.getEntityClass();
-            DashboardBoxData boxData = new DashboardBoxData(clazz);
+            final Class<? extends BaseEntity> clazz = entityClass.getEntityClass();
+
             ProviderFacade.QueryBuilder query = provider.query(clazz);
             if (SnapshotEmbeddableEntity.class.isAssignableFrom(clazz)) {
                 query.empty(SNAPSHOT_ID);
             }
-            boxData.setEntityCount(query.asCursor().getCount());
+
+            DashboardBoxData boxData = new DashboardBoxData(entityClass);
+            boxData.setData(query.all());
             boxDataList.add(boxData);
-        }
-
-        List<Event> eventList = (List<Event>) provider.query(Event.class).whereNotEqual(SEVERITY, Event.Severity.NORMAL.toString()).all();
-        if (eventList != null) {
-            for (Event event : eventList) {
-                DashboardBoxData boxData = null;
-
-                if (event.getVmId() != null) {
-                    boxData = boxDataList.get(BoxDataEntityClass.VM.ordinal());
-                } else if (event.getStorageDomainId() != null) {
-                    boxData = boxDataList.get(BoxDataEntityClass.STORAGE_DOMAIN.ordinal());
-                } else if (event.getHostId() != null) {
-                    boxData = boxDataList.get(BoxDataEntityClass.HOST.ordinal());
-                } else if (event.getClusterId() != null) {
-                    boxData = boxDataList.get(BoxDataEntityClass.CLUSTER.ordinal());
-                } else if (event.getDataCenterId() != null) {
-                    boxData = boxDataList.get(BoxDataEntityClass.DATA_CENTER.ordinal());
-                }
-
-                if (boxData != null) {
-                    if (event.getSeverity() == Event.Severity.WARNING) {
-                        boxData.setWarningEventCount(boxData.getWarningEventCount() + 1);
-                    } else if (event.getSeverity() == Event.Severity.ALERT) {
-                        boxData.setAlertEventCount(boxData.getAlertEventCount() + 1);
-                    } else if (event.getSeverity() == Event.Severity.ERROR) {
-                        boxData.setErrorEventCount(boxData.getErrorEventCount() + 1);
-                    }
-                }
-            }
         }
 
         return boxDataList;

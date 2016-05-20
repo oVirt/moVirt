@@ -1,112 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:padding="3dp">
 
-    <View android:layout_width="match_parent"
+    <View
+        android:layout_width="match_parent"
         android:layout_height="1px"
         android:background="?android:attr/listDivider" />
 
-    <TextView
-        android:id="@+id/entityCount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:textSize="20sp"
-        android:paddingBottom="5dp" />
+    <RelativeLayout
+        style="@style/horizontallyCenteredContent"
+        android:paddingBottom="5dp"
+        android:paddingTop="2dp">
+
+        <ImageView
+            android:id="@+id/entityImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/entityCount"
+            android:layout_alignTop="@+id/entityCount" />
+
+        <TextView
+            android:id="@+id/entityCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/entityImage"
+            android:layout_toRightOf="@+id/entityImage"
+            android:textSize="20sp" />
+    </RelativeLayout>
 
     <LinearLayout
-        android:orientation="horizontal"
+        android:id="@+id/normalLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center">
+        android:orientation="horizontal">
 
         <LinearLayout
-            android:id="@+id/warningEventLayout"
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="15dp"
-            android:visibility="gone">
+            style="@style/horizontallyCenteredContent"
+            android:layout_weight="1"
+            android:weightSum="2">
 
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/log_warning"
-                android:paddingTop="9dp"
-                android:layout_marginRight="5dp" />
+                android:id="@+id/firstStatusImage"
+                style="@style/dashboardItemImage"
+                android:layout_weight="1" />
 
             <TextView
-                android:id="@+id/warningEventCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-thin"
-                android:textSize="18sp" />
+                android:id="@+id/firstStatusCount"
+                style="@style/dashboardItemText"
+                android:layout_weight="1" />
+
         </LinearLayout>
 
+        <View style="@style/dashboardVerticalDivider" />
+
         <LinearLayout
-            android:id="@+id/alertEventLayout"
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:visibility="gone">
+            style="@style/horizontallyCenteredContent"
+            android:layout_weight="1"
+            android:weightSum="2">
 
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/log_alert"
-                android:paddingTop="9dp"
-                android:layout_marginRight="5dp" />
+                android:id="@+id/secondStatusImage"
+                style="@style/dashboardItemImage"
+                android:layout_weight="1" />
 
             <TextView
-                android:id="@+id/alertEventCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-thin"
-                android:textSize="18sp" />
+                android:id="@+id/secondStatusCount"
+                style="@style/dashboardItemText"
+                android:layout_weight="1" />
+
         </LinearLayout>
 
+        <View style="@style/dashboardVerticalDivider" />
+
         <LinearLayout
-            android:id="@+id/errorEventLayout"
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:visibility="gone">
+            style="@style/horizontallyCenteredContent"
+            android:layout_weight="1"
+            android:weightSum="2">
 
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/log_error"
-                android:paddingTop="9dp"
-                android:layout_marginRight="5dp" />
+                android:id="@+id/thirdStatusImage"
+                style="@style/dashboardItemImage"
+                android:layout_weight="1" />
 
             <TextView
-                android:id="@+id/errorEventCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-thin"
-                android:textSize="18sp" />
+                android:id="@+id/thirdStatusCount"
+                style="@style/dashboardItemText"
+                android:layout_weight="1" />
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/normalEventLayout"
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone">
+    </LinearLayout>
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/log_normal"
-                android:paddingTop="9dp" />
-        </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/naLayout"
+        style="@style/horizontallyCenteredContent"
+        android:visibility="gone">
+
+        <TextView
+            style="@style/dashboardItemText"
+            android:layout_weight="1"
+            android:text="@string/NA" />
     </LinearLayout>
 
 </LinearLayout>

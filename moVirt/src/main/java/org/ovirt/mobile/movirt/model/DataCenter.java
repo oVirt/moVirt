@@ -21,8 +21,32 @@ public class DataCenter extends OVirtEntity implements OVirtContract.DataCenter{
         return CONTENT_URI;
     }
 
+    public enum Status {
+        UNKNOWN(-1),
+        CONTEND(0),
+        MAINTENANCE(1),
+        NOT_OPERATIONAL(2),
+        PROBLEMATIC(3),
+        UNINITIALIZED(4),
+        UP(5);
+
+        Status(int resource) {
+            this.resource = resource;
+        }
+
+        private final int resource;
+
+        public int getResource() {
+            return resource;
+        }
+
+    }
+
     @DatabaseField(columnName = VERSION)
     private String version;
+
+    @DatabaseField(columnName = STATUS)
+    private Status status;
 
     public String getVersion() {
         return version;
@@ -30,6 +54,14 @@ public class DataCenter extends OVirtEntity implements OVirtContract.DataCenter{
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     @Override
@@ -41,6 +73,7 @@ public class DataCenter extends OVirtEntity implements OVirtContract.DataCenter{
         DataCenter dataCenter = (DataCenter) o;
 
         if (!ObjectUtils.equals(version, dataCenter.version)) return false;
+        if (status != dataCenter.status) return false;
 
         return true;
     }
@@ -49,6 +82,7 @@ public class DataCenter extends OVirtEntity implements OVirtContract.DataCenter{
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (version != null ? version.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
 
         return result;
     }
@@ -57,6 +91,7 @@ public class DataCenter extends OVirtEntity implements OVirtContract.DataCenter{
     public ContentValues toValues() {
         ContentValues values = super.toValues();
         values.put(VERSION, getVersion());
+        values.put(STATUS, getStatus().toString());
         return values;
     }
 
@@ -65,5 +100,6 @@ public class DataCenter extends OVirtEntity implements OVirtContract.DataCenter{
         super.initFromCursorHelper(cursorHelper);
 
         setVersion(cursorHelper.getString(VERSION));
+        setStatus(cursorHelper.getEnum(STATUS, DataCenter.Status.class));
     }
 }
