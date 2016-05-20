@@ -5,12 +5,12 @@ moVirt
 
 A mobile client for [oVirt](http://www.ovirt.org). 
 
-Current version: 1.3
+Current version: 1.4
 You can install it from [Google Play Store](https://play.google.com/store/apps/details?id=org.ovirt.mobile.movirt)
 Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/moVirt-release.apk?raw=true)
 
 ###Supported oVirt and Android per moVirt version
-| oVirt \ moVirt  | 1.1<sup>1</sup>  | 1.2<sup>1</sup> | 1.3<sup>2</sup> |
+| oVirt \ moVirt  | 1.1<sup>1</sup>  | 1.2<sup>1</sup> | 1.3<sup>2</sup>, 1.4<sup>2</sup> |
 | --------------- | ---- | --- | ----|
 | **3.4**         | yes  | yes | no<sup>3</sup>  |
 | **3.5**         |  no  | yes | yes |
@@ -27,6 +27,13 @@ Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/
 <img src = /images/screenshots/Screenshot_2015-07-15-23-55-52.png><img src = /images/screenshots/Screenshot_2015-07-15-23-56-12.png><img src = /images/screenshots/Screenshot_2015-07-15-23-57-21.png><img src = /images/screenshots/7inchDashoard.png>
 
 ###Changelog:
+####v1.4:
+* Added new dashboard functionality (virtual consumption, clickable cpu/memory consumption)
+* Dashboard's statuses now reflect state of vms, hosts, etc. instead of events.
+* Better UI (dashboard, adding/editing triggers)
+* Better sorting in lists
+* Memory units are now displayed correctly
+
 ####v1.3:
 * Added support for snapshots
 * Enhanced UI (added search button, alignments, colors)
@@ -54,15 +61,15 @@ Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/
 * Enriched VM activity with cluster and host information.
 
 ###Known issues:
-####v0.2, v1.0, v1.1, v1.2, v1.3:
+####All versions:
 * Non-admin users support currently disabled.
 * SPICE may not work well with SSL on Android 5.+
 * Certificates may not work on Android 4.1 (use "Ignore certificate checking" in advanced connection settings).
 
+####v1.3:
+* Dashboard and Data Matrix scanner may show incorrect number of vms or wrong vms (i.e. snapshots' vms).
+
 ####v0.2, v1.0, v1.1, v1.2:
-* Non-admin users support currently disabled.
-* SPICE may not work well with SSL on Android 5.+
-* Certificates may not work on Android 4.1 (use "Ignore certificate checking" in advanced connection settings).
 * Event triggers may spam you with notifications about old events.
 
 ###User's guide:    
