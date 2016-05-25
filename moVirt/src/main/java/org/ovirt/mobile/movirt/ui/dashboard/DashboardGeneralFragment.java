@@ -271,25 +271,26 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
 
         String availableText = availableResource.getReadableValueAsString(totalResource.getReadableUnit());
         String totalText = totalResource.getReadableValueAsString();
+        String totalUnit = totalResource.getReadableUnitAsString();
 
-        String summary = getString(R.string.summary_available_of, availableText, totalText,
-                totalResource.getReadableUnitAsString());
+        String summary = getString(R.string.summary_available_of, availableText, totalText, totalUnit);
 
         textView.setText(summary);
 
         // compute size of the text based on the string length,
-        int stringLength = availableText.length() + totalText.length();
+        int stringLength = availableText.length() + totalText.length() + totalUnit.length();
         int textLength;
 
         // auto-resizing hack
         switch (stringLength) {
-            // 12 is maximum stringLength
-            case 12:
+            // 15 is maximum stringLength
+            case 15:
+            case 14:
+            case 13:
                 textLength = 12;
                 break;
-            // length 11 doesn't occur
-            case 10:
-            case 9:
+            case 12:
+            case 11:
                 textLength = 13;
                 break;
             // other lengths can be displayed with default size 14sp
