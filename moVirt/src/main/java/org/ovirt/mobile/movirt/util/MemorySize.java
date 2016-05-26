@@ -14,12 +14,12 @@ public class MemorySize implements UsageResource {
 
     public enum MemoryUnit {
         B(0),
-        KB(1),
-        MB(2),
-        GB(3),
-        TB(4),
-        PB(5),
-        EB(6);
+        KiB(1),
+        MiB(2),
+        GiB(3),
+        TiB(4),
+        PiB(5),
+        EiB(6);
 
         private final int value;
         private static final Map<Integer, MemoryUnit> lookup = new HashMap<>();
@@ -123,7 +123,7 @@ public class MemorySize implements UsageResource {
      * @return value converted to highest possible unit, which you can get by calling getReadableUnit()
      */
     public double getReadableValue() {
-        return value / (double) getPowerOf1024(getExponentOfPower1024(value));
+        return value / (double) getPowerOf1024(getLogarithmOfBase1024(value));
     }
 
     /**
@@ -172,7 +172,7 @@ public class MemorySize implements UsageResource {
      * @return highest possible unit for value
      */
     public MemoryUnit getReadableUnit() {
-        return MemoryUnit.getEnum((int) getExponentOfPower1024(value));
+        return MemoryUnit.getEnum((int) getLogarithmOfBase1024(value));
     }
 
     /**
@@ -203,7 +203,12 @@ public class MemorySize implements UsageResource {
         return 1l << (10 * exponent);
     }
 
-    private long getExponentOfPower1024(long value) {
+    /**
+     *
+     * @param value positive number
+     * @return floored logarithm of a value
+     */
+    private long getLogarithmOfBase1024(long value) {
         return value > 0 ? (long) (Math.log(value) / Math.log(1024d)) : 0;
     }
 }
