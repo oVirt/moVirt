@@ -39,6 +39,7 @@
                 android:background="?android:attr/listDivider" />
 
             <fragment
+                android:id="@+id/dashboard_most_utilized_fragment"
                 class="org.ovirt.mobile.movirt.ui.dashboard.DashboardMostUtilizedFragment_"
                 android:layout_width="0px"
                 android:layout_height="match_parent"

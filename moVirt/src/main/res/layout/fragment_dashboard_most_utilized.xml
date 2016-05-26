@@ -1,59 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp">
+    android:layout_weight="1"
+    android:orientation="vertical"
+    android:paddingBottom="5dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="5dp">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/mostUtilizedText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:ellipsize="middle"
+        android:padding="10dp"
+        android:singleLine="true"
+        android:textSize="25sp"
+        android:textStyle="bold" />
+
+    <View
         android:layout_width="match_parent"
-        android:layout_height="0px"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:layout_height="1px"
+        android:background="?android:attr/listDivider" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/most_utilized_vms"
-            android:textStyle="bold"
-            android:textSize="25sp"
-            android:layout_gravity="center"
-            android:padding="10dp" />
-
-        <View android:layout_width="match_parent"
-            android:layout_height="1px"
-            android:background="?android:attr/listDivider" />
-
-        <ListView
-            android:id="@+id/vmListView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:headerDividersEnabled="true" />
-    </LinearLayout>
-
-    <LinearLayout
+    <ListView
+        android:id="@+id/listView"
         android:layout_width="match_parent"
-        android:layout_height="0px"
-        android:layout_weight="1"
-        android:orientation="vertical">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/most_utilized_hosts"
-            android:textStyle="bold"
-            android:textSize="25sp"
-            android:layout_gravity="center"
-            android:padding="10dp" />
-
-        <View android:layout_width="match_parent"
-            android:layout_height="1px"
-            android:background="?android:attr/listDivider" />
-
-        <ListView
-            android:id="@+id/hostListView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:headerDividersEnabled="true" />
-    </LinearLayout>
+        android:layout_height="match_parent" />
 </LinearLayout>
