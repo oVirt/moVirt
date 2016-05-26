@@ -46,14 +46,14 @@ public class DashboardBoxData {
             case STORAGE_DOMAIN:
             case HOST:
             case VM:
-                first.setIconResourceId(R.drawable.dashboard_warning);
+                first.setIconResourceId(R.drawable.dashboard_warning_white, R.drawable.dashboard_warning);
                 second.setIconResourceId(R.drawable.dashboard_circle_up);
                 third.setIconResourceId(R.drawable.dashboard_circle_down);
                 break;
             case EVENT:
                 first.setIconResourceId(R.drawable.dashboard_bell);
-                second.setIconResourceId(R.drawable.dashboard_warning);
-                third.setIconResourceId(R.drawable.dashboard_circle_error);
+                second.setIconResourceId(R.drawable.dashboard_warning_white, R.drawable.dashboard_warning);
+                third.setIconResourceId(R.drawable.dashboard_circle_error_white, R.drawable.dashboard_circle_error);
                 break;
         }
     }
