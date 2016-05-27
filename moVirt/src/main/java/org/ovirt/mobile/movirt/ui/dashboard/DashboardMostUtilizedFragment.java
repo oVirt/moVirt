@@ -1,9 +1,11 @@
 package org.ovirt.mobile.movirt.ui.dashboard;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,9 +37,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;
 public class DashboardMostUtilizedFragment extends LoaderFragment implements OVirtContract.NamedEntity {
     private final static String TAG = DashboardMostUtilizedFragment.class.getSimpleName();
 
-    private static final int VM_LOADER = 1;
-    private static final int HOST_LOADER = 2;
-
+    private static final int ACTIVE_LOADER = 1;
     private static final int ITEMS_PER_PAGE = 20;
 
     @Bean
@@ -50,89 +50,88 @@ public class DashboardMostUtilizedFragment extends LoaderFragment implements OVi
     ProviderFacade provider;
 
     @ViewById
-    ListView vmListView;
+    ListView listView;
 
     @ViewById
-    ListView hostListView;
+    TextView mostUtilizedText;
 
-    private CursorAdapterLoader vmCursorAdapterLoader;
-    private CursorAdapterLoader hostCursorAdapterLoader;
-    private int vmPage = 1;
-    private int hostPage = 1;
+    private CursorAdapterLoader cursorAdapterLoader;
+
+    private int page = 1;
 
     @AfterViews
     void init() {
-        CursorAdapter vmListAdapter = new MostUtilizedListAdapter(getActivity(), null, VM_LOADER);
-        vmListView.setAdapter(vmListAdapter);
-        vmCursorAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
-            @Override
-            public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
-                return provider.query(Vm.class).empty(SNAPSHOT_ID).orderByDescending(CPU_USAGE).limit(vmPage * ITEMS_PER_PAGE).asLoader();
-            }
-        };
-
-        CursorAdapter hostListAdapter = new MostUtilizedListAdapter(getActivity(), null, HOST_LOADER);
-        hostListView.setAdapter(hostListAdapter);
-        hostCursorAdapterLoader = new CursorAdapterLoader(hostListAdapter) {
-            @Override
-            public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
-                return provider.query(Host.class).orderByDescending(CPU_USAGE).limit(hostPage * ITEMS_PER_PAGE).asLoader();
-            }
-        };
-
-        getLoaderManager().initLoader(VM_LOADER, null, vmCursorAdapterLoader);
-        getLoaderManager().initLoader(HOST_LOADER, null, hostCursorAdapterLoader);
-
-        vmListView.setOnScrollListener(vmEndlessScrollListener);
-        hostListView.setOnScrollListener(hostEndlessScrollListener);
+        render();
+        listView.setOnScrollListener(endlessScrollListener);
     }
+
+    private void switchLoader(boolean virtualView) {
+        CursorAdapter listAdapter = new MostUtilizedListAdapter(getActivity(), null, ACTIVE_LOADER);
+
+        if (virtualView) {
+            cursorAdapterLoader = new CursorAdapterLoader(listAdapter) {
+                @Override
+                public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
+                    return provider.query(Vm.class).empty(SNAPSHOT_ID).orderByDescending(CPU_USAGE).limit(page * ITEMS_PER_PAGE).asLoader();
+                }
+            };
+        } else {
+            cursorAdapterLoader = new CursorAdapterLoader(listAdapter) {
+                @Override
+                public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
+                    return provider.query(Host.class).orderByDescending(CPU_USAGE).limit(page * ITEMS_PER_PAGE).asLoader();
+                }
+            };
+        }
+
+        listView.setAdapter(listAdapter);
+        restartLoader();
+    }
+
 
     @Override
     public void restartLoader() {
-        getLoaderManager().restartLoader(VM_LOADER, null, vmCursorAdapterLoader);
-        getLoaderManager().restartLoader(HOST_LOADER, null, hostCursorAdapterLoader);
+        getLoaderManager().restartLoader(ACTIVE_LOADER, null, cursorAdapterLoader);
     }
 
     @Override
     public void destroyLoader() {
-        getLoaderManager().destroyLoader(VM_LOADER);
-        getLoaderManager().destroyLoader(HOST_LOADER);
+        getLoaderManager().destroyLoader(ACTIVE_LOADER);
     }
 
-    @ItemClick(R.id.vmListView)
-    protected void vmItemClicked(Cursor cursor) {
-        Vm vm = vmFacade.mapFromCursor(cursor);
-        startActivity(vmFacade.getDetailIntent(vm, getActivity()));
+    @ItemClick(R.id.listView)
+    protected void itemClicked(Cursor cursor) {
+        Intent intent;
+
+        if (getVirtualViewState()) {
+            Vm vm = vmFacade.mapFromCursor(cursor);
+            intent = vmFacade.getDetailIntent(vm, getActivity());
+        } else {
+            Host host = hostFacade.mapFromCursor(cursor);
+            intent = hostFacade.getDetailIntent(host, getActivity());
+        }
+
+        startActivity(intent);
     }
 
-    @ItemClick(R.id.hostListView)
-    protected void hostItemClicked(Cursor cursor) {
-        Host host = hostFacade.mapFromCursor(cursor);
-        startActivity(hostFacade.getDetailIntent(host, getActivity()));
-    }
-
-    protected final EndlessScrollListener vmEndlessScrollListener = new EndlessScrollListener() {
+    protected final EndlessScrollListener endlessScrollListener = new EndlessScrollListener() {
         @Override
-        public void onLoadMore(int page, int totalItemsCount) {
-            loadMoreVmData(page);
+        public void onLoadMore(int pageNum, int totalItemsCount) {
+            page = pageNum;
+            getLoaderManager().restartLoader(ACTIVE_LOADER, null, cursorAdapterLoader);
         }
     };
 
-    public void loadMoreVmData(int page) {
-        this.vmPage = page;
-        getLoaderManager().restartLoader(VM_LOADER, null, vmCursorAdapterLoader);
+    public boolean getVirtualViewState() {
+        FragmentActivity activity = getActivity();
+        return activity != null && activity instanceof DashboardActivity && ((DashboardActivity) activity).getVirtualViewState();
     }
 
-    protected final EndlessScrollListener hostEndlessScrollListener = new EndlessScrollListener() {
-        @Override
-        public void onLoadMore(int page, int totalItemsCount) {
-            loadMoreHostData(page);
-        }
-    };
-
-    public void loadMoreHostData(int page) {
-        this.hostPage = page;
-        getLoaderManager().restartLoader(HOST_LOADER, null, hostCursorAdapterLoader);
+    public void render() {
+        boolean virtualView = getVirtualViewState();
+        String utilizedText = getString(virtualView ? R.string.most_utilized_vms : R.string.most_utilized_hosts);
+        mostUtilizedText.setText(utilizedText);
+        switchLoader(virtualView);
     }
 
     private static class MostUtilizedListAdapter extends CursorAdapter {

@@ -54,6 +54,10 @@ public class DashboardActivity extends MovirtActivity {
         invalidateOptionsMenu();
         DashboardGeneralFragment dashboardFragment = (DashboardGeneralFragment) getSupportFragmentManager().findFragmentById(R.id.dashboard_general_fragment);
         dashboardFragment.render();
+        DashboardMostUtilizedFragment mostUtilizedFragment = (DashboardMostUtilizedFragment) getSupportFragmentManager().findFragmentById(R.id.dashboard_most_utilized_fragment);
+        if (mostUtilizedFragment != null) {
+            mostUtilizedFragment.render();
+        }
     }
 
     public boolean getVirtualViewState() {
