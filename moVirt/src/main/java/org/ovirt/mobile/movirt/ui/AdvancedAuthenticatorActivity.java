@@ -117,7 +117,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         if (!TextUtils.isEmpty(endpoint)) {
             try {
                 URL url = new URL(endpoint);
-                txtCaUrl.setText("http://" + url.getHost() + "/ca.crt");
+                txtCaUrl.setText("http://" + url.getHost() + "/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA");
             } catch (MalformedURLException e) {
                 // no problem - just a convenience to help the most common case
             }

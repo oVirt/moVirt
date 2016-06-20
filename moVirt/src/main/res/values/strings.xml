@@ -125,7 +125,7 @@
     <string name="console">Console</string>
 
     <string name="account_endpoint">protocol://host:port/path/to/api</string>
-    <string name="ca_cert_account_endpoint">CA Location (e.g. http://my-instance/ca.crt)</string>
+    <string name="ca_cert_account_endpoint">CA Location (e.g. http://my-instance/ca.crt before 3.5 or http://my-instance/ovirt-engine/services/pki-resource?resource=ca-certificate&amp;format=X509-PEM-CA in 3.6+)</string>
     <string name="account_endpoint_summary">For example: https://my-instance:443/ovirt-engine/api</string>
     <string name="account_username">name@domain</string>
     <string name="account_password">password</string>

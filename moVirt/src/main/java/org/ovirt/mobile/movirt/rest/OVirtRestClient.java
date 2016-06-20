@@ -17,7 +17,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 
 @Rest(converters = MappingJackson2HttpMessageConverter.class)
 @Accept(MediaType.APPLICATION_JSON + "; detail=statistics+disks+nics")
-@RequiresHeader({"Filter", "Accept-Encoding", "Session-TTL", "Prefer"})
+@RequiresHeader({"Filter", "Accept-Encoding", "Session-TTL", "Prefer", "Version"})
 @SetsCookie("JSESSIONID")
 @RequiresCookie("JSESSIONID")
 @RequiresAuthentication
