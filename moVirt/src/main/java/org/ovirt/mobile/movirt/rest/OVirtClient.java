@@ -587,6 +587,7 @@ public class OVirtClient {
     @AfterInject
     void initClient() {
         restClient.setHeader("Accept-Encoding", "gzip");
+        restClient.setHeader("Version", "3");
 
         restClient.getRestTemplate().setRequestFactory(requestFactory);
     }

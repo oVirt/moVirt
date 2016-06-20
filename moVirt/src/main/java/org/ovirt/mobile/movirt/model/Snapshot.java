@@ -25,7 +25,8 @@ public class Snapshot extends OVirtEntity implements OVirtContract.Snapshot {
         REGULAR,
         ACTIVE,
         STATELESS,
-        PREVIEW
+        PREVIEW,
+        UNKNOWN
     }
 
     public enum SnapshotStatus {

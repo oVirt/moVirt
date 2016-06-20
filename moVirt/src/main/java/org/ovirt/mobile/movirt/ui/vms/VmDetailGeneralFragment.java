@@ -281,6 +281,13 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     @Override
     @Background
     public void onRefresh() {
+        // a hack because of https://bugzilla.redhat.com/1348138 - e.g. if we don't know the
+        // type we don't know if to show this details. But better than completely disable this feature it
+        // is better to show the tab always and just don't fail on NPE here.
+        if (vm == null) {
+            hideProgressBar();
+            return;
+        }
         if (vm.isSnapshotEmbedded()) {
             String snapshotId = vm.getSnapshotId();
             String vmId = provider.query(Snapshot.class).id(snapshotId).first().getVmId();
