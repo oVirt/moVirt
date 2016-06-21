@@ -277,11 +277,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         if (endpoint == null || username == null || password == null) {
             return;
         }
-        boolean endpointChanged = false;
-        if (!TextUtils.equals(endpoint, authenticator.getApiUrl()) ||
-                !TextUtils.equals(username, authenticator.getUserName())) {
-            endpointChanged = true;
-        }
+        boolean usernameChanged = !TextUtils.equals(username, authenticator.getUserName());
+        boolean urlChanged = !TextUtils.equals(endpoint, authenticator.getApiUrl());
+        boolean endpointChanged = urlChanged || usernameChanged;
 
         if (accountManager.getAccountsByType(MovirtAuthenticator.ACCOUNT_TYPE).length == 0) {
             if (accountManager.addAccountExplicitly(MovirtAuthenticator.MOVIRT_ACCOUNT, password, null)) {
@@ -300,8 +298,12 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         changeProgressVisibilityTo(View.VISIBLE);
 
         try {
-            String token = client.login(endpoint, username, password, adminPriv);
-            onTokenReceived(token, endpointChanged);
+            if (urlChanged) {
+                authenticator.setApiMajorVersion("");
+            }
+
+            OVirtClient.LoginResult result = client.login(endpoint, username, password, adminPriv);
+            onLoginResultReceived(result, endpointChanged);
         } catch (Exception e) {
             changeProgressVisibilityTo(View.GONE);
             Throwable cause = e.getCause();
@@ -324,24 +326,27 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         }
     }
 
-    void onTokenReceived(String token, boolean endpointChanged) {
+    void onLoginResultReceived(OVirtClient.LoginResult loginResult, boolean endpointChanged) {
+        String token = loginResult.getToken();
         changeProgressVisibilityTo(View.GONE);
         if (TextUtils.isEmpty(token)) {
             showError("Error: the returned token is empty." +
                     "\nTry https protocol and add your certificate in " +
                     getString(R.string.advanced_settings) + ".");
             return;
-        } else {
-            showToast("Login successful");
-            if (endpointChanged) {
-                // there is a different set of events and since we are counting only the increments,
-                // this ones are not needed anymore
-                eventsHandler.deleteEvents();
-            }
-
-            syncUtils.triggerRefresh();
         }
+
+        showToast("Login successful");
+        if (endpointChanged) {
+            // there is a different set of events and since we are counting only the increments,
+            // this ones are not needed anymore
+            eventsHandler.deleteEvents();
+        }
+
+        syncUtils.triggerRefresh();
+
         accountManager.setAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, token);
+        authenticator.setApiMajorVersion(loginResult.getApi());
 
         final Intent intent = new Intent();
         intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, MovirtAuthenticator.ACCOUNT_NAME);

@@ -132,7 +132,7 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     Snapshot getSnapshot(String vmId, String snapshotId);
 
     @Get("/")
-    EmptyResult login();
+    Api login();
 
     void setCookie(String name, String value);
 

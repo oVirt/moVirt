@@ -41,7 +41,6 @@ import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
@@ -427,15 +426,6 @@ public class OVirtClient {
         };
     }
 
-    public void getNics(final String id, Response<Nics> response) {
-        fireRestRequest(new Request<Nics>() {
-            @Override
-            public Nics fire() {
-                return restClient.getNics(id);
-            }
-        }, response);
-    }
-
     public Request<List<Host>> getHostsRequest() {
         return new Request<List<Host>>() {
             @Override
@@ -523,17 +513,17 @@ public class OVirtClient {
         };
     }
 
-    public String login(String apiUrl, String username, String password, final boolean hasAdminPrivileges) {
+    public LoginResult login(String apiUrl, String username, String password, final boolean hasAdminPrivileges) {
         setPersistentAuthHeaders();
         restClient.setRootUrl(apiUrl);
         restClient.setHttpBasicAuth(username, password);
         restClient.setCookie("JSESSIONID", "");
         requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
         restClient.setHeader(FILTER, Boolean.toString(!hasAdminPrivileges));
-        restClient.login();
+        Api api = restClient.login();
         String sessionId = restClient.getCookie("JSESSIONID");
         restClient.setHttpBasicAuth("", "");
-        return sessionId;
+        return new LoginResult(api, sessionId);
     }
 
     public void getEventsSince(final int lastEventId, Response<List<Event>> response) {
@@ -587,9 +577,13 @@ public class OVirtClient {
     @AfterInject
     void initClient() {
         restClient.setHeader("Accept-Encoding", "gzip");
-        restClient.setHeader("Version", "3");
+        setupVersionHeader();
 
         restClient.getRestTemplate().setRequestFactory(requestFactory);
+    }
+
+    public void setupVersionHeader() {
+        restClient.setHeader("Version", authenticator.getApiMajorVersion());
     }
 
     /**
@@ -894,6 +888,32 @@ public class OVirtClient {
 
     private interface WrapPredicate<E> {
         boolean toWrap(E entity);
+    }
+
+    public class LoginResult {
+        Api api;
+        String token;
+
+        public LoginResult(Api api, String token) {
+            this.api = api;
+            this.token = token;
+        }
+
+        public Api getApi() {
+            return api;
+        }
+
+        public void setApi(Api api) {
+            this.api = api;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
     }
 
     public static abstract class SimpleResponse<T> implements Response<T> {
