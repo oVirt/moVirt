@@ -5,16 +5,17 @@ moVirt
 
 A mobile client for [oVirt](http://www.ovirt.org). 
 
-Current version: 1.4
+Current version: 1.5
 You can install it from [Google Play Store](https://play.google.com/store/apps/details?id=org.ovirt.mobile.movirt)
 Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/moVirt-release.apk?raw=true)
 
 ###Supported oVirt and Android per moVirt version
-| oVirt \ moVirt  | 1.1<sup>1</sup>  | 1.2<sup>1</sup> | 1.3<sup>2</sup>, 1.4<sup>2</sup> |
-| --------------- | ---- | --- | ----|
-| **3.4**         | yes  | yes | no<sup>3</sup>  |
-| **3.5**         |  no  | yes | yes |
-| **3.6**         |  no  | no  | yes |
+| oVirt \ moVirt  | 1.1<sup>1</sup>  | 1.2<sup>1</sup> | 1.3<sup>2</sup>, 1.4<sup>2</sup> | 1.5<sup>2</sup> |
+| --------------- | ---- | --- | ----| --- |
+| **3.4**         | yes  | yes | no<sup>3</sup>  | no<sup>3</sup>  |
+| **3.5**         |  no  | yes | yes | no<sup>3</sup>  |
+| **3.6**         |  no  | no  | yes | yes |
+| **4.0**         |  no  | no  | no | yes |
 
 **[1]**: works on Android 4.0+
 
@@ -27,6 +28,9 @@ Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/
 <img src = /images/screenshots/Screenshot_2015-07-15-23-55-52.png><img src = /images/screenshots/Screenshot_2015-07-15-23-56-12.png><img src = /images/screenshots/Screenshot_2015-07-15-23-57-21.png><img src = /images/screenshots/7inchDashoard.png>
 
 ###Changelog:
+####v1.4:
+* Added support of the 4.0 engine
+
 ####v1.4:
 * Added new dashboard functionality (virtual consumption, clickable cpu/memory consumption)
 * Dashboard's statuses now reflect state of vms, hosts, etc. instead of events.
