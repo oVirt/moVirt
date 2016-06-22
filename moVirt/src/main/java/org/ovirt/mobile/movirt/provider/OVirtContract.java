@@ -247,7 +247,6 @@ public interface OVirtContract {
 
         String LINKED = "linked";
         String MAC_ADDRESS = "mac_address";
-        String ACTIVE = "active";
         String PLUGGED = "plugged";
     }
 }

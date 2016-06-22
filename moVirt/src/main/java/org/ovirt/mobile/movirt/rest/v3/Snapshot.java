@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Snapshot extends org.ovirt.mobile.movirt.rest.Snapshot {
     public Vm vm;
+    public String type;
 
     public Snapshot() {
     }
@@ -18,6 +19,8 @@ public class Snapshot extends org.ovirt.mobile.movirt.rest.Snapshot {
 
     public org.ovirt.mobile.movirt.model.Snapshot toEntity() {
         org.ovirt.mobile.movirt.model.Snapshot snapshot = super.toEntity();
+        snapshot.setType(super.getSnapshotType(type));
+
         if (vm != null) {
             snapshot.setVm(vm.toEntity());
         }

@@ -11,7 +11,6 @@ public abstract class Nic implements RestEntityWrapper<org.ovirt.mobile.movirt.m
     public String name;
     public boolean linked;
     public Mac mac;
-    public boolean active;
     public boolean plugged;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -27,7 +26,6 @@ public abstract class Nic implements RestEntityWrapper<org.ovirt.mobile.movirt.m
         if (mac != null) {
             nic.setMacAddress(mac.address);
         }
-        nic.setActive(active);
         nic.setPlugged(plugged);
 
         return nic;

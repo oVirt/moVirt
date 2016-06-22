@@ -13,7 +13,6 @@ public abstract class Snapshot implements RestEntityWrapper<org.ovirt.mobile.mov
     public String id;
     public String description;
     public String snapshot_status;
-    public String type;
     public long date;
     public boolean persist_memorystate;
 
@@ -39,15 +38,17 @@ public abstract class Snapshot implements RestEntityWrapper<org.ovirt.mobile.mov
             snapshot.setSnapshotStatus(SnapshotStatus.valueOf(snapshot_status.toUpperCase()));
         }
 
-        try {
-            snapshot.setType(SnapshotType.valueOf(type.toUpperCase()));
-        } catch (Exception e) {
-            snapshot.setType(SnapshotType.UNKNOWN);
-        }
-
         snapshot.setDate(date);
         snapshot.setPersistMemorystate(persist_memorystate);
 
         return snapshot;
+    }
+
+    protected org.ovirt.mobile.movirt.model.Snapshot.SnapshotType getSnapshotType(String type) {
+        try {
+            return org.ovirt.mobile.movirt.model.Snapshot.SnapshotType.valueOf(type.toUpperCase());
+        } catch (Exception e) {
+            return org.ovirt.mobile.movirt.model.Snapshot.SnapshotType.UNKNOWN;
+        }
     }
 }
