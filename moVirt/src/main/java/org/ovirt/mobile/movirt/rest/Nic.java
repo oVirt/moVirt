@@ -6,14 +6,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * Created by yixin on 2015/3/24.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Nic implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Nic> {
+public abstract class Nic implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Nic> {
     public String id;
     public String name;
     public boolean linked;
     public Mac mac;
     public boolean active;
     public boolean plugged;
-    public Vm vm;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Mac {
@@ -30,9 +29,7 @@ public class Nic implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Nic>
         }
         nic.setActive(active);
         nic.setPlugged(plugged);
-        if (vm != null) {
-            nic.setVmId(vm.id);
-        }
+
         return nic;
     }
 

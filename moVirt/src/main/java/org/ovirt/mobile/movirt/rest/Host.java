@@ -9,7 +9,7 @@ import java.math.RoundingMode;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
+public abstract class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
 
     private static final String USER_CPU_PERCENTAGE_STAT = "cpu.current.user";
     private static final String SYSTEM_CPU_PERCENTAGE_STAT = "cpu.current.system";
@@ -19,8 +19,6 @@ class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
     // public for json mapping
     public String id;
     public String name;
-    public Status status;
-    public Cluster cluster;
     public Statistics statistics;
     public String memory;
     public Os os;
@@ -52,10 +50,6 @@ class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
         org.ovirt.mobile.movirt.model.Host host = new org.ovirt.mobile.movirt.model.Host();
         host.setId(id);
         host.setName(name);
-        host.setStatus(mapStatus(status));
-        if (cluster != null) {
-            host.setClusterId(cluster.id);
-        }
 
         if (statistics != null && statistics.statistic != null) {
             BigDecimal cpu = getStatisticValueByName(USER_CPU_PERCENTAGE_STAT, statistics.statistic)
@@ -103,16 +97,6 @@ class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
         }
 
         return host;
-    }
-
-    private static org.ovirt.mobile.movirt.model.Host.Status mapStatus(Status state) {
-        try {
-            return org.ovirt.mobile.movirt.model.Host.Status.valueOf(state.state.toUpperCase());
-        } catch (Exception e) {
-            // this is the error status also on engine
-            return org.ovirt.mobile.movirt.model.Host.Status.UNASSIGNED;
-        }
-
     }
 
     private static BigDecimal getStatisticValueByName(String name, List<Statistic> statistics) {

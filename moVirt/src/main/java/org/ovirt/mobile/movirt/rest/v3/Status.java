@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.rest;
+package org.ovirt.mobile.movirt.rest.v3;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

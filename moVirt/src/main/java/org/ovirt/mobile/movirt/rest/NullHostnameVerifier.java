@@ -15,7 +15,7 @@ public class NullHostnameVerifier implements HostnameVerifier {
     private static final String TAG = NullHostnameVerifier.class.getSimpleName();
 
     public boolean verify(String hostname, SSLSession session) {
-        Log.d(TAG,"Inside Verify");
+        Log.d(TAG, "Inside Verify");
         return true;
     }
 }

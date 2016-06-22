@@ -5,13 +5,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class StorageDomain implements RestEntityWrapper<org.ovirt.mobile.movirt.model.StorageDomain> {
+public abstract class StorageDomain implements RestEntityWrapper<org.ovirt.mobile.movirt.model.StorageDomain> {
     public String id;
     public String name;
     public String type;
     public String available;
     public String used;
-    public Status status;
     public Storage storage;
     public String storage_format;
 
@@ -28,12 +27,6 @@ public class StorageDomain implements RestEntityWrapper<org.ovirt.mobile.movirt.
         storageDomain.setId(id);
         storageDomain.setName(name);
         storageDomain.setStorageFormat(storage_format);
-
-        if (status != null && status.state != null) {
-            storageDomain.setStatus(mapStatus(status));
-        } else {
-            storageDomain.setStatus(org.ovirt.mobile.movirt.model.StorageDomain.Status.ACTIVE);
-        }
 
         if (storage != null) {
             if (storage.address != null) {
@@ -63,13 +56,4 @@ public class StorageDomain implements RestEntityWrapper<org.ovirt.mobile.movirt.
         }
 
     }
-
-    private static org.ovirt.mobile.movirt.model.StorageDomain.Status mapStatus(Status status) {
-        try {
-            return org.ovirt.mobile.movirt.model.StorageDomain.Status.valueOf(status.state.toUpperCase());
-        } catch (Exception e) {
-            return org.ovirt.mobile.movirt.model.StorageDomain.Status.UNKNOWN;
-        }
-    }
-
 }

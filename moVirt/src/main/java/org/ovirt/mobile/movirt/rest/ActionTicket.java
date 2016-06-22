@@ -13,6 +13,6 @@ public class ActionTicket {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Ticket {
-      public String value;
+        public String value;
     }
 }
