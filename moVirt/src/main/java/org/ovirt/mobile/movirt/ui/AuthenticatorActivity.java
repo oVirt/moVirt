@@ -298,12 +298,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         changeProgressVisibilityTo(View.VISIBLE);
 
         try {
-            if (urlChanged) {
-                authenticator.setApiMajorVersion("");
-            }
-
-            OVirtClient.LoginResult result = client.login(endpoint, username, password, adminPriv);
-            onLoginResultReceived(result, endpointChanged);
+            String token = client.login(username, password);
+            onLoginResultReceived(token, endpointChanged);
         } catch (Exception e) {
             changeProgressVisibilityTo(View.GONE);
             Throwable cause = e.getCause();
@@ -326,10 +322,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         }
     }
 
-    void onLoginResultReceived(OVirtClient.LoginResult loginResult, boolean endpointChanged) {
-        String token = loginResult.getToken();
+    void onLoginResultReceived(String token, boolean endpointChanged) {
         changeProgressVisibilityTo(View.GONE);
-        if (TextUtils.isEmpty(token)) {
+        if (!authenticator.enforceBasicAuth() && TextUtils.isEmpty(token)){
             showError("Error: the returned token is empty." +
                     "\nTry https protocol and add your certificate in " +
                     getString(R.string.advanced_settings) + ".");
@@ -343,10 +338,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             eventsHandler.deleteEvents();
         }
 
-        syncUtils.triggerRefresh();
-
         accountManager.setAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, token);
-        authenticator.setApiMajorVersion(loginResult.getApi());
+        syncUtils.triggerRefresh();
 
         final Intent intent = new Intent();
         intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, MovirtAuthenticator.ACCOUNT_NAME);
