@@ -47,15 +47,6 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Delete("/vms/{vmId}/snapshots/{snapshotId}")
     void deleteSnapshot(String vmId, String snapshotId);
 
-    @Post("/vms/{vmId}/preview_snapshot")
-    void previewSnapshot(SnapshotAction snapshotAction, String vmId);
-
-    @Post("/vms/{vmId}/undo_snapshot")
-    void undoSnapshot(Action action, String vmId);
-
-    @Post("/vms/{vmId}/commit_snapshot")
-    void commitSnapshot(Action action, String vmId);
-
     @Post("/vms/{vmId}/snapshots/{snapshotId}/restore")
     void restoreSnapshot(SnapshotAction action, String vmId, String snapshotId);
 
@@ -76,6 +67,24 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     String getCookie(String name);
 
     // API 3 and 4 methods
+
+    @Post("/vms/{vmId}/preview_snapshot")
+    void previewSnapshotV3(SnapshotAction snapshotAction, String vmId);
+
+    @Post("/vms/{vmId}/previewsnapshot")
+    void previewSnapshotV4(SnapshotAction snapshotAction, String vmId);
+
+    @Post("/vms/{vmId}/undo_snapshot")
+    void undoSnapshotV3(Action action, String vmId);
+
+    @Post("/vms/{vmId}/undosnapshot")
+    void undoSnapshotV4(Action action, String vmId);
+
+    @Post("/vms/{vmId}/commit_snapshot")
+    void commitSnapshotV3(Action action, String vmId);
+
+    @Post("/vms/{vmId}/commitsnapshot")
+    void commitSnapshotV4(Action action, String vmId);
 
     @Post("/vms/{vmId}/snapshots")
     void createSnapshot(Snapshot snapshot, String vmId);

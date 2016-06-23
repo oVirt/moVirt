@@ -254,7 +254,11 @@ public class OVirtClient {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
-                restClient.previewSnapshot(snapshotAction, vmId);
+                if (isApiV3()) {
+                    restClient.previewSnapshotV3(snapshotAction, vmId);
+                } else {
+                    restClient.previewSnapshotV4(snapshotAction, vmId);
+                }
                 return null;
             }
         }, response);
@@ -274,7 +278,11 @@ public class OVirtClient {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
-                restClient.commitSnapshot(new Action(), vmId);
+                if (isApiV3()) {
+                    restClient.commitSnapshotV3(new Action(), vmId);
+                } else {
+                    restClient.commitSnapshotV4(new Action(), vmId);
+                }
                 return null;
             }
         }, response);
@@ -284,7 +292,11 @@ public class OVirtClient {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
-                restClient.undoSnapshot(new Action(), vmId);
+                if (isApiV3()) {
+                    restClient.undoSnapshotV3(new Action(), vmId);
+                } else {
+                    restClient.undoSnapshotV4(new Action(), vmId);
+                }
                 return null;
             }
         }, response);
