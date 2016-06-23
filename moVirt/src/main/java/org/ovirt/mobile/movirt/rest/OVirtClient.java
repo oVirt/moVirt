@@ -63,6 +63,7 @@ public class OVirtClient {
     public static final String JSESSIONID = "JSESSIONID";
     public static final String FILTER = "Filter";
     public static final String PREFER = "Prefer";
+    public static final String SESSION_TTL = "Session-TTL";
     private static final String TAG = OVirtClient.class.getSimpleName();
     ObjectMapper mapper = new ObjectMapper();
 
@@ -609,19 +610,6 @@ public class OVirtClient {
         };
     }
 
-    public LoginResult login(String apiUrl, String username, String password, final boolean hasAdminPrivileges) {
-        setPersistentAuthHeaders();
-        restClient.setRootUrl(apiUrl);
-        restClient.setHttpBasicAuth(username, password);
-        restClient.setCookie("JSESSIONID", "");
-        requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
-        restClient.setHeader(FILTER, Boolean.toString(!hasAdminPrivileges));
-        Api api = restClient.login();
-        String sessionId = restClient.getCookie("JSESSIONID");
-        restClient.setHttpBasicAuth("", "");
-        return new LoginResult(api, sessionId);
-    }
-
     public void getEventsSince(final int lastEventId, Response<List<Event>> response) {
         final SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(app);
@@ -682,6 +670,65 @@ public class OVirtClient {
         restClient.setHeader("Version", authenticator.getApiMajorVersion());
     }
 
+    private void setPersistentV3AuthHeaders() {
+        restClient.setHeader(SESSION_TTL, "120"); // 2h
+        restClient.setHeader(PREFER, "persistent-auth, csrf-protection");
+    }
+
+    private void resetClientSettings() {
+        restClient.setHeader(SESSION_TTL, "");
+        restClient.setHeader(PREFER, "");
+        restClient.setCookie(JSESSIONID, "");
+        restClient.setAuthentication(new HttpAuthentication() {
+            @Override
+            public String getHeaderValue() {
+                // empty authentication - e.g. not the basic one
+                return "";
+            }
+        });
+    }
+
+    private void updateClientBeforeCall() {
+        restClient.setHeader(FILTER, Boolean.toString(!authenticator.hasAdminPermissions()));
+        requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
+        restClient.setRootUrl(authenticator.getApiUrl());
+    }
+
+    /**
+     * @param username username
+     * @param password password
+     * @return auth token depending on API version, if enforceBasicAuth is true then returns empty string
+     */
+    public String login(String username, String password) {
+        resetClientSettings();
+        updateClientBeforeCall();
+        restClient.setHttpBasicAuth(username, password);
+
+        Api api = restClient.loginV3();
+        authenticator.setApiMajorVersion(api);
+        setupVersionHeader();
+
+        String token = "";
+
+        if (!authenticator.enforceBasicAuth()) {
+            if (isApiV3()) {
+                setPersistentV3AuthHeaders();
+                restClient.setCookie(JSESSIONID, "");
+                restClient.loginV3();
+                token = restClient.getCookie(JSESSIONID);
+            } else {
+                resetClientSettings();
+                restClient.setRootUrl(authenticator.getBaseUrl());
+
+                token = restClient.loginV4(username, password).getAccessToken();
+                restClient.setRootUrl(authenticator.getApiUrl());
+            }
+        }
+
+        resetClientSettings();
+        return token;
+    }
+
     /**
      * has to be synced because of error handling - otherwise it would not be possible to bind the error
      */
@@ -705,10 +752,9 @@ public class OVirtClient {
             editConnectionIntent.putExtra(AccountManager.KEY_INTENT, accountAuthenticatorResponse);
             context.sendBroadcast(editConnectionIntent);
         } else {
+            resetClientSettings();
             updateClientBeforeCall();
             restClient.setHttpBasicAuth(userName, password);
-            restClient.setHeader(PREFER, "");
-            restClient.setHeader(JSESSIONID, "");
 
             if (response != null) {
                 response.before();
@@ -760,56 +806,6 @@ public class OVirtClient {
         }
     }
 
-    private ConnectionInfo updateConnectionInfo(boolean success) {
-        ConnectionInfo connectionInfo;
-        ConnectionInfo.State state;
-        boolean prevFailed = false;
-        boolean configured = sharedPreferencesHelper.isConnectionNotificationEnabled();
-        Collection<ConnectionInfo> connectionInfos = provider.query(ConnectionInfo.class).all();
-        int size = connectionInfos.size();
-
-        if (size != 0) {
-            connectionInfo = connectionInfos.iterator().next();
-            ConnectionInfo.State lastState = connectionInfo.getState();
-            if (lastState == ConnectionInfo.State.FAILED || lastState == ConnectionInfo.State.FAILED_REPEATEDLY) {
-                prevFailed = true;
-            }
-        } else {
-            connectionInfo = new ConnectionInfo();
-        }
-
-        if (!success) {
-            state = prevFailed ? ConnectionInfo.State.FAILED_REPEATEDLY : ConnectionInfo.State.FAILED;
-        } else {
-            state = ConnectionInfo.State.OK;
-        }
-        connectionInfo.updateWithCurrentTime(state);
-
-        //update in DB
-        if (size != 0) {
-            provider.batch().update(connectionInfo).apply();
-        } else {
-            provider.batch().insert(connectionInfo).apply();
-        }
-
-        //show Notification
-        if (!success && !prevFailed && configured) {
-            Intent resultIntent = new Intent(context, MainActivity_.class);
-            resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            PendingIntent resultPendingIntent =
-                    PendingIntent.getActivity(
-                            context,
-                            0,
-                            resultIntent,
-                            0
-                    );
-            notificationHelper.showConnectionNotification(
-                    context, resultPendingIntent, connectionInfo);
-        }
-
-        return connectionInfo;
-    }
-
     private <T> RestCallResult doFireRequestWithPersistentAuth(Request<T> request, Response<T> response) {
         AccountManagerFuture<Bundle> resp = accountManager.getAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, null, false, null, null);
 
@@ -823,18 +819,14 @@ public class OVirtClient {
                 if (TextUtils.isEmpty(authToken)) {
                     fireOtherConnectionError("Empty auth token");
                 } else {
-                    restClient.setCookie(JSESSIONID, authToken);
-                    restClient.setAuthentication(new HttpAuthentication() {
-                        @Override
-                        public String getHeaderValue() {
-                            // empty authentication - e.g. not the basic one
-                            return "";
-                        }
-                    });
-
+                    resetClientSettings();
                     updateClientBeforeCall();
-
-                    setPersistentAuthHeaders();
+                    if (isApiV3()) {
+                        restClient.setCookie(JSESSIONID, authToken);
+                        setPersistentV3AuthHeaders();
+                    } else {
+                        restClient.setBearerAuth(authToken);
+                    }
 
                     try {
                         T restResponse = request.fire();
@@ -892,15 +884,54 @@ public class OVirtClient {
 
     }
 
-    private void setPersistentAuthHeaders() {
-        restClient.setHeader("Session-TTL", "120"); // 2h
-        restClient.setHeader("Prefer", "persistent-auth, csrf-protection");
-    }
+    private ConnectionInfo updateConnectionInfo(boolean success) {
+        ConnectionInfo connectionInfo;
+        ConnectionInfo.State state;
+        boolean prevFailed = false;
+        boolean configured = sharedPreferencesHelper.isConnectionNotificationEnabled();
+        Collection<ConnectionInfo> connectionInfos = provider.query(ConnectionInfo.class).all();
+        int size = connectionInfos.size();
 
-    private void updateClientBeforeCall() {
-        restClient.setHeader(FILTER, Boolean.toString(!authenticator.hasAdminPermissions()));
-        requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
-        restClient.setRootUrl(authenticator.getApiUrl());
+        if (size != 0) {
+            connectionInfo = connectionInfos.iterator().next();
+            ConnectionInfo.State lastState = connectionInfo.getState();
+            if (lastState == ConnectionInfo.State.FAILED || lastState == ConnectionInfo.State.FAILED_REPEATEDLY) {
+                prevFailed = true;
+            }
+        } else {
+            connectionInfo = new ConnectionInfo();
+        }
+
+        if (!success) {
+            state = prevFailed ? ConnectionInfo.State.FAILED_REPEATEDLY : ConnectionInfo.State.FAILED;
+        } else {
+            state = ConnectionInfo.State.OK;
+        }
+        connectionInfo.updateWithCurrentTime(state);
+
+        //update in DB
+        if (size != 0) {
+            provider.batch().update(connectionInfo).apply();
+        } else {
+            provider.batch().insert(connectionInfo).apply();
+        }
+
+        //show Notification
+        if (!success && !prevFailed && configured) {
+            Intent resultIntent = new Intent(context, MainActivity_.class);
+            resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            PendingIntent resultPendingIntent =
+                    PendingIntent.getActivity(
+                            context,
+                            0,
+                            resultIntent,
+                            0
+                    );
+            notificationHelper.showConnectionNotification(
+                    context, resultPendingIntent, connectionInfo);
+        }
+
+        return connectionInfo;
     }
 
     private void fireOtherConnectionError(Exception e) {
@@ -984,32 +1015,6 @@ public class OVirtClient {
 
     private interface WrapPredicate<E> {
         boolean toWrap(E entity);
-    }
-
-    public class LoginResult {
-        Api api;
-        String token;
-
-        public LoginResult(Api api, String token) {
-            this.api = api;
-            this.token = token;
-        }
-
-        public Api getApi() {
-            return api;
-        }
-
-        public void setApi(Api api) {
-            this.api = api;
-        }
-
-        public String getToken() {
-            return token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
-        }
     }
 
     public static abstract class SimpleResponse<T> implements Response<T> {

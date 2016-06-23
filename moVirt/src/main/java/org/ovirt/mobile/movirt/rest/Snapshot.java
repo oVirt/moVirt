@@ -3,7 +3,6 @@ package org.ovirt.mobile.movirt.rest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.ovirt.mobile.movirt.model.Snapshot.SnapshotStatus;
-import org.ovirt.mobile.movirt.model.Snapshot.SnapshotType;
 
 /**
  * Created by suomiy on 11/25/15.

@@ -86,6 +86,9 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         return null;
     }
 
+    /**
+     * This method shouldn't be called when enforceBasicAuth is true
+     */
     @Override
     public Bundle getAuthToken(AccountAuthenticatorResponse accountAuthenticatorResponse, Account account, String authTokenType, Bundle bundle) throws NetworkErrorException {
         String authToken = accountManager.peekAuthToken(account, authTokenType);
@@ -94,12 +97,10 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             final String username = getUserName();
             final String password = getPassword();
             if (username != null && password != null) {
-                OVirtClient.LoginResult loginResult = client.login(getApiUrl(), username, password, hasAdminPermissions());
+                authToken = client.login(username, password);
 
-                authToken = loginResult.getToken();
                 if (!TextUtils.isEmpty(authToken)) {
                     accountManager.setAuthToken(account, authTokenType, authToken);
-                    setApiMajorVersion(loginResult.getApi());
                 }
             }
         }
@@ -155,6 +156,10 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         return read(API_URL);
     }
 
+    public String getBaseUrl() {
+        return getApiUrl().replaceFirst("/api$", "");
+    }
+
     public String getApiMajorVersion() {
         return read(API_MAJOR_VERSION, fallbackMajorVersion);
     }
@@ -171,10 +176,8 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         setApiMajorVersion(api.getProductInfo().getVersion().getMajor());
     }
 
-
     public void setApiMajorVersion(String majorVersion) {
         accountManager.setUserData(MOVIRT_ACCOUNT, API_MAJOR_VERSION, majorVersion);
-        client.setupVersionHeader();
     }
 
     public String getUserName() {
