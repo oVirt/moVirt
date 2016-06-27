@@ -64,6 +64,7 @@ public class OVirtClient {
     public static final String JSESSIONID = "JSESSIONID";
     public static final String FILTER = "Filter";
     public static final String PREFER = "Prefer";
+    public static final String VERSION = "Version";
     private static final String TAG = OVirtClient.class.getSimpleName();
     ObjectMapper mapper = new ObjectMapper();
 
@@ -530,6 +531,7 @@ public class OVirtClient {
         restClient.setCookie("JSESSIONID", "");
         requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
         restClient.setHeader(FILTER, Boolean.toString(!hasAdminPrivileges));
+        restClient.setHeader(VERSION, "3");
         restClient.login();
         String sessionId = restClient.getCookie("JSESSIONID");
         restClient.setHttpBasicAuth("", "");
