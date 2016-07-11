@@ -39,7 +39,6 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.ActionTicket;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
@@ -368,8 +367,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     @UiThread
     void showMissingCaCertDialog() {
         ImportCertificateDialogFragment importCertificateDialog = ImportCertificateDialogFragment
-                .newInstance(getString(R.string.can_not_run_console_without_ca),
-                        AdvancedAuthenticatorActivity.MODE_SPICE_CA_MANAGEMENT,
+                .newSpiceCaInstance(getString(R.string.can_not_run_console_without_ca),
                         authenticator.getCertHandlingStrategy().id(),
                         authenticator.getApiUrl());
         importCertificateDialog.show(getFragmentManager(), "certificateDialog");

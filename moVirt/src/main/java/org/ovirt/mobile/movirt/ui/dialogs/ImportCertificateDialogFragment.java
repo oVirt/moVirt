@@ -12,6 +12,7 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.AdvancedAuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
+import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 
 /**
  * Dialog asking user to import certificate.
@@ -19,18 +20,31 @@ import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
  */
 public class ImportCertificateDialogFragment extends DialogFragment {
 
-    public static ImportCertificateDialogFragment newInstance(@Nullable String additionalMessage,
-                                                              int managementMode,
-                                                              long certHandlingStrategyId,
-                                                              String endpoint) {
+    public static ImportCertificateDialogFragment newRestCaInstance(@Nullable String additionalMessage,
+                                                                    boolean startActivity) {
         ImportCertificateDialogFragment fragment = new ImportCertificateDialogFragment();
         Bundle args = new Bundle();
         if (additionalMessage != null) {
             args.putString("additionalMessage", additionalMessage);
         }
-        args.putInt("managementMode", managementMode);
+        args.putInt("managementMode", AdvancedAuthenticatorActivity.MODE_REST_CA_MANAGEMENT);
+        args.putBoolean("startActivity", startActivity);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    public static ImportCertificateDialogFragment newSpiceCaInstance(@Nullable String additionalMessage,
+                                                                     long certHandlingStrategyId,
+                                                                     String endpoint) {
+        ImportCertificateDialogFragment fragment = new ImportCertificateDialogFragment();
+        Bundle args = new Bundle();
+        if (additionalMessage != null) {
+            args.putString("additionalMessage", additionalMessage);
+        }
+        args.putInt("managementMode", AdvancedAuthenticatorActivity.MODE_SPICE_CA_MANAGEMENT);
         args.putLong("certHandlingStrategyId", certHandlingStrategyId);
         args.putString("endpoint", endpoint);
+        args.putBoolean("startActivity", false);
         fragment.setArguments(args);
         return fragment;
     }
@@ -41,6 +55,7 @@ public class ImportCertificateDialogFragment extends DialogFragment {
         final int managementMode = getArguments().getInt("managementMode");
         final long certHandlingStrategyId = getArguments().getLong("certHandlingStrategyId");
         final String endpoint = getArguments().getString("endpoint");
+        final boolean startActivity = getArguments().getBoolean("startActivity");
 
         StringBuilder message =
                 new StringBuilder(getString(R.string.dialog_certificate_missing_start));
@@ -63,6 +78,11 @@ public class ImportCertificateDialogFragment extends DialogFragment {
                             intent.putExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY,
                                     certHandlingStrategyId);
                             intent.putExtra(AdvancedAuthenticatorActivity.LOAD_CA_FROM, endpoint);
+                            startActivity(intent);
+                        } else if (startActivity) {
+                            final Intent intent = new Intent(getActivity(),
+                                    AuthenticatorActivity_.class);
+                            intent.putExtra(AuthenticatorActivity.SHOW_ADVANCED_AUTHENTICATOR, true);
                             startActivity(intent);
                         } else {
                             ((AuthenticatorActivity) getActivity()).btnAdvancedClicked();

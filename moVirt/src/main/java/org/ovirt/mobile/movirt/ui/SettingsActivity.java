@@ -1,6 +1,7 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,10 +13,15 @@ import android.widget.Toast;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.Receiver;
+import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
+import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
+import org.ovirt.mobile.movirt.ui.dialogs.ImportCertificateDialogFragment;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 
 /**
@@ -35,6 +41,10 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     EventsHandler eventsHandler;
     @Bean
     SharedPreferencesHelper sharedPreferencesHelper;
+    @Bean
+    ProviderFacade providerFacade;
+    @Bean
+    MovirtAuthenticator authenticator;
 
     private Preference periodicSyncIntervalPref;
     private Preference maxEventsPref;
@@ -184,5 +194,36 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
             }
             return true;
         }
+    }
+
+    // notifications
+
+    @Receiver(actions = {Broadcasts.CONNECTION_FAILURE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    void connectionFailure(
+            @Receiver.Extra(Broadcasts.Extras.FAILURE_REASON) String reason,
+            @Receiver.Extra(Broadcasts.Extras.REPEATED_CONNECTION_FAILURE) boolean repeatedFailure) {
+        if (!repeatedFailure) {
+            DialogFragment dialogFragment = ErrorDialogFragment
+                    .newInstance(this, authenticator, providerFacade, reason);
+            dialogFragment.show(getFragmentManager(), "error");
+        }
+    }
+
+    @Receiver(actions = {Broadcasts.LOGIN_FAILURE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    void loginFailure(
+            @Receiver.Extra(Broadcasts.Extras.FAILURE_REASON) String reason) {
+        DialogFragment dialogFragment = ErrorDialogFragment.newInstance(reason);
+        dialogFragment.show(getFragmentManager(), "login_error");
+    }
+
+    @Receiver(actions = {Broadcasts.REST_CA_FAILURE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    void certificateFailure(
+            @Receiver.Extra(Broadcasts.Extras.FAILURE_REASON) String reason) {
+        DialogFragment importCertificateDialog =
+                ImportCertificateDialogFragment.newRestCaInstance(reason, true);
+        importCertificateDialog.show(getFragmentManager(), "certificate_error");
     }
 }

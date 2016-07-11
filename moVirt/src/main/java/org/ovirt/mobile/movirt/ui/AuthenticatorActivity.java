@@ -58,6 +58,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             "443", "api"};
     private static final String[] USERNAME_COMPLETE = {"admin@", "internal", "admin@internal"};
     private static int REQUEST_ACCOUNT_DETAILS = 1;
+    public static final String SHOW_ADVANCED_AUTHENTICATOR = "SHOW_ADVANCED_AUTHENTICATOR";
+
     @Bean
     NullHostnameVerifier verifier;
     @SystemService
@@ -184,6 +186,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         txtPassword.setText(authenticator.getPassword());
         chkAdminPriv.setChecked(true);
         changeProgressVisibilityTo(inProgress ? View.VISIBLE : View.GONE);
+        if (getIntent().getBooleanExtra(SHOW_ADVANCED_AUTHENTICATOR, false)) {
+            btnAdvancedClicked();
+        }
     }
 
     @AfterInject
@@ -224,14 +229,14 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         } catch (MalformedURLException e) {
             String message = "Invalid API URL: " + e.getMessage() + "\nExample: " +
                     getString(R.string.default_endpoint);
-            showError(message);
+            fireError(message);
             return;
         }
         endpoint = endpointUrl.toString();
 
         username = txtUsername.getText().toString();
         if (!username.matches(".+@.+")) {
-            showError("Invalid username. Use " +
+            fireError("Invalid username. Use " +
                     getString(R.string.account_username) + " pattern.\nExample: " +
                     getString(R.string.default_username));
             return;
@@ -299,20 +304,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             changeProgressVisibilityTo(View.GONE);
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof SSLHandshakeException) {
-                int ignoreIndex = Arrays
-                        .asList(getResources().getStringArray(R.array.cert_option_keys))
-                        .indexOf("ignore");
-                String certIgnore = getResources()
-                        .getStringArray(R.array.certificate_handling_strategy)[ignoreIndex];
-                String message = "Use proper certificate, or select " + certIgnore +
-                        ".\nError details: " + cause.getMessage();
-                DialogFragment importCertificateDialog =
-                        ImportCertificateDialogFragment.newInstance(message,
-                                AdvancedAuthenticatorActivity.MODE_REST_CA_MANAGEMENT,
-                                certHandlingStrategy.id(), endpoint);
-                importCertificateDialog.show(getFragmentManager(), "certificateDialog");
+                fireCertificateError(cause);
             } else {
-                showError("Error logging in: " + e.getMessage());
+                fireError("Error logging in: " + e.getMessage());
             }
         }
     }
@@ -320,7 +314,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     void onLoginResultReceived(String token, boolean endpointChanged) {
         changeProgressVisibilityTo(View.GONE);
         if (TextUtils.isEmpty(token)) {
-            showError("Error: the returned token is empty." +
+            fireError("Error: the returned token is empty." +
                     "\nTry https protocol and add your certificate in " +
                     getString(R.string.ca_management) + ".");
             return;
@@ -352,9 +346,24 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         authProgress.setVisibility(visibility);
     }
 
-    void showError(String msg) {
-        DialogFragment dialogFragment = ErrorDialogFragment.newInstance(msg);
-        dialogFragment.show(getFragmentManager(), "login_error");
+    public void fireCertificateError(Throwable cause) {
+        int ignoreIndex = Arrays
+                .asList(getResources().getStringArray(R.array.cert_option_keys))
+                .indexOf("ignore");
+        String certIgnore = getResources()
+                .getStringArray(R.array.certificate_handling_strategy)[ignoreIndex];
+        String message = "Use proper certificate, or select " + certIgnore +
+                ".\nError details: " + cause.getMessage();
+
+        Intent intent = new Intent(Broadcasts.REST_CA_FAILURE);
+        intent.putExtra(Broadcasts.Extras.FAILURE_REASON, message);
+        getApplicationContext().sendBroadcast(intent);
+    }
+
+    void fireError(String msg) {
+        Intent intent = new Intent(Broadcasts.LOGIN_FAILURE);
+        intent.putExtra(Broadcasts.Extras.FAILURE_REASON, msg);
+        getApplicationContext().sendBroadcast(intent);
     }
 
     @UiThread
@@ -371,15 +380,34 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         accountManager.setPassword(account, password);
     }
 
+    // notifications
+
     @Receiver(actions = {Broadcasts.CONNECTION_FAILURE},
             registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void connectionFailure(
-            @Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason,
+            @Receiver.Extra(Broadcasts.Extras.FAILURE_REASON) String reason,
             @Receiver.Extra(Broadcasts.Extras.REPEATED_CONNECTION_FAILURE) boolean repeatedFailure) {
         if (!repeatedFailure) {
             DialogFragment dialogFragment = ErrorDialogFragment
                     .newInstance(this, authenticator, providerFacade, reason);
             dialogFragment.show(getFragmentManager(), "error");
         }
+    }
+
+    @Receiver(actions = {Broadcasts.LOGIN_FAILURE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    void loginFailure(
+            @Receiver.Extra(Broadcasts.Extras.FAILURE_REASON) String reason) {
+        DialogFragment dialogFragment = ErrorDialogFragment.newInstance(reason);
+        dialogFragment.show(getFragmentManager(), "login_error");
+    }
+
+    @Receiver(actions = {Broadcasts.REST_CA_FAILURE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    void certificateFailure(
+            @Receiver.Extra(Broadcasts.Extras.FAILURE_REASON) String reason) {
+        DialogFragment importCertificateDialog =
+                ImportCertificateDialogFragment.newRestCaInstance(reason, false);
+        importCertificateDialog.show(getFragmentManager(), "certificate_error");
     }
 }

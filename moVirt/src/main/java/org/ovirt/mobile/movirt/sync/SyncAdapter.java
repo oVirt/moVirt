@@ -101,7 +101,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         } catch (Exception e) {
             Log.e(TAG, "Error updating data", e);
             Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
-            intent.putExtra(Broadcasts.Extras.CONNECTION_FAILURE_REASON, e.getMessage());
+            intent.putExtra(Broadcasts.Extras.FAILURE_REASON, e.getMessage());
             context.sendBroadcast(intent);
         }
     }

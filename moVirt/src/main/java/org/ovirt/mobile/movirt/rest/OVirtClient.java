@@ -945,7 +945,7 @@ public class OVirtClient {
 
     private Intent getConnectionFailiureIntent(String msg) {
         Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
-        intent.putExtra(Broadcasts.Extras.CONNECTION_FAILURE_REASON, String.format(errorMsg, msg));
+        intent.putExtra(Broadcasts.Extras.FAILURE_REASON, String.format(errorMsg, msg));
         return intent;
     }
 
