@@ -739,56 +739,7 @@ public class OVirtClient {
     /**
      * has to be synced because of error handling - otherwise it would not be possible to bind the error
      */
-    public synchronized <T> void fireRestRequest(final Request<T> request, final Response<T> response) {
-        if (authenticator.enforceBasicAuth()) {
-            fireRequestWithHttpBasicAuth(request, response);
-        } else {
-            fireRequestWithPersistentAuth(request, response);
-        }
-    }
-
-    private <T> void fireRequestWithHttpBasicAuth(Request<T> request, Response<T> response) {
-        String userName = authenticator.getUserName();
-        String password = authenticator.getPassword();
-
-        boolean success = false;
-
-        if (TextUtils.isEmpty(userName) || TextUtils.isEmpty(password) || TextUtils.isEmpty(authenticator.getApiUrl())) {
-            Intent accountAuthenticatorResponse = new Intent(context, AuthenticatorActivity_.class);
-            Intent editConnectionIntent = new Intent(Broadcasts.NO_CONNECTION_SPEFICIED);
-            editConnectionIntent.putExtra(AccountManager.KEY_INTENT, accountAuthenticatorResponse);
-            context.sendBroadcast(editConnectionIntent);
-        } else {
-            resetClientSettings();
-            updateClientBeforeCall();
-            restClient.setHttpBasicAuth(userName, password);
-
-            if (response != null) {
-                response.before();
-            }
-
-            try {
-                T restResponse = request.fire();
-                success = true;
-                updateConnectionInfo(success);
-
-                if (response != null) {
-                    response.onResponse(restResponse);
-                }
-            } catch (Exception e) {
-                fireOtherConnectionError(e); // fires and displays multiple consecutive errors
-            } finally {
-                if (!success && response != null) {
-                    response.onError();
-                }
-                if (response != null) {
-                    response.after();
-                }
-            }
-        }
-    }
-
-    private <T> void fireRequestWithPersistentAuth(Request<T> request, Response<T> response) {
+    public synchronized <T> void fireRestRequest(final Request<T> request,final Response<T> response) {
         if (response != null) {
             response.before();
         }

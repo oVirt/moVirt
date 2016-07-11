@@ -135,7 +135,6 @@
     <string name="valid_for_hostnames">Valid for hostnames (comma separated)</string>
     <string name="account_admin_privilege_summary">Tells oVirt if the user has admin privileges.</string>
     <string name="account_disableHttpsChecking">Disable Https certificate checking</string>
-    <string name="account_enforceHttpBasicAuth">Enforce HTTP Basic Authentication</string>
     <string name="account_disableHttpsChecking_summary">This method is dangerous and should not be used in production setup.</string>
     <string name="name">Name</string>
     <string name="account_title">Connection Settings</string>
