@@ -23,7 +23,7 @@ public class MoVirtApp extends Application {
         context = this;
     }
 
-    public void startMainActivity(){
+    public void startMainActivity() {
         Intent intent = new Intent(context, MainActivity_.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);

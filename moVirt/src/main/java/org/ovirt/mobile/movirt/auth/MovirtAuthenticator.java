@@ -40,8 +40,6 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     public static final String HAS_ADMIN_PERMISSIONS = "org.ovirt.mobile.movirt.adminpermissionsm";
 
-    public static final String ENFORCE_HTTP_BASIC = "org.ovirt.mobile.movirt.enforceHttpBasic";
-
     public static final String CUSTOM_CERTIFICATE = "org.ovirt.mobile.movirt.customCertificate";
 
     public static final Account MOVIRT_ACCOUNT = new Account(MovirtAuthenticator.ACCOUNT_NAME, MovirtAuthenticator.ACCOUNT_TYPE);
@@ -86,9 +84,6 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         return null;
     }
 
-    /**
-     * This method shouldn't be called when enforceBasicAuth is true
-     */
     @Override
     public Bundle getAuthToken(AccountAuthenticatorResponse accountAuthenticatorResponse, Account account, String authTokenType, Bundle bundle) throws NetworkErrorException {
         String authToken = accountManager.peekAuthToken(account, authTokenType);
@@ -194,10 +189,6 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     public Boolean hasAdminPermissions() {
         return read(HAS_ADMIN_PERMISSIONS, false);
-    }
-
-    public Boolean enforceBasicAuth() {
-        return read(ENFORCE_HTTP_BASIC, false);
     }
 
     public boolean accountConfigured() {

@@ -83,8 +83,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     @Bean
     ProviderFacade providerFacade;
     @InstanceState
-    boolean enforceHttpBasicAuth = false;
-    @InstanceState
     CertHandlingStrategy certHandlingStrategy;
     @InstanceState
     boolean advancedFieldsInited = false;
@@ -195,14 +193,12 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         }
         advancedFieldsInited = true;
 
-        enforceHttpBasicAuth = authenticator.enforceBasicAuth();
         certHandlingStrategy = authenticator.getCertHandlingStrategy();
     }
 
     @Click(R.id.btnAdvanced)
     public void btnAdvancedClicked() {
         Intent intent = new Intent(this, AdvancedAuthenticatorActivity_.class);
-        intent.putExtra(AdvancedAuthenticatorActivity.ENFORCE_HTTP_BASIC_AUTH, enforceHttpBasicAuth);
         intent.putExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY, certHandlingStrategy.id());
         intent.putExtra(AdvancedAuthenticatorActivity.LOAD_CA_FROM, txtEndpoint.getText().toString());
         startActivityForResult(intent, REQUEST_ACCOUNT_DETAILS);
@@ -214,7 +210,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
         if (requestCode == REQUEST_ACCOUNT_DETAILS) {
             if (resultCode == RESULT_OK) {
-                enforceHttpBasicAuth = data.getBooleanExtra(AdvancedAuthenticatorActivity.ENFORCE_HTTP_BASIC_AUTH, enforceHttpBasicAuth);
                 long certHandlingStrategyId = data.getLongExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY, certHandlingStrategy.id());
                 certHandlingStrategy = CertHandlingStrategy.from(certHandlingStrategyId);
             }
@@ -314,7 +309,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 DialogFragment importCertificateDialog =
                         ImportCertificateDialogFragment.newInstance(message,
                                 AdvancedAuthenticatorActivity.MODE_REST_CA_MANAGEMENT,
-                                enforceHttpBasicAuth, certHandlingStrategy.id(), endpoint);
+                                certHandlingStrategy.id(), endpoint);
                 importCertificateDialog.show(getFragmentManager(), "certificateDialog");
             } else {
                 showError("Error logging in: " + e.getMessage());
@@ -324,7 +319,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
     void onLoginResultReceived(String token, boolean endpointChanged) {
         changeProgressVisibilityTo(View.GONE);
-        if (!authenticator.enforceBasicAuth() && TextUtils.isEmpty(token)){
+        if (TextUtils.isEmpty(token)) {
             showError("Error: the returned token is empty." +
                     "\nTry https protocol and add your certificate in " +
                     getString(R.string.advanced_settings) + ".");
@@ -372,7 +367,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         accountManager.setUserData(account, MovirtAuthenticator.USER_NAME, name);
         accountManager.setUserData(account, MovirtAuthenticator.HAS_ADMIN_PERMISSIONS, Boolean.toString(hasAdminPermissions));
         accountManager.setUserData(account, MovirtAuthenticator.CERT_HANDLING_STRATEGY, Long.toString(certHandlingStrategy.id()));
-        accountManager.setUserData(account, MovirtAuthenticator.ENFORCE_HTTP_BASIC, Boolean.toString(enforceHttpBasicAuth));
         accountManager.getUserData(account, MovirtAuthenticator.API_URL);
         accountManager.setPassword(account, password);
     }

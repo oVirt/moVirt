@@ -40,13 +40,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <CheckBox
-                android:id="@+id/enforceHttpBasicAuth"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:text="@string/account_enforceHttpBasicAuth" />
-
             <Spinner
                 android:id="@+id/certHandlingStrategy"
                 android:layout_width="wrap_content"
