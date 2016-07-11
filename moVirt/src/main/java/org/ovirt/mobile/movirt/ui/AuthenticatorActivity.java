@@ -322,7 +322,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         if (TextUtils.isEmpty(token)){
             showError("Error: the returned token is empty." +
                     "\nTry https protocol and add your certificate in " +
-                    getString(R.string.advanced_settings) + ".");
+                    getString(R.string.ca_management) + ".");
             return;
         }
 

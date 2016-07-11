@@ -50,7 +50,7 @@
     <string name="done_advanced_settings">Done</string>
     <string name="delete_stored_ca">Delete</string>
     <string name="load_ca_from_addr">Download</string>
-    <string name="advanced_settings">Advanced Settings</string>
+    <string name="ca_management">CA Management</string>
     <string name="trigger_scope">Editing triggers for: </string>
     <string name="add_trigger">Add Trigger</string>
     <string name="ADD">ADD</string>
@@ -138,7 +138,6 @@
     <string name="account_disableHttpsChecking_summary">This method is dangerous and should not be used in production setup.</string>
     <string name="name">Name</string>
     <string name="account_title">Connection Settings</string>
-    <string name="account_advanced_title">Advanced Connection Settings</string>
     <string name="account_endpoint_label">API URL:</string>
     <string name="account_username_label">Username:</string>
     <string name="account_password_label">Password:</string>
@@ -170,8 +169,8 @@
     <string name="deactivate">deactivate</string>
 
     <string name="can_not_run_console_without_ca">The console can not run without the Certificate Authority for SPICE</string>
-    <string name="spice_ca_management">SPICE CA management</string>
-    <string name="rest_ca_management">REST CA management</string>
+    <string name="spice_ca_management">SPICE CA Management</string>
+    <string name="rest_ca_management">REST CA Management</string>
 
     <string name="title_activity_dashboard">Dashboard</string>
     <string name="dashboard">Dashboard</string>
