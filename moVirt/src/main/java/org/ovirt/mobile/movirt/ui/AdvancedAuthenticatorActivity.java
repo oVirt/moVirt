@@ -212,12 +212,11 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
     }
 
     @Override
-    @Background
     public void onDialogResult(int dialogButton, int actionId) {
         if (dialogButton == DialogInterface.BUTTON_POSITIVE) {
             switch (mode) {
                 case MODE_REST_CA_MANAGEMENT:
-                    providerFacade.deleteAll(OVirtContract.CaCert.CONTENT_URI);
+                    deleteAllCaCerts();
                     certificate = null;
                     certHandlingStrategy.setSelection((int) CertHandlingStrategy.TRUST_SYSTEM.id());
                     setCertDataToView(null, null);
@@ -364,6 +363,12 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         txtValidForHostnames.setText(urls != null ? urls : "");
     }
 
+    @Background
+    public void deleteAllCaCerts() {
+        providerFacade.deleteAll(OVirtContract.CaCert.CONTENT_URI);
+    }
+
+    @Background
     public void deleteCaFile() {
         File file = new File(Constants.getCaCertPath(this));
         if (file.isFile() && file.exists()) {
