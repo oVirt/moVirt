@@ -37,6 +37,7 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
+import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
@@ -80,6 +81,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     MovirtAuthenticator authenticator;
     @Bean
     SyncUtils syncUtils;
+    @Bean
+    SyncAdapter syncAdapter;
     @Bean
     EventsHandler eventsHandler;
     @Bean
@@ -280,27 +283,33 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         boolean usernameChanged = !TextUtils.equals(username, authenticator.getUserName());
         boolean urlChanged = !TextUtils.equals(endpoint, authenticator.getApiUrl());
         boolean endpointChanged = urlChanged || usernameChanged;
-
-        if (accountManager.getAccountsByType(MovirtAuthenticator.ACCOUNT_TYPE).length == 0) {
-            if (accountManager.addAccountExplicitly(MovirtAuthenticator.MOVIRT_ACCOUNT, password, null)) {
-                ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
-                ContentResolver.setSyncAutomatically(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-                if (sharedPreferences.getBoolean(SharedPreferencesHelper.KEY_PERIODIC_SYNC, false)) {
-                    int intervalInMinutes = sharedPreferencesHelper.getSyncIntervalInMinutes();
-                    addPeriodicSync(intervalInMinutes);
+        try {
+            syncAdapter.sendSyncIntent(true); // disable sync, because it may be asynchronously fired in the following code
+            if (accountManager.getAccountsByType(MovirtAuthenticator.ACCOUNT_TYPE).length == 0) {
+                if (accountManager.addAccountExplicitly(MovirtAuthenticator.MOVIRT_ACCOUNT, password, null)) {
+                    ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
+                    ContentResolver.setSyncAutomatically(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                    if (sharedPreferences.getBoolean(SharedPreferencesHelper.KEY_PERIODIC_SYNC, false)) {
+                        int intervalInMinutes = sharedPreferencesHelper.getSyncIntervalInMinutes();
+                        addPeriodicSync(intervalInMinutes);
+                    }
                 }
             }
+
+            setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv); // may trigger sync
+
+            changeProgressVisibilityTo(View.VISIBLE);
+        } catch (Exception x) {
+            syncAdapter.sendSyncIntent(false);
+            throw x;
         }
-
-        setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv);
-
-        changeProgressVisibilityTo(View.VISIBLE);
 
         try {
             String token = client.login(username, password);
-            onLoginResultReceived(token, endpointChanged);
+            onLoginResultReceived(token, endpointChanged); // sets sync to false
         } catch (Exception e) {
+            syncAdapter.sendSyncIntent(false);
             changeProgressVisibilityTo(View.GONE);
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof SSLHandshakeException) {
@@ -309,6 +318,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 fireError("Error logging in: " + e.getMessage());
             }
         }
+
+
     }
 
     void onLoginResultReceived(String token, boolean endpointChanged) {
@@ -328,6 +339,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         }
 
         accountManager.setAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, token);
+        syncAdapter.sendSyncIntent(false);// allow syncing, since we forbade it in finishLogin()
         syncUtils.triggerRefresh();
 
         final Intent intent = new Intent();
@@ -376,8 +388,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         accountManager.setUserData(account, MovirtAuthenticator.USER_NAME, name);
         accountManager.setUserData(account, MovirtAuthenticator.HAS_ADMIN_PERMISSIONS, Boolean.toString(hasAdminPermissions));
         accountManager.setUserData(account, MovirtAuthenticator.CERT_HANDLING_STRATEGY, Long.toString(certHandlingStrategy.id()));
-        accountManager.getUserData(account, MovirtAuthenticator.API_URL);
-        accountManager.setPassword(account, password);
+        accountManager.setPassword(account, password); //triggers sync in later APIs (Android 6)
     }
 
     // notifications

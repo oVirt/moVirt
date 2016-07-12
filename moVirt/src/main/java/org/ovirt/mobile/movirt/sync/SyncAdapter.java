@@ -96,13 +96,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             facadeSync(Host.class);
             facadeSync(StorageDomain.class);
             eventsHandler.updateEvents(false);
-
-            sendSyncIntent(false);
         } catch (Exception e) {
             Log.e(TAG, "Error updating data", e);
             Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
             intent.putExtra(Broadcasts.Extras.FAILURE_REASON, e.getMessage());
             context.sendBroadcast(intent);
+        } finally {
+            sendSyncIntent(false);
         }
     }
 
@@ -289,7 +289,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         );
     }
 
-    private void sendSyncIntent(boolean sync) {
+    public void sendSyncIntent(boolean sync) {
         inSync = sync;
         Intent intent = new Intent(Broadcasts.IN_SYNC);
         intent.putExtra(Broadcasts.Extras.SYNCING, sync);
