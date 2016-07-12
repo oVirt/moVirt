@@ -293,7 +293,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             }
         }
 
-        setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv);
+        setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv); // may trigger sync
 
         changeProgressVisibilityTo(View.VISIBLE);
 
@@ -376,8 +376,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         accountManager.setUserData(account, MovirtAuthenticator.USER_NAME, name);
         accountManager.setUserData(account, MovirtAuthenticator.HAS_ADMIN_PERMISSIONS, Boolean.toString(hasAdminPermissions));
         accountManager.setUserData(account, MovirtAuthenticator.CERT_HANDLING_STRATEGY, Long.toString(certHandlingStrategy.id()));
-        accountManager.getUserData(account, MovirtAuthenticator.API_URL);
-        accountManager.setPassword(account, password);
+        accountManager.setPassword(account, password); //triggers sync in later APIs (Android 6)
     }
 
     // notifications
