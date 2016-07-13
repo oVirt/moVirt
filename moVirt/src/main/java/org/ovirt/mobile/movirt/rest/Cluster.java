@@ -3,11 +3,10 @@ package org.ovirt.mobile.movirt.rest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-class Cluster implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Cluster> {
+public abstract class Cluster implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Cluster> {
     // public for json mapping
     public String id;
     public String name;
-    public DataCenter data_center;
     public Version version;
 
     public String getId() {
@@ -24,9 +23,6 @@ class Cluster implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Cluster
         cluster.setId(id);
         cluster.setName(name);
         cluster.setVersion(ParseUtils.parseVersion(version));
-        if(data_center != null){
-            cluster.setDataCenterId(data_center.id);
-        }
 
         return cluster;
     }

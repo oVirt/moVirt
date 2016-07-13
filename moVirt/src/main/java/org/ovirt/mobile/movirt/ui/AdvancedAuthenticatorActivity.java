@@ -10,7 +10,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -56,15 +55,12 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         implements ConfirmDialogFragment.ConfirmDialogListener {
 
     public final static String CERT_HANDLING_STRATEGY = "org.ovirt.mobile.movirt.ui.CERT_HANDLING_STRATEGY";
-    public final static String ENFORCE_HTTP_BASIC_AUTH = "org.ovirt.mobile.movirt.ui.ENFORCE_HTTP_BASIC_AUTH";
     public final static String LOAD_CA_FROM = "org.ovirt.mobile.movirt.ui.LOAD_CA_FROM";
     public final static String MODE = "org.ovirt.mobile.movirt.ui.MODE";
     public final static int MODE_REST_CA_MANAGEMENT = 1;
     public final static int MODE_SPICE_CA_MANAGEMENT = 2;
     @Bean
     ProviderFacade providerFacade;
-    @ViewById
-    CheckBox enforceHttpBasicAuth;
     @ViewById
     Spinner certHandlingStrategy;
     @ViewById
@@ -107,9 +103,6 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
 
         certHandlingStrategy.setOnItemSelectedListener(new CertHandlingSelectionChanged());
 
-        boolean enforceBasic = getIntent().getBooleanExtra(ENFORCE_HTTP_BASIC_AUTH, false);
-        enforceHttpBasicAuth.setChecked(enforceBasic);
-
         long handlingStrategyId = getIntent().getLongExtra(CERT_HANDLING_STRATEGY, CertHandlingStrategy.TRUST_SYSTEM.id());
         certHandlingStrategy.setSelection((int) handlingStrategyId);
 
@@ -130,7 +123,6 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         switch (mode) {
             case MODE_REST_CA_MANAGEMENT:
                 certHandlingStrategy.setVisibility(View.VISIBLE);
-                enforceHttpBasicAuth.setVisibility(View.VISIBLE);
                 setCertDataToView(null, null);
 
                 if (CertHandlingStrategy.from(certHandlingStrategy.getSelectedItemId()) == CertHandlingStrategy.TRUST_CUSTOM) {
@@ -156,7 +148,6 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
                 break;
             case MODE_SPICE_CA_MANAGEMENT:
                 certHandlingStrategy.setVisibility(View.GONE);
-                enforceHttpBasicAuth.setVisibility(View.GONE);
                 setVisibilityForCaViews(true);
                 txtValidForHostnames.setVisibility(View.GONE);
                 setCertDataToView(null, null);
@@ -221,12 +212,11 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
     }
 
     @Override
-    @Background
     public void onDialogResult(int dialogButton, int actionId) {
         if (dialogButton == DialogInterface.BUTTON_POSITIVE) {
             switch (mode) {
                 case MODE_REST_CA_MANAGEMENT:
-                    providerFacade.deleteAll(OVirtContract.CaCert.CONTENT_URI);
+                    deleteAllCaCerts();
                     certificate = null;
                     certHandlingStrategy.setSelection((int) CertHandlingStrategy.TRUST_SYSTEM.id());
                     setCertDataToView(null, null);
@@ -260,7 +250,6 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
                     response.putExtra(CERT_HANDLING_STRATEGY, certHandlingStrategy.getSelectedItemId());
                 }
 
-                response.putExtra(ENFORCE_HTTP_BASIC_AUTH, enforceHttpBasicAuth.isChecked());
                 setResult(RESULT_OK, response);
                 break;
             case MODE_SPICE_CA_MANAGEMENT:
@@ -374,6 +363,12 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         txtValidForHostnames.setText(urls != null ? urls : "");
     }
 
+    @Background
+    public void deleteAllCaCerts() {
+        providerFacade.deleteAll(OVirtContract.CaCert.CONTENT_URI);
+    }
+
+    @Background
     public void deleteCaFile() {
         File file = new File(Constants.getCaCertPath(this));
         if (file.isFile() && file.exists()) {

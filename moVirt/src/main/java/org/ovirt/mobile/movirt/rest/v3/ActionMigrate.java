@@ -1,7 +1,9 @@
-package org.ovirt.mobile.movirt.rest;
+package org.ovirt.mobile.movirt.rest.v3;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonRootName;
+
+import org.ovirt.mobile.movirt.rest.Action;
 
 /**
  * Action containing Host to migrate to
@@ -10,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 @JsonRootName("action")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ActionMigrate extends Action {
-
     public Host host;
 
     public ActionMigrate(String hostId) {

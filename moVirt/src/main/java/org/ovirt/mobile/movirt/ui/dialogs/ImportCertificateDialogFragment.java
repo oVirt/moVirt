@@ -21,7 +21,6 @@ public class ImportCertificateDialogFragment extends DialogFragment {
 
     public static ImportCertificateDialogFragment newInstance(@Nullable String additionalMessage,
                                                               int managementMode,
-                                                              boolean enforceHttpBasicAuth,
                                                               long certHandlingStrategyId,
                                                               String endpoint) {
         ImportCertificateDialogFragment fragment = new ImportCertificateDialogFragment();
@@ -30,7 +29,6 @@ public class ImportCertificateDialogFragment extends DialogFragment {
             args.putString("additionalMessage", additionalMessage);
         }
         args.putInt("managementMode", managementMode);
-        args.putBoolean("enforceHttpBasicAuth", enforceHttpBasicAuth);
         args.putLong("certHandlingStrategyId", certHandlingStrategyId);
         args.putString("endpoint", endpoint);
         fragment.setArguments(args);
@@ -41,7 +39,6 @@ public class ImportCertificateDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         String additionalMessage = getArguments().getString("additionalMessage");
         final int managementMode = getArguments().getInt("managementMode");
-        final boolean enforceHttpBasicAuth = getArguments().getBoolean("enforceHttpBasicAuth");
         final long certHandlingStrategyId = getArguments().getLong("certHandlingStrategyId");
         final String endpoint = getArguments().getString("endpoint");
 
@@ -63,8 +60,6 @@ public class ImportCertificateDialogFragment extends DialogFragment {
                             Intent intent = new Intent(getActivity(),
                                     AdvancedAuthenticatorActivity_.class);
                             intent.putExtra(AdvancedAuthenticatorActivity.MODE, managementMode);
-                            intent.putExtra(AdvancedAuthenticatorActivity.ENFORCE_HTTP_BASIC_AUTH,
-                                    enforceHttpBasicAuth);
                             intent.putExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY,
                                     certHandlingStrategyId);
                             intent.putExtra(AdvancedAuthenticatorActivity.LOAD_CA_FROM, endpoint);

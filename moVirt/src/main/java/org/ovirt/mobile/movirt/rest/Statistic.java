@@ -9,9 +9,9 @@ class Statistic {
     public String name;
     public Values values;
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     static class Values {
         public List<Value> value;
-        public String type;
     }
 
     static class Value {

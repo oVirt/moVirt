@@ -9,7 +9,7 @@ public class DatabaseHelper extends OrmLiteDatabaseHelper<UriMatcher> {
 
     private static final String DB_NAME = "ovirt.db";
 
-    private static final int SCHEMA_VERSION = 32;
+    private static final int SCHEMA_VERSION = 33;
 
     private static final String TAG = DatabaseHelper.class.getSimpleName();
 

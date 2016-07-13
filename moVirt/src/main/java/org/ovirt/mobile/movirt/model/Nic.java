@@ -26,9 +26,6 @@ public class Nic extends SnapshotEmbeddableEntity implements OVirtContract.Nic {
     @DatabaseField(columnName = MAC_ADDRESS)
     private String macAddress;
 
-    @DatabaseField(columnName = ACTIVE)
-    private boolean active;
-
     @DatabaseField(columnName = PLUGGED)
     private boolean plugged;
 
@@ -49,14 +46,6 @@ public class Nic extends SnapshotEmbeddableEntity implements OVirtContract.Nic {
 
     public void setMacAddress(String macAddress) {
         this.macAddress = macAddress;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
     }
 
     public boolean isPlugged() {
@@ -85,7 +74,6 @@ public class Nic extends SnapshotEmbeddableEntity implements OVirtContract.Nic {
 
         if (linked != nic.linked) return false;
         if (!ObjectUtils.equals(macAddress, nic.macAddress)) return false;
-        if (active != nic.active) return false;
         if (plugged != nic.plugged) return false;
         if (!ObjectUtils.equals(vmId, nic.vmId)) return false;
 
@@ -98,7 +86,6 @@ public class Nic extends SnapshotEmbeddableEntity implements OVirtContract.Nic {
 
         result = 31 * result + (macAddress != null ? macAddress.hashCode() : 0);
         result = 31 * result + (linked ? 1231 : 0);
-        result = 31 * result + (active ? 1231 : 0);
         result = 31 * result + (plugged ? 1231 : 0);
         result = 31 * result + (vmId != null ? vmId.hashCode() : 0);
 
@@ -110,7 +97,6 @@ public class Nic extends SnapshotEmbeddableEntity implements OVirtContract.Nic {
         ContentValues contentValues = super.toValues();
         contentValues.put(MAC_ADDRESS, getMacAddress());
         contentValues.put(LINKED, isLinked());
-        contentValues.put(ACTIVE, isActive());
         contentValues.put(PLUGGED, isPlugged());
         contentValues.put(VM_ID, getVmId());
 
@@ -123,7 +109,6 @@ public class Nic extends SnapshotEmbeddableEntity implements OVirtContract.Nic {
 
         setVmId(cursorHelper.getString(MAC_ADDRESS));
         setLinked(cursorHelper.getBoolean(LINKED));
-        setActive(cursorHelper.getBoolean(ACTIVE));
         setPlugged(cursorHelper.getBoolean(PLUGGED));
         setVmId(cursorHelper.getString(VM_ID));
     }

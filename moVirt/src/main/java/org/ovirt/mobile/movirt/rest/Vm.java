@@ -3,14 +3,13 @@ package org.ovirt.mobile.movirt.rest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.ovirt.mobile.movirt.util.ObjectUtils;
-import org.ovirt.mobile.movirt.util.RestHelper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
+public abstract class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
 
     private static final String CPU_PERCENTAGE_STAT = "cpu.current.total";
     private static final String TOTAL_MEMORY_STAT = "memory.installed";
@@ -19,16 +18,11 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     // public for json mapping
     public String id;
     public String name;
-    public Status status;
-    public Host host;
-    public Cluster cluster;
     public Statistics statistics;
     public String memory;
     public Display display;
     public Os os;
     public Cpu cpu;
-    public Disks disks;
-    public Nics nics;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Display {
@@ -48,19 +42,13 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
 
     @Override
     public String toString() {
-        return String.format("Vm: name=%s, id=%s, status=%s, clusterId=%s",
-                name, id, status.state, cluster.id);
+        return String.format("Vm: name=%s, id=%s", name, id);
     }
 
     public org.ovirt.mobile.movirt.model.Vm toEntity() {
         org.ovirt.mobile.movirt.model.Vm vm = new org.ovirt.mobile.movirt.model.Vm();
         vm.setId(id);
         vm.setName(name);
-        vm.setStatus(mapStatus(status));
-        if (cluster != null) {
-            vm.setClusterId(cluster.id);
-        }
-        vm.setHostId(host != null ? host.id : "");
 
         if (statistics != null && statistics.statistic != null) {
             BigDecimal cpu = getStatisticValueByName(CPU_PERCENTAGE_STAT, statistics.statistic);
@@ -110,23 +98,7 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
             vm.setDisplaySecurePort(-1);
         }
 
-        if (nics != null) {
-            vm.setNics(RestHelper.mapToEntities(nics.nic));
-        }
-
-        if (disks != null) {
-            vm.setDisks(RestHelper.mapToEntities(disks.disk));
-        }
-
         return vm;
-    }
-
-    private static org.ovirt.mobile.movirt.model.Vm.Status mapStatus(Status status) {
-        try {
-            return org.ovirt.mobile.movirt.model.Vm.Status.valueOf(status.state.toUpperCase());
-        } catch (Exception e) {
-            return org.ovirt.mobile.movirt.model.Vm.Status.UNKNOWN;
-        }
     }
 
     private static org.ovirt.mobile.movirt.model.Vm.Display mapDisplay(String display) {

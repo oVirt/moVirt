@@ -41,8 +41,6 @@ import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
-import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
@@ -64,6 +62,9 @@ public class OVirtClient {
     public static final String JSESSIONID = "JSESSIONID";
     public static final String FILTER = "Filter";
     public static final String PREFER = "Prefer";
+    public static final String SESSION_TTL = "Session-TTL";
+    public static final String VERSION = "Version";
+    public static final String ACCEPT_ENCODING = "Accept-Encoding";
     private static final String TAG = OVirtClient.class.getSimpleName();
     ObjectMapper mapper = new ObjectMapper();
 
@@ -97,13 +98,27 @@ public class OVirtClient {
     @Bean
     SharedPreferencesHelper sharedPreferencesHelper;
 
-    private <E, R extends RestEntityWrapper<E>> List<E> mapRestWrappers(List<R> wrappers, WrapPredicate<R> predicate) {
+    public boolean isApiV3() {
+        return authenticator.isApiV3();
+    }
+
+    public <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList) {
+        return mapToEntities(wrappersList, null);
+    }
+
+    public <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList, WrapPredicate<U> predicate) {
+        if (wrappersList == null) {
+            return Collections.emptyList();
+        }
+
+        List<U> wrappers = wrappersList.getList();
+
         if (wrappers == null) {
             return Collections.emptyList();
         }
 
         List<E> entities = new ArrayList<>();
-        for (R rest : wrappers) {
+        for (U rest : wrappers) {
             try {
                 if (predicate == null || predicate.toWrap(rest)) {
                     entities.add(rest.toEntity());
@@ -151,7 +166,9 @@ public class OVirtClient {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
-                restClient.migrateVmToHost(new ActionMigrate(hostId), vmId);
+                Action action = isApiV3() ? new org.ovirt.mobile.movirt.rest.v3.ActionMigrate(hostId) :
+                        new org.ovirt.mobile.movirt.rest.v4.ActionMigrate(hostId);
+                restClient.migrateVmToHost(action, vmId);
                 return null;
             }
         }, response);
@@ -182,7 +199,7 @@ public class OVirtClient {
         return new Request<Vm>() {
             @Override
             public Vm fire() {
-                org.ovirt.mobile.movirt.rest.Vm vm = restClient.getVm(vmId);
+                org.ovirt.mobile.movirt.rest.Vm vm = isApiV3() ? restClient.getVmV3(vmId) : restClient.getVmV4(vmId);
                 return vm.toEntity();
             }
         };
@@ -239,7 +256,11 @@ public class OVirtClient {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
-                restClient.previewSnapshot(snapshotAction, vmId);
+                if (isApiV3()) {
+                    restClient.previewSnapshotV3(snapshotAction, vmId);
+                } else {
+                    restClient.previewSnapshotV4(snapshotAction, vmId);
+                }
                 return null;
             }
         }, response);
@@ -259,7 +280,11 @@ public class OVirtClient {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
-                restClient.commitSnapshot(new Action(), vmId);
+                if (isApiV3()) {
+                    restClient.commitSnapshotV3(new Action(), vmId);
+                } else {
+                    restClient.commitSnapshotV4(new Action(), vmId);
+                }
                 return null;
             }
         }, response);
@@ -269,7 +294,11 @@ public class OVirtClient {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
-                restClient.undoSnapshot(new Action(), vmId);
+                if (isApiV3()) {
+                    restClient.undoSnapshotV3(new Action(), vmId);
+                } else {
+                    restClient.undoSnapshotV4(new Action(), vmId);
+                }
                 return null;
             }
         }, response);
@@ -280,7 +309,9 @@ public class OVirtClient {
         return new Request<Host>() {
             @Override
             public Host fire() {
-                return restClient.getHost(hostId).toEntity();
+                org.ovirt.mobile.movirt.rest.Host wrapper = isApiV3() ?
+                        restClient.getHostV3(hostId) : restClient.getHostV4(hostId);
+                return wrapper.toEntity();
             }
         };
     }
@@ -294,7 +325,10 @@ public class OVirtClient {
         return new Request<StorageDomain>() {
             @Override
             public StorageDomain fire() {
-                return restClient.getStorageDomain(storageDomainId).toEntity();
+                org.ovirt.mobile.movirt.rest.StorageDomain wrapper = isApiV3() ?
+                        restClient.getStorageDomainV3(storageDomainId) :
+                        restClient.getStorageDomainV4(storageDomainId);
+                return wrapper.toEntity();
             }
         };
     }
@@ -323,11 +357,24 @@ public class OVirtClient {
         return new Request<Disk>() {
             @Override
             public Disk fire() {
-                org.ovirt.mobile.movirt.rest.Disk disk = isSnapshotEmbedded ? restClient.getDisk(vmId, snapshotId, id) : restClient.getDisk(vmId, id);
-                Disk entity = disk.toEntity();
+                org.ovirt.mobile.movirt.rest.Disk wrapper;
+                Disk entity;
 
                 if (isSnapshotEmbedded) {
+                    if (isApiV3()) {
+                        wrapper = restClient.getDiskV3(vmId, snapshotId, id);
+                    } else {
+                        wrapper = restClient.getDiskV4(vmId, snapshotId, id);
+                    }
+                    entity = wrapper.toEntity();
                     setVmId(entity, vmId);
+                } else {
+                    if (isApiV3()) {
+                        wrapper = restClient.getDiskV3(vmId, id);
+                    } else {
+                        wrapper = restClient.getDiskV4(vmId, id);
+                    }
+                    entity = wrapper.toEntity();
                 }
 
                 return entity;
@@ -345,15 +392,25 @@ public class OVirtClient {
         return new Request<List<Disk>>() {
             @Override
             public List<Disk> fire() {
-                Disks loadedDisks = isSnapshotEmbedded ? restClient.getDisks(vmId, snapshotId) : restClient.getDisks(vmId);
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.Disk> wrappers;
+                List<Disk> entities;
 
-                if (loadedDisks == null) {
-                    return Collections.emptyList();
-                }
-
-                List<Disk> entities = mapRestWrappers(loadedDisks.disk, null);
                 if (isSnapshotEmbedded) {
+
+                    if (isApiV3()) {
+                        wrappers = restClient.getDisksV3(vmId, snapshotId);
+                    } else {
+                        wrappers = restClient.getDisksV4(vmId, snapshotId);
+                    }
+                    entities = mapToEntities(wrappers);
                     setVmId(entities, vmId);
+                } else {
+                    if (isApiV3()) {
+                        wrappers = restClient.getDisksV3(vmId);
+                    } else {
+                        wrappers = restClient.getDisksV4(vmId);
+                    }
+                    entities = mapToEntities(wrappers);
                 }
 
                 return entities;
@@ -370,12 +427,10 @@ public class OVirtClient {
         fireRestRequest(new Request<List<Cluster>>() {
             @Override
             public List<Cluster> fire() {
-                Clusters loadedClusters = restClient.getClusters();
-                if (loadedClusters == null) {
-                    return Collections.emptyList();
+                if (isApiV3()) {
+                    return mapToEntities(restClient.getClustersV3());
                 }
-
-                return mapRestWrappers(loadedClusters.cluster, null);
+                return mapToEntities(restClient.getClustersV4());
             }
         }, response);
     }
@@ -384,12 +439,10 @@ public class OVirtClient {
         fireRestRequest(new Request<List<DataCenter>>() {
             @Override
             public List<DataCenter> fire() {
-                DataCenters loadedDataCenters = restClient.getDataCenters();
-                if (loadedDataCenters == null) {
-                    return Collections.emptyList();
+                if (isApiV3()) {
+                    return mapToEntities(restClient.getDataCentersV3());
                 }
-
-                return mapRestWrappers(loadedDataCenters.data_center, null);
+                return mapToEntities(restClient.getDataCentersV4());
             }
         }, response);
     }
@@ -403,8 +456,27 @@ public class OVirtClient {
         return new Request<Nic>() {
             @Override
             public Nic fire() {
-                org.ovirt.mobile.movirt.rest.Nic nic = snapshotId == null ? restClient.getNic(vmId, id) : restClient.getNic(vmId, snapshotId, id);
-                return nic.toEntity();
+                org.ovirt.mobile.movirt.rest.Nic wrapper;
+                Nic entity;
+
+                if (snapshotId == null) {
+                    if (isApiV3()) {
+                        wrapper = restClient.getNicV3(vmId, id);
+                    } else {
+                        wrapper = restClient.getNicV4(vmId, id);
+                    }
+                    entity = wrapper.toEntity();
+                    setVmId(entity, vmId);
+                } else {
+                    if (isApiV3()) {
+                        wrapper = restClient.getNicV3(vmId, snapshotId, id);
+                    } else {
+                        wrapper = restClient.getNicV4(vmId, snapshotId, id);
+                    }
+                    entity = wrapper.toEntity();
+                }
+
+                return entity;
             }
         };
     }
@@ -417,35 +489,40 @@ public class OVirtClient {
         return new Request<List<Nic>>() {
             @Override
             public List<Nic> fire() {
-                Nics loadedNics = snapshotId == null ? restClient.getNics(vmId) : restClient.getNics(vmId, snapshotId);
-                if (loadedNics == null) {
-                    return Collections.emptyList();
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.Nic> wrappers;
+                List<Nic> entities;
+
+                if (snapshotId == null) {
+
+                    if (isApiV3()) {
+                        wrappers = restClient.getNicsV3(vmId);
+                    } else {
+                        wrappers = restClient.getNicsV4(vmId);
+                    }
+                    entities = mapToEntities(wrappers);
+                    setVmId(entities, vmId);
+                } else {
+                    if (isApiV3()) {
+                        wrappers = restClient.getNicsV3(vmId, snapshotId);
+                    } else {
+                        wrappers = restClient.getNicsV4(vmId, snapshotId);
+                    }
+                    entities = mapToEntities(wrappers);
                 }
 
-                return mapRestWrappers(loadedNics.nic, null);
+                return entities;
             }
         };
-    }
-
-    public void getNics(final String id, Response<Nics> response) {
-        fireRestRequest(new Request<Nics>() {
-            @Override
-            public Nics fire() {
-                return restClient.getNics(id);
-            }
-        }, response);
     }
 
     public Request<List<Host>> getHostsRequest() {
         return new Request<List<Host>>() {
             @Override
             public List<Host> fire() {
-                Hosts loadedHosts = restClient.getHosts();
-                if (loadedHosts == null) {
-                    return Collections.emptyList();
+                if (isApiV3()) {
+                    return mapToEntities(restClient.getHostsV3());
                 }
-
-                return mapRestWrappers(loadedHosts.host, null);
+                return mapToEntities(restClient.getHostsV4());
             }
         };
     }
@@ -457,26 +534,24 @@ public class OVirtClient {
         return new Request<List<Vm>>() {
             @Override
             public List<Vm> fire() {
-                Vms loadedVms = null;
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.Vm> wrappers;
+
                 if (authenticator.hasAdminPermissions()) {
                     int maxVms = sharedPreferencesHelper.getMaxVms();
                     String query = sharedPreferences.getString("vms_search_query", "");
                     if (StringUtils.isEmpty(query)) {
-                        loadedVms = restClient.getVms(maxVms);
+                        wrappers = isApiV3() ? restClient.getVmsV3(maxVms) :
+                                restClient.getVmsV4(maxVms);
                     } else {
-                        loadedVms = restClient.getVms(query, maxVms);
+                        wrappers = isApiV3() ? restClient.getVmsV3(query, maxVms) :
+                                restClient.getVmsV4(query, maxVms);
                     }
-
                 } else {
-                    loadedVms = restClient.getVms(-1);
+                    wrappers = isApiV3() ? restClient.getVmsV3(-1) :
+                            restClient.getVmsV4(-1);
                 }
 
-                if (loadedVms == null) {
-                    return Collections.emptyList();
-                }
-
-
-                return mapRestWrappers(loadedVms.vm, null);
+                return mapToEntities(wrappers);
             }
         };
     }
@@ -485,12 +560,11 @@ public class OVirtClient {
         return new Request<List<StorageDomain>>() {
             @Override
             public List<StorageDomain> fire() {
-                StorageDomains loadedStorageDomains = restClient.getStorageDomains();
-                if (loadedStorageDomains == null) {
-                    return Collections.emptyList();
+                if (isApiV3()) {
+                    return mapToEntities(restClient.getStorageDomainsV3());
                 }
+                return mapToEntities(restClient.getStorageDomainsV4());
 
-                return mapRestWrappers(loadedStorageDomains.storage_domain, null);
             }
         };
     }
@@ -499,12 +573,16 @@ public class OVirtClient {
         return new Request<List<Snapshot>>() {
             @Override
             public List<Snapshot> fire() {
-                Snapshots loadedSnapshots = restClient.getSnapshots(vmId);
-                if (loadedSnapshots == null) {
-                    return Collections.emptyList();
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.Snapshot> wrappers;
+                List<Snapshot> entities;
+
+                if (isApiV3()) {
+                    wrappers = restClient.getSnapshotsV3(vmId);
+                } else {
+                    wrappers = restClient.getSnapshotsV4(vmId);
                 }
 
-                List<Snapshot> entities = mapRestWrappers(loadedSnapshots.snapshot, null);
+                entities = mapToEntities(wrappers);
                 setVmId(entities, vmId); // Active VM Snapshot doesn't include this
 
                 return entities;
@@ -516,24 +594,21 @@ public class OVirtClient {
         return new Request<Snapshot>() {
             @Override
             public Snapshot fire() {
-                Snapshot snapshot = restClient.getSnapshot(vmId, snapshotId).toEntity();
-                setVmId(snapshot, vmId);
-                return snapshot;
+                org.ovirt.mobile.movirt.rest.Snapshot wrapper;
+                Snapshot entity;
+
+                if (isApiV3()) {
+                    wrapper = restClient.getSnapshotV3(vmId, snapshotId);
+                } else {
+                    wrapper = restClient.getSnapshotV4(vmId, snapshotId);
+                }
+
+                entity = wrapper.toEntity();
+                setVmId(entity, vmId);
+
+                return entity;
             }
         };
-    }
-
-    public String login(String apiUrl, String username, String password, final boolean hasAdminPrivileges) {
-        setPersistentAuthHeaders();
-        restClient.setRootUrl(apiUrl);
-        restClient.setHttpBasicAuth(username, password);
-        restClient.setCookie("JSESSIONID", "");
-        requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
-        restClient.setHeader(FILTER, Boolean.toString(!hasAdminPrivileges));
-        restClient.login();
-        String sessionId = restClient.getCookie("JSESSIONID");
-        restClient.setHttpBasicAuth("", "");
-        return sessionId;
     }
 
     public void getEventsSince(final int lastEventId, Response<List<Event>> response) {
@@ -560,7 +635,7 @@ public class OVirtClient {
                     return Collections.emptyList();
                 }
 
-                return mapRestWrappers(loadedEvents.event, new WrapPredicate<org.ovirt.mobile.movirt.rest.Event>() {
+                return mapToEntities(loadedEvents, new WrapPredicate<org.ovirt.mobile.movirt.rest.Event>() {
                     @Override
                     public boolean toWrap(org.ovirt.mobile.movirt.rest.Event entity) {
                         return entity.id > lastEventId;
@@ -586,66 +661,84 @@ public class OVirtClient {
 
     @AfterInject
     void initClient() {
-        restClient.setHeader("Accept-Encoding", "gzip");
-        restClient.setHeader("Version", "3");
+        restClient.setHeader(ACCEPT_ENCODING, "gzip");
+        setupVersionHeader(authenticator.getApiMajorVersion());
 
         restClient.getRestTemplate().setRequestFactory(requestFactory);
+    }
+
+    public void setupVersionHeader(String version) {
+        restClient.setHeader(VERSION, version);
+    }
+
+    private void setPersistentV3AuthHeaders() {
+        restClient.setHeader(SESSION_TTL, "120"); // 2h
+        restClient.setHeader(PREFER, "persistent-auth, csrf-protection");
+    }
+
+    private void resetClientSettings() {
+        restClient.setHeader(SESSION_TTL, "");
+        restClient.setHeader(PREFER, "");
+        restClient.setCookie(JSESSIONID, "");
+        restClient.setAuthentication(new HttpAuthentication() {
+            @Override
+            public String getHeaderValue() {
+                // empty authentication - e.g. not the basic one
+                return "";
+            }
+        });
+    }
+
+    private void updateClientBeforeCall() {
+        restClient.setHeader(FILTER, Boolean.toString(!authenticator.hasAdminPermissions()));
+        requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
+        restClient.setRootUrl(authenticator.getApiUrl());
+    }
+
+    /**
+     * @param username username
+     * @param password password
+     * @return auth token depending on API version
+     */
+    public String login(String username, String password) {
+        String token = "";
+
+        resetClientSettings();
+        setupVersionHeader("");
+        updateClientBeforeCall();
+        restClient.setRootUrl(authenticator.getBaseUrl());
+        try {
+            token = restClient.loginV4(username, password).getAccessToken();
+        } catch (Exception x) {// 405 Method Not Allowed - old API
+        }
+        restClient.setRootUrl(authenticator.getApiUrl());
+
+        boolean oldApi = StringUtils.isEmpty(token);
+        restClient.setCookie(JSESSIONID, ""); // v4 may set JSESSIONID
+
+        if (oldApi) {
+            restClient.setHttpBasicAuth(username, password);
+            setPersistentV3AuthHeaders();
+        } else {
+            restClient.setBearerAuth(token);
+        }
+
+        Api api = restClient.loginV3();
+        authenticator.setApiMajorVersion(api);
+        setupVersionHeader(authenticator.getApiMajorVersion());
+
+        if (oldApi && api != null) { // check for api because v4 may set JSESSIONID even if login was unsuccessful
+            token = restClient.getCookie(JSESSIONID);
+        }
+
+        resetClientSettings();
+        return token;
     }
 
     /**
      * has to be synced because of error handling - otherwise it would not be possible to bind the error
      */
     public synchronized <T> void fireRestRequest(final Request<T> request, final Response<T> response) {
-        if (authenticator.enforceBasicAuth()) {
-            fireRequestWithHttpBasicAuth(request, response);
-        } else {
-            fireRequestWithPersistentAuth(request, response);
-        }
-    }
-
-    private <T> void fireRequestWithHttpBasicAuth(Request<T> request, Response<T> response) {
-        String userName = authenticator.getUserName();
-        String password = authenticator.getPassword();
-
-        boolean success = false;
-
-        if (TextUtils.isEmpty(userName) || TextUtils.isEmpty(password) || TextUtils.isEmpty(authenticator.getApiUrl())) {
-            Intent accountAuthenticatorResponse = new Intent(context, AuthenticatorActivity_.class);
-            Intent editConnectionIntent = new Intent(Broadcasts.NO_CONNECTION_SPEFICIED);
-            editConnectionIntent.putExtra(AccountManager.KEY_INTENT, accountAuthenticatorResponse);
-            context.sendBroadcast(editConnectionIntent);
-        } else {
-            updateClientBeforeCall();
-            restClient.setHttpBasicAuth(userName, password);
-            restClient.setHeader(PREFER, "");
-            restClient.setHeader(JSESSIONID, "");
-
-            if (response != null) {
-                response.before();
-            }
-
-            try {
-                T restResponse = request.fire();
-                success = true;
-                updateConnectionInfo(success);
-
-                if (response != null) {
-                    response.onResponse(restResponse);
-                }
-            } catch (Exception e) {
-                fireOtherConnectionError(e); // fires and displays multiple consecutive errors
-            } finally {
-                if (!success && response != null) {
-                    response.onError();
-                }
-                if (response != null) {
-                    response.after();
-                }
-            }
-        }
-    }
-
-    private <T> void fireRequestWithPersistentAuth(Request<T> request, Response<T> response) {
         if (response != null) {
             response.before();
         }
@@ -670,56 +763,6 @@ public class OVirtClient {
         }
     }
 
-    private ConnectionInfo updateConnectionInfo(boolean success) {
-        ConnectionInfo connectionInfo;
-        ConnectionInfo.State state;
-        boolean prevFailed = false;
-        boolean configured = sharedPreferencesHelper.isConnectionNotificationEnabled();
-        Collection<ConnectionInfo> connectionInfos = provider.query(ConnectionInfo.class).all();
-        int size = connectionInfos.size();
-
-        if (size != 0) {
-            connectionInfo = connectionInfos.iterator().next();
-            ConnectionInfo.State lastState = connectionInfo.getState();
-            if (lastState == ConnectionInfo.State.FAILED || lastState == ConnectionInfo.State.FAILED_REPEATEDLY) {
-                prevFailed = true;
-            }
-        } else {
-            connectionInfo = new ConnectionInfo();
-        }
-
-        if (!success) {
-            state = prevFailed ? ConnectionInfo.State.FAILED_REPEATEDLY : ConnectionInfo.State.FAILED;
-        } else {
-            state = ConnectionInfo.State.OK;
-        }
-        connectionInfo.updateWithCurrentTime(state);
-
-        //update in DB
-        if (size != 0) {
-            provider.batch().update(connectionInfo).apply();
-        } else {
-            provider.batch().insert(connectionInfo).apply();
-        }
-
-        //show Notification
-        if (!success && !prevFailed && configured) {
-            Intent resultIntent = new Intent(context, MainActivity_.class);
-            resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            PendingIntent resultPendingIntent =
-                    PendingIntent.getActivity(
-                            context,
-                            0,
-                            resultIntent,
-                            0
-                    );
-            notificationHelper.showConnectionNotification(
-                    context, resultPendingIntent, connectionInfo);
-        }
-
-        return connectionInfo;
-    }
-
     private <T> RestCallResult doFireRequestWithPersistentAuth(Request<T> request, Response<T> response) {
         AccountManagerFuture<Bundle> resp = accountManager.getAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, null, false, null, null);
 
@@ -733,18 +776,14 @@ public class OVirtClient {
                 if (TextUtils.isEmpty(authToken)) {
                     fireOtherConnectionError("Empty auth token");
                 } else {
-                    restClient.setCookie(JSESSIONID, authToken);
-                    restClient.setAuthentication(new HttpAuthentication() {
-                        @Override
-                        public String getHeaderValue() {
-                            // empty authentication - e.g. not the basic one
-                            return "";
-                        }
-                    });
-
+                    resetClientSettings();
                     updateClientBeforeCall();
-
-                    setPersistentAuthHeaders();
+                    if (isApiV3()) {
+                        restClient.setCookie(JSESSIONID, authToken);
+                        setPersistentV3AuthHeaders();
+                    } else {
+                        restClient.setBearerAuth(authToken);
+                    }
 
                     try {
                         T restResponse = request.fire();
@@ -802,15 +841,54 @@ public class OVirtClient {
 
     }
 
-    private void setPersistentAuthHeaders() {
-        restClient.setHeader("Session-TTL", "120"); // 2h
-        restClient.setHeader("Prefer", "persistent-auth, csrf-protection");
-    }
+    private ConnectionInfo updateConnectionInfo(boolean success) {
+        ConnectionInfo connectionInfo;
+        ConnectionInfo.State state;
+        boolean prevFailed = false;
+        boolean configured = sharedPreferencesHelper.isConnectionNotificationEnabled();
+        Collection<ConnectionInfo> connectionInfos = provider.query(ConnectionInfo.class).all();
+        int size = connectionInfos.size();
 
-    private void updateClientBeforeCall() {
-        restClient.setHeader(FILTER, Boolean.toString(!authenticator.hasAdminPermissions()));
-        requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
-        restClient.setRootUrl(authenticator.getApiUrl());
+        if (size != 0) {
+            connectionInfo = connectionInfos.iterator().next();
+            ConnectionInfo.State lastState = connectionInfo.getState();
+            if (lastState == ConnectionInfo.State.FAILED || lastState == ConnectionInfo.State.FAILED_REPEATEDLY) {
+                prevFailed = true;
+            }
+        } else {
+            connectionInfo = new ConnectionInfo();
+        }
+
+        if (!success) {
+            state = prevFailed ? ConnectionInfo.State.FAILED_REPEATEDLY : ConnectionInfo.State.FAILED;
+        } else {
+            state = ConnectionInfo.State.OK;
+        }
+        connectionInfo.updateWithCurrentTime(state);
+
+        //update in DB
+        if (size != 0) {
+            provider.batch().update(connectionInfo).apply();
+        } else {
+            provider.batch().insert(connectionInfo).apply();
+        }
+
+        //show Notification
+        if (!success && !prevFailed && configured) {
+            Intent resultIntent = new Intent(context, MainActivity_.class);
+            resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            PendingIntent resultPendingIntent =
+                    PendingIntent.getActivity(
+                            context,
+                            0,
+                            resultIntent,
+                            0
+                    );
+            notificationHelper.showConnectionNotification(
+                    context, resultPendingIntent, connectionInfo);
+        }
+
+        return connectionInfo;
     }
 
     private void fireOtherConnectionError(Exception e) {

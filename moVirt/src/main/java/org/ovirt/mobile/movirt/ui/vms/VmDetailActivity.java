@@ -370,7 +370,6 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         ImportCertificateDialogFragment importCertificateDialog = ImportCertificateDialogFragment
                 .newInstance(getString(R.string.can_not_run_console_without_ca),
                         AdvancedAuthenticatorActivity.MODE_SPICE_CA_MANAGEMENT,
-                        authenticator.enforceBasicAuth(),
                         authenticator.getCertHandlingStrategy().id(),
                         authenticator.getApiUrl());
         importCertificateDialog.show(getFragmentManager(), "certificateDialog");

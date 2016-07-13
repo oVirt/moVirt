@@ -3,20 +3,17 @@ package org.ovirt.mobile.movirt.rest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.ovirt.mobile.movirt.model.Snapshot.SnapshotStatus;
-import org.ovirt.mobile.movirt.model.Snapshot.SnapshotType;
 
 /**
  * Created by suomiy on 11/25/15.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Snapshot implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Snapshot> {
+public abstract class Snapshot implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Snapshot> {
     public String id;
     public String description;
     public String snapshot_status;
-    public String type;
     public long date;
     public boolean persist_memorystate;
-    public Vm vm;
 
     public Snapshot() {
     }
@@ -40,19 +37,17 @@ public class Snapshot implements RestEntityWrapper<org.ovirt.mobile.movirt.model
             snapshot.setSnapshotStatus(SnapshotStatus.valueOf(snapshot_status.toUpperCase()));
         }
 
-        try {
-            snapshot.setType(SnapshotType.valueOf(type.toUpperCase()));
-        } catch (Exception e) {
-            snapshot.setType(SnapshotType.UNKNOWN);
-        }
-
         snapshot.setDate(date);
         snapshot.setPersistMemorystate(persist_memorystate);
 
-        if (vm != null) {
-            snapshot.setVm(vm.toEntity());
-        }
-
         return snapshot;
+    }
+
+    protected org.ovirt.mobile.movirt.model.Snapshot.SnapshotType getSnapshotType(String type) {
+        try {
+            return org.ovirt.mobile.movirt.model.Snapshot.SnapshotType.valueOf(type.toUpperCase());
+        } catch (Exception e) {
+            return org.ovirt.mobile.movirt.model.Snapshot.SnapshotType.UNKNOWN;
+        }
     }
 }

@@ -17,21 +17,12 @@
         android:layout_centerInParent="true"
         android:visibility="gone" />
 
-    <TextView
-        android:id="@+id/textView6"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="@string/account_advanced_title"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/textView6"
         android:clipToPadding="false"
         android:paddingBottom="72dp">
 
@@ -39,13 +30,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
-            <CheckBox
-                android:id="@+id/enforceHttpBasicAuth"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:text="@string/account_enforceHttpBasicAuth" />
 
             <Spinner
                 android:id="@+id/certHandlingStrategy"

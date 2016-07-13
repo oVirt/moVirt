@@ -19,6 +19,7 @@ import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.NewSnapshotListener;
@@ -33,6 +34,9 @@ public class CreateSnapshotDialogFragment extends DialogFragment {
 
     @Bean
     ProviderFacade providerFacade;
+
+    @Bean
+    MovirtAuthenticator authenticator;
 
     private NewSnapshotListener listenerActivity;
 
@@ -83,7 +87,11 @@ public class CreateSnapshotDialogFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String description = descriptionEdit.getText().toString();
-                org.ovirt.mobile.movirt.rest.Snapshot snapshot = new org.ovirt.mobile.movirt.rest.Snapshot(description, persistMemory.isChecked());
+                boolean persistMem = persistMemory.isChecked();
+
+                org.ovirt.mobile.movirt.rest.Snapshot snapshot = authenticator.isApiV3() ?
+                        new org.ovirt.mobile.movirt.rest.v3.Snapshot(description, persistMem) :
+                        new org.ovirt.mobile.movirt.rest.v4.Snapshot(description, persistMem);
                 listenerActivity.onDialogResult(snapshot);
             }
         });

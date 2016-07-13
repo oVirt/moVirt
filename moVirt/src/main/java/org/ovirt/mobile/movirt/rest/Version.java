@@ -7,4 +7,16 @@ public class Version {
     public String major;
     public String minor;
     public String full_version;
+
+    public String getMajor() {
+        return major;
+    }
+
+    public String getMinor() {
+        return minor;
+    }
+
+    public String getFullVersion() {
+        return full_version;
+    }
 }

@@ -15,6 +15,7 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.UiThread;
+import org.ovirt.mobile.movirt.rest.Api;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
@@ -33,16 +34,18 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     public static final String API_URL = "org.ovirt.mobile.movirt.apiurl";
 
+    public static final String API_MAJOR_VERSION = "org.ovirt.mobile.movirt.apimajorversion";
+
     public static final String CERT_HANDLING_STRATEGY = "org.ovirt.mobile.movirt.certhandlingstrategy";
 
     public static final String HAS_ADMIN_PERMISSIONS = "org.ovirt.mobile.movirt.adminpermissionsm";
-
-    public static final String ENFORCE_HTTP_BASIC = "org.ovirt.mobile.movirt.enforceHttpBasic";
 
     public static final String CUSTOM_CERTIFICATE = "org.ovirt.mobile.movirt.customCertificate";
 
     public static final Account MOVIRT_ACCOUNT = new Account(MovirtAuthenticator.ACCOUNT_NAME, MovirtAuthenticator.ACCOUNT_TYPE);
 
+
+    private static final String fallbackMajorVersion = "3";
     @Bean
     OVirtClient client;
 
@@ -89,9 +92,9 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             final String username = getUserName();
             final String password = getPassword();
             if (username != null && password != null) {
-                authToken = client.login(getApiUrl(), username, password, hasAdminPermissions());
+                authToken = client.login(username, password);
 
-                if(!TextUtils.isEmpty(authToken)) {
+                if (!TextUtils.isEmpty(authToken)) {
                     accountManager.setAuthToken(account, authTokenType, authToken);
                 }
             }
@@ -148,6 +151,34 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         return read(API_URL);
     }
 
+    public String getBaseUrl() {
+        return getApiUrl().replaceFirst("/api$", "");
+    }
+
+    public String getApiMajorVersion() {
+        return read(API_MAJOR_VERSION, fallbackMajorVersion);
+    }
+
+    public int getApiMajorVersionAsInt() {
+        return Integer.parseInt(getApiMajorVersion());
+    }
+
+    public boolean isApiV3() {
+        return getApiMajorVersionAsInt() < 4;
+    }
+
+    public void setApiMajorVersion(Api api) {
+        try {
+            setApiMajorVersion(api.getProductInfo().getVersion().getMajor());
+        } catch (Exception x) {
+            setApiMajorVersion(""); // fallback version is used instead
+        }
+    }
+
+    public void setApiMajorVersion(String majorVersion) {
+        accountManager.setUserData(MOVIRT_ACCOUNT, API_MAJOR_VERSION, majorVersion);
+    }
+
     public String getUserName() {
         return read(USER_NAME);
     }
@@ -158,10 +189,6 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     public Boolean hasAdminPermissions() {
         return read(HAS_ADMIN_PERMISSIONS, false);
-    }
-
-    public Boolean enforceBasicAuth() {
-        return read(ENFORCE_HTTP_BASIC, false);
     }
 
     public boolean accountConfigured() {
@@ -175,6 +202,15 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         }
 
         return Boolean.valueOf(res);
+    }
+
+    private String read(String id, String defRes) {
+        String res = accountManager.getUserData(MOVIRT_ACCOUNT, id);
+        if (TextUtils.isEmpty(res)) {
+            return defRes;
+        }
+
+        return res;
     }
 
     private String read(String id) {

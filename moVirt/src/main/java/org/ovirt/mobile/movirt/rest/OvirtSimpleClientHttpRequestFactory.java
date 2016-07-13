@@ -95,9 +95,9 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
      */
     private void trustAllHosts() {
         // Create a trust manager that does not validate certificate chains
-        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
             public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                return new java.security.cert.X509Certificate[] {};
+                return new java.security.cert.X509Certificate[]{};
             }
 
             public void checkClientTrusted(X509Certificate[] chain,
@@ -108,7 +108,7 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
                                            String authType) throws CertificateException {
             }
         }
-    };
+        };
         // Install the all-trusting trust manager
         try {
             SSLContext sc = SSLContext.getInstance("TLS");
