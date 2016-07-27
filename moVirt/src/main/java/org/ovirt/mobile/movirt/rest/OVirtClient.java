@@ -25,6 +25,9 @@ import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.res.StringRes;
 import org.androidannotations.annotations.rest.RestService;
+import org.androidannotations.api.rest.RestClientHeaders;
+import org.androidannotations.api.rest.RestClientRootUrl;
+import org.androidannotations.api.rest.RestClientSupport;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
@@ -65,11 +68,21 @@ public class OVirtClient {
     public static final String SESSION_TTL = "Session-TTL";
     public static final String VERSION = "Version";
     public static final String ACCEPT_ENCODING = "Accept-Encoding";
+
     private static final String TAG = OVirtClient.class.getSimpleName();
+    private static final Object loginV3Lock = new Object();
+    private static final Object loginV4Lock = new Object();
+
     ObjectMapper mapper = new ObjectMapper();
 
     @RestService
     OVirtRestClient restClient;
+
+    @RestService
+    OVirtLoginV3RestClient loginV3RestClient;
+
+    @RestService
+    OVirtLoginV4RestClient loginV4RestClient;
 
     @Bean
     OvirtSimpleClientHttpRequestFactory requestFactory;
@@ -660,23 +673,29 @@ public class OVirtClient {
     }
 
     @AfterInject
-    void initClient() {
-        restClient.setHeader(ACCEPT_ENCODING, "gzip");
-        setupVersionHeader(authenticator.getApiMajorVersion());
+    void initClients() {
+        initClient(restClient);
+        setupVersionHeader(restClient, authenticator.getApiMajorVersion());
 
+        initClient(loginV3RestClient);
+        initClient(loginV4RestClient);
+    }
+
+    private <T extends RestClientHeaders & RestClientSupport> void initClient(T restClient) {
+        restClient.setHeader(ACCEPT_ENCODING, "gzip");
         restClient.getRestTemplate().setRequestFactory(requestFactory);
     }
 
-    public void setupVersionHeader(String version) {
+    public <T extends RestClientHeaders> void setupVersionHeader(T restClient, String version) {
         restClient.setHeader(VERSION, version);
     }
 
-    private void setPersistentV3AuthHeaders() {
+    private <T extends RestClientHeaders> void setPersistentV3AuthHeaders(T restClient) {
         restClient.setHeader(SESSION_TTL, "120"); // 2h
         restClient.setHeader(PREFER, "persistent-auth, csrf-protection");
     }
 
-    private void resetClientSettings() {
+    private <T extends RestClientHeaders> void resetClientSettings(T restClient) {
         restClient.setHeader(SESSION_TTL, "");
         restClient.setHeader(PREFER, "");
         restClient.setCookie(JSESSIONID, "");
@@ -689,10 +708,14 @@ public class OVirtClient {
         });
     }
 
-    private void updateClientBeforeCall() {
+    private <T extends RestClientRootUrl & RestClientHeaders & RestClientSupport> void updateClientBeforeCall(T restClient) {
+        updateClientBeforeCall(restClient, authenticator.getApiUrl());
+    }
+
+    private <T extends RestClientRootUrl & RestClientHeaders & RestClientSupport> void updateClientBeforeCall(T restClient, String rootUrl) {
         restClient.setHeader(FILTER, Boolean.toString(!authenticator.hasAdminPermissions()));
         requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
-        restClient.setRootUrl(authenticator.getApiUrl());
+        restClient.setRootUrl(rootUrl);
     }
 
     /**
@@ -703,35 +726,35 @@ public class OVirtClient {
     public String login(String username, String password) {
         String token = "";
 
-        resetClientSettings();
-        setupVersionHeader("");
-        updateClientBeforeCall();
-        restClient.setRootUrl(authenticator.getBaseUrl());
-        try {
-            token = restClient.loginV4(username, password).getAccessToken();
-        } catch (Exception x) {// 405 Method Not Allowed - old API
+        synchronized (loginV4Lock) {
+            try {
+                updateClientBeforeCall(loginV4RestClient, authenticator.getBaseUrl());
+                token = loginV4RestClient.login(username, password).getAccessToken();
+            } catch (Exception x) {// 405 Method Not Allowed - old API
+            }
         }
-        restClient.setRootUrl(authenticator.getApiUrl());
 
         boolean oldApi = StringUtils.isEmpty(token);
-        restClient.setCookie(JSESSIONID, ""); // v4 may set JSESSIONID
 
-        if (oldApi) {
-            restClient.setHttpBasicAuth(username, password);
-            setPersistentV3AuthHeaders();
-        } else {
-            restClient.setBearerAuth(token);
+        synchronized (loginV3Lock) {
+            resetClientSettings(loginV3RestClient);
+            updateClientBeforeCall(loginV3RestClient);
+            if (oldApi) {
+                loginV3RestClient.setHttpBasicAuth(username, password);
+                setPersistentV3AuthHeaders(loginV3RestClient);
+            } else {
+                loginV3RestClient.setBearerAuth(token);
+            }
+
+            Api api = loginV3RestClient.login();
+            authenticator.setApiMajorVersion(api);
+            setupVersionHeader(restClient, authenticator.getApiMajorVersion());
+
+            if (oldApi && api != null) { // check for api because v4 may set JSESSIONID even if login was unsuccessful
+                token = loginV3RestClient.getCookie(JSESSIONID);
+            }
         }
 
-        Api api = restClient.loginV3();
-        authenticator.setApiMajorVersion(api);
-        setupVersionHeader(authenticator.getApiMajorVersion());
-
-        if (oldApi && api != null) { // check for api because v4 may set JSESSIONID even if login was unsuccessful
-            token = restClient.getCookie(JSESSIONID);
-        }
-
-        resetClientSettings();
         return token;
     }
 
@@ -776,11 +799,11 @@ public class OVirtClient {
                 if (TextUtils.isEmpty(authToken)) {
                     fireOtherConnectionError("Empty auth token");
                 } else {
-                    resetClientSettings();
-                    updateClientBeforeCall();
+                    resetClientSettings(restClient);
+                    updateClientBeforeCall(restClient);
                     if (isApiV3()) {
                         restClient.setCookie(JSESSIONID, authToken);
-                        setPersistentV3AuthHeaders();
+                        setPersistentV3AuthHeaders(restClient);
                     } else {
                         restClient.setBearerAuth(authToken);
                     }
