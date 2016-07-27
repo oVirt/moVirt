@@ -1,16 +1,16 @@
 package org.ovirt.mobile.movirt.rest;
 
-import org.androidannotations.annotations.rest.Accept;
-import org.androidannotations.annotations.rest.Get;
-import org.androidannotations.annotations.rest.RequiresAuthentication;
-import org.androidannotations.annotations.rest.RequiresCookie;
-import org.androidannotations.annotations.rest.RequiresHeader;
-import org.androidannotations.annotations.rest.Rest;
-import org.androidannotations.annotations.rest.SetsCookie;
-import org.androidannotations.api.rest.MediaType;
-import org.androidannotations.api.rest.RestClientHeaders;
-import org.androidannotations.api.rest.RestClientRootUrl;
-import org.androidannotations.api.rest.RestClientSupport;
+import org.androidannotations.rest.spring.annotations.Accept;
+import org.androidannotations.rest.spring.annotations.Get;
+import org.androidannotations.rest.spring.annotations.RequiresAuthentication;
+import org.androidannotations.rest.spring.annotations.RequiresCookie;
+import org.androidannotations.rest.spring.annotations.RequiresHeader;
+import org.androidannotations.rest.spring.annotations.Rest;
+import org.androidannotations.rest.spring.annotations.SetsCookie;
+import org.androidannotations.rest.spring.api.MediaType;
+import org.androidannotations.rest.spring.api.RestClientHeaders;
+import org.androidannotations.rest.spring.api.RestClientRootUrl;
+import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 @Rest(converters = MappingJackson2HttpMessageConverter.class)

@@ -1,13 +1,14 @@
 package org.ovirt.mobile.movirt.rest;
 
-import org.androidannotations.annotations.rest.Accept;
-import org.androidannotations.annotations.rest.Post;
-import org.androidannotations.annotations.rest.RequiresHeader;
-import org.androidannotations.annotations.rest.Rest;
-import org.androidannotations.api.rest.MediaType;
-import org.androidannotations.api.rest.RestClientHeaders;
-import org.androidannotations.api.rest.RestClientRootUrl;
-import org.androidannotations.api.rest.RestClientSupport;
+import org.androidannotations.rest.spring.annotations.Accept;
+import org.androidannotations.rest.spring.annotations.Path;
+import org.androidannotations.rest.spring.annotations.Post;
+import org.androidannotations.rest.spring.annotations.RequiresHeader;
+import org.androidannotations.rest.spring.annotations.Rest;
+import org.androidannotations.rest.spring.api.MediaType;
+import org.androidannotations.rest.spring.api.RestClientHeaders;
+import org.androidannotations.rest.spring.api.RestClientRootUrl;
+import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.rest.v4.Token;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
@@ -18,5 +19,5 @@ public interface OVirtLoginV4RestClient extends RestClientRootUrl, RestClientHea
 
     @Post("/sso/oauth/token?grant_type=password&scope=ovirt-app-api&username={username}&password={password}")
     @Accept(MediaType.APPLICATION_JSON)
-    Token login(String username, String password);
+    Token login(@Path String username, @Path String password);
 }

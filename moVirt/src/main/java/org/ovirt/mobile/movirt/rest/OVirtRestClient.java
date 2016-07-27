@@ -1,18 +1,20 @@
 package org.ovirt.mobile.movirt.rest;
 
-import org.androidannotations.annotations.rest.Accept;
-import org.androidannotations.annotations.rest.Delete;
-import org.androidannotations.annotations.rest.Get;
-import org.androidannotations.annotations.rest.Post;
-import org.androidannotations.annotations.rest.RequiresAuthentication;
-import org.androidannotations.annotations.rest.RequiresCookie;
-import org.androidannotations.annotations.rest.RequiresHeader;
-import org.androidannotations.annotations.rest.Rest;
-import org.androidannotations.annotations.rest.SetsCookie;
-import org.androidannotations.api.rest.MediaType;
-import org.androidannotations.api.rest.RestClientHeaders;
-import org.androidannotations.api.rest.RestClientRootUrl;
-import org.androidannotations.api.rest.RestClientSupport;
+import org.androidannotations.rest.spring.annotations.Accept;
+import org.androidannotations.rest.spring.annotations.Body;
+import org.androidannotations.rest.spring.annotations.Delete;
+import org.androidannotations.rest.spring.annotations.Get;
+import org.androidannotations.rest.spring.annotations.Path;
+import org.androidannotations.rest.spring.annotations.Post;
+import org.androidannotations.rest.spring.annotations.RequiresAuthentication;
+import org.androidannotations.rest.spring.annotations.RequiresCookie;
+import org.androidannotations.rest.spring.annotations.RequiresHeader;
+import org.androidannotations.rest.spring.annotations.Rest;
+import org.androidannotations.rest.spring.annotations.SetsCookie;
+import org.androidannotations.rest.spring.api.MediaType;
+import org.androidannotations.rest.spring.api.RestClientHeaders;
+import org.androidannotations.rest.spring.api.RestClientRootUrl;
+import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 @Rest(converters = MappingJackson2HttpMessageConverter.class)
@@ -24,40 +26,40 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, RestClientSupport {
 
     @Post("/vms/{vmId}/start")
-    void startVm(Action action, String vmId);
+    void startVm(@Body Action action, @Path String vmId);
 
     @Post("/vms/{vmId}/stop")
-    void stopVm(Action action, String vmId);
+    void stopVm(@Body Action action, @Path String vmId);
 
     @Post("/vms/{vmId}/reboot")
-    void rebootVm(Action action, String vmId);
+    void rebootVm(@Body Action action, @Path String vmId);
 
     @Post("/vms/{vmId}/migrate")
-    void migrateVmToHost(Action action, String vmId);
+    void migrateVmToHost(@Body Action action, @Path String vmId);
 
     @Post("/vms/{vmId}/cancelmigration")
-    void cancelMigration(Action action, String vmId);
+    void cancelMigration(@Body Action action, @Path String vmId);
 
     @Post("/hosts/{hostId}/activate")
-    void activateHost(Action action, String hostId);
+    void activateHost(@Body Action action, @Path String hostId);
 
     @Post("/hosts/{hostId}/deactivate")
-    void deactivateHost(Action action, String hostId);
+    void deactivateHost(@Body Action action, @Path String hostId);
 
     @Delete("/vms/{vmId}/snapshots/{snapshotId}")
-    void deleteSnapshot(String vmId, String snapshotId);
+    void deleteSnapshot(@Path String vmId, @Path String snapshotId);
 
     @Post("/vms/{vmId}/snapshots/{snapshotId}/restore")
-    void restoreSnapshot(SnapshotAction action, String vmId, String snapshotId);
+    void restoreSnapshot(@Body SnapshotAction action, @Path String vmId, @Path String snapshotId);
 
     @Get("/events;max={maxToLoad}?from={lastEventId}&search=sortby time desc")
-    Events getEventsSince(String lastEventId, int maxToLoad);
+    Events getEventsSince(@Path String lastEventId, @Path int maxToLoad);
 
     @Get("/events;max={maxToLoad}?from={lastEventId}&search={query}")
-    Events getEventsSince(String lastEventId, String query, int maxToLoad);
+    Events getEventsSince(@Path String lastEventId, @Path String query, @Path int maxToLoad);
 
     @Post("/vms/{vmId}/ticket")
-    ActionTicket getConsoleTicket(Action action, String vmId);
+    ActionTicket getConsoleTicket(@Body Action action, @Path String vmId);
 
     void setCookie(String name, String value);
 
@@ -66,37 +68,37 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     // API 3 and 4 methods
 
     @Post("/vms/{vmId}/preview_snapshot")
-    void previewSnapshotV3(SnapshotAction snapshotAction, String vmId);
+    void previewSnapshotV3(@Body SnapshotAction snapshotAction, @Path String vmId);
 
     @Post("/vms/{vmId}/previewsnapshot")
-    void previewSnapshotV4(SnapshotAction snapshotAction, String vmId);
+    void previewSnapshotV4(@Body SnapshotAction snapshotAction, @Path String vmId);
 
     @Post("/vms/{vmId}/undo_snapshot")
-    void undoSnapshotV3(Action action, String vmId);
+    void undoSnapshotV3(@Body Action action, @Path String vmId);
 
     @Post("/vms/{vmId}/undosnapshot")
-    void undoSnapshotV4(Action action, String vmId);
+    void undoSnapshotV4(@Body Action action, @Path String vmId);
 
     @Post("/vms/{vmId}/commit_snapshot")
-    void commitSnapshotV3(Action action, String vmId);
+    void commitSnapshotV3(@Body Action action, @Path String vmId);
 
     @Post("/vms/{vmId}/commitsnapshot")
-    void commitSnapshotV4(Action action, String vmId);
+    void commitSnapshotV4(@Body Action action, @Path String vmId);
 
     @Post("/vms/{vmId}/snapshots")
-    void createSnapshot(Snapshot snapshot, String vmId);
+    void createSnapshot(@Body Snapshot snapshot, @Path String vmId);
 
     @Get("/vms;max={maxToLoad}")
-    org.ovirt.mobile.movirt.rest.v3.Vms getVmsV3(int maxToLoad);
+    org.ovirt.mobile.movirt.rest.v3.Vms getVmsV3(@Path int maxToLoad);
 
     @Get("/vms;max={maxToLoad}")
-    org.ovirt.mobile.movirt.rest.v4.Vms getVmsV4(int maxToLoad);
+    org.ovirt.mobile.movirt.rest.v4.Vms getVmsV4(@Path int maxToLoad);
 
     @Get("/vms;max={maxToLoad}?search={query}")
-    org.ovirt.mobile.movirt.rest.v3.Vms getVmsV3(String query, int maxToLoad);
+    org.ovirt.mobile.movirt.rest.v3.Vms getVmsV3(@Path String query, @Path int maxToLoad);
 
     @Get("/vms;max={maxToLoad}?search={query}")
-    org.ovirt.mobile.movirt.rest.v4.Vms getVmsV4(String query, int maxToLoad);
+    org.ovirt.mobile.movirt.rest.v4.Vms getVmsV4(@Path String query, @Path int maxToLoad);
 
     @Get("/clusters")
     org.ovirt.mobile.movirt.rest.v3.Clusters getClustersV3();
@@ -117,64 +119,64 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     org.ovirt.mobile.movirt.rest.v4.StorageDomains getStorageDomainsV4();
 
     @Get("/storagedomains/{storageDomainId}")
-    org.ovirt.mobile.movirt.rest.v3.StorageDomain getStorageDomainV3(String storageDomainId);
+    org.ovirt.mobile.movirt.rest.v3.StorageDomain getStorageDomainV3(@Path String storageDomainId);
 
     @Get("/storagedomains/{storageDomainId}")
-    org.ovirt.mobile.movirt.rest.v4.StorageDomain getStorageDomainV4(String storageDomainId);
+    org.ovirt.mobile.movirt.rest.v4.StorageDomain getStorageDomainV4(@Path String storageDomainId);
 
     @Get("/vms/{vmId}")
-    org.ovirt.mobile.movirt.rest.v3.Vm getVmV3(String vmId);
+    org.ovirt.mobile.movirt.rest.v3.Vm getVmV3(@Path String vmId);
 
     @Get("/vms/{vmId}")
-    org.ovirt.mobile.movirt.rest.v4.Vm getVmV4(String vmId);
+    org.ovirt.mobile.movirt.rest.v4.Vm getVmV4(@Path String vmId);
 
     @Get("/vms/{vmId}/disks/{diskId}")
-    org.ovirt.mobile.movirt.rest.v3.Disk getDiskV3(String vmId, String diskId);
+    org.ovirt.mobile.movirt.rest.v3.Disk getDiskV3(@Path String vmId, @Path String diskId);
 
     @Get("/vms/{vmId}/disks/{diskId}")
-    org.ovirt.mobile.movirt.rest.v4.Disk getDiskV4(String vmId, String diskId);
+    org.ovirt.mobile.movirt.rest.v4.Disk getDiskV4(@Path String vmId, @Path String diskId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/disks/{diskId}")
-    org.ovirt.mobile.movirt.rest.v3.Disk getDiskV3(String vmId, String snapshotId, String diskId);
+    org.ovirt.mobile.movirt.rest.v3.Disk getDiskV3(@Path String vmId, @Path String snapshotId, @Path String diskId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/disks/{diskId}")
-    org.ovirt.mobile.movirt.rest.v4.Disk getDiskV4(String vmId, String snapshotId, String diskId);
+    org.ovirt.mobile.movirt.rest.v4.Disk getDiskV4(@Path String vmId, @Path String snapshotId, @Path String diskId);
 
     @Get("/vms/{vmId}/disks")
-    org.ovirt.mobile.movirt.rest.v3.Disks getDisksV3(String vmId);
+    org.ovirt.mobile.movirt.rest.v3.Disks getDisksV3(@Path String vmId);
 
     @Get("/vms/{vmId}/disks")
-    org.ovirt.mobile.movirt.rest.v4.Disks getDisksV4(String vmId);
+    org.ovirt.mobile.movirt.rest.v4.Disks getDisksV4(@Path String vmId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/disks")
-    org.ovirt.mobile.movirt.rest.v3.Disks getDisksV3(String vmId, String snapshotId);
+    org.ovirt.mobile.movirt.rest.v3.Disks getDisksV3(@Path String vmId, @Path String snapshotId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/disks")
-    org.ovirt.mobile.movirt.rest.v4.Disks getDisksV4(String vmId, String snapshotId);
+    org.ovirt.mobile.movirt.rest.v4.Disks getDisksV4(@Path String vmId, @Path String snapshotId);
 
     @Get("/vms/{vmId}/nics/{nicId}")
-    org.ovirt.mobile.movirt.rest.v3.Nic getNicV3(String vmId, String nicId);
+    org.ovirt.mobile.movirt.rest.v3.Nic getNicV3(@Path String vmId, @Path String nicId);
 
     @Get("/vms/{vmId}/nics/{nicId}")
-    org.ovirt.mobile.movirt.rest.v4.Nic getNicV4(String vmId, String nicId);
+    org.ovirt.mobile.movirt.rest.v4.Nic getNicV4(@Path String vmId, @Path String nicId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/nics/{nicId}")
-    org.ovirt.mobile.movirt.rest.v3.Nic getNicV3(String vmId, String snapshotId, String nicId);
+    org.ovirt.mobile.movirt.rest.v3.Nic getNicV3(@Path String vmId, @Path String snapshotId, @Path String nicId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/nics/{nicId}")
-    org.ovirt.mobile.movirt.rest.v4.Nic getNicV4(String vmId, String snapshotId, String nicId);
+    org.ovirt.mobile.movirt.rest.v4.Nic getNicV4(@Path String vmId, @Path String snapshotId, @Path String nicId);
 
     @Get("/vms/{vmId}/nics")
-    org.ovirt.mobile.movirt.rest.v3.Nics getNicsV3(String vmId);
+    org.ovirt.mobile.movirt.rest.v3.Nics getNicsV3(@Path String vmId);
 
     @Get("/vms/{vmId}/nics")
-    org.ovirt.mobile.movirt.rest.v4.Nics getNicsV4(String vmId);
+    org.ovirt.mobile.movirt.rest.v4.Nics getNicsV4(@Path String vmId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/nics")
-    org.ovirt.mobile.movirt.rest.v3.Nics getNicsV3(String vmId, String snapshotId);
+    org.ovirt.mobile.movirt.rest.v3.Nics getNicsV3(@Path String vmId, @Path String snapshotId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/nics")
-    org.ovirt.mobile.movirt.rest.v4.Nics getNicsV4(String vmId, String snapshotId);
+    org.ovirt.mobile.movirt.rest.v4.Nics getNicsV4(@Path String vmId, @Path String snapshotId);
 
     @Get("/hosts")
     org.ovirt.mobile.movirt.rest.v3.Hosts getHostsV3();
@@ -183,20 +185,20 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     org.ovirt.mobile.movirt.rest.v4.Hosts getHostsV4();
 
     @Get("/hosts/{hostId}")
-    org.ovirt.mobile.movirt.rest.v3.Host getHostV3(String hostId);
+    org.ovirt.mobile.movirt.rest.v3.Host getHostV3(@Path String hostId);
 
     @Get("/hosts/{hostId}")
-    org.ovirt.mobile.movirt.rest.v4.Host getHostV4(String hostId);
+    org.ovirt.mobile.movirt.rest.v4.Host getHostV4(@Path String hostId);
 
     @Get("/vms/{vmId}/snapshots")
-    org.ovirt.mobile.movirt.rest.v3.Snapshots getSnapshotsV3(String vmId);
+    org.ovirt.mobile.movirt.rest.v3.Snapshots getSnapshotsV3(@Path String vmId);
 
     @Get("/vms/{vmId}/snapshots")
-    org.ovirt.mobile.movirt.rest.v4.Snapshots getSnapshotsV4(String vmId);
+    org.ovirt.mobile.movirt.rest.v4.Snapshots getSnapshotsV4(@Path String vmId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}")
-    org.ovirt.mobile.movirt.rest.v3.Snapshot getSnapshotV3(String vmId, String snapshotId);
+    org.ovirt.mobile.movirt.rest.v3.Snapshot getSnapshotV3(@Path String vmId, @Path String snapshotId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}")
-    org.ovirt.mobile.movirt.rest.v4.Snapshot getSnapshotV4(String vmId, String snapshotId);
+    org.ovirt.mobile.movirt.rest.v4.Snapshot getSnapshotV4(@Path String vmId, @Path String snapshotId);
 }
