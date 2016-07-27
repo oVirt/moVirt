@@ -23,6 +23,7 @@ import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
+import org.ovirt.mobile.movirt.ui.dialogs.ImportCertificateDialogFragment;
 
 /**
  * Class that represents base Activity for entire moVirt app. Every Activity should extends this if
@@ -118,18 +119,6 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
         }
     }
 
-    @Receiver(actions = Broadcasts.CONNECTION_FAILURE,
-            registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    protected void connectionFailure(
-            @Receiver.Extra(Broadcasts.Extras.CONNECTION_FAILURE_REASON) String reason,
-            @Receiver.Extra(Broadcasts.Extras.REPEATED_CONNECTION_FAILURE) boolean repeatedFailure) {
-        if (!repeatedFailure) {
-            DialogFragment dialogFragment = ErrorDialogFragment
-                    .newInstance(this, authenticator, providerFacade, reason);
-            dialogFragment.show(getFragmentManager(), "error");
-        }
-    }
-
     @UiThread
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
@@ -158,5 +147,36 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
         @Override
         public void onLoaderReset(android.support.v4.content.Loader<Cursor> loader) {
         }
+    }
+
+    // notifications
+
+    @Receiver(actions = {Broadcasts.CONNECTION_FAILURE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    protected void connectionFailure(
+            @Receiver.Extra(Broadcasts.Extras.FAILURE_REASON) String reason,
+            @Receiver.Extra(Broadcasts.Extras.REPEATED_CONNECTION_FAILURE) boolean repeatedFailure) {
+        if (!repeatedFailure) {
+            DialogFragment dialogFragment = ErrorDialogFragment
+                    .newInstance(this, authenticator, providerFacade, reason);
+            dialogFragment.show(getFragmentManager(), "error");
+        }
+    }
+
+    @Receiver(actions = {Broadcasts.LOGIN_FAILURE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    protected void loginFailure(
+            @Receiver.Extra(Broadcasts.Extras.FAILURE_REASON) String reason) {
+        DialogFragment dialogFragment = ErrorDialogFragment.newInstance(reason);
+        dialogFragment.show(getFragmentManager(), "login_error");
+    }
+
+    @Receiver(actions = {Broadcasts.REST_CA_FAILURE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    protected void certificateFailure(
+            @Receiver.Extra(Broadcasts.Extras.FAILURE_REASON) String reason) {
+        DialogFragment importCertificateDialog =
+                ImportCertificateDialogFragment.newRestCaInstance(reason, true);
+        importCertificateDialog.show(getFragmentManager(), "certificate_error");
     }
 }

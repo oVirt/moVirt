@@ -92,7 +92,10 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             final String username = getUserName();
             final String password = getPassword();
             if (username != null && password != null) {
-                authToken = client.login(username, password);
+                try {
+                    authToken = client.login(username, password);
+                } catch (Exception x) { // do not fail on bad login info
+                }
 
                 if (!TextUtils.isEmpty(authToken)) {
                     accountManager.setAuthToken(account, authTokenType, authToken);
@@ -107,7 +110,6 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
             return result;
         }
-
         return createAccountActivity(accountAuthenticatorResponse);
     }
 
