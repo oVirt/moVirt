@@ -42,9 +42,13 @@ import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ImportCertificateDialogFragment;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import javax.net.ssl.SSLHandshakeException;
@@ -305,11 +309,22 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof SSLHandshakeException) {
                 fireCertificateError(cause);
+            } else if (cause != null && (cause instanceof ConnectException || cause instanceof UnknownHostException)) {
+                fireError("Could not connect. Make sure ip address and port are correct.", e.getMessage());
+            } else if (e instanceof HttpClientErrorException) {
+                HttpStatus statusCode = ((HttpClientErrorException) e).getStatusCode();
+
+                if (statusCode == HttpStatus.NOT_FOUND) {
+                    fireError("Not found.\nAddress suffix should be \"/ovirt-engine/api\"", e.getMessage());
+                }else if(statusCode == HttpStatus.UNAUTHORIZED){
+                    fireError("Username or password is incorrect.", e.getMessage());
+                }
             } else {
                 fireError("Error logging in: " + e.getMessage());
             }
         }
     }
+
 
     void onLoginResultReceived(String token, boolean endpointChanged) {
         changeProgressVisibilityTo(View.GONE);
@@ -358,6 +373,10 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         Intent intent = new Intent(Broadcasts.REST_CA_FAILURE);
         intent.putExtra(Broadcasts.Extras.FAILURE_REASON, message);
         getApplicationContext().sendBroadcast(intent);
+    }
+
+    void fireError(String msg, String detailedInfo) {
+        fireError(String.format("%s\n\nDetailed info:\n %s", msg, detailedInfo));
     }
 
     void fireError(String msg) {
