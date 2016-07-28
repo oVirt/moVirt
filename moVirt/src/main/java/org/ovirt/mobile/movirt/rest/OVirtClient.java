@@ -50,10 +50,12 @@ import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.http.HttpAuthentication;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -84,6 +86,9 @@ public class OVirtClient {
 
     @Bean
     OvirtSimpleClientHttpRequestFactory requestFactory;
+
+    @Bean
+    OvirtTimeoutSimpleClientHttpRequestFactory timeoutRequestFactory;
 
     @Bean
     ProviderFacade provider;
@@ -672,14 +677,14 @@ public class OVirtClient {
 
     @AfterInject
     void initClients() {
-        initClient(restClient);
+        initClient(restClient, requestFactory);
         setupVersionHeader(restClient, authenticator.getApiMajorVersion());
 
-        initClient(loginV3RestClient);
-        initClient(loginV4RestClient);
+        initClient(loginV3RestClient, timeoutRequestFactory);
+        initClient(loginV4RestClient, timeoutRequestFactory);
     }
 
-    private <T extends RestClientHeaders & RestClientSupport> void initClient(T restClient) {
+    private <T extends RestClientHeaders & RestClientSupport> void initClient(T restClient, ClientHttpRequestFactory requestFactory) {
         restClient.setHeader(ACCEPT_ENCODING, "gzip");
         restClient.getRestTemplate().setRequestFactory(requestFactory);
     }
@@ -713,6 +718,7 @@ public class OVirtClient {
     private <T extends RestClientRootUrl & RestClientHeaders & RestClientSupport> void updateClientBeforeCall(T restClient, String rootUrl) {
         restClient.setHeader(FILTER, Boolean.toString(!authenticator.hasAdminPermissions()));
         requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
+        timeoutRequestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
         restClient.setRootUrl(rootUrl);
     }
 
@@ -728,7 +734,11 @@ public class OVirtClient {
             try {
                 updateClientBeforeCall(loginV4RestClient, authenticator.getBaseUrl());
                 token = loginV4RestClient.login(username, password).getAccessToken();
-            } catch (Exception x) {// 405 Method Not Allowed - old API
+            } catch (Exception ex) {// 405 Method Not Allowed - old API
+                Throwable cause = ex.getCause();
+                if (cause != null && cause instanceof SocketTimeoutException) {
+                    throw ex;
+                }
             }
         }
 
