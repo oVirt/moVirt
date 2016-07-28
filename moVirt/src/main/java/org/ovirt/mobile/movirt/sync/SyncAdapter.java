@@ -43,10 +43,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@EBean
+@EBean(scope = EBean.Scope.Singleton)
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = SyncAdapter.class.getSimpleName();
-    public static volatile boolean inSync = false;
 
     @RootContext
     Context context;
@@ -76,12 +75,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     @Override
-    public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient providerClient, SyncResult syncResult) {
-
-        if (inSync) {
-            return;
-        }
-
+    public synchronized void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient providerClient, SyncResult syncResult) {
         if (!authenticator.accountConfigured()) {
             Log.d(TAG, "Account not configured, not performing sync");
             return;
@@ -290,7 +284,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void sendSyncIntent(boolean sync) {
-        inSync = sync;
         Intent intent = new Intent(Broadcasts.IN_SYNC);
         intent.putExtra(Broadcasts.Extras.SYNCING, sync);
         context.sendBroadcast(intent);

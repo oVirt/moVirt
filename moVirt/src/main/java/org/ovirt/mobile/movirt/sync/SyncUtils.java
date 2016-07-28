@@ -11,9 +11,6 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 @EBean
 public class SyncUtils {
 
-    @Bean
-    SyncAdapter syncAdapter;
-
     /**
      * Helper method to trigger an immediate sync ("refresh").
      *
