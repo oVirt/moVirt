@@ -42,11 +42,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-@EBean
+@EBean(scope = EBean.Scope.Singleton)
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = SyncAdapter.class.getSimpleName();
-    public static volatile boolean inSync = false;
+    private static AtomicBoolean inSync = new AtomicBoolean();
 
     @RootContext
     Context context;
@@ -77,32 +78,30 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient providerClient, SyncResult syncResult) {
-
-        if (inSync) {
-            return;
-        }
-
         if (!authenticator.accountConfigured()) {
             Log.d(TAG, "Account not configured, not performing sync");
             return;
         }
 
-        try {
-            sendSyncIntent(true);
+        if (inSync.compareAndSet(false, true)) {
+            try {
+                sendSyncIntent(true);
 
-            updateClusters();
-            updateDataCenters();
-            facadeSync(Vm.class);
-            facadeSync(Host.class);
-            facadeSync(StorageDomain.class);
-            eventsHandler.updateEvents(false);
-        } catch (Exception e) {
-            Log.e(TAG, "Error updating data", e);
-            Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
-            intent.putExtra(Broadcasts.Extras.FAILURE_REASON, e.getMessage());
-            context.sendBroadcast(intent);
-        } finally {
-            sendSyncIntent(false);
+                updateClusters();
+                updateDataCenters();
+                facadeSync(Vm.class);
+                facadeSync(Host.class);
+                facadeSync(StorageDomain.class);
+                eventsHandler.updateEvents(false);
+            } catch (Exception e) {
+                Log.e(TAG, "Error updating data", e);
+                Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
+                intent.putExtra(Broadcasts.Extras.FAILURE_REASON, e.getMessage());
+                context.sendBroadcast(intent);
+            } finally {
+                inSync.set(false);
+                sendSyncIntent(false);
+            }
         }
     }
 
@@ -290,7 +289,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void sendSyncIntent(boolean sync) {
-        inSync = sync;
         Intent intent = new Intent(Broadcasts.IN_SYNC);
         intent.putExtra(Broadcasts.Extras.SYNCING, sync);
         context.sendBroadcast(intent);

@@ -36,11 +36,11 @@ public class ErrorDialogFragment extends DialogFragment {
 
     public static ErrorDialogFragment newInstance(Context context, MovirtAuthenticator authenticator,
                                                   ProviderFacade provider, String reason) {
-        String sessionID = AccountManager.get(context).peekAuthToken(
+        String token = AccountManager.get(context).peekAuthToken(
                 MovirtAuthenticator.MOVIRT_ACCOUNT,
                 MovirtAuthenticator.AUTH_TOKEN_TYPE);
-        if (sessionID == null) {
-            sessionID = "sessionID is missing!\n\tauthentication failed";
+        if (token == null) {
+            token = "Token is missing!\n\tauthentication failed";
         }
         String apiUrl = "";
         StringBuilder certificate = new StringBuilder();
@@ -69,7 +69,7 @@ public class ErrorDialogFragment extends DialogFragment {
         String errorMessage = context.getString(R.string.rest_req_failed) +
                 "\nConnection details:\nAPI URL: " + apiUrl +
                 "\nUsername: " + authenticator.getUserName() +
-                "\nSessionID: " + sessionID +
+                "\nToken: " + token +
                 certificate.toString() +
                 "\n\nError details:\n" + reason;
 
