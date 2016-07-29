@@ -38,6 +38,7 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
+import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
@@ -291,22 +292,22 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         boolean urlChanged = !TextUtils.equals(endpoint, authenticator.getApiUrl());
         boolean endpointChanged = urlChanged || usernameChanged;
 
-        if (accountManager.getAccountsByType(MovirtAuthenticator.ACCOUNT_TYPE).length == 0) {
-            if (accountManager.addAccountExplicitly(MovirtAuthenticator.MOVIRT_ACCOUNT, password, null)) {
-                ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
-                ContentResolver.setSyncAutomatically(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-                if (sharedPreferences.getBoolean(SharedPreferencesHelper.KEY_PERIODIC_SYNC, false)) {
-                    int intervalInMinutes = sharedPreferencesHelper.getSyncIntervalInMinutes();
-                    addPeriodicSync(intervalInMinutes);
-                }
-            }
-        }
-
-        setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv); // may trigger sync
-
         try {
             setLoginInProgress(true);
+            if (accountManager.getAccountsByType(MovirtAuthenticator.ACCOUNT_TYPE).length == 0) {
+                if (accountManager.addAccountExplicitly(MovirtAuthenticator.MOVIRT_ACCOUNT, password, null)) {
+                    ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
+                    ContentResolver.setSyncAutomatically(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                    if (sharedPreferences.getBoolean(SharedPreferencesHelper.KEY_PERIODIC_SYNC, false)) {
+                        int intervalInMinutes = sharedPreferencesHelper.getSyncIntervalInMinutes();
+                        addPeriodicSync(intervalInMinutes);
+                    }
+                }
+            }
+
+            setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv); // may trigger sync
+
             String token = client.login(username, password);
             onLoginResultReceived(token, endpointChanged);
         } catch (Exception e) {
@@ -334,15 +335,14 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
 
     void onLoginResultReceived(String token, boolean endpointChanged) {
-        setLoginInProgress(false);
         if (TextUtils.isEmpty(token)) {
+            setLoginInProgress(false);
             fireError("Error: the returned token is empty." +
                     "\nTry https protocol and add your certificate in " +
                     getString(R.string.ca_management) + ".");
             return;
         }
 
-        showToast("Login successful");
         if (endpointChanged) {
             // there is a different set of events and since we are counting only the increments,
             // this ones are not needed anymore
@@ -350,6 +350,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         }
 
         accountManager.setAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, token);
+        setLoginInProgress(false);
+        showToast("Login successful");
         syncUtils.triggerRefresh();
 
         final Intent intent = new Intent();
@@ -364,12 +366,17 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
     void setLoginInProgress(boolean loginInProgress) {
         inProgress = loginInProgress;
+
+        // Hack: enable sync only if login is not in progress, because sync can be triggered by
+        // accountManager.setPassword(), which may cause exception in spring-android-rest-template
+        // respectively org.springframework.web.client.ResourceAccessException caused by java.io.InterruptedIOException
+        SyncAdapter.enableSync(!loginInProgress);
         Intent intent = new Intent(Broadcasts.IN_USER_LOGIN);
         intent.putExtra(Broadcasts.Extras.MESSAGE, loginInProgress);
         getApplicationContext().sendBroadcast(intent);
     }
 
-    public static boolean isInUserLogin(){
+    public static boolean isInUserLogin() {
         return inProgress;
     }
 
