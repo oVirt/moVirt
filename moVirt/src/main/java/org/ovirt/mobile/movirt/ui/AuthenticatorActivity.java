@@ -38,7 +38,6 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
-import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
@@ -293,7 +292,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         boolean endpointChanged = urlChanged || usernameChanged;
 
         try {
-            setLoginInProgress(true);
             if (accountManager.getAccountsByType(MovirtAuthenticator.ACCOUNT_TYPE).length == 0) {
                 if (accountManager.addAccountExplicitly(MovirtAuthenticator.MOVIRT_ACCOUNT, password, null)) {
                     ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
@@ -306,7 +304,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 }
             }
 
-            setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv); // may trigger sync
+            setLoginInProgress(true); // disables syncs because setUserData() may trigger sync
+            // without option SYNC_EXTRAS_EXPEDITED which may be interrupted by our future sync with option SYNC_EXTRAS_EXPEDITED
+            setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv);
 
             String token = client.login(username, password);
             onLoginResultReceived(token, endpointChanged);
@@ -366,11 +366,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
     void setLoginInProgress(boolean loginInProgress) {
         inProgress = loginInProgress;
-
-        // Hack: enable sync only if login is not in progress, because sync can be triggered by
-        // accountManager.setPassword(), which may cause exception in spring-android-rest-template
-        // respectively org.springframework.web.client.ResourceAccessException caused by java.io.InterruptedIOException
-        SyncAdapter.enableSync(!loginInProgress);
+        ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT,
+                OVirtContract.CONTENT_AUTHORITY, loginInProgress ? 0 : 1);
         Intent intent = new Intent(Broadcasts.IN_USER_LOGIN);
         intent.putExtra(Broadcasts.Extras.MESSAGE, loginInProgress);
         getApplicationContext().sendBroadcast(intent);
