@@ -8,10 +8,12 @@ public interface Broadcasts {
     String IN_SYNC = "org.ovirt.mobile.movirt.IN_SYNC";
     String EVENTS_IN_SYNC = "org.ovirt.mobile.movirt.EVENTS_IN_SYNC";
     String NO_CONNECTION_SPEFICIED = "org.ovirt.mobile.movirt.NO_CONNECTION_SPEFICIED";
+    String IN_USER_LOGIN = "org.ovirt.mobile.movirt.IN_USER_LOGIN";
 
     interface Extras {
         String FAILURE_REASON = "org.ovirt.mobile.movirt.FAILURE_REASON";
         String REPEATED_CONNECTION_FAILURE = "org.ovirt.mobile.movirt.REPEATED_CONNECTION_FAILURE";
         String SYNCING = "org.ovirt.mobile.movirt.SYNCING";
+        String MESSAGE = "org.ovirt.mobile.movirt.MESSAGE";
     }
 }

@@ -12,6 +12,7 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
@@ -37,14 +38,20 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
+import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ImportCertificateDialogFragment;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
+import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import javax.net.ssl.SSLHandshakeException;
@@ -58,6 +65,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             "443", "api"};
     private static final String[] USERNAME_COMPLETE = {"admin@", "internal", "admin@internal"};
     private static int REQUEST_ACCOUNT_DETAILS = 1;
+    private static volatile boolean inProgress;
+
     public static final String SHOW_ADVANCED_AUTHENTICATOR = "SHOW_ADVANCED_AUTHENTICATOR";
 
     @Bean
@@ -76,6 +85,10 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     CheckBox chkAdminPriv;
     @ViewById
     ProgressBar authProgress;
+    @ViewById
+    Button btnCreate;
+    @ViewById
+    Button btnAdvanced;
     @Bean
     MovirtAuthenticator authenticator;
     @Bean
@@ -88,8 +101,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     CertHandlingStrategy certHandlingStrategy;
     @InstanceState
     boolean advancedFieldsInited = false;
-    @InstanceState
-    boolean inProgress;
     @InstanceState
     URL endpointUrl;
     @InstanceState
@@ -185,7 +196,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
         txtPassword.setText(authenticator.getPassword());
         chkAdminPriv.setChecked(true);
-        changeProgressVisibilityTo(inProgress ? View.VISIBLE : View.GONE);
+        loginProgress(inProgress);
         if (getIntent().getBooleanExtra(SHOW_ADVANCED_AUTHENTICATOR, false)) {
             btnAdvancedClicked();
         }
@@ -281,46 +292,57 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         boolean urlChanged = !TextUtils.equals(endpoint, authenticator.getApiUrl());
         boolean endpointChanged = urlChanged || usernameChanged;
 
-        if (accountManager.getAccountsByType(MovirtAuthenticator.ACCOUNT_TYPE).length == 0) {
-            if (accountManager.addAccountExplicitly(MovirtAuthenticator.MOVIRT_ACCOUNT, password, null)) {
-                ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
-                ContentResolver.setSyncAutomatically(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-                if (sharedPreferences.getBoolean(SharedPreferencesHelper.KEY_PERIODIC_SYNC, false)) {
-                    int intervalInMinutes = sharedPreferencesHelper.getSyncIntervalInMinutes();
-                    addPeriodicSync(intervalInMinutes);
+        try {
+            setLoginInProgress(true);
+            if (accountManager.getAccountsByType(MovirtAuthenticator.ACCOUNT_TYPE).length == 0) {
+                if (accountManager.addAccountExplicitly(MovirtAuthenticator.MOVIRT_ACCOUNT, password, null)) {
+                    ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
+                    ContentResolver.setSyncAutomatically(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                    if (sharedPreferences.getBoolean(SharedPreferencesHelper.KEY_PERIODIC_SYNC, false)) {
+                        int intervalInMinutes = sharedPreferencesHelper.getSyncIntervalInMinutes();
+                        addPeriodicSync(intervalInMinutes);
+                    }
                 }
             }
-        }
 
-        setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv); // may trigger sync
+            setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv); // may trigger sync
 
-        changeProgressVisibilityTo(View.VISIBLE);
-
-        try {
             String token = client.login(username, password);
             onLoginResultReceived(token, endpointChanged);
         } catch (Exception e) {
-            changeProgressVisibilityTo(View.GONE);
+            setLoginInProgress(false);
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof SSLHandshakeException) {
                 fireCertificateError(cause);
+            } else if (cause != null && (cause instanceof ConnectException || cause instanceof UnknownHostException)) {
+                fireError("Could not connect. Make sure ip address and port are correct.", e.getMessage());
+            } else if (cause != null && cause instanceof SocketTimeoutException) {
+                fireError("Reached timeout. Make sure ip address and port are correct. Also, check if the connection is stable.", e.getMessage());
+            } else if (e instanceof HttpClientErrorException) {
+                HttpStatus statusCode = ((HttpClientErrorException) e).getStatusCode();
+
+                if (statusCode == HttpStatus.NOT_FOUND) {
+                    fireError("Not found.\nAddress suffix should be \"/ovirt-engine/api\"", e.getMessage());
+                } else if (statusCode == HttpStatus.UNAUTHORIZED) {
+                    fireError("Username or password is incorrect.", e.getMessage());
+                }
             } else {
                 fireError("Error logging in: " + e.getMessage());
             }
         }
     }
 
+
     void onLoginResultReceived(String token, boolean endpointChanged) {
-        changeProgressVisibilityTo(View.GONE);
         if (TextUtils.isEmpty(token)) {
+            setLoginInProgress(false);
             fireError("Error: the returned token is empty." +
                     "\nTry https protocol and add your certificate in " +
                     getString(R.string.ca_management) + ".");
             return;
         }
 
-        showToast("Login successful");
         if (endpointChanged) {
             // there is a different set of events and since we are counting only the increments,
             // this ones are not needed anymore
@@ -328,6 +350,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         }
 
         accountManager.setAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, token);
+        setLoginInProgress(false);
+        showToast("Login successful");
         syncUtils.triggerRefresh();
 
         final Intent intent = new Intent();
@@ -340,10 +364,38 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         finish();
     }
 
+    void setLoginInProgress(boolean loginInProgress) {
+        inProgress = loginInProgress;
+
+        // Hack: enable sync only if login is not in progress, because sync can be triggered by
+        // accountManager.setPassword(), which may cause exception in spring-android-rest-template
+        // respectively org.springframework.web.client.ResourceAccessException caused by java.io.InterruptedIOException
+        SyncAdapter.enableSync(!loginInProgress);
+        Intent intent = new Intent(Broadcasts.IN_USER_LOGIN);
+        intent.putExtra(Broadcasts.Extras.MESSAGE, loginInProgress);
+        getApplicationContext().sendBroadcast(intent);
+    }
+
+    public static boolean isInUserLogin() {
+        return inProgress;
+    }
+
+    @Receiver(actions = {Broadcasts.IN_USER_LOGIN},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
     @UiThread
-    void changeProgressVisibilityTo(int visibility) {
-        inProgress = visibility != View.GONE;
-        authProgress.setVisibility(visibility);
+    void loginProgress(
+            @Receiver.Extra(Broadcasts.Extras.MESSAGE) boolean loginInProgress) {
+        if (btnCreate != null) {
+            btnCreate.setEnabled(!loginInProgress);
+        }
+
+        if (btnAdvanced != null) {
+            btnAdvanced.setEnabled(!loginInProgress);
+        }
+
+        if (authProgress != null) {
+            authProgress.setVisibility(loginInProgress ? View.VISIBLE : View.GONE);
+        }
     }
 
     public void fireCertificateError(Throwable cause) {
@@ -358,6 +410,10 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         Intent intent = new Intent(Broadcasts.REST_CA_FAILURE);
         intent.putExtra(Broadcasts.Extras.FAILURE_REASON, message);
         getApplicationContext().sendBroadcast(intent);
+    }
+
+    void fireError(String msg, String detailedInfo) {
+        fireError(String.format("%s\n\nDetailed info:\n %s", msg, detailedInfo));
     }
 
     void fireError(String msg) {

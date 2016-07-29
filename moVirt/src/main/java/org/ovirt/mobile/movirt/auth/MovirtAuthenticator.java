@@ -17,6 +17,7 @@ import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.UiThread;
 import org.ovirt.mobile.movirt.rest.Api;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
 
@@ -93,7 +94,9 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             final String password = getPassword();
             if (username != null && password != null) {
                 try {
-                    authToken = client.login(username, password);
+                    if(!AuthenticatorActivity.isInUserLogin()){ // do not attempt to login while user tries
+                        authToken = client.login(username, password);
+                    }
                 } catch (Exception x) { // do not fail on bad login info
                 }
 
