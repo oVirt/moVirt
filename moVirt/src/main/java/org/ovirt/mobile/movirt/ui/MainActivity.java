@@ -286,7 +286,7 @@ public class MainActivity extends MovirtActivity
         List<Fragment> fragments = getSupportFragmentManager().getFragments();
         if (null != fragments) {
             for (Fragment fra : fragments) {
-                if (fra instanceof SelectedClusterAware) {
+                if (fra instanceof SelectedClusterAware && !fra.isDetached()) {
                     ((SelectedClusterAware) fra).updateSelectedClusterId(selectedClusterId);
                 }
             }
