@@ -105,10 +105,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    public static void enableSync(boolean enabled) {
-        inSync.set(!enabled);
-    }
-
     private void updateClusters() {
         oVirtClient.getClusters(getUpdateEntitiesResponse(Cluster.class));
     }
