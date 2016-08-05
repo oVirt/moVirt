@@ -103,7 +103,7 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
         hideProgressBar();
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     @Override
     public void showProgressBar() {
         if (progress != null) {
@@ -111,7 +111,7 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
         }
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     @Override
     public void hideProgressBar() {
         if (progress != null) {
@@ -119,7 +119,7 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
         }
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
         if (syncing && progress != null) {

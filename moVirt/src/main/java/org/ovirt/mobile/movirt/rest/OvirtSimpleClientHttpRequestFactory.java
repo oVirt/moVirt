@@ -120,7 +120,7 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
         }
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     void showToast(String msg) {
         Toast.makeText(rootContext, msg, Toast.LENGTH_LONG).show();
     }

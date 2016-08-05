@@ -75,7 +75,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         }
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     void showToast(String msg) {
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }

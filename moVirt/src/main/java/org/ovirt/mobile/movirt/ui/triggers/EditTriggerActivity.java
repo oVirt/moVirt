@@ -159,7 +159,6 @@ public class EditTriggerActivity extends BaseTriggerActivity implements HasLoade
     }
 
     @OptionsItem(R.id.action_delete_trigger)
-    @UiThread
     void delete() {
         ConfirmDialogFragment confirmDialog = ConfirmDialogFragment
                 .newInstance(DELETE_ACTION, getString(R.string.dialog_action_delete_trigger));

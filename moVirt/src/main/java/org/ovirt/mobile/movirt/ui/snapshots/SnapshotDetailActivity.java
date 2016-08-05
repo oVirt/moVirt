@@ -252,7 +252,6 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
     }
 
     @OptionsItem(R.id.action_delete)
-    @UiThread
     void delete() {
         ConfirmDialogFragment confirmDialog = ConfirmDialogFragment
                 .newInstance(DELETE_ACTION, getString(R.string.dialog_action_delete_snapshot));
@@ -260,7 +259,6 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
     }
 
     @OptionsItem(R.id.action_preview)
-    @UiThread
     public void preview() {
         if (currentSnapshot.getPersistMemorystate()) {
             PreviewRestoreSnapshotDialogFragment dialog = PreviewRestoreSnapshotDialogFragment
@@ -273,7 +271,6 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
 
 
     @OptionsItem(R.id.action_restore)
-    @UiThread
     public void restore() {
         if (currentSnapshot.getPersistMemorystate()) {
             PreviewRestoreSnapshotDialogFragment dialog = PreviewRestoreSnapshotDialogFragment

@@ -332,7 +332,7 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         return getResources().getStringArray(R.array.base_entity_sort_entries);
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     public void setSearchBoxVisibility(boolean visible) {
         if (visible) {
             searchbox.setVisibility(View.VISIBLE);
