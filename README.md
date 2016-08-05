@@ -5,12 +5,12 @@ moVirt
 
 A mobile client for [oVirt](http://www.ovirt.org). 
 
-Current version: 1.5
+Current version: 1.6
 You can install it from [Google Play Store](https://play.google.com/store/apps/details?id=org.ovirt.mobile.movirt)
 Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/moVirt-release.apk?raw=true)
 
 ###Supported oVirt and Android per moVirt version
-| oVirt \ moVirt  | 1.1<sup>1</sup>  | 1.2<sup>1</sup> | 1.3<sup>2</sup>, 1.4<sup>2</sup> | 1.5<sup>2</sup> |
+| oVirt \ moVirt  | 1.1<sup>1</sup>  | 1.2<sup>1</sup> | 1.3<sup>2</sup>, 1.4<sup>2</sup> | 1.5<sup>2</sup>, 1.6<sup>2</sup> |
 | --------------- | ---- | --- | ----| --- |
 | **3.4**         | yes  | yes | no<sup>3</sup>  | no<sup>3</sup>  |
 | **3.5**         |  no  | yes | yes | no<sup>3</sup>  |
@@ -28,7 +28,12 @@ Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/
 <img src = /images/screenshots/Screenshot_2015-07-15-23-55-52.png><img src = /images/screenshots/Screenshot_2015-07-15-23-56-12.png><img src = /images/screenshots/Screenshot_2015-07-15-23-57-21.png><img src = /images/screenshots/7inchDashoard.png>
 
 ###Changelog:
-####v1.4:
+####v1.6:
+* Added full support of v4 API and SSO OAuth2
+* Fixes Authenticator and minor bugs
+* Removed basic authentication
+
+####v1.5:
 * Added support of the 4.0 engine
 
 ####v1.4:
