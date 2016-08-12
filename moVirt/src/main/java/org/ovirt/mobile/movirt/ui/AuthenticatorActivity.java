@@ -379,7 +379,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
     @Receiver(actions = {Broadcasts.IN_USER_LOGIN},
             registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     void loginProgress(
             @Receiver.Extra(Broadcasts.Extras.MESSAGE) boolean loginInProgress) {
         if (btnCreate != null) {
@@ -419,7 +419,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         getApplicationContext().sendBroadcast(intent);
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     void showToast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }

@@ -326,7 +326,7 @@ public class MainActivity extends MovirtActivity
             if (fragmentPosition != null && order != null && !StringUtils.isEmpty(orderBy)) {
                 Fragment fragment = getSupportFragmentManager().getFragments().get(fragmentPosition.ordinal());
 
-                if (fragment != null && fragment instanceof BaseEntityListFragment) {
+                if (fragment != null && fragment instanceof BaseEntityListFragment && !fragment.isDetached()) {
                     BaseEntityListFragment baseEntityListFragment = (BaseEntityListFragment) fragment;
                     baseEntityListFragment.setOrderingSpinners(orderBy, order);
                 }

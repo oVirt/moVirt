@@ -18,20 +18,20 @@ public abstract class RefreshableFragment extends Fragment implements SwipeRefre
     }
 
     @Override
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     public void showProgressBar() {
         SwipeRefreshLayout swipeRefreshLayout = getSwipeRefreshLayout();
         if (swipeRefreshLayout != null) {
-            getSwipeRefreshLayout().setRefreshing(true);
+            swipeRefreshLayout.setRefreshing(true);
         }
     }
 
     @Override
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     public void hideProgressBar() {
         SwipeRefreshLayout swipeRefreshLayout = getSwipeRefreshLayout();
         if (swipeRefreshLayout != null) {
-            getSwipeRefreshLayout().setRefreshing(false);
+            swipeRefreshLayout.setRefreshing(false);
         }
     }
 

@@ -48,12 +48,13 @@ public class DashboardActivity extends MovirtActivity {
     }
 
     @OptionsItem(R.id.action_switch_consumption_view)
-    @UiThread
     void switchConsumptionView() {
         virtualViewState = !virtualViewState;
         invalidateOptionsMenu();
         DashboardGeneralFragment dashboardFragment = (DashboardGeneralFragment) getSupportFragmentManager().findFragmentById(R.id.dashboard_general_fragment);
-        dashboardFragment.render();
+        if (dashboardFragment != null) {
+            dashboardFragment.render();
+        }
         DashboardMostUtilizedFragment mostUtilizedFragment = (DashboardMostUtilizedFragment) getSupportFragmentManager().findFragmentById(R.id.dashboard_most_utilized_fragment);
         if (mostUtilizedFragment != null) {
             mostUtilizedFragment.render();

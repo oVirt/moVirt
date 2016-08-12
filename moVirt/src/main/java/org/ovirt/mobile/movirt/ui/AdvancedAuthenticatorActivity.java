@@ -357,10 +357,15 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         }
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     void setCertDataToView(Certificate ca, String urls) {
-        txtCertDetails.setText(ca != null ? ca.toString() : "");
-        txtValidForHostnames.setText(urls != null ? urls : "");
+        if (txtCertDetails != null) {
+            txtCertDetails.setText(ca != null ? ca.toString() : "");
+        }
+
+        if (txtValidForHostnames != null) {
+            txtValidForHostnames.setText(urls != null ? urls : "");
+        }
     }
 
     @Background
@@ -446,20 +451,24 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         return true;
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     void showToast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     public void showProgressBar() {
         inProgress = true;
-        progress.setVisibility(View.VISIBLE);
+        if (progress != null) {
+            progress.setVisibility(View.VISIBLE);
+        }
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     public void hideProgressBar() {
         inProgress = false;
-        progress.setVisibility(View.GONE);
+        if (progress != null) {
+            progress.setVisibility(View.GONE);
+        }
     }
 }

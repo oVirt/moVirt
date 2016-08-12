@@ -109,7 +109,6 @@ public class HostDetailActivity extends MovirtActivity
     }
 
     @OptionsItem(R.id.action_deactivate)
-    @UiThread
     void deactivate() {
         ConfirmDialogFragment confirmDialog = ConfirmDialogFragment
                 .newInstance(0, getString(R.string.dialog_action_deactivate_host));
@@ -132,7 +131,7 @@ public class HostDetailActivity extends MovirtActivity
         hostFacade.syncOne(new ProgressBarResponse<Host>(this), hostId);
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     @Override
     public void updateMenuItem(Host host) {
         currentStatus = host.getStatus();

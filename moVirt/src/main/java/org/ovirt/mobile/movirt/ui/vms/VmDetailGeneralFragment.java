@@ -225,7 +225,6 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         // do nothing
     }
 
-    @UiThread
     public void renderVm(Vm vm) {
         if (!vm.isSnapshotEmbedded()) {
             getActivity().setTitle(String.format(VM_DETAILS, vm.getName()));
@@ -250,7 +249,6 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         }
     }
 
-    @UiThread
     public void renderHost(Host host) {
         if (host != null) {
             hostButton.setText(host.getName());
@@ -261,12 +259,10 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         }
     }
 
-    @UiThread
     public void renderCluster(Cluster cluster) {
         clusterView.setText(getString(R.string.two_separated_strings, cluster.getName(), cluster.getVersion()));
     }
 
-    @UiThread
     public void renderDataCenter(DataCenter dataCenter) {
         dataCenterView.setText(getString(R.string.two_separated_strings, dataCenter.getName(), dataCenter.getVersion()));
     }

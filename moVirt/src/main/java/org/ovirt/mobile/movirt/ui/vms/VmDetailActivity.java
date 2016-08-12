@@ -226,7 +226,6 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     }
 
     @OptionsItem(R.id.action_stop)
-    @UiThread
     void stop() {
         DialogFragment confirmDialog = ConfirmDialogFragment
                 .newInstance(ACTION_STOP_VM, getString(R.string.dialog_action_stop_vm));
@@ -234,7 +233,6 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     }
 
     @OptionsItem(R.id.action_reboot)
-    @UiThread
     void reboot() {
         DialogFragment confirmDialog = ConfirmDialogFragment
                 .newInstance(ACTION_REBOOT_VM, getString(R.string.dialog_action_reboot_vm));
@@ -242,7 +240,6 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     }
 
     @OptionsItem(R.id.action_cancel_migration)
-    @UiThread
     void cancelMigration() {
         DialogFragment confirmDialog = ConfirmDialogFragment
                 .newInstance(ACTION_STOP_MIGRATE_VM,
@@ -364,7 +361,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         }, vmId);
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     void showMissingCaCertDialog() {
         ImportCertificateDialogFragment importCertificateDialog = ImportCertificateDialogFragment
                 .newSpiceCaInstance(getString(R.string.can_not_run_console_without_ca),
@@ -423,12 +420,12 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         return file.exists();
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     void makeToast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     @Override
     //maybe not quite right name for this function now,
     //it updates reference to VM entity after been loaded and rendered in fragment.
