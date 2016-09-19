@@ -388,7 +388,7 @@ public class OVirtClient {
                     if (isApiV3()) {
                         wrapper = restClient.getDiskV3(vmId, id);
                     } else {
-                        wrapper = restClient.getDiskV4(vmId, id);
+                        wrapper = restClient.getDiskV4(id);
                     }
                     entity = wrapper.toEntity();
                 }
@@ -421,10 +421,15 @@ public class OVirtClient {
                     entities = mapToEntities(wrappers);
                     setVmId(entities, vmId);
                 } else {
-                    if (isApiV3()) {
+                    // fallback to API 3 here until this feature is fixed
+                    // https://bugzilla.redhat.com/show_bug.cgi?id=1377359
+                    try {
+                        if (!isApiV3()) {
+                            setupVersionHeader(restClient, authenticator.getFallbackMajorVersion());
+                        }
                         wrappers = restClient.getDisksV3(vmId);
-                    } else {
-                        wrappers = restClient.getDisksV4(vmId);
+                    } finally {
+                        setupVersionHeader(restClient, authenticator.getApiMajorVersion());
                     }
                     entities = mapToEntities(wrappers);
                 }

@@ -8,10 +8,12 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.Background;
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.ResumeSyncableBaseEntityListFragment;
@@ -30,6 +32,9 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.PLUGGED;
 @EFragment(R.layout.fragment_base_entity_list)
 public class VmNicsFragment extends ResumeSyncableBaseEntityListFragment<Nic> {
     private static final String TAG = VmNicsFragment.class.getSimpleName();
+
+    @Bean
+    MovirtAuthenticator authenticator;
 
     public VmNicsFragment() {
         super(Nic.class);
@@ -79,7 +84,7 @@ public class VmNicsFragment extends ResumeSyncableBaseEntityListFragment<Nic> {
 
     @Override
     public boolean isResumeSyncable() {
-        return isSnapshotFragment();
+        return !authenticator.isApiV3() || isSnapshotFragment(); //we fetch nics with vm in v3 API
     }
 
     @Background
