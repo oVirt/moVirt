@@ -19,6 +19,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 
 @Rest(converters = MappingJackson2HttpMessageConverter.class)
 @Accept(MediaType.APPLICATION_JSON + "; detail=statistics+disks+nics")
+// disks and nics work only in v3 API
 @RequiresHeader({"Filter", "Accept-Encoding", "Session-TTL", "Prefer", "Version"})
 @SetsCookie("JSESSIONID")
 @RequiresCookie("JSESSIONID")
@@ -133,8 +134,8 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/vms/{vmId}/disks/{diskId}")
     org.ovirt.mobile.movirt.rest.v3.Disk getDiskV3(@Path String vmId, @Path String diskId);
 
-    @Get("/vms/{vmId}/disks/{diskId}")
-    org.ovirt.mobile.movirt.rest.v4.Disk getDiskV4(@Path String vmId, @Path String diskId);
+    @Get("/disks/{diskId}")
+    org.ovirt.mobile.movirt.rest.v4.Disk getDiskV4(@Path String diskId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/disks/{diskId}")
     org.ovirt.mobile.movirt.rest.v3.Disk getDiskV3(@Path String vmId, @Path String snapshotId, @Path String diskId);
@@ -144,9 +145,6 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
 
     @Get("/vms/{vmId}/disks")
     org.ovirt.mobile.movirt.rest.v3.Disks getDisksV3(@Path String vmId);
-
-    @Get("/vms/{vmId}/disks")
-    org.ovirt.mobile.movirt.rest.v4.Disks getDisksV4(@Path String vmId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/disks")
     org.ovirt.mobile.movirt.rest.v3.Disks getDisksV3(@Path String vmId, @Path String snapshotId);

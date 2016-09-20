@@ -94,7 +94,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             final String password = getPassword();
             if (username != null && password != null) {
                 try {
-                    if(!AuthenticatorActivity.isInUserLogin()){ // do not attempt to login while user tries
+                    if (!AuthenticatorActivity.isInUserLogin()) { // do not attempt to login while user tries
                         authToken = client.login(username, password);
                     }
                 } catch (Exception x) { // do not fail on bad login info
@@ -162,6 +162,10 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     public String getApiMajorVersion() {
         return read(API_MAJOR_VERSION, fallbackMajorVersion);
+    }
+
+    public String getFallbackMajorVersion() {
+        return fallbackMajorVersion;
     }
 
     public int getApiMajorVersionAsInt() {
