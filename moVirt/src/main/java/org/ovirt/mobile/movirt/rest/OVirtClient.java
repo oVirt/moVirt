@@ -34,6 +34,7 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
+import org.ovirt.mobile.movirt.model.Console;
 import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.Event;
@@ -114,8 +115,8 @@ public class OVirtClient {
     @Bean
     SharedPreferencesHelper sharedPreferencesHelper;
 
-    public boolean isApiV3() {
-        return authenticator.isApiV3();
+    public boolean isV3Api() {
+        return authenticator.isV3Api();
     }
 
     public <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList) {
@@ -182,7 +183,7 @@ public class OVirtClient {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
-                Action action = isApiV3() ? new org.ovirt.mobile.movirt.rest.v3.ActionMigrate(hostId) :
+                Action action = isV3Api() ? new org.ovirt.mobile.movirt.rest.v3.ActionMigrate(hostId) :
                         new org.ovirt.mobile.movirt.rest.v4.ActionMigrate(hostId);
                 restClient.migrateVmToHost(action, vmId);
                 return null;
@@ -215,7 +216,7 @@ public class OVirtClient {
         return new Request<Vm>() {
             @Override
             public Vm fire() {
-                org.ovirt.mobile.movirt.rest.Vm vm = isApiV3() ? restClient.getVmV3(vmId) : restClient.getVmV4(vmId);
+                org.ovirt.mobile.movirt.rest.Vm vm = isV3Api() ? restClient.getVmV3(vmId) : restClient.getVmV4(vmId);
                 return vm.toEntity();
             }
         };
@@ -272,7 +273,7 @@ public class OVirtClient {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
-                if (isApiV3()) {
+                if (isV3Api()) {
                     restClient.previewSnapshotV3(snapshotAction, vmId);
                 } else {
                     restClient.previewSnapshotV4(snapshotAction, vmId);
@@ -296,7 +297,7 @@ public class OVirtClient {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
-                if (isApiV3()) {
+                if (isV3Api()) {
                     restClient.commitSnapshotV3(new Action(), vmId);
                 } else {
                     restClient.commitSnapshotV4(new Action(), vmId);
@@ -310,7 +311,7 @@ public class OVirtClient {
         fireRestRequest(new Request<Void>() {
             @Override
             public Void fire() {
-                if (isApiV3()) {
+                if (isV3Api()) {
                     restClient.undoSnapshotV3(new Action(), vmId);
                 } else {
                     restClient.undoSnapshotV4(new Action(), vmId);
@@ -325,7 +326,7 @@ public class OVirtClient {
         return new Request<Host>() {
             @Override
             public Host fire() {
-                org.ovirt.mobile.movirt.rest.Host wrapper = isApiV3() ?
+                org.ovirt.mobile.movirt.rest.Host wrapper = isV3Api() ?
                         restClient.getHostV3(hostId) : restClient.getHostV4(hostId);
                 return wrapper.toEntity();
             }
@@ -341,7 +342,7 @@ public class OVirtClient {
         return new Request<StorageDomain>() {
             @Override
             public StorageDomain fire() {
-                org.ovirt.mobile.movirt.rest.StorageDomain wrapper = isApiV3() ?
+                org.ovirt.mobile.movirt.rest.StorageDomain wrapper = isV3Api() ?
                         restClient.getStorageDomainV3(storageDomainId) :
                         restClient.getStorageDomainV4(storageDomainId);
                 return wrapper.toEntity();
@@ -377,7 +378,7 @@ public class OVirtClient {
                 Disk entity;
 
                 if (isSnapshotEmbedded) {
-                    if (isApiV3()) {
+                    if (isV3Api()) {
                         wrapper = restClient.getDiskV3(vmId, snapshotId, id);
                     } else {
                         wrapper = restClient.getDiskV4(vmId, snapshotId, id);
@@ -385,7 +386,7 @@ public class OVirtClient {
                     entity = wrapper.toEntity();
                     setVmId(entity, vmId);
                 } else {
-                    if (isApiV3()) {
+                    if (isV3Api()) {
                         wrapper = restClient.getDiskV3(vmId, id);
                     } else {
                         wrapper = restClient.getDiskV4(id);
@@ -413,7 +414,7 @@ public class OVirtClient {
 
                 if (isSnapshotEmbedded) {
 
-                    if (isApiV3()) {
+                    if (isV3Api()) {
                         wrappers = restClient.getDisksV3(vmId, snapshotId);
                     } else {
                         wrappers = restClient.getDisksV4(vmId, snapshotId);
@@ -424,7 +425,7 @@ public class OVirtClient {
                     // fallback to API 3 here until this feature is fixed
                     // https://bugzilla.redhat.com/show_bug.cgi?id=1377359
                     try {
-                        if (!isApiV3()) {
+                        if (!isV3Api()) {
                             setupVersionHeader(restClient, authenticator.getFallbackMajorVersion());
                         }
                         wrappers = restClient.getDisksV3(vmId);
@@ -448,7 +449,7 @@ public class OVirtClient {
         fireRestRequest(new Request<List<Cluster>>() {
             @Override
             public List<Cluster> fire() {
-                if (isApiV3()) {
+                if (isV3Api()) {
                     return mapToEntities(restClient.getClustersV3());
                 }
                 return mapToEntities(restClient.getClustersV4());
@@ -460,7 +461,7 @@ public class OVirtClient {
         fireRestRequest(new Request<List<DataCenter>>() {
             @Override
             public List<DataCenter> fire() {
-                if (isApiV3()) {
+                if (isV3Api()) {
                     return mapToEntities(restClient.getDataCentersV3());
                 }
                 return mapToEntities(restClient.getDataCentersV4());
@@ -481,7 +482,7 @@ public class OVirtClient {
                 Nic entity;
 
                 if (snapshotId == null) {
-                    if (isApiV3()) {
+                    if (isV3Api()) {
                         wrapper = restClient.getNicV3(vmId, id);
                     } else {
                         wrapper = restClient.getNicV4(vmId, id);
@@ -489,7 +490,7 @@ public class OVirtClient {
                     entity = wrapper.toEntity();
                     setVmId(entity, vmId);
                 } else {
-                    if (isApiV3()) {
+                    if (isV3Api()) {
                         wrapper = restClient.getNicV3(vmId, snapshotId, id);
                     } else {
                         wrapper = restClient.getNicV4(vmId, snapshotId, id);
@@ -514,8 +515,7 @@ public class OVirtClient {
                 List<Nic> entities;
 
                 if (snapshotId == null) {
-
-                    if (isApiV3()) {
+                    if (isV3Api()) {
                         wrappers = restClient.getNicsV3(vmId);
                     } else {
                         wrappers = restClient.getNicsV4(vmId);
@@ -523,7 +523,7 @@ public class OVirtClient {
                     entities = mapToEntities(wrappers);
                     setVmId(entities, vmId);
                 } else {
-                    if (isApiV3()) {
+                    if (isV3Api()) {
                         wrappers = restClient.getNicsV3(vmId, snapshotId);
                     } else {
                         wrappers = restClient.getNicsV4(vmId, snapshotId);
@@ -540,7 +540,7 @@ public class OVirtClient {
         return new Request<List<Host>>() {
             @Override
             public List<Host> fire() {
-                if (isApiV3()) {
+                if (isV3Api()) {
                     return mapToEntities(restClient.getHostsV3());
                 }
                 return mapToEntities(restClient.getHostsV4());
@@ -561,14 +561,14 @@ public class OVirtClient {
                     int maxVms = sharedPreferencesHelper.getMaxVms();
                     String query = sharedPreferences.getString("vms_search_query", "");
                     if (StringUtils.isEmpty(query)) {
-                        wrappers = isApiV3() ? restClient.getVmsV3(maxVms) :
+                        wrappers = isV3Api() ? restClient.getVmsV3(maxVms) :
                                 restClient.getVmsV4(maxVms);
                     } else {
-                        wrappers = isApiV3() ? restClient.getVmsV3(query, maxVms) :
+                        wrappers = isV3Api() ? restClient.getVmsV3(query, maxVms) :
                                 restClient.getVmsV4(query, maxVms);
                     }
                 } else {
-                    wrappers = isApiV3() ? restClient.getVmsV3(-1) :
+                    wrappers = isV3Api() ? restClient.getVmsV3(-1) :
                             restClient.getVmsV4(-1);
                 }
 
@@ -581,7 +581,7 @@ public class OVirtClient {
         return new Request<List<StorageDomain>>() {
             @Override
             public List<StorageDomain> fire() {
-                if (isApiV3()) {
+                if (isV3Api()) {
                     return mapToEntities(restClient.getStorageDomainsV3());
                 }
                 return mapToEntities(restClient.getStorageDomainsV4());
@@ -597,7 +597,7 @@ public class OVirtClient {
                 RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.Snapshot> wrappers;
                 List<Snapshot> entities;
 
-                if (isApiV3()) {
+                if (isV3Api()) {
                     wrappers = restClient.getSnapshotsV3(vmId);
                 } else {
                     wrappers = restClient.getSnapshotsV4(vmId);
@@ -618,7 +618,7 @@ public class OVirtClient {
                 org.ovirt.mobile.movirt.rest.Snapshot wrapper;
                 Snapshot entity;
 
-                if (isApiV3()) {
+                if (isV3Api()) {
                     wrapper = restClient.getSnapshotV3(vmId, snapshotId);
                 } else {
                     wrapper = restClient.getSnapshotV4(vmId, snapshotId);
@@ -814,7 +814,7 @@ public class OVirtClient {
                 } else {
                     resetClientSettings(restClient);
                     updateClientBeforeCall(restClient);
-                    if (isApiV3()) {
+                    if (isV3Api()) {
                         restClient.setCookie(JSESSIONID, authToken);
                         setPersistentV3AuthHeaders(restClient);
                     } else {

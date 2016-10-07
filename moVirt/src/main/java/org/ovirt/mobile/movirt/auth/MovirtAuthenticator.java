@@ -172,8 +172,12 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         return Integer.parseInt(getApiMajorVersion());
     }
 
-    public boolean isApiV3() {
+    public boolean isV3Api() {
         return getApiMajorVersionAsInt() < 4;
+    }
+
+    public boolean isV4Api() {
+        return getApiMajorVersionAsInt() >= 4;
     }
 
     public void setApiMajorVersion(Api api) {
