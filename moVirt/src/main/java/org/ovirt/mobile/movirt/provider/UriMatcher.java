@@ -5,6 +5,7 @@ import com.blandware.android.atleap.provider.ormlite.OrmLiteUriMatcher;
 import org.ovirt.mobile.movirt.model.CaCert;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
+import org.ovirt.mobile.movirt.model.Console;
 import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.Event;
@@ -56,5 +57,8 @@ public class UriMatcher extends OrmLiteUriMatcher {
 
         addClass(OVirtContract.PATH_NICS, Nic.class);
         addClass(OVirtContract.PATH_NIC, Nic.class);
+
+        addClass(OVirtContract.PATH_CONSOLES, Console.class);
+        addClass(OVirtContract.PATH_CONSOLE, Console.class);
     }
 }

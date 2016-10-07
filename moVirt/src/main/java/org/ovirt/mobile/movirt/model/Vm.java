@@ -53,15 +53,6 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
 
     }
 
-    public enum Display {
-        VNC,
-        SPICE;
-
-        public String getProtocol() {
-            return toString().toLowerCase();
-        }
-    }
-
     public enum Command {
         RUN(Status.DOWN, Status.PAUSED),
         STOP(Status.WAIT_FOR_LAUNCH, Status.UP, Status.POWERING_DOWN, Status.POWERING_UP,

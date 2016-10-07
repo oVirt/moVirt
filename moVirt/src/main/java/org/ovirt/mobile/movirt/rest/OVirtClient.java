@@ -632,6 +632,19 @@ public class OVirtClient {
         };
     }
 
+    public Request<List<Console>> getConsolesRequest(final String vmId) {
+        return new Request<List<Console>>() {
+            @Override
+            public List<Console> fire() {
+                if (isV3Api()) {
+                    throw new UnsupportedOperationException("v4+ APIs supported only!");
+                } else {
+                    return mapToEntities(restClient.getConsolesV4(vmId));
+                }
+            }
+        };
+    }
+
     public void getEventsSince(final int lastEventId, Response<List<Event>> response) {
         final SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(app);

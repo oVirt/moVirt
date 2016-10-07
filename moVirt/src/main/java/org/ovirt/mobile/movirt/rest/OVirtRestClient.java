@@ -199,4 +199,7 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}")
     org.ovirt.mobile.movirt.rest.v4.Snapshot getSnapshotV4(@Path String vmId, @Path String snapshotId);
+
+    @Get("/vms/{vmId}/graphicsconsoles;current")
+    org.ovirt.mobile.movirt.rest.v4.Consoles getConsolesV4(@Path String vmId);
 }

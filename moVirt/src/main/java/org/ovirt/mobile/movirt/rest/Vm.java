@@ -78,11 +78,11 @@ public abstract class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.mo
         }
 
         if (display != null) {
-            vm.setDisplayType(mapDisplay(display.type));
+            vm.setDisplayType(org.ovirt.mobile.movirt.model.Display.mapDisplay(display.type));
             vm.setDisplayAddress(display.address != null ? display.address : "");
             vm.setCertificateSubject((display.certificate != null && display.certificate.subject != null) ? display.certificate.subject : "");
         } else {
-            vm.setDisplayType(org.ovirt.mobile.movirt.model.Vm.Display.VNC);
+            vm.setDisplayType(org.ovirt.mobile.movirt.model.Display.VNC);
             vm.setDisplayAddress("");
         }
 
@@ -99,15 +99,6 @@ public abstract class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.mo
         }
 
         return vm;
-    }
-
-    private static org.ovirt.mobile.movirt.model.Vm.Display mapDisplay(String display) {
-        try {
-            return org.ovirt.mobile.movirt.model.Vm.Display.valueOf(display.toUpperCase());
-        } catch (Exception e) {
-            // not particularly nice but same behavior as on the webadmin/userportal
-            return org.ovirt.mobile.movirt.model.Vm.Display.VNC;
-        }
     }
 
     private static BigDecimal getStatisticValueByName(String name, List<Statistic> statistics) {

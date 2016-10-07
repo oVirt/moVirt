@@ -122,7 +122,8 @@
     <string name="prefs_vm_search_query_summary">Poll only VMs which satisfy given query. Has effect for admin users only. (e.g. name = production*)</string>
     <string name="prefs_events_search_query">Events Search Query</string>
     <string name="prefs_events_search_query_summary">Poll only Events which satisfy given query. Has effect for admin users only. (e.g. severity > warning)</string>
-    <string name="console">Console</string>
+    <string name="spice_console">Spice Console</string>
+    <string name="vnc_console">VNC Console</string>
 
     <string name="account_endpoint">protocol://host:port/path/to/api</string>
     <string name="ca_cert_account_endpoint">CA Location (e.g. http://my-instance/ca.crt before 3.5 or http://my-instance/ovirt-engine/services/pki-resource?resource=ca-certificate&amp;format=X509-PEM-CA in 3.6+)</string>
