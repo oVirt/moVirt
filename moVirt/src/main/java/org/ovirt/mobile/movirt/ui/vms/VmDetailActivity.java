@@ -11,6 +11,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.PagerTabStrip;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
@@ -27,6 +28,7 @@ import org.androidannotations.annotations.OptionsMenuItem;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
+import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
@@ -48,7 +50,6 @@ import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
 import org.ovirt.mobile.movirt.ui.NewSnapshotListener;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.CreateSnapshotDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.CreateSnapshotDialogFragment_;
@@ -65,8 +66,8 @@ import java.util.Set;
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
 public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
-        UpdateMenuItemAware<Vm>, ConfirmDialogFragment.ConfirmDialogListener,
-        NewSnapshotListener, LoaderManager.LoaderCallbacks<Cursor> {
+        ConfirmDialogFragment.ConfirmDialogListener, NewSnapshotListener,
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = VmDetailActivity.class.getSimpleName();
     private static final int REQUEST_MIGRATE = 0;
@@ -75,12 +76,15 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     private static final int ACTION_STOP_MIGRATE_VM = 2;
 
     private static final int SNAPSHOTS_LOADER = 1; // 0 in MovirtActivity
-    private static final int CONSOLES_LOADER = 2;
+    private static final int VMS_LOADER = 2;
+    private static final int CONSOLES_LOADER = 3;
 
     @ViewById
     ViewPager viewPager;
     @ViewById
     PagerTabStrip pagerTabStrip;
+    @StringRes(R.string.details_for_vm)
+    String VM_DETAILS;
     @StringArrayRes(R.array.vm_detail_pager_titles)
     String[] PAGER_TITLES;
     @Bean
@@ -164,6 +168,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
 
     private void initLoaders() {
         getSupportLoaderManager().initLoader(SNAPSHOTS_LOADER, null, this);
+        getSupportLoaderManager().initLoader(VMS_LOADER, null, this);
         if (movirtAuthenticator.isV4Api()) {
             getSupportLoaderManager().initLoader(CONSOLES_LOADER, null, this);
         }
@@ -173,6 +178,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     public void restartLoader() {
         super.restartLoader();
         getSupportLoaderManager().restartLoader(SNAPSHOTS_LOADER, null, this);
+        getSupportLoaderManager().restartLoader(VMS_LOADER, null, this);
         if (movirtAuthenticator.isV4Api()) {
             getSupportLoaderManager().restartLoader(CONSOLES_LOADER, null, this);
         }
@@ -182,6 +188,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     public void destroyLoader() {
         super.destroyLoader();
         getSupportLoaderManager().destroyLoader(SNAPSHOTS_LOADER);
+        getSupportLoaderManager().destroyLoader(VMS_LOADER);
         if (movirtAuthenticator.isV4Api()) {
             getSupportLoaderManager().destroyLoader(CONSOLES_LOADER);
         }
@@ -195,6 +202,9 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
             case SNAPSHOTS_LOADER:
                 loader = provider.query(Snapshot.class).where(OVirtContract.Snapshot.VM_ID, vmId).asLoader();
                 break;
+            case VMS_LOADER:
+                loader = provider.query(Vm.class).id(vmId).asLoader();
+                break;
             case CONSOLES_LOADER:
                 if (movirtAuthenticator.isV4Api()) {
                     loader = provider.query(Console.class).where(OVirtContract.Console.VM_ID, vmId).asLoader();
@@ -207,10 +217,19 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        if (!data.moveToNext()) {
+            Log.e(TAG, "Error loading data: id=" + loader.getId());
+            return;
+        }
+
         switch (loader.getId()) {
             case SNAPSHOTS_LOADER:
                 List<Snapshot> snapshots = snapshotFacade.mapAllFromCursor(data);
                 menuCreateSnapshotVisibility = !Snapshot.containsOneOfStatuses(snapshots, Snapshot.SnapshotStatus.LOCKED, Snapshot.SnapshotStatus.IN_PREVIEW);
+                invalidateOptionsMenu();
+                break;
+            case VMS_LOADER:
+                currentVm = vmFacade.mapFromCursor(data);
                 invalidateOptionsMenu();
                 break;
             case CONSOLES_LOADER:
@@ -233,6 +252,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (currentVm != null) {
+            setTitle(String.format(VM_DETAILS, currentVm.getName()));
             Vm.Status status = currentVm.getStatus();
             menuRun.setVisible(Vm.Command.RUN.canExecute(status));
             menuStop.setVisible(Vm.Command.STOP.canExecute(status));
@@ -504,15 +524,6 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }
 
-    @UiThread(propagation = UiThread.Propagation.REUSE)
-    @Override
-    //maybe not quite right name for this function now,
-    //it updates reference to VM entity after been loaded and rendered in fragment.
-    //Used for Menu and migrate Dialog.
-    public void updateMenuItem(Vm vm) {
-        currentVm = vm;
-        invalidateOptionsMenu();
-    }
 
     /**
      * Refreshes VM upon success

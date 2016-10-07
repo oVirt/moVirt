@@ -16,7 +16,6 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ViewById;
-import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.facade.ConsoleFacade;
@@ -36,7 +35,6 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
-import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 import org.ovirt.mobile.movirt.util.MemorySize;
 import org.springframework.util.StringUtils;
 
@@ -113,9 +111,6 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
 
     @Bean
     MovirtAuthenticator movirtAuthenticator;
-
-    @StringRes(R.string.details_for_vm)
-    String VM_DETAILS;
 
     Vm vm;
 
@@ -273,10 +268,6 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     }
 
     public void renderVm(Vm vm) {
-        if (!vm.isSnapshotEmbedded()) {
-            getActivity().setTitle(String.format(VM_DETAILS, vm.getName()));
-        }
-
         statusView.setText(vm.getStatus().toString().toLowerCase());
         cpuView.setText(getString(R.string.percentage, vm.getCpuUsage()));
         memView.setText(getString(R.string.percentage, vm.getMemoryUsage()));
@@ -291,10 +282,6 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
             } else {
                 renderDisplayView("");
             }
-        }
-
-        if (getActivity() instanceof UpdateMenuItemAware) {
-            ((UpdateMenuItemAware) getActivity()).updateMenuItem(vm);
         }
     }
 
