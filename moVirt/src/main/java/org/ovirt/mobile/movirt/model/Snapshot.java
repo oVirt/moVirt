@@ -13,7 +13,6 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.TABLE;
@@ -113,7 +112,7 @@ public class Snapshot extends OVirtEntity implements OVirtContract.Snapshot {
         Set<SnapshotStatus> statusSet = new HashSet<>(Arrays.asList(statuses));
 
         for (Snapshot snapshot : snapshots) {
-            if (statusSet.contains(snapshot.getSnapshotStatus())){
+            if (statusSet.contains(snapshot.getSnapshotStatus())) {
                 return true;
             }
         }

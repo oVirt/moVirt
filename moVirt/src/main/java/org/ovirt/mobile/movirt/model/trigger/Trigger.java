@@ -32,6 +32,7 @@ public class Trigger<E extends BaseEntity<?>> extends BaseEntity<Integer> implem
         ITEM
 
     }
+
     public enum NotificationType implements HasDisplayResourceId {
         INFO(R.string.notification_type_info),
         CRITICAL(R.string.notification_type_critical);

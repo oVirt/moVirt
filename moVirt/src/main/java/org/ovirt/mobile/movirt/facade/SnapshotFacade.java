@@ -7,8 +7,6 @@ import android.os.RemoteException;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.facade.predicates.SnapshotsIdPredicate;
 import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
-import org.ovirt.mobile.movirt.model.Disk;
-import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;

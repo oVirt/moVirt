@@ -16,7 +16,7 @@ public class Constants {
     public static final String PARAM_CA_CERT_PATH = "CaCertPath";
     public static final String PARAM_CERT_SUBJECT = "CertSubject";
 
-    public static String getCaCertPath(Context context){
+    public static String getCaCertPath(Context context) {
         return context.getExternalCacheDir() + "/" + Constants.DEFAULT_CA_CERT_FILE_NAME;
     }
 }

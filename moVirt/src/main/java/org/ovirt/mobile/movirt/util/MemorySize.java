@@ -204,7 +204,6 @@ public class MemorySize implements UsageResource {
     }
 
     /**
-     *
      * @param value positive number
      * @return floored logarithm of a value
      */

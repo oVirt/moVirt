@@ -83,10 +83,18 @@ public class EventsFragment extends RefreshableLoaderFragment {
             @Override
             public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 final ProviderFacade.QueryBuilder<Event> query = provider.query(Event.class);
-                if (filterHostId != null) query.where(HOST_ID, filterHostId);
-                if (filterClusterId != null) query.where(CLUSTER_ID, filterClusterId);
-                if (filterVmId != null) query.where(VM_ID, filterVmId);
-                if (filterStorageDomainId != null) query.where(STORAGE_DOMAIN_ID, filterStorageDomainId);
+                if (filterHostId != null) {
+                    query.where(HOST_ID, filterHostId);
+                }
+                if (filterClusterId != null) {
+                    query.where(CLUSTER_ID, filterClusterId);
+                }
+                if (filterVmId != null) {
+                    query.where(VM_ID, filterVmId);
+                }
+                if (filterStorageDomainId != null) {
+                    query.where(STORAGE_DOMAIN_ID, filterStorageDomainId);
+                }
                 return query.orderByDescending(ID).limit(page * EVENTS_PER_PAGE).asLoader();
             }
         };
@@ -120,11 +128,11 @@ public class EventsFragment extends RefreshableLoaderFragment {
         hideProgressBar();
     }
 
-    public void setFilterHostId(String filterHostId){
+    public void setFilterHostId(String filterHostId) {
         this.filterHostId = filterHostId;
     }
 
-    public void setFilterStorageDomainId(String filterStorageDomainId){
+    public void setFilterStorageDomainId(String filterStorageDomainId) {
         this.filterStorageDomainId = filterStorageDomainId;
     }
 
