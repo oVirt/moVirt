@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Version {
     public String major;
     public String minor;
+    public String build;
     public String full_version;
 
     public String getMajor() {
@@ -14,6 +15,10 @@ public class Version {
 
     public String getMinor() {
         return minor;
+    }
+
+    public String getBuild() {
+        return build;
     }
 
     public String getFullVersion() {

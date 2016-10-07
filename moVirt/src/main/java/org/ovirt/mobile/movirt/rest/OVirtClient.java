@@ -426,7 +426,7 @@ public class OVirtClient {
                     // https://bugzilla.redhat.com/show_bug.cgi?id=1377359
                     try {
                         if (!isV3Api()) {
-                            setupVersionHeader(restClient, authenticator.getFallbackMajorVersion());
+                            setupVersionHeader(restClient, authenticator.getApiFallbackMajorVersion());
                         }
                         wrappers = restClient.getDisksV3(vmId);
                     } finally {
@@ -773,7 +773,7 @@ public class OVirtClient {
             }
 
             Api api = loginV3RestClient.login();
-            authenticator.setApiMajorVersion(api);
+            authenticator.setApiVersion(api);
             setupVersionHeader(restClient, authenticator.getApiMajorVersion());
 
             if (oldApi && api != null) { // check for api because v4 may set JSESSIONID even if login was unsuccessful

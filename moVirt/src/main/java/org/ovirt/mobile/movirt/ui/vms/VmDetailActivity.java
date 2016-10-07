@@ -79,6 +79,10 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     private static final int VMS_LOADER = 2;
     private static final int CONSOLES_LOADER = 3;
 
+    private static final MovirtAuthenticator.Version FROM_API_SPICE_UNSUPPORTED = new MovirtAuthenticator.Version(4, 0, 0);
+    private static final MovirtAuthenticator.Version TO_API_SPICE_UNSUPPORTED = new MovirtAuthenticator.Version(4, 0, 4);
+    private static final MovirtAuthenticator.Version FROM_API_SPICE_AGAIN_SUPPORTED = new MovirtAuthenticator.Version(4, 0, 5); // toast info
+
     @ViewById
     ViewPager viewPager;
     @ViewById
@@ -438,14 +442,22 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
             @Override
             public void onResponse(ActionTicket ticket) throws RemoteException {
                 try {
-                    if (details.getDisplay() == Display.SPICE && details.getTlsPort() > 0 && !isCaFileExists()) {
-                        showMissingCaCertDialog();
-                    } else {
-                        Intent intent = new Intent(Intent.ACTION_VIEW)
-                                .setType("application/vnd.vnc")
-                                .setData(Uri.parse(makeConsoleUrl(details, ticket)));
-                        startActivity(intent);
+                    if (details.getDisplay() == Display.SPICE && details.getTlsPort() > 0) {
+                        if (authenticator.isApiWithinRange(FROM_API_SPICE_UNSUPPORTED, TO_API_SPICE_UNSUPPORTED)) {
+                            makeToast(String.format("Version %s of engine's API doesn't support secure connections. Upgrade at least to %s.",
+                                    authenticator.getApiVersion(), FROM_API_SPICE_AGAIN_SUPPORTED));
+                            return;
+                        }
+                        if (!isCaFileExists()) {
+                            showMissingCaCertDialog();
+                            return;
+                        }
                     }
+
+                    Intent intent = new Intent(Intent.ACTION_VIEW)
+                            .setType("application/vnd.vnc")
+                            .setData(Uri.parse(makeConsoleUrl(details, ticket)));
+                    startActivity(intent);
                 } catch (IllegalArgumentException e) {
                     makeToast(e.getMessage());
                 } catch (Exception e) {
