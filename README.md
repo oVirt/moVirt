@@ -72,7 +72,10 @@ Or using the [direct link](https://github.com/matobet/moVirt/blob/master/moVirt/
 ###Known issues:
 ####All versions:
 * Non-admin users support currently disabled.
+* SPICE does not work with SSL because of a current bug in aSPICE (manual input in aSPICE works)
 * SPICE may not work well with SSL on Android 5.+
+* SPICE does not work with SSL on oVirt 4.0.0 - 4.0.4
+* VNC does not work on oVirt 4.0.+, if vm's consoles are set to SPICE + VNC
 * Certificates may not work on Android 4.1 (use "Ignore certificate checking" in advanced connection settings).
 
 ####v1.3:
