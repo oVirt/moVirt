@@ -399,7 +399,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
                     String spicePasswordPart = Constants.PARAM_SPICE_PWD + "=" + ticket.ticket.value;
                     parameters = spicePasswordPart;
                     if (vm.getDisplaySecurePort() != -1) {
-                        String caCertPath = Constants.getCaCertPath(this);
+                        String caCertPath = Constants.getCaCertPath();
                         String tlsPortPart = Constants.PARAM_TLS_PORT + "=" + vm.getDisplaySecurePort();
                         String certSubjectPart = Constants.PARAM_CERT_SUBJECT + "=" + vm.getCertificateSubject();
                         String caCertPathPart = Constants.PARAM_CA_CERT_PATH + "=" + caCertPath;
@@ -416,7 +416,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     }
 
     private boolean isCaFileExists() {
-        File file = new File(Constants.getCaCertPath(this));
+        File file = new File(Constants.getCaCertPath());
         return file.exists();
     }
 
