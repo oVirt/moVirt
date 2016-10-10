@@ -46,6 +46,7 @@ import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.io.File;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -289,7 +290,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         }
         boolean usernameChanged = !TextUtils.equals(username, authenticator.getUserName());
         boolean urlChanged = !TextUtils.equals(endpoint, authenticator.getApiUrl());
-        boolean endpointChanged = urlChanged || usernameChanged;
 
         try {
             if (accountManager.getAccountsByType(MovirtAuthenticator.ACCOUNT_TYPE).length == 0) {
@@ -309,7 +309,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv);
 
             String token = client.login(username, password);
-            onLoginResultReceived(token, endpointChanged);
+            onLoginResultReceived(token, urlChanged, usernameChanged);
         } catch (Exception e) {
             setLoginInProgress(false);
             Throwable cause = e.getCause();
@@ -334,7 +334,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     }
 
 
-    void onLoginResultReceived(String token, boolean endpointChanged) {
+    void onLoginResultReceived(String token, boolean urlChanged, boolean usernameChanged) {
         if (TextUtils.isEmpty(token)) {
             setLoginInProgress(false);
             fireError("Error: the returned token is empty." +
@@ -343,10 +343,14 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             return;
         }
 
-        if (endpointChanged) {
+        if (urlChanged || usernameChanged) {
             // there is a different set of events and since we are counting only the increments,
             // this ones are not needed anymore
             eventsHandler.deleteEvents();
+        }
+
+        if (urlChanged) {
+            deleteCaFile();
         }
 
         accountManager.setAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, token);
@@ -362,6 +366,14 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         setAccountAuthenticatorResult(intent.getExtras());
         setResult(RESULT_OK, intent);
         finish();
+    }
+
+    @Background
+    public void deleteCaFile() {
+        File file = new File(Constants.getCaCertPath(this));
+        if (file.isFile() && file.exists()) {
+            file.delete();
+        }
     }
 
     void setLoginInProgress(boolean loginInProgress) {
