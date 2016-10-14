@@ -36,13 +36,12 @@ import org.ovirt.mobile.movirt.facade.ConsoleFacade;
 import org.ovirt.mobile.movirt.facade.SnapshotFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Console;
-import org.ovirt.mobile.movirt.model.Display;
+import org.ovirt.mobile.movirt.model.ConsoleProtocol;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.ActionTicket;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
@@ -58,10 +57,12 @@ import org.ovirt.mobile.movirt.ui.events.EventsFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
@@ -78,10 +79,6 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     private static final int SNAPSHOTS_LOADER = 1; // 0 in MovirtActivity
     private static final int VMS_LOADER = 2;
     private static final int CONSOLES_LOADER = 3;
-
-    private static final MovirtAuthenticator.Version FROM_API_SPICE_UNSUPPORTED = new MovirtAuthenticator.Version(4, 0, 0);
-    private static final MovirtAuthenticator.Version TO_API_SPICE_UNSUPPORTED = new MovirtAuthenticator.Version(4, 0, 4);
-    private static final MovirtAuthenticator.Version FROM_API_SPICE_AGAIN_SUPPORTED = new MovirtAuthenticator.Version(4, 0, 5); // toast info
 
     @ViewById
     ViewPager viewPager;
@@ -129,7 +126,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     private boolean menuCreateSnapshotVisibility = false;
     private boolean hasSpiceConsole = false;
     private boolean hasVncConsole = false;
-    private List<Console> consoles = null;
+    private Map<ConsoleProtocol, Console> consoles = new HashMap<>(2);
 
     @AfterViews
     void init() {
@@ -173,9 +170,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     private void initLoaders() {
         getSupportLoaderManager().initLoader(SNAPSHOTS_LOADER, null, this);
         getSupportLoaderManager().initLoader(VMS_LOADER, null, this);
-        if (movirtAuthenticator.isV4Api()) {
-            getSupportLoaderManager().initLoader(CONSOLES_LOADER, null, this);
-        }
+        getSupportLoaderManager().initLoader(CONSOLES_LOADER, null, this);
     }
 
     @Override
@@ -183,9 +178,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         super.restartLoader();
         getSupportLoaderManager().restartLoader(SNAPSHOTS_LOADER, null, this);
         getSupportLoaderManager().restartLoader(VMS_LOADER, null, this);
-        if (movirtAuthenticator.isV4Api()) {
-            getSupportLoaderManager().restartLoader(CONSOLES_LOADER, null, this);
-        }
+        getSupportLoaderManager().restartLoader(CONSOLES_LOADER, null, this);
     }
 
     @Override
@@ -193,9 +186,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         super.destroyLoader();
         getSupportLoaderManager().destroyLoader(SNAPSHOTS_LOADER);
         getSupportLoaderManager().destroyLoader(VMS_LOADER);
-        if (movirtAuthenticator.isV4Api()) {
-            getSupportLoaderManager().destroyLoader(CONSOLES_LOADER);
-        }
+        getSupportLoaderManager().destroyLoader(CONSOLES_LOADER);
     }
 
     @Override
@@ -210,9 +201,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
                 loader = provider.query(Vm.class).id(vmId).asLoader();
                 break;
             case CONSOLES_LOADER:
-                if (movirtAuthenticator.isV4Api()) {
-                    loader = provider.query(Console.class).where(OVirtContract.Console.VM_ID, vmId).asLoader();
-                }
+                loader = provider.query(Console.class).where(OVirtContract.Console.VM_ID, vmId).asLoader();
                 break;
         }
 
@@ -230,22 +219,19 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
             case SNAPSHOTS_LOADER:
                 List<Snapshot> snapshots = snapshotFacade.mapAllFromCursor(data);
                 menuCreateSnapshotVisibility = !Snapshot.containsOneOfStatuses(snapshots, Snapshot.SnapshotStatus.LOCKED, Snapshot.SnapshotStatus.IN_PREVIEW);
-                invalidateOptionsMenu();
                 break;
             case VMS_LOADER:
                 currentVm = vmFacade.mapFromCursor(data);
-                invalidateOptionsMenu();
                 break;
             case CONSOLES_LOADER:
-                if (movirtAuthenticator.isV4Api()) {
-                    consoles = consoleFacade.mapAllFromCursor(data);
-                    Set<Display> displays = Display.getDisplayTypes(consoles);
-                    hasSpiceConsole = displays.contains(Display.SPICE);
-                    hasVncConsole = displays.contains(Display.VNC);
+                for (Console console : consoleFacade.mapAllFromCursor(data)) {
+                    consoles.put(console.getProtocol(), console);
                 }
-                invalidateOptionsMenu();
+                hasSpiceConsole = consoles.containsKey(ConsoleProtocol.SPICE);
+                hasVncConsole = consoles.containsKey(ConsoleProtocol.VNC);
                 break;
         }
+        invalidateOptionsMenu();
     }
 
     @Override
@@ -264,10 +250,6 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
             menuStartMigration.setVisible(Vm.Command.START_MIGRATION.canExecute(status));
             menuCancelMigration.setVisible(Vm.Command.CANCEL_MIGRATION.canExecute(status));
             menuCreateSnapshot.setVisible(menuCreateSnapshotVisibility);
-            if (movirtAuthenticator.isV3Api()) {
-                hasSpiceConsole = currentVm.getDisplayType() == Display.SPICE;
-                hasVncConsole = currentVm.getDisplayType() == Display.VNC;
-            }
             boolean consoleExecutable = Vm.Command.CONSOLE.canExecute(status);
             menuSpiceConsole.setVisible(consoleExecutable && hasSpiceConsole);
             menuVncConsole.setVisible(consoleExecutable && hasVncConsole);
@@ -399,72 +381,39 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     @OptionsItem(R.id.action_spice_console)
     @Background
     void openSpiceConsole() {
-        openConsole(Display.SPICE);
+        openConsole(ConsoleProtocol.SPICE);
     }
 
     @OptionsItem(R.id.action_vnc_console)
     @Background
     void openVncConsole() {
-        openConsole(Display.VNC);
+        openConsole(ConsoleProtocol.VNC);
     }
 
-    private void openConsole(final Display display) {
-        vmFacade.syncOne(new ProgressBarResponse<Vm>(this) {
-            @Override
-            public void onResponse(final Vm vm) throws RemoteException {
-                ConsoleConnectionDetails details = null;
+    private void openConsole(final ConsoleProtocol protocol) {
+        Console console = consoles.get(protocol);
 
-                if (movirtAuthenticator.isV3Api()) {
-                    details = new ConsoleConnectionDetails(vm.getDisplayType(),
-                            vm.getDisplayAddress(),
-                            vm.getDisplayPort(),
-                            vm.getDisplaySecurePort(),
-                            vm.getCertificateSubject());
-                } else { // V4 API
-                    for (Console console : consoles) {
-                        if (console.getDisplayType() == display) {
-                            details = new ConsoleConnectionDetails(display,
-                                    console.getAddress(),
-                                    console.getPort(),
-                                    console.getTlsPort(),
-                                    vm.getCertificateSubject());
-                            break;
-                        }
-                    }
-                }
-                connectToConsole(details);
-            }
-        }, vmId);
+        //ConsoleConnectionDetails details = null;
+        //connectToConsole(details);
     }
 
     private void connectToConsole(final ConsoleConnectionDetails details) {
-        client.getConsoleTicket(vmId, new ProgressBarResponse<ActionTicket>(this) {
-            @Override
-            public void onResponse(ActionTicket ticket) throws RemoteException {
-                try {
-                    if (details.getDisplay() == Display.SPICE && details.getTlsPort() > 0) {
-                        if (authenticator.isApiWithinRange(FROM_API_SPICE_UNSUPPORTED, TO_API_SPICE_UNSUPPORTED)) {
-                            makeToast(String.format("Version %s of engine's API doesn't support secure connections. Upgrade at least to %s.",
-                                    authenticator.getApiVersion(), FROM_API_SPICE_AGAIN_SUPPORTED));
-                            return;
-                        }
-                        if (!isCaFileExists()) {
-                            showMissingCaCertDialog();
-                            return;
-                        }
-                    }
-
-                    Intent intent = new Intent(Intent.ACTION_VIEW)
-                            .setType("application/vnd.vnc")
-                            .setData(Uri.parse(makeConsoleUrl(details, ticket)));
-                    startActivity(intent);
-                } catch (IllegalArgumentException e) {
-                    makeToast(e.getMessage());
-                } catch (Exception e) {
-                    makeToast("Failed to open console client. Check if aSPICE/bVNC is installed.");
+        try {
+            if (details.getProtocol() == ConsoleProtocol.SPICE && details.getTlsPort() > 0) {
+                if (!isCaFileExists()) {
+                    showMissingCaCertDialog();
+                    return;
                 }
             }
-        });
+            Intent intent = new Intent(Intent.ACTION_VIEW)
+                    .setType("application/vnd.vnc")
+                    .setData(Uri.parse(makeConsoleUrl(details)));
+            startActivity(intent);
+        } catch (IllegalArgumentException e) {
+            makeToast(e.getMessage());
+        } catch (Exception e) {
+            makeToast("Failed to open console client. Check if aSPICE/bVNC is installed.");
+        }
     }
 
     @UiThread(propagation = UiThread.Propagation.REUSE)
@@ -478,9 +427,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
 
     @Background
     void refreshConsoles() {
-        if (movirtAuthenticator.isV4Api()) {
-            consoleFacade.syncAll(new ProgressBarResponse<List<Console>>(this), vmId);
-        }
+        consoleFacade.syncAll(new ProgressBarResponse<List<Console>>(this), vmId);
     }
 
     private void syncVm() {
@@ -494,35 +441,37 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
      * @throws java.lang.IllegalArgumentException with description
      *                                            if the URL can't be created from input.
      */
-    private String makeConsoleUrl(ConsoleConnectionDetails details, ActionTicket ticket)
+    private String makeConsoleUrl(ConsoleConnectionDetails details)
             throws IllegalArgumentException {
+        ConsoleProtocol protocol = details.getProtocol();
 
-        if (details.getDisplay() == null) {
+        if (protocol == null) {
             throw new IllegalArgumentException("Vm's display type cannot be null");
         }
 
-        String parameters = "";
-        if (ticket != null && ticket.ticket != null && ticket.ticket.value != null
-                && !ticket.ticket.value.isEmpty()) {
-            switch (details.getDisplay()) {
-                case VNC:
-                    parameters = Constants.PARAM_VNC_PWD + "=" + ticket.ticket.value; // vnc password
-                    break;
-                case SPICE:
-                    parameters = Constants.PARAM_SPICE_PWD + "=" + ticket.ticket.value; // spice password
-                    if (details.getTlsPort() > 0) {
-                        String caCertPath = Constants.getCaCertPath(this);
-                        String tlsPortPart = Constants.PARAM_TLS_PORT + "=" + details.getTlsPort();
-                        String certSubjectPart = Constants.PARAM_CERT_SUBJECT + "=" + details.getCertificateSubject();
-                        String caCertPathPart = Constants.PARAM_CA_CERT_PATH + "=" + caCertPath;
-
-                        parameters += "&" + tlsPortPart + "&" + certSubjectPart + "&" + caCertPathPart;
-                    }
-                    break;
-            }
+        if (StringUtils.isEmpty(details.getPassword())) {
+            throw new IllegalArgumentException("Password cannot be null");
         }
 
-        return details.getDisplay().getProtocol() + "://" + details.getAddress() + ":" + details.getPort() + "?" + parameters;
+        String parameters = "";
+        switch (protocol) {
+            case VNC:
+                parameters = Constants.PARAM_VNC_PWD + "=" + details.getPassword(); // vnc password
+                break;
+            case SPICE:
+                parameters = Constants.PARAM_SPICE_PWD + "=" + details.getPassword(); // spice password
+                if (details.getTlsPort() > 0) {
+                    String caCertPath = Constants.getCaCertPath(this);
+                    String tlsPortPart = Constants.PARAM_TLS_PORT + "=" + details.getTlsPort();
+                    String certSubjectPart = Constants.PARAM_CERT_SUBJECT + "=" + details.getCertificateSubject();
+                    String caCertPathPart = Constants.PARAM_CA_CERT_PATH + "=" + caCertPath;
+
+                    parameters += "&" + tlsPortPart + "&" + certSubjectPart + "&" + caCertPathPart;
+                }
+                break;
+        }
+
+        return protocol.getProtocol() + "://" + details.getAddress() + ":" + details.getPort() + "?" + parameters;
     }
 
 
@@ -553,26 +502,28 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     }
 
     private class ConsoleConnectionDetails {
-        private Display display;
+        private ConsoleProtocol protocol;
         private String address;
         private int port;
         private int tlsPort;
         private String certificateSubject;
+        private String password;
 
-        public ConsoleConnectionDetails(Display display, String address, int port, int tlsPort, String certificateSubject) {
-            this.display = display;
+        public ConsoleConnectionDetails(ConsoleProtocol protocol, String address, int port, int tlsPort, String certificateSubject, String password) {
+            this.protocol = protocol;
             this.address = address;
             this.port = port;
             this.tlsPort = tlsPort;
             this.certificateSubject = certificateSubject;
+            this.password = password;
         }
 
-        public Display getDisplay() {
-            return display;
+        public ConsoleProtocol getProtocol() {
+            return protocol;
         }
 
-        public void setDisplay(Display display) {
-            this.display = display;
+        public void setProtocol(ConsoleProtocol protocol) {
+            this.protocol = protocol;
         }
 
         public String getAddress() {
@@ -605,6 +556,14 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
 
         public void setCertificateSubject(String certificateSubject) {
             this.certificateSubject = certificateSubject;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
         }
     }
 }

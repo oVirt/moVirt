@@ -354,15 +354,6 @@ public class OVirtClient {
         fireRestRequest(getStorageDomainRequest(storageDomainId), response);
     }
 
-    public void getConsoleTicket(final String vmId, Response<ActionTicket> response) {
-        fireRestRequest(new Request<ActionTicket>() {
-            @Override
-            public ActionTicket fire() {
-                return restClient.getConsoleTicket(new Action(), vmId);
-            }
-        }, response);
-    }
-
     public Request<Disk> getDiskRequest(final String vmId, final String id) {
         return getDiskRequest(vmId, null, id);
     }
@@ -636,11 +627,7 @@ public class OVirtClient {
         return new Request<List<Console>>() {
             @Override
             public List<Console> fire() {
-                if (isV3Api()) {
-                    throw new UnsupportedOperationException("v4+ APIs supported only!");
-                } else {
-                    return mapToEntities(restClient.getConsolesV4(vmId));
-                }
+                return mapToEntities(restClient.getConsoles(vmId));
             }
         };
     }

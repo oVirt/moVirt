@@ -5,16 +5,12 @@ import android.support.annotation.NonNull;
 import java.util.List;
 import java.util.TreeSet;
 
-public enum Display {
+public enum ConsoleProtocol {
     SPICE,
     VNC;
 
-    public String getProtocol() {
-        return toString().toLowerCase();
-    }
-
     @NonNull
-    public static Display mapDisplay(String display) {
+    public static ConsoleProtocol mapProtocol(String display) {
         try {
             return valueOf(display.toUpperCase());
         } catch (Exception e) {
@@ -23,14 +19,18 @@ public enum Display {
         }
     }
 
-    public static TreeSet<Display> getDisplayTypes(List<Console> consoles) {
-        TreeSet<Display> result = new TreeSet<>(); // sorted, so that SPICE is first
+    public static TreeSet<ConsoleProtocol> getProtocolTypes(List<Console> consoles) {
+        TreeSet<ConsoleProtocol> result = new TreeSet<>(); // sorted, so that SPICE is first
 
         for (Console console : consoles) {
-            result.add(console.getDisplayType());
+            result.add(console.getProtocol());
         }
 
         return result;
+    }
+
+    public String getProtocol() {
+        return super.toString().toLowerCase();
     }
 }
 

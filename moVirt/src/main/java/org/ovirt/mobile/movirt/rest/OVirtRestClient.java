@@ -59,8 +59,8 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/events;max={maxToLoad}?from={lastEventId}&search={query}")
     Events getEventsSince(@Path String lastEventId, @Path String query, @Path int maxToLoad);
 
-    @Post("/vms/{vmId}/ticket")
-    ActionTicket getConsoleTicket(@Body Action action, @Path String vmId);
+    @Get("/vms/{vmId}/graphicsconsoles")
+    Consoles getConsoles(@Path String vmId);
 
     void setCookie(String name, String value);
 
@@ -199,7 +199,4 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}")
     org.ovirt.mobile.movirt.rest.v4.Snapshot getSnapshotV4(@Path String vmId, @Path String snapshotId);
-
-    @Get("/vms/{vmId}/graphicsconsoles;current")
-    org.ovirt.mobile.movirt.rest.v4.Consoles getConsolesV4(@Path String vmId);
 }

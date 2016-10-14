@@ -34,10 +34,6 @@ public interface OVirtContract {
         String HOST_ID = "host_id";
     }
 
-    interface HasDisplayType {
-        String DISPLAY_TYPE = "display_type";
-    }
-
     interface HasVm {
         String VM_ID = "vm_id";
 
@@ -45,7 +41,6 @@ public interface OVirtContract {
 
         void setVmId(String vmId);
     }
-
 
     interface HasDataCenter {
         String DATA_CENTER_ID = "data_center_id";
@@ -91,7 +86,7 @@ public interface OVirtContract {
     String PATH_VMS = "vms";
     String PATH_VM = "vms/*";
 
-    interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost, SnapshotEmbeddableEntity, HasCpuUsage, HasMemory, HasDisplayType {
+    interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost, SnapshotEmbeddableEntity, HasCpuUsage, HasMemory {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_VMS).build();
 
         String TABLE = "vms";
@@ -99,10 +94,6 @@ public interface OVirtContract {
         String SOCKETS = "sockets";
         String CORES_PER_SOCKET = "cores_per_socket";
         String OS_TYPE = "os_type";
-        String DISPLAY_ADDRESS = "display_address";
-        String DISPLAY_PORT = "display_port";
-        String DISPLAY_SECURE_PORT = "display_secure_port";
-        String CERTIFICATE_SUBJECT = "certificate_subject";
     }
 
     String PATH_HOSTS = "hosts";
@@ -256,13 +247,11 @@ public interface OVirtContract {
     String PATH_CONSOLES = "consoles";
     String PATH_CONSOLE = "consoles/*";
 
-    interface Console extends BaseEntity, HasVm, HasDisplayType {
+    interface Console extends BaseEntity, HasVm {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_CONSOLES).build();
 
         String TABLE = "consoles";
 
-        String ADDRESS = "address";
-        String PORT = "port";
-        String TLS_PORT = "tls_port";
+        String PROTOCOL = "protocol";
     }
 }

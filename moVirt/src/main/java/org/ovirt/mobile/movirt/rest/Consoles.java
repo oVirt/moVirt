@@ -1,9 +1,7 @@
-package org.ovirt.mobile.movirt.rest.v4;
+package org.ovirt.mobile.movirt.rest;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.ovirt.mobile.movirt.rest.RestEntityWrapperList;
 
 import java.util.List;
 

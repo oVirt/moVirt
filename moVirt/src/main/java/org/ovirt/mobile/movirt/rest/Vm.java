@@ -20,15 +20,9 @@ public abstract class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.mo
     public String name;
     public Statistics statistics;
     public String memory;
-    public Display display;
     public Os os;
     public Cpu cpu;
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Display {
-        public String address, port, type, secure_port;
-        public Certificate certificate;
-    }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Os {
@@ -75,27 +69,6 @@ public abstract class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.mo
 
         if (os != null) {
             vm.setOsType(os.type);
-        }
-
-        if (display != null) {
-            vm.setDisplayType(org.ovirt.mobile.movirt.model.Display.mapDisplay(display.type));
-            vm.setDisplayAddress(display.address != null ? display.address : "");
-            vm.setCertificateSubject((display.certificate != null && display.certificate.subject != null) ? display.certificate.subject : "");
-        } else {
-            vm.setDisplayType(org.ovirt.mobile.movirt.model.Display.VNC);
-            vm.setDisplayAddress("");
-        }
-
-        try {
-            vm.setDisplayPort(Integer.parseInt(display.port));
-        } catch (Exception e) {
-            vm.setDisplayPort(-1);
-        }
-
-        try {
-            vm.setDisplaySecurePort(Integer.parseInt(display.secure_port));
-        } catch (Exception e) {
-            vm.setDisplaySecurePort(-1);
         }
 
         return vm;
