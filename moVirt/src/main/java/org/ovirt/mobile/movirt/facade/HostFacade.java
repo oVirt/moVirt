@@ -8,7 +8,7 @@ import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.trigger.HostTriggerResolver;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.Request;
 import org.ovirt.mobile.movirt.ui.hosts.HostDetailActivity_;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
@@ -34,13 +34,13 @@ public class HostFacade extends BaseEntityFacade<Host> {
     }
 
     @Override
-    protected OVirtClient.Request<Host> getSyncOneRestRequest(String id, String... ids) {
+    protected Request<Host> getSyncOneRestRequest(String id, String... ids) {
         ObjectUtils.requireSignature(ids);
         return oVirtClient.getHostRequest(id);
     }
 
     @Override
-    protected OVirtClient.Request<List<Host>> getSyncAllRestRequest(String... ids) {
+    protected Request<List<Host>> getSyncAllRestRequest(String... ids) {
         ObjectUtils.requireSignature(ids);
         return oVirtClient.getHostsRequest();
     }

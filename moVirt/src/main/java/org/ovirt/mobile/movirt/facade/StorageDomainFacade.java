@@ -5,7 +5,7 @@ import android.content.Intent;
 
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.model.StorageDomain;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.Request;
 import org.ovirt.mobile.movirt.ui.storage.StorageDomainDetailActivity_;
 
 import java.util.List;
@@ -28,13 +28,13 @@ public class StorageDomainFacade extends BaseEntityFacade<StorageDomain> {
     }
 
     @Override
-    protected OVirtClient.Request<StorageDomain> getSyncOneRestRequest(String storageId, String... ids) {
+    protected Request<StorageDomain> getSyncOneRestRequest(String storageId, String... ids) {
         requireSignature(ids);
         return oVirtClient.getStorageDomainRequest(storageId);
     }
 
     @Override
-    protected OVirtClient.Request<List<StorageDomain>> getSyncAllRestRequest(String... ids) {
+    protected Request<List<StorageDomain>> getSyncAllRestRequest(String... ids) {
         requireSignature(ids);
         return oVirtClient.getStorageDomainsRequest();
     }

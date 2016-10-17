@@ -15,7 +15,14 @@ public class Api {
         }
     }
 
-    public ProductInfo getProductInfo() {
-        return product_info;
+    public org.ovirt.mobile.movirt.auth.Version toVersion() {
+        try {
+            org.ovirt.mobile.movirt.rest.Version version = product_info.getVersion();
+            return new org.ovirt.mobile.movirt.auth.Version(Integer.parseInt(version.getMajor()),
+                    Integer.parseInt(version.getMinor()),
+                    Integer.parseInt(version.getBuild()));
+        } catch (Exception x) {
+            return new org.ovirt.mobile.movirt.auth.Version(); // fallback versions are used instead
+        }
     }
 }

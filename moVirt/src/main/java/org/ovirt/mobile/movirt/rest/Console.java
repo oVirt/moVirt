@@ -8,7 +8,7 @@ import org.ovirt.mobile.movirt.model.ConsoleProtocol;
 public class Console implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Console> {
     public String id;
     public String protocol;
-    public org.ovirt.mobile.movirt.rest.v4.Vm vm;
+    public org.ovirt.mobile.movirt.rest.Vm vm;
 
     public org.ovirt.mobile.movirt.model.Console toEntity() {
         org.ovirt.mobile.movirt.model.Console console = new org.ovirt.mobile.movirt.model.Console();

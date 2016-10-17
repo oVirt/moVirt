@@ -33,6 +33,7 @@ import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.SimpleResponse;
 import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
@@ -118,8 +119,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         entityFacade.syncAll();
     }
 
-    public <E extends OVirtEntity> OVirtClient.SimpleResponse<E> getUpdateEntityResponse(final Class<E> clazz) {
-        return new OVirtClient.SimpleResponse<E>() {
+    public <E extends OVirtEntity> SimpleResponse<E> getUpdateEntityResponse(final Class<E> clazz) {
+        return new SimpleResponse<E>() {
             @Override
             public void onResponse(E entity) throws RemoteException {
                 updateLocalEntity(entity, clazz);
@@ -136,8 +137,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         applyBatch(batch);
     }
 
-    public <E extends OVirtEntity> OVirtClient.SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz) {
-        return new OVirtClient.SimpleResponse<List<E>>() {
+    public <E extends OVirtEntity> SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz) {
+        return new SimpleResponse<List<E>>() {
             @Override
             public void onResponse(List<E> entities) throws RemoteException {
                 updateLocalEntities(entities, clazz);
@@ -145,8 +146,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         };
     }
 
-    public <E extends OVirtEntity> OVirtClient.SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz, final Predicate<E> scopePredicate) {
-        return new OVirtClient.SimpleResponse<List<E>>() {
+    public <E extends OVirtEntity> SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz, final Predicate<E> scopePredicate) {
+        return new SimpleResponse<List<E>>() {
             @Override
             public void onResponse(List<E> entities) throws RemoteException {
                 updateLocalEntities(entities, clazz, scopePredicate);

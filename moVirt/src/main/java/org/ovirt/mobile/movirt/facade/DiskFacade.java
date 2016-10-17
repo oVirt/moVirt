@@ -11,7 +11,9 @@ import org.ovirt.mobile.movirt.facade.predicates.NotSnapshotEmbeddedPredicate;
 import org.ovirt.mobile.movirt.facade.predicates.SnapshotIdPredicate;
 import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
 import org.ovirt.mobile.movirt.model.Disk;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.CompositeResponse;
+import org.ovirt.mobile.movirt.rest.Request;
+import org.ovirt.mobile.movirt.rest.Response;
 
 import java.util.List;
 
@@ -30,7 +32,7 @@ public class DiskFacade extends BaseEntityFacade<Disk> {
     }
 
     @Override
-    protected OVirtClient.Request<Disk> getSyncOneRestRequest(String diskId, String... ids) {
+    protected Request<Disk> getSyncOneRestRequest(String diskId, String... ids) {
         if (ids.length == 2) {
             String vmId = ids[0];
             String snapshotId = ids[1];
@@ -43,7 +45,7 @@ public class DiskFacade extends BaseEntityFacade<Disk> {
     }
 
     @Override
-    protected OVirtClient.Request<List<Disk>> getSyncAllRestRequest(String... ids) {
+    protected Request<List<Disk>> getSyncAllRestRequest(String... ids) {
         if (ids.length == 2) {
             String vmId = ids[0];
             String snapshotId = ids[1];
@@ -56,7 +58,7 @@ public class DiskFacade extends BaseEntityFacade<Disk> {
     }
 
     @Override
-    protected OVirtClient.CompositeResponse<List<Disk>> getSyncAllResponse(final OVirtClient.Response<List<Disk>> response, final String... ids) {
+    protected CompositeResponse<List<Disk>> getSyncAllResponse(final Response<List<Disk>> response, final String... ids) {
         Predicate<Disk> predicate;
         if (ids.length == 2) {
             String snapshotId = ids[1];
@@ -67,6 +69,6 @@ public class DiskFacade extends BaseEntityFacade<Disk> {
             predicate = new AndPredicate<>(new VmIdPredicate<Disk>(vmId), new NotSnapshotEmbeddedPredicate<Disk>());
         }
 
-        return new OVirtClient.CompositeResponse<>(syncAdapter.getUpdateEntitiesResponse(Disk.class, predicate), response);
+        return new CompositeResponse<>(syncAdapter.getUpdateEntitiesResponse(Disk.class, predicate), response);
     }
 }

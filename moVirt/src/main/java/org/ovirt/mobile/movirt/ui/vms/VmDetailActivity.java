@@ -43,6 +43,7 @@ import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.SimpleResponse;
 import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
@@ -370,7 +371,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     @Override
     @Background
     public void onDialogResult(org.ovirt.mobile.movirt.rest.Snapshot snapshot) {
-        client.createSnapshot(snapshot, vmId, new OVirtClient.SimpleResponse<Void>() {
+        client.createSnapshot(snapshot, vmId, new SimpleResponse<Void>() {
             @Override
             public void onResponse(Void aVoid) throws RemoteException {
                 snapshotFacade.syncAll(vmId);
@@ -489,7 +490,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     /**
      * Refreshes VM upon success
      */
-    private class SyncVmResponse extends OVirtClient.SimpleResponse<Void> {
+    private class SyncVmResponse extends SimpleResponse<Void> {
         @Override
         public void onResponse(Void obj) throws RemoteException {
             syncVm();

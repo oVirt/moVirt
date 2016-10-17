@@ -9,7 +9,7 @@ import java.math.RoundingMode;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public abstract class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
+public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
 
     private static final String CPU_PERCENTAGE_STAT = "cpu.current.total";
     private static final String TOTAL_MEMORY_STAT = "memory.installed";
@@ -22,7 +22,6 @@ public abstract class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.mo
     public String memory;
     public Os os;
     public Cpu cpu;
-
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Os {

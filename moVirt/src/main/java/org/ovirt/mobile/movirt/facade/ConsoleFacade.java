@@ -5,7 +5,7 @@ import android.content.Intent;
 
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.model.Console;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.Request;
 
 import java.util.List;
 
@@ -24,12 +24,12 @@ public class ConsoleFacade extends BaseEntityFacade<Console> {
     }
 
     @Override
-    protected OVirtClient.Request<Console> getSyncOneRestRequest(String consoleId, String... ids) {
+    protected Request<Console> getSyncOneRestRequest(String consoleId, String... ids) {
         throw new UnsupportedOperationException("Standalone console is a vv file!");
     }
 
     @Override
-    protected OVirtClient.Request<List<Console>> getSyncAllRestRequest(String... ids) {
+    protected Request<List<Console>> getSyncAllRestRequest(String... ids) {
         requireSignature(ids, "vmId");
         String vmId = ids[0];
         return oVirtClient.getConsolesRequest(vmId);

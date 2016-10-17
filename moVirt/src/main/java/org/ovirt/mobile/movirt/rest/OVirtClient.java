@@ -1,39 +1,25 @@
 package org.ovirt.mobile.movirt.rest;
 
-import android.accounts.AccountManager;
-import android.accounts.AccountManagerFuture;
-import android.accounts.AuthenticatorException;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.widget.Toast;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
-import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.UiThread;
-import org.androidannotations.annotations.res.StringRes;
 import org.androidannotations.rest.spring.annotations.RestService;
 import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
-import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
-import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
+import org.ovirt.mobile.movirt.auth.*;
+import org.ovirt.mobile.movirt.auth.Version;
 import org.ovirt.mobile.movirt.model.Cluster;
-import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.model.Console;
 import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Disk;
@@ -44,112 +30,69 @@ import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
-import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.ui.MainActivity_;
-import org.ovirt.mobile.movirt.util.NotificationHelper;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
-import org.springframework.core.NestedRuntimeException;
-import org.springframework.http.HttpAuthentication;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
 
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import static org.ovirt.mobile.movirt.rest.RequestHelper.initClient;
+import static org.ovirt.mobile.movirt.rest.RequestHelper.setupVersionHeader;
+
 @EBean(scope = EBean.Scope.Singleton)
 public class OVirtClient {
-    public static final String JSESSIONID = "JSESSIONID";
-    public static final String FILTER = "Filter";
-    public static final String PREFER = "Prefer";
-    public static final String SESSION_TTL = "Session-TTL";
-    public static final String VERSION = "Version";
-    public static final String ACCEPT_ENCODING = "Accept-Encoding";
-
     private static final String TAG = OVirtClient.class.getSimpleName();
-
-    ObjectMapper mapper = new ObjectMapper();
 
     @RestService
     OVirtRestClient restClient;
 
-    @RestService
-    OVirtLoginV3RestClient loginV3RestClient;
+    @Bean
+    LoginClient loginClient;
 
-    @RestService
-    OVirtLoginV4RestClient loginV4RestClient;
+    @Bean
+    RequestHandler requestHandler;
 
     @Bean
     OvirtSimpleClientHttpRequestFactory requestFactory;
 
-    @Bean
-    OvirtTimeoutSimpleClientHttpRequestFactory timeoutRequestFactory;
-
-    @Bean
-    ProviderFacade provider;
-
     @RootContext
     Context context;
-
-    @SystemService
-    AccountManager accountManager;
 
     @Bean
     MovirtAuthenticator authenticator;
 
-    @Bean
-    NotificationHelper notificationHelper;
-
     @App
     MoVirtApp app;
-
-    @StringRes(R.string.rest_request_failed)
-    String errorMsg;
 
     @Bean
     SharedPreferencesHelper sharedPreferencesHelper;
 
-    public boolean isV3Api() {
-        return authenticator.isV3Api();
-    }
+    private boolean isV3Api = true;
 
-    public <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList) {
-        return mapToEntities(wrappersList, null);
-    }
+    @AfterInject
+    public void init() {
+        initClient(restClient, requestFactory);
+        org.ovirt.mobile.movirt.auth.Version version = authenticator.getApiVersion();
+        isV3Api = version.isV3Api();
+        setupVersionHeader(restClient, version);
 
-    public <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList, WrapPredicate<U> predicate) {
-        if (wrappersList == null) {
-            return Collections.emptyList();
-        }
-
-        List<U> wrappers = wrappersList.getList();
-
-        if (wrappers == null) {
-            return Collections.emptyList();
-        }
-
-        List<E> entities = new ArrayList<>();
-        for (U rest : wrappers) {
-            try {
-                if (predicate == null || predicate.toWrap(rest)) {
-                    entities.add(rest.toEntity());
-                }
-            } catch (Exception e) {
-                // showing only as a toast since this problem may persist and we don't want to flood the user with messages like this as dialogs...
-                showToast("Error parsing rest response, ignoring: " + rest.toString() + " error: " + e.getMessage());
+        loginClient.registerListener(new LoginClient.ApiVersionChangedListener() {
+            @Override
+            public void onVersionChanged(Version version) {
+                setupVersionHeader(restClient, version);
+                isV3Api = version.isV3Api();
             }
-        }
-        return entities;
+        });
+    }
+
+    @UiThread(propagation = UiThread.Propagation.REUSE)
+    void showToast(String msg) {
+        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
 
     public void startVm(final String vmId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
                 restClient.startVm(new Action(), vmId);
@@ -159,7 +102,7 @@ public class OVirtClient {
     }
 
     public void stopVm(final String vmId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
                 restClient.stopVm(new Action(), vmId);
@@ -170,7 +113,7 @@ public class OVirtClient {
     }
 
     public void rebootVm(final String vmId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
                 restClient.rebootVm(new Action(), vmId);
@@ -180,10 +123,10 @@ public class OVirtClient {
     }
 
     public void migrateVmToHost(final String vmId, final String hostId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                Action action = isV3Api() ? new org.ovirt.mobile.movirt.rest.v3.ActionMigrate(hostId) :
+                Action action = isV3Api ? new org.ovirt.mobile.movirt.rest.v3.ActionMigrate(hostId) :
                         new org.ovirt.mobile.movirt.rest.v4.ActionMigrate(hostId);
                 restClient.migrateVmToHost(action, vmId);
                 return null;
@@ -192,7 +135,7 @@ public class OVirtClient {
     }
 
     public void migrateVmToDefaultHost(final String vmId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
                 restClient.migrateVmToHost(new Action(), vmId);
@@ -202,7 +145,7 @@ public class OVirtClient {
     }
 
     public void cancelMigration(final String vmId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
                 restClient.cancelMigration(new Action(), vmId);
@@ -213,21 +156,21 @@ public class OVirtClient {
 
     @NonNull
     public Request<Vm> getVmRequest(final String vmId) {
-        return new Request<Vm>() {
+        return new RestClientRequest<Vm>() {
             @Override
             public Vm fire() {
-                org.ovirt.mobile.movirt.rest.Vm vm = isV3Api() ? restClient.getVmV3(vmId) : restClient.getVmV4(vmId);
+                org.ovirt.mobile.movirt.rest.Vm vm = isV3Api ? restClient.getVmV3(vmId) : restClient.getVmV4(vmId);
                 return vm.toEntity();
             }
         };
     }
 
     public void getVm(final String vmId, Response<Vm> response) {
-        fireRestRequest(getVmRequest(vmId), response);
+        requestHandler.fireRestRequest(getVmRequest(vmId), response);
     }
 
     public void activateHost(final String hostId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
                 restClient.activateHost(new Action(), hostId);
@@ -237,7 +180,7 @@ public class OVirtClient {
     }
 
     public void dectivateHost(final String hostId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
                 restClient.deactivateHost(new Action(), hostId);
@@ -247,7 +190,7 @@ public class OVirtClient {
     }
 
     public void deleteSnapshot(final String vmId, final String snapshotId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
                 restClient.deleteSnapshot(vmId, snapshotId);
@@ -257,7 +200,7 @@ public class OVirtClient {
     }
 
     public void restoreSnapshot(final SnapshotAction snapshotAction, final String vmId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
                 String snapshotId = snapshotAction.snapshot.id;
@@ -270,10 +213,10 @@ public class OVirtClient {
     }
 
     public void previewSnapshot(final SnapshotAction snapshotAction, final String vmId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                if (isV3Api()) {
+                if (isV3Api) {
                     restClient.previewSnapshotV3(snapshotAction, vmId);
                 } else {
                     restClient.previewSnapshotV4(snapshotAction, vmId);
@@ -284,7 +227,7 @@ public class OVirtClient {
     }
 
     public void createSnapshot(final org.ovirt.mobile.movirt.rest.Snapshot snapshot, final String vmId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
                 restClient.createSnapshot(snapshot, vmId);
@@ -294,10 +237,10 @@ public class OVirtClient {
     }
 
     public void commitSnapshot(final String vmId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                if (isV3Api()) {
+                if (isV3Api) {
                     restClient.commitSnapshotV3(new Action(), vmId);
                 } else {
                     restClient.commitSnapshotV4(new Action(), vmId);
@@ -308,10 +251,10 @@ public class OVirtClient {
     }
 
     public void undoSnapshot(final String vmId, Response<Void> response) {
-        fireRestRequest(new Request<Void>() {
+        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                if (isV3Api()) {
+                if (isV3Api) {
                     restClient.undoSnapshotV3(new Action(), vmId);
                 } else {
                     restClient.undoSnapshotV4(new Action(), vmId);
@@ -323,10 +266,10 @@ public class OVirtClient {
 
     @NonNull
     public Request<Host> getHostRequest(final String hostId) {
-        return new Request<Host>() {
+        return new RestClientRequest<Host>() {
             @Override
             public Host fire() {
-                org.ovirt.mobile.movirt.rest.Host wrapper = isV3Api() ?
+                org.ovirt.mobile.movirt.rest.Host wrapper = isV3Api ?
                         restClient.getHostV3(hostId) : restClient.getHostV4(hostId);
                 return wrapper.toEntity();
             }
@@ -334,15 +277,15 @@ public class OVirtClient {
     }
 
     public void getHost(final String hostId, Response<Host> response) {
-        fireRestRequest(getHostRequest(hostId), response);
+        requestHandler.fireRestRequest(getHostRequest(hostId), response);
     }
 
     @NonNull
     public Request<StorageDomain> getStorageDomainRequest(final String storageDomainId) {
-        return new Request<StorageDomain>() {
+        return new RestClientRequest<StorageDomain>() {
             @Override
             public StorageDomain fire() {
-                org.ovirt.mobile.movirt.rest.StorageDomain wrapper = isV3Api() ?
+                org.ovirt.mobile.movirt.rest.StorageDomain wrapper = isV3Api ?
                         restClient.getStorageDomainV3(storageDomainId) :
                         restClient.getStorageDomainV4(storageDomainId);
                 return wrapper.toEntity();
@@ -351,7 +294,7 @@ public class OVirtClient {
     }
 
     public void getStorageDomain(final String storageDomainId, Response<StorageDomain> response) {
-        fireRestRequest(getStorageDomainRequest(storageDomainId), response);
+        requestHandler.fireRestRequest(getStorageDomainRequest(storageDomainId), response);
     }
 
     public Request<Disk> getDiskRequest(final String vmId, final String id) {
@@ -362,14 +305,14 @@ public class OVirtClient {
     public Request<Disk> getDiskRequest(final String vmId, final String snapshotId, final String id) {
         final boolean isSnapshotEmbedded = snapshotId != null;
 
-        return new Request<Disk>() {
+        return new RestClientRequest<Disk>() {
             @Override
             public Disk fire() {
                 org.ovirt.mobile.movirt.rest.Disk wrapper;
                 Disk entity;
 
                 if (isSnapshotEmbedded) {
-                    if (isV3Api()) {
+                    if (isV3Api) {
                         wrapper = restClient.getDiskV3(vmId, snapshotId, id);
                     } else {
                         wrapper = restClient.getDiskV4(vmId, snapshotId, id);
@@ -377,7 +320,7 @@ public class OVirtClient {
                     entity = wrapper.toEntity();
                     setVmId(entity, vmId);
                 } else {
-                    if (isV3Api()) {
+                    if (isV3Api) {
                         wrapper = restClient.getDiskV3(vmId, id);
                     } else {
                         wrapper = restClient.getDiskV4(id);
@@ -397,7 +340,7 @@ public class OVirtClient {
     public Request<List<Disk>> getDisksRequest(final String vmId, final String snapshotId) {
         final boolean isSnapshotEmbedded = snapshotId != null;
 
-        return new Request<List<Disk>>() {
+        return new RestClientRequest<List<Disk>>() {
             @Override
             public List<Disk> fire() {
                 RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.Disk> wrappers;
@@ -405,7 +348,7 @@ public class OVirtClient {
 
                 if (isSnapshotEmbedded) {
 
-                    if (isV3Api()) {
+                    if (isV3Api) {
                         wrappers = restClient.getDisksV3(vmId, snapshotId);
                     } else {
                         wrappers = restClient.getDisksV4(vmId, snapshotId);
@@ -416,12 +359,12 @@ public class OVirtClient {
                     // fallback to API 3 here until this feature is fixed
                     // https://bugzilla.redhat.com/show_bug.cgi?id=1377359
                     try {
-                        if (!isV3Api()) {
-                            setupVersionHeader(restClient, authenticator.getApiFallbackMajorVersion());
+                        if (!isV3Api) {
+                            setupVersionHeader(restClient, Version.API_FALLBACK_MAJOR_VERSION);
                         }
                         wrappers = restClient.getDisksV3(vmId);
                     } finally {
-                        setupVersionHeader(restClient, authenticator.getApiMajorVersion());
+                        setupVersionHeader(restClient, authenticator.getApiVersion());
                     }
                     entities = mapToEntities(wrappers);
                 }
@@ -431,16 +374,11 @@ public class OVirtClient {
         };
     }
 
-    @UiThread(propagation = UiThread.Propagation.REUSE)
-    void showToast(String msg) {
-        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
-    }
-
     public void getClusters(Response<List<Cluster>> response) {
-        fireRestRequest(new Request<List<Cluster>>() {
+        requestHandler.fireRestRequest(new RestClientRequest<List<Cluster>>() {
             @Override
             public List<Cluster> fire() {
-                if (isV3Api()) {
+                if (isV3Api) {
                     return mapToEntities(restClient.getClustersV3());
                 }
                 return mapToEntities(restClient.getClustersV4());
@@ -449,10 +387,10 @@ public class OVirtClient {
     }
 
     public void getDataCenters(Response<List<DataCenter>> response) {
-        fireRestRequest(new Request<List<DataCenter>>() {
+        requestHandler.fireRestRequest(new RestClientRequest<List<DataCenter>>() {
             @Override
             public List<DataCenter> fire() {
-                if (isV3Api()) {
+                if (isV3Api) {
                     return mapToEntities(restClient.getDataCentersV3());
                 }
                 return mapToEntities(restClient.getDataCentersV4());
@@ -466,14 +404,14 @@ public class OVirtClient {
 
     @NonNull
     public Request<Nic> getNicRequest(final String vmId, final String snapshotId, final String id) {
-        return new Request<Nic>() {
+        return new RestClientRequest<Nic>() {
             @Override
             public Nic fire() {
                 org.ovirt.mobile.movirt.rest.Nic wrapper;
                 Nic entity;
 
                 if (snapshotId == null) {
-                    if (isV3Api()) {
+                    if (isV3Api) {
                         wrapper = restClient.getNicV3(vmId, id);
                     } else {
                         wrapper = restClient.getNicV4(vmId, id);
@@ -481,7 +419,7 @@ public class OVirtClient {
                     entity = wrapper.toEntity();
                     setVmId(entity, vmId);
                 } else {
-                    if (isV3Api()) {
+                    if (isV3Api) {
                         wrapper = restClient.getNicV3(vmId, snapshotId, id);
                     } else {
                         wrapper = restClient.getNicV4(vmId, snapshotId, id);
@@ -499,14 +437,14 @@ public class OVirtClient {
     }
 
     public Request<List<Nic>> getNicsRequest(final String vmId, final String snapshotId) {
-        return new Request<List<Nic>>() {
+        return new RestClientRequest<List<Nic>>() {
             @Override
             public List<Nic> fire() {
                 RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.Nic> wrappers;
                 List<Nic> entities;
 
                 if (snapshotId == null) {
-                    if (isV3Api()) {
+                    if (isV3Api) {
                         wrappers = restClient.getNicsV3(vmId);
                     } else {
                         wrappers = restClient.getNicsV4(vmId);
@@ -514,7 +452,7 @@ public class OVirtClient {
                     entities = mapToEntities(wrappers);
                     setVmId(entities, vmId);
                 } else {
-                    if (isV3Api()) {
+                    if (isV3Api) {
                         wrappers = restClient.getNicsV3(vmId, snapshotId);
                     } else {
                         wrappers = restClient.getNicsV4(vmId, snapshotId);
@@ -528,10 +466,10 @@ public class OVirtClient {
     }
 
     public Request<List<Host>> getHostsRequest() {
-        return new Request<List<Host>>() {
+        return new RestClientRequest<List<Host>>() {
             @Override
             public List<Host> fire() {
-                if (isV3Api()) {
+                if (isV3Api) {
                     return mapToEntities(restClient.getHostsV3());
                 }
                 return mapToEntities(restClient.getHostsV4());
@@ -543,7 +481,7 @@ public class OVirtClient {
         final SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(app);
 
-        return new Request<List<Vm>>() {
+        return new RestClientRequest<List<Vm>>() {
             @Override
             public List<Vm> fire() {
                 RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.Vm> wrappers;
@@ -552,14 +490,14 @@ public class OVirtClient {
                     int maxVms = sharedPreferencesHelper.getMaxVms();
                     String query = sharedPreferences.getString("vms_search_query", "");
                     if (StringUtils.isEmpty(query)) {
-                        wrappers = isV3Api() ? restClient.getVmsV3(maxVms) :
+                        wrappers = isV3Api ? restClient.getVmsV3(maxVms) :
                                 restClient.getVmsV4(maxVms);
                     } else {
-                        wrappers = isV3Api() ? restClient.getVmsV3(query, maxVms) :
+                        wrappers = isV3Api ? restClient.getVmsV3(query, maxVms) :
                                 restClient.getVmsV4(query, maxVms);
                     }
                 } else {
-                    wrappers = isV3Api() ? restClient.getVmsV3(-1) :
+                    wrappers = isV3Api ? restClient.getVmsV3(-1) :
                             restClient.getVmsV4(-1);
                 }
 
@@ -569,10 +507,10 @@ public class OVirtClient {
     }
 
     public Request<List<StorageDomain>> getStorageDomainsRequest() {
-        return new Request<List<StorageDomain>>() {
+        return new RestClientRequest<List<StorageDomain>>() {
             @Override
             public List<StorageDomain> fire() {
-                if (isV3Api()) {
+                if (isV3Api) {
                     return mapToEntities(restClient.getStorageDomainsV3());
                 }
                 return mapToEntities(restClient.getStorageDomainsV4());
@@ -582,13 +520,13 @@ public class OVirtClient {
     }
 
     public Request<List<Snapshot>> getSnapshotsRequest(final String vmId) {
-        return new Request<List<Snapshot>>() {
+        return new RestClientRequest<List<Snapshot>>() {
             @Override
             public List<Snapshot> fire() {
                 RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.Snapshot> wrappers;
                 List<Snapshot> entities;
 
-                if (isV3Api()) {
+                if (isV3Api) {
                     wrappers = restClient.getSnapshotsV3(vmId);
                 } else {
                     wrappers = restClient.getSnapshotsV4(vmId);
@@ -603,13 +541,13 @@ public class OVirtClient {
     }
 
     public Request<Snapshot> getSnapshotRequest(final String vmId, final String snapshotId) {
-        return new Request<Snapshot>() {
+        return new RestClientRequest<Snapshot>() {
             @Override
             public Snapshot fire() {
                 org.ovirt.mobile.movirt.rest.Snapshot wrapper;
                 Snapshot entity;
 
-                if (isV3Api()) {
+                if (isV3Api) {
                     wrapper = restClient.getSnapshotV3(vmId, snapshotId);
                 } else {
                     wrapper = restClient.getSnapshotV4(vmId, snapshotId);
@@ -624,7 +562,7 @@ public class OVirtClient {
     }
 
     public Request<List<Console>> getConsolesRequest(final String vmId) {
-        return new Request<List<Console>>() {
+        return new RestClientRequest<List<Console>>() {
             @Override
             public List<Console> fire() {
                 return mapToEntities(restClient.getConsoles(vmId));
@@ -635,7 +573,7 @@ public class OVirtClient {
     public void getEventsSince(final int lastEventId, Response<List<Event>> response) {
         final SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(app);
-        fireRestRequest(new Request<List<Event>>() {
+        requestHandler.fireRestRequest(new RestClientRequest<List<Event>>() {
             @Override
             public List<Event> fire() {
                 Events loadedEvents = null;
@@ -666,6 +604,35 @@ public class OVirtClient {
         }, response);
     }
 
+    private  <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList) {
+        return mapToEntities(wrappersList, null);
+    }
+
+    private  <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList, WrapPredicate<U> predicate) {
+        if (wrappersList == null) {
+            return Collections.emptyList();
+        }
+
+        List<U> wrappers = wrappersList.getList();
+
+        if (wrappers == null) {
+            return Collections.emptyList();
+        }
+
+        List<E> entities = new ArrayList<>();
+        for (U rest : wrappers) {
+            try {
+                if (predicate == null || predicate.toWrap(rest)) {
+                    entities.add(rest.toEntity());
+                }
+            } catch (Exception e) {
+                // showing only as a toast since this problem may persist and we don't want to flood the user with messages like this as dialogs...
+                showToast("Error parsing rest response, ignoring: " + rest.toString() + " error: " + e.getMessage());
+            }
+        }
+        return entities;
+    }
+
     private <E extends OVirtContract.HasVm> void setVmId(E entity, String vmId) {
         if (entity != null && !StringUtils.isEmpty(vmId)) {
             entity.setVmId(vmId);
@@ -680,409 +647,15 @@ public class OVirtClient {
         }
     }
 
-    @AfterInject
-    void initClients() {
-        initClient(restClient, requestFactory);
-        setupVersionHeader(restClient, authenticator.getApiMajorVersion());
-
-        initClient(loginV3RestClient, timeoutRequestFactory);
-        initClient(loginV4RestClient, timeoutRequestFactory);
-    }
-
-    private <T extends RestClientHeaders & RestClientSupport> void initClient(T restClient, ClientHttpRequestFactory requestFactory) {
-        restClient.setHeader(ACCEPT_ENCODING, "gzip");
-        restClient.getRestTemplate().setRequestFactory(requestFactory);
-    }
-
-    public <T extends RestClientHeaders> void setupVersionHeader(T restClient, String version) {
-        restClient.setHeader(VERSION, version);
-    }
-
-    private <T extends RestClientHeaders> void setPersistentV3AuthHeaders(T restClient) {
-        restClient.setHeader(SESSION_TTL, "120"); // 2h
-        restClient.setHeader(PREFER, "persistent-auth, csrf-protection");
-    }
-
-    private <T extends RestClientHeaders> void resetClientSettings(T restClient) {
-        restClient.setHeader(SESSION_TTL, "");
-        restClient.setHeader(PREFER, "");
-        restClient.setCookie(JSESSIONID, "");
-        restClient.setAuthentication(new HttpAuthentication() {
-            @Override
-            public String getHeaderValue() {
-                // empty authentication - e.g. not the basic one
-                return "";
-            }
-        });
-    }
-
-    private <T extends RestClientRootUrl & RestClientHeaders & RestClientSupport> void updateClientBeforeCall(T restClient) {
-        updateClientBeforeCall(restClient, authenticator.getApiUrl());
-    }
-
-    private <T extends RestClientRootUrl & RestClientHeaders & RestClientSupport> void updateClientBeforeCall(T restClient, String rootUrl) {
-        restClient.setHeader(FILTER, Boolean.toString(!authenticator.hasAdminPermissions()));
-        requestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
-        timeoutRequestFactory.setCertificateHandlingMode(authenticator.getCertHandlingStrategy());
-        restClient.setRootUrl(rootUrl);
-    }
-
-    /**
-     * @param username username
-     * @param password password
-     * @return auth token depending on API version
-     */
-    public String login(String username, String password) {
-        String token = "";
-
-        synchronized (loginV4RestClient) {
-            try {
-                updateClientBeforeCall(loginV4RestClient, authenticator.getBaseUrl());
-                token = loginV4RestClient.login(username, password).getAccessToken();
-            } catch (Exception ex) {// 405 Method Not Allowed - old API
-                Throwable cause = ex.getCause();
-                if (cause != null && cause instanceof SocketTimeoutException) {
-                    throw ex;
-                }
-            }
-        }
-
-        boolean oldApi = StringUtils.isEmpty(token);
-
-        synchronized (loginV3RestClient) {
-            resetClientSettings(loginV3RestClient);
-            updateClientBeforeCall(loginV3RestClient);
-            if (oldApi) {
-                loginV3RestClient.setHttpBasicAuth(username, password);
-                setPersistentV3AuthHeaders(loginV3RestClient);
-            } else {
-                loginV3RestClient.setBearerAuth(token);
-            }
-
-            Api api = loginV3RestClient.login();
-            authenticator.setApiVersion(api);
-            setupVersionHeader(restClient, authenticator.getApiMajorVersion());
-
-            if (oldApi && api != null) { // check for api because v4 may set JSESSIONID even if login was unsuccessful
-                token = loginV3RestClient.getCookie(JSESSIONID);
-            }
-        }
-
-        return token;
-    }
-
-    /**
-     * has to be synced because of error handling - otherwise it would not be possible to bind the error
-     */
-    public synchronized <T> void fireRestRequest(final Request<T> request, final Response<T> response) {
-        if (response != null) {
-            response.before();
-        }
-
-        RestCallResult result = doFireRequestWithPersistentAuth(request, response);
-        if (result == RestCallResult.AUTH_ERROR) {
-            // if it is an expired session it has been cleared - try again.
-            // If the credentials were filled well, now it will pass
-            result = doFireRequestWithPersistentAuth(request, response);
-        }
-
-        if (result != RestCallResult.SUCCESS && response != null) {
-            response.onError();
-        }
-
-        if (response != null) {
-            response.after();
-        }
-
-        if (result != RestCallResult.CONNECTION_ERROR) {
-            updateConnectionInfo(true);
-        }
-    }
-
-    private <T> RestCallResult doFireRequestWithPersistentAuth(Request<T> request, Response<T> response) {
-        AccountManagerFuture<Bundle> resp = accountManager.getAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, null, false, null, null);
-
-        boolean success = false;
-
-        try {
-            Bundle result = resp.getResult();
-            if (result.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-                String authToken = result.getString(AccountManager.KEY_AUTHTOKEN);
-
-                if (TextUtils.isEmpty(authToken)) {
-                    fireOtherConnectionError("Empty auth token");
-                } else {
-                    resetClientSettings(restClient);
-                    updateClientBeforeCall(restClient);
-                    if (isV3Api()) {
-                        restClient.setCookie(JSESSIONID, authToken);
-                        setPersistentV3AuthHeaders(restClient);
-                    } else {
-                        restClient.setBearerAuth(authToken);
-                    }
-
-                    try {
-                        T restResponse = request.fire();
-                        success = true;
-                        if (response != null) {
-                            response.onResponse(restResponse);
-                        }
-                        return RestCallResult.SUCCESS;
-
-                    } catch (NestedRuntimeException e) {
-                        HttpStatus statusCode = null;
-
-                        if (e instanceof ResourceAccessException) {
-                            fireConnectionErrorAndUpdateInfo(e);
-                            return RestCallResult.CONNECTION_ERROR;
-                        }
-
-                        if (e instanceof HttpClientErrorException) {
-                            statusCode = ((HttpClientErrorException) e).getStatusCode();
-                        }
-
-                        if (statusCode == HttpStatus.UNAUTHORIZED) {
-                            // ok, session id is not valid anymore - invalidate it
-                            accountManager.invalidateAuthToken(MovirtAuthenticator.AUTH_TOKEN_TYPE, authToken);
-                            accountManager.setAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, null);
-                            return RestCallResult.AUTH_ERROR;
-                        } else {
-                            fireOtherConnectionError(e);
-                            return RestCallResult.OTHER_ERROR;
-                        }
-                    }
-
-                }
-            } else if (result.containsKey(AccountManager.KEY_INTENT)) {
-                Intent accountAuthenticatorResponse = result.getParcelable(AccountManager.KEY_INTENT);
-                Intent editConnectionIntent = new Intent(Broadcasts.NO_CONNECTION_SPEFICIED);
-                editConnectionIntent.putExtra(AccountManager.KEY_INTENT, accountAuthenticatorResponse);
-                context.sendBroadcast(editConnectionIntent);
-
-                return RestCallResult.OTHER_ERROR;
-            }
-        } catch (Exception e) {
-            if (e instanceof ResourceAccessException || e instanceof AuthenticatorException) {
-                fireConnectionErrorAndUpdateInfo(e);
-                return RestCallResult.CONNECTION_ERROR;
-            }
-            fireOtherConnectionError(e);
-        }
-
-        if (!success) {
-            return RestCallResult.OTHER_ERROR;
-        } else {
-            return RestCallResult.SUCCESS;
-        }
-
-    }
-
-    private ConnectionInfo updateConnectionInfo(boolean success) {
-        ConnectionInfo connectionInfo;
-        ConnectionInfo.State state;
-        boolean prevFailed = false;
-        boolean configured = sharedPreferencesHelper.isConnectionNotificationEnabled();
-        Collection<ConnectionInfo> connectionInfos = provider.query(ConnectionInfo.class).all();
-        int size = connectionInfos.size();
-
-        if (size != 0) {
-            connectionInfo = connectionInfos.iterator().next();
-            ConnectionInfo.State lastState = connectionInfo.getState();
-            if (lastState == ConnectionInfo.State.FAILED || lastState == ConnectionInfo.State.FAILED_REPEATEDLY) {
-                prevFailed = true;
-            }
-        } else {
-            connectionInfo = new ConnectionInfo();
-        }
-
-        if (!success) {
-            state = prevFailed ? ConnectionInfo.State.FAILED_REPEATEDLY : ConnectionInfo.State.FAILED;
-        } else {
-            state = ConnectionInfo.State.OK;
-        }
-        connectionInfo.updateWithCurrentTime(state);
-
-        //update in DB
-        if (size != 0) {
-            provider.batch().update(connectionInfo).apply();
-        } else {
-            provider.batch().insert(connectionInfo).apply();
-        }
-
-        //show Notification
-        if (!success && !prevFailed && configured) {
-            Intent resultIntent = new Intent(context, MainActivity_.class);
-            resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            PendingIntent resultPendingIntent =
-                    PendingIntent.getActivity(
-                            context,
-                            0,
-                            resultIntent,
-                            0
-                    );
-            notificationHelper.showConnectionNotification(
-                    context, resultPendingIntent, connectionInfo);
-        }
-
-        return connectionInfo;
-    }
-
-    private void fireOtherConnectionError(Exception e) {
-        String msg = e.getMessage();
-        if (e instanceof HttpClientErrorException) {
-            HttpStatus statusCode = ((HttpClientErrorException) e).getStatusCode();
-            if (statusCode == HttpStatus.NOT_FOUND) {
-                msg = msg + ": " + "oVirt-engine is not found on " + restClient.getRootUrl();
-                fireOtherConnectionError(msg);
-                return;
-            }
-
-            String responseBody = ((HttpClientErrorException) e).getResponseBodyAsString();
-            if (!TextUtils.isEmpty(responseBody)) {
-                msg = msg + ": " + responseBody;
-                try {
-                    ErrorBody errorBody = mapper.readValue(((HttpClientErrorException) e).getResponseBodyAsByteArray(), ErrorBody.class);
-                    if (errorBody.fault != null) {
-                        msg = e.getMessage() + " " + errorBody.fault.reason + " " + errorBody.fault.detail;
-                    } else {
-                        try {
-                            ErrorBody.Fault fault = mapper.readValue(((HttpClientErrorException) e).getResponseBodyAsByteArray(), ErrorBody.Fault.class);
-                            if (fault != null) {
-                                msg = e.getMessage() + " " + fault.reason + " " + fault.detail;
-                            }
-                        } catch (Exception exception) {
-                            // msg inited to proper response body already
-                        }
-                    }
-
-
-                } catch (Exception e1) {
-                    // msg inited to proper response body already
-                }
-
-            }
-        }
-
-        fireOtherConnectionError(msg);
-    }
-
-    private void fireConnectionErrorAndUpdateInfo(Exception e) {
-        ConnectionInfo connectionInfo = updateConnectionInfo(false);
-        Intent intent = getConnectionFailiureIntent(e.getMessage());
-        boolean failedRepeatedly = connectionInfo.getState() == ConnectionInfo.State.FAILED_REPEATEDLY;
-        intent.putExtra(Broadcasts.Extras.REPEATED_CONNECTION_FAILURE, failedRepeatedly);
-        context.sendBroadcast(intent);
-    }
-
-    private void fireOtherConnectionError(String msg) {
-        final Intent intent = getConnectionFailiureIntent(msg);
-        context.sendBroadcast(intent);
-    }
-
-    private Intent getConnectionFailiureIntent(String msg) {
-        Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
-        intent.putExtra(Broadcasts.Extras.FAILURE_REASON, String.format(errorMsg, msg));
-        return intent;
-    }
-
-    enum RestCallResult {
-        SUCCESS,
-        AUTH_ERROR,
-        CONNECTION_ERROR,
-        OTHER_ERROR
-    }
-
-    public interface Request<T> {
-        T fire();
-    }
-
-    public interface Response<T> {
-        void before();
-
-        void onResponse(T t) throws RemoteException;
-
-        void onError();
-
-        void after();
-    }
-
     private interface WrapPredicate<E> {
         boolean toWrap(E entity);
     }
 
-    public static abstract class SimpleResponse<T> implements Response<T> {
-
+    private abstract class RestClientRequest<T> implements Request<T> {
         @Override
-        public void before() {
-            // do nothing
-        }
-
-        @Override
-        public void onResponse(T t) throws RemoteException {
-            // do nothing
-        }
-
-        @Override
-        public void onError() {
-            // do nothing
-        }
-
-        @Override
-        public void after() {
-            // do nothing
-        }
-    }
-
-    /**
-     * Composes multiple {@link Response} objects and invokes their callbacks in specified order
-     */
-    public static class CompositeResponse<T> implements Response<T> {
-
-        private List<Response<T>> responses;
-
-        @SafeVarargs
-        public CompositeResponse(Response<T>... responses) {
-            this.responses = new ArrayList<>(Arrays.asList(responses));
-        }
-
-        @Override
-        public void before() {
-            for (Response<T> response : responses) {
-                if (response != null) {
-                    response.before();
-                }
-            }
-        }
-
-        @Override
-        public void onResponse(T t) throws RemoteException {
-            for (Response<T> response : responses) {
-                if (response != null) {
-                    response.onResponse(t);
-                }
-            }
-        }
-
-        @Override
-        public void onError() {
-            for (Response<T> response : responses) {
-                if (response != null) {
-                    response.onError();
-                }
-            }
-        }
-
-        @Override
-        public void after() {
-            for (Response<T> response : responses) {
-                if (response != null) {
-                    response.after();
-                }
-            }
-        }
-
-        public void addResponse(Response<T> response) {
-            responses.add(response);
+        @SuppressWarnings("unchecked")
+        public <U extends RestClientRootUrl & RestClientHeaders & RestClientSupport> U getRestClient() {
+            return (U) restClient;
         }
     }
 }

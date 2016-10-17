@@ -12,7 +12,10 @@ import org.ovirt.mobile.movirt.facade.predicates.NotSnapshotEmbeddedPredicate;
 import org.ovirt.mobile.movirt.facade.predicates.SnapshotIdPredicate;
 import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
 import org.ovirt.mobile.movirt.model.Nic;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.CompositeResponse;
+import org.ovirt.mobile.movirt.rest.Request;
+import org.ovirt.mobile.movirt.rest.Response;
+import org.ovirt.mobile.movirt.rest.SimpleResponse;
 
 import java.util.List;
 
@@ -31,7 +34,7 @@ public class NicFacade extends BaseEntityFacade<Nic> {
     }
 
     @Override
-    protected OVirtClient.Request<Nic> getSyncOneRestRequest(String nicId, String... ids) {
+    protected Request<Nic> getSyncOneRestRequest(String nicId, String... ids) {
         if (ids.length == 2) {
             String vmId = ids[0];
             String snapshotId = ids[1];
@@ -44,7 +47,7 @@ public class NicFacade extends BaseEntityFacade<Nic> {
     }
 
     @Override
-    protected OVirtClient.Request<List<Nic>> getSyncAllRestRequest(String... ids) {
+    protected Request<List<Nic>> getSyncAllRestRequest(String... ids) {
         if (ids.length == 2) {
             String vmId = ids[0];
             String snapshotId = ids[1];
@@ -57,11 +60,11 @@ public class NicFacade extends BaseEntityFacade<Nic> {
     }
 
     @Override
-    protected OVirtClient.CompositeResponse<List<Nic>> getSyncAllResponse(final OVirtClient.Response<List<Nic>> response, final String... ids) {
+    protected CompositeResponse<List<Nic>> getSyncAllResponse(final Response<List<Nic>> response, final String... ids) {
         if (ids.length == 2) {
             final String snapshotId = ids[1];
 
-            return new OVirtClient.CompositeResponse<>(new OVirtClient.SimpleResponse<List<Nic>>() {
+            return new CompositeResponse<>(new SimpleResponse<List<Nic>>() {
                 @Override
                 public void onResponse(List<Nic> nics) throws RemoteException {
                     for (Nic nic : nics) {
@@ -76,7 +79,7 @@ public class NicFacade extends BaseEntityFacade<Nic> {
             Predicate<Nic> predicate = new AndPredicate<>(new VmIdPredicate<Nic>(vmId),
                     new NotSnapshotEmbeddedPredicate<Nic>());
 
-            return new OVirtClient.CompositeResponse<>(
+            return new CompositeResponse<>(
                     syncAdapter.getUpdateEntitiesResponse(Nic.class, predicate), response);
         }
     }

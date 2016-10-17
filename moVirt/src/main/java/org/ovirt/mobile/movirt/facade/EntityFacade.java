@@ -6,7 +6,7 @@ import android.database.Cursor;
 
 import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.trigger.TriggerResolver;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.Response;
 
 import java.util.List;
 
@@ -23,9 +23,9 @@ public interface EntityFacade<E extends OVirtEntity> extends TriggerResolver<E> 
 
     Intent getDetailIntent(E entity, Context context);
 
-    void syncOne(OVirtClient.Response<E> response, String id, String... ids);
+    void syncOne(Response<E> response, String id, String... ids);
 
     void syncAll(String... ids);
 
-    void syncAll(OVirtClient.Response<List<E>> response, String... ids);
+    void syncAll(Response<List<E>> response, String... ids);
 }
