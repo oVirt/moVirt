@@ -25,6 +25,8 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.*;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.rest.client.LoginClient;
+import org.ovirt.mobile.movirt.rest.dto.ErrorBody;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;

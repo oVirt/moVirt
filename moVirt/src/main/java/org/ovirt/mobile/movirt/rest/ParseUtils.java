@@ -1,5 +1,7 @@
 package org.ovirt.mobile.movirt.rest;
 
+import org.ovirt.mobile.movirt.rest.dto.Version;
+
 public class ParseUtils {
 
     public static String parseVersion(Version version) {
