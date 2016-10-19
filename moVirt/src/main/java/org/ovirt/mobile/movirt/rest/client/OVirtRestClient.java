@@ -22,12 +22,19 @@ import org.ovirt.mobile.movirt.rest.dto.Snapshot;
 import org.ovirt.mobile.movirt.rest.dto.SnapshotAction;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
+import static org.ovirt.mobile.movirt.rest.RestHelper.ACCEPT_ENCODING;
+import static org.ovirt.mobile.movirt.rest.RestHelper.FILTER;
+import static org.ovirt.mobile.movirt.rest.RestHelper.JSESSIONID;
+import static org.ovirt.mobile.movirt.rest.RestHelper.PREFER;
+import static org.ovirt.mobile.movirt.rest.RestHelper.SESSION_TTL;
+import static org.ovirt.mobile.movirt.rest.RestHelper.VERSION;
+
 @Rest(converters = MappingJackson2HttpMessageConverter.class)
 @Accept(MediaType.APPLICATION_JSON + "; detail=statistics+disks+nics")
 // disks and nics work only in v3 API
-@RequiresHeader({"Filter", "Accept-Encoding", "Session-TTL", "Prefer", "Version"})
-@SetsCookie("JSESSIONID")
-@RequiresCookie("JSESSIONID")
+@RequiresHeader({FILTER, ACCEPT_ENCODING, SESSION_TTL, PREFER, VERSION})
+@SetsCookie(JSESSIONID)
+@RequiresCookie(JSESSIONID)
 @RequiresAuthentication
 public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, RestClientSupport {
 

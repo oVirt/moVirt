@@ -22,7 +22,7 @@ import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.*;
+import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
@@ -37,10 +37,10 @@ import org.springframework.web.client.ResourceAccessException;
 
 import java.util.Collection;
 
-import static org.ovirt.mobile.movirt.rest.RequestHelper.JSESSIONID;
-import static org.ovirt.mobile.movirt.rest.RequestHelper.resetClientSettings;
-import static org.ovirt.mobile.movirt.rest.RequestHelper.setPersistentV3AuthHeaders;
-import static org.ovirt.mobile.movirt.rest.RequestHelper.updateClientBeforeCall;
+import static org.ovirt.mobile.movirt.rest.RestHelper.JSESSIONID;
+import static org.ovirt.mobile.movirt.rest.RestHelper.resetClientSettings;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setPersistentV3AuthHeaders;
+import static org.ovirt.mobile.movirt.rest.RestHelper.updateClientBeforeCall;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class RequestHandler {
@@ -126,7 +126,7 @@ public class RequestHandler {
                     fireOtherConnectionError("Empty auth token");
                 } else {
                     resetClientSettings(restClient);
-                    updateClientBeforeCall(restClient,authenticator);
+                    updateClientBeforeCall(restClient, authenticator);
                     if (isV3Api) {
                         restClient.setCookie(JSESSIONID, authToken);
                         setPersistentV3AuthHeaders(restClient);

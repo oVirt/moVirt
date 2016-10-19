@@ -17,7 +17,7 @@ import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.MoVirtApp;
-import org.ovirt.mobile.movirt.auth.*;
+import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.auth.Version;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Console;
@@ -46,8 +46,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.rest.RequestHelper.initClient;
-import static org.ovirt.mobile.movirt.rest.RequestHelper.setupVersionHeader;
+import static org.ovirt.mobile.movirt.rest.RestHelper.initClient;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setupVersionHeader;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class OVirtClient {

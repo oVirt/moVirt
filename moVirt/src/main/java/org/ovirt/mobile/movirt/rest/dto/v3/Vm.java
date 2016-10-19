@@ -2,7 +2,7 @@ package org.ovirt.mobile.movirt.rest.dto.v3;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import org.ovirt.mobile.movirt.util.RestHelper;
+import org.ovirt.mobile.movirt.util.RestMapper;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Vm extends org.ovirt.mobile.movirt.rest.dto.Vm {
@@ -25,8 +25,8 @@ public class Vm extends org.ovirt.mobile.movirt.rest.dto.Vm {
         }
         vm.setHostId(host != null ? host.id : "");
 
-        vm.setNics(RestHelper.mapToEntities(nics));
-        vm.setDisks(RestHelper.mapToEntities(disks));
+        vm.setNics(RestMapper.mapToEntities(nics));
+        vm.setDisks(RestMapper.mapToEntities(disks));
 
         return vm;
     }

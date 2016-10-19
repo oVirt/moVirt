@@ -11,7 +11,6 @@ import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.UiThread;
 import org.ovirt.mobile.movirt.model.CaCert;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.sync.SyncAdapter;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 

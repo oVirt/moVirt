@@ -10,10 +10,10 @@ import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
-import org.ovirt.mobile.movirt.rest.Request;
 import org.ovirt.mobile.movirt.rest.CompositeResponse;
-import org.ovirt.mobile.movirt.rest.SimpleResponse;
+import org.ovirt.mobile.movirt.rest.Request;
 import org.ovirt.mobile.movirt.rest.Response;
+import org.ovirt.mobile.movirt.rest.SimpleResponse;
 import org.ovirt.mobile.movirt.ui.snapshots.SnapshotDetailActivity_;
 
 import java.util.ArrayList;

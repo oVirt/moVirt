@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public final class RestHelper {
-    private static final String TAG = RestHelper.class.getSimpleName();
+public final class RestMapper {
+    private static final String TAG = RestMapper.class.getSimpleName();
 
     public static <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList) {
         if (wrappersList == null) {

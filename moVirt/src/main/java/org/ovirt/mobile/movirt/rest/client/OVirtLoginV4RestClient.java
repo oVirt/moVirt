@@ -12,9 +12,12 @@ import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.rest.dto.v4.Token;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
+import static org.ovirt.mobile.movirt.rest.RestHelper.ACCEPT_ENCODING;
+import static org.ovirt.mobile.movirt.rest.RestHelper.FILTER;
+
 @Rest(converters = MappingJackson2HttpMessageConverter.class)
 @Accept(MediaType.APPLICATION_JSON)
-@RequiresHeader({"Filter", "Accept-Encoding"})
+@RequiresHeader({FILTER, ACCEPT_ENCODING})
 public interface OVirtLoginV4RestClient extends RestClientRootUrl, RestClientHeaders, RestClientSupport {
 
     @Post("/sso/oauth/token?grant_type=password&scope=ovirt-app-api&username={username}&password={password}")

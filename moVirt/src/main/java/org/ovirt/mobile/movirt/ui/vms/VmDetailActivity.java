@@ -42,8 +42,10 @@ import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.rest.SimpleResponse;
+import org.ovirt.mobile.movirt.rest.client.OVirtClient;
+import org.ovirt.mobile.movirt.rest.client.VvClient;
+import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
 import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
@@ -91,6 +93,8 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     String[] PAGER_TITLES;
     @Bean
     OVirtClient client;
+    @Bean
+    VvClient vvClient;
     @Bean
     MovirtAuthenticator movirtAuthenticator;
     @Bean
@@ -394,8 +398,12 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     private void openConsole(final ConsoleProtocol protocol) {
         Console console = consoles.get(protocol);
 
-        //ConsoleConnectionDetails details = null;
-        //connectToConsole(details);
+        vvClient.getConsoleConnectionDetails(vmId, console.getId(), new ProgressBarResponse<ConsoleConnectionDetails>(this) {
+            @Override
+            public void onResponse(ConsoleConnectionDetails details) throws RemoteException {
+                connectToConsole(details);
+            }
+        });
     }
 
     private void connectToConsole(final ConsoleConnectionDetails details) {
@@ -447,11 +455,15 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         ConsoleProtocol protocol = details.getProtocol();
 
         if (protocol == null) {
-            throw new IllegalArgumentException("Vm's display type cannot be null");
+            throw new IllegalArgumentException("Vm's protocol is missing");
         }
 
         if (StringUtils.isEmpty(details.getPassword())) {
-            throw new IllegalArgumentException("Password cannot be null");
+            throw new IllegalArgumentException("Password is missing");
+        }
+
+        if (StringUtils.isEmpty(details.getAddress())) {
+            throw new IllegalArgumentException("Address is missing");
         }
 
         String parameters = "";
@@ -462,6 +474,10 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
             case SPICE:
                 parameters = Constants.PARAM_SPICE_PWD + "=" + details.getPassword(); // spice password
                 if (details.getTlsPort() > 0) {
+                    if (StringUtils.isEmpty(details.getCertificateSubject())) {
+                        throw new IllegalArgumentException("Certificate subject is missing");
+                    }
+
                     String caCertPath = Constants.getCaCertPath(this);
                     String tlsPortPart = Constants.PARAM_TLS_PORT + "=" + details.getTlsPort();
                     String certSubjectPart = Constants.PARAM_CERT_SUBJECT + "=" + details.getCertificateSubject();
@@ -502,69 +518,4 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         app.startMainActivity();
     }
 
-    private class ConsoleConnectionDetails {
-        private ConsoleProtocol protocol;
-        private String address;
-        private int port;
-        private int tlsPort;
-        private String certificateSubject;
-        private String password;
-
-        public ConsoleConnectionDetails(ConsoleProtocol protocol, String address, int port, int tlsPort, String certificateSubject, String password) {
-            this.protocol = protocol;
-            this.address = address;
-            this.port = port;
-            this.tlsPort = tlsPort;
-            this.certificateSubject = certificateSubject;
-            this.password = password;
-        }
-
-        public ConsoleProtocol getProtocol() {
-            return protocol;
-        }
-
-        public void setProtocol(ConsoleProtocol protocol) {
-            this.protocol = protocol;
-        }
-
-        public String getAddress() {
-            return address;
-        }
-
-        public void setAddress(String address) {
-            this.address = address;
-        }
-
-        public int getPort() {
-            return port;
-        }
-
-        public void setPort(int port) {
-            this.port = port;
-        }
-
-        public int getTlsPort() {
-            return tlsPort;
-        }
-
-        public void setTlsPort(int tlsPort) {
-            this.tlsPort = tlsPort;
-        }
-
-        public String getCertificateSubject() {
-            return certificateSubject;
-        }
-
-        public void setCertificateSubject(String certificateSubject) {
-            this.certificateSubject = certificateSubject;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-    }
 }

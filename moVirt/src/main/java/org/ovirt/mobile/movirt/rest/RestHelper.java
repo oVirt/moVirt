@@ -3,7 +3,7 @@ package org.ovirt.mobile.movirt.rest;
 import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
-import org.ovirt.mobile.movirt.auth.*;
+import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
 import org.springframework.http.HttpAuthentication;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -12,8 +12,8 @@ import org.springframework.http.client.ClientHttpRequestFactory;
  * Created by suomiy on 10/14/16.
  */
 
-public class RequestHelper {
-    private static final String TAG = RequestHelper.class.getSimpleName();
+public class RestHelper {
+    private static final String TAG = RestHelper.class.getSimpleName();
 
     public static final String JSESSIONID = "JSESSIONID";
     public static final String FILTER = "Filter";
@@ -21,6 +21,7 @@ public class RequestHelper {
     public static final String SESSION_TTL = "Session-TTL";
     public static final String VERSION = "Version";
     public static final String ACCEPT_ENCODING = "Accept-Encoding";
+    public static final String ACCEPT = "Accept";
 
     public static <T extends RestClientHeaders & RestClientSupport> void initClient(T restClient, ClientHttpRequestFactory requestFactory) {
         restClient.setHeader(ACCEPT_ENCODING, "gzip");
@@ -37,6 +38,10 @@ public class RequestHelper {
 
     private static <T extends RestClientHeaders> void setupVersionHeader(T restClient, String version) {
         restClient.setHeader(VERSION, version);
+    }
+
+    public static <T extends RestClientHeaders> void setAcceptHeader(T restClient, String accept) {
+        restClient.setHeader(ACCEPT, accept);
     }
 
     public static <T extends RestClientHeaders> void setPersistentV3AuthHeaders(T restClient) {

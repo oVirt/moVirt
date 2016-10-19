@@ -4,7 +4,7 @@ import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.rest.spring.annotations.RestService;
-import org.ovirt.mobile.movirt.auth.*;
+import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.auth.Version;
 import org.ovirt.mobile.movirt.rest.OvirtTimeoutSimpleClientHttpRequestFactory;
 import org.ovirt.mobile.movirt.rest.dto.Api;
@@ -14,11 +14,11 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.rest.RequestHelper.JSESSIONID;
-import static org.ovirt.mobile.movirt.rest.RequestHelper.initClient;
-import static org.ovirt.mobile.movirt.rest.RequestHelper.resetClientSettings;
-import static org.ovirt.mobile.movirt.rest.RequestHelper.setPersistentV3AuthHeaders;
-import static org.ovirt.mobile.movirt.rest.RequestHelper.updateClientBeforeCall;
+import static org.ovirt.mobile.movirt.rest.RestHelper.JSESSIONID;
+import static org.ovirt.mobile.movirt.rest.RestHelper.initClient;
+import static org.ovirt.mobile.movirt.rest.RestHelper.resetClientSettings;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setPersistentV3AuthHeaders;
+import static org.ovirt.mobile.movirt.rest.RestHelper.updateClientBeforeCall;
 
 /**
  * Created by suomiy on 10/14/16.
