@@ -1,10 +1,7 @@
-package org.ovirt.mobile.movirt.auth;
+package org.ovirt.mobile.movirt.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-/**
- * Created by suomiy on 10/17/16.
- */
 public class Version implements Comparable<Version> {
     public static final int API_FALLBACK_MAJOR_VERSION = 3;
     public static final int API_FALLBACK_MINOR_VERSION = 0;

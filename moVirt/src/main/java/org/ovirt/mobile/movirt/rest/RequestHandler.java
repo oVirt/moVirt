@@ -25,11 +25,12 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.rest.dto.ErrorBody;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
+import org.ovirt.mobile.movirt.util.Version;
+import org.ovirt.mobile.movirt.util.VersionManager;
 import org.springframework.core.NestedRuntimeException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
@@ -58,7 +59,7 @@ public class RequestHandler {
     AccountManager accountManager;
 
     @Bean
-    LoginClient loginClient;
+    VersionManager versionManager;
 
     @Bean
     MovirtAuthenticator authenticator;
@@ -74,15 +75,17 @@ public class RequestHandler {
 
     private boolean isV3Api = true;
 
+    private final VersionManager.ApiVersionChangedListener versionChangedListener = new VersionManager.ApiVersionChangedListener() {
+        @Override
+        public void onVersionChanged(Version version) {
+            isV3Api = version.isV3Api();
+        }
+    };
+
     @AfterInject
     public void init() {
-        isV3Api = authenticator.getApiVersion().isV3Api();
-        loginClient.registerListener(new LoginClient.ApiVersionChangedListener() {
-            @Override
-            public void onVersionChanged(org.ovirt.mobile.movirt.auth.Version version) {
-                isV3Api = version.isV3Api();
-            }
-        });
+        versionManager.notifyListener(versionChangedListener);
+        versionManager.registerListener(versionChangedListener);
     }
 
     /**

@@ -20,6 +20,7 @@ import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.util.JsonUtils;
+import org.ovirt.mobile.movirt.util.Version;
 
 
 @EBean
@@ -159,6 +160,11 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     }
 
 
+    /**
+     * Intended to be used only by VersionManager
+     *
+     * @return api version
+     */
     public Version getApiVersion() {
         Version result = null;
         try {
@@ -172,6 +178,11 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         return result;
     }
 
+    /**
+     * Intended to be used only by VersionManager
+     *
+     * @param version api version
+     */
     public void setApiVersion(Version version) {
         accountManager.setUserData(MOVIRT_ACCOUNT, API_VERSION, JsonUtils.objectToString(version));
     }

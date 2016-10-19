@@ -7,14 +7,14 @@ import org.androidannotations.rest.spring.annotations.RestService;
 import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
-import org.ovirt.mobile.movirt.auth.Version;
 import org.ovirt.mobile.movirt.rest.OvirtSimpleClientHttpRequestFactory;
 import org.ovirt.mobile.movirt.rest.Request;
 import org.ovirt.mobile.movirt.rest.RequestHandler;
 import org.ovirt.mobile.movirt.rest.Response;
 import org.ovirt.mobile.movirt.rest.VvFileHttpMessageConverter;
 import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
+import org.ovirt.mobile.movirt.util.Version;
+import org.ovirt.mobile.movirt.util.VersionManager;
 
 import static org.ovirt.mobile.movirt.rest.RestHelper.initClient;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptHeader;
@@ -28,10 +28,7 @@ public class VvClient {
     OVirtVvRestClient vvRestClient;
 
     @Bean
-    LoginClient loginClient;
-
-    @Bean
-    MovirtAuthenticator authenticator;
+    VersionManager versionManager;
 
     @Bean
     RequestHandler requestHandler;
@@ -39,18 +36,20 @@ public class VvClient {
     @Bean
     OvirtSimpleClientHttpRequestFactory requestFactory;
 
+    private final VersionManager.ApiVersionChangedListener versionChangedListener = new VersionManager.ApiVersionChangedListener() {
+        @Override
+        public void onVersionChanged(Version version) {
+            setupVersionHeader(vvRestClient, version);
+        }
+    };
+
     @AfterInject
     public void init() {
         initClient(vvRestClient, requestFactory);
-        setupVersionHeader(vvRestClient, authenticator.getApiVersion());
         setAcceptHeader(vvRestClient, VvFileHttpMessageConverter.X_VIRT_VIEWER_MEDIA_TYPE);
 
-        loginClient.registerListener(new LoginClient.ApiVersionChangedListener() {
-            @Override
-            public void onVersionChanged(Version version) {
-                setupVersionHeader(vvRestClient, version);
-            }
-        });
+        versionManager.notifyListener(versionChangedListener);
+        versionManager.registerListener(versionChangedListener);
     }
 
     public void getConsoleConnectionDetails(final String vmId, final String consoleId, Response<ConsoleConnectionDetails> response) {

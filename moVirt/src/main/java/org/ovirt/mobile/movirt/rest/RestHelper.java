@@ -5,12 +5,9 @@ import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.util.Version;
 import org.springframework.http.HttpAuthentication;
 import org.springframework.http.client.ClientHttpRequestFactory;
-
-/**
- * Created by suomiy on 10/14/16.
- */
 
 public class RestHelper {
     private static final String TAG = RestHelper.class.getSimpleName();
@@ -28,7 +25,7 @@ public class RestHelper {
         restClient.getRestTemplate().setRequestFactory(requestFactory);
     }
 
-    public static <T extends RestClientHeaders> void setupVersionHeader(T restClient, org.ovirt.mobile.movirt.auth.Version version) {
+    public static <T extends RestClientHeaders> void setupVersionHeader(T restClient, Version version) {
         setupVersionHeader(restClient, version.getMajor());
     }
 

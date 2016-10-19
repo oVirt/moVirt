@@ -18,7 +18,6 @@ import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
-import org.ovirt.mobile.movirt.auth.Version;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Console;
 import org.ovirt.mobile.movirt.model.DataCenter;
@@ -40,6 +39,8 @@ import org.ovirt.mobile.movirt.rest.dto.Action;
 import org.ovirt.mobile.movirt.rest.dto.Events;
 import org.ovirt.mobile.movirt.rest.dto.SnapshotAction;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
+import org.ovirt.mobile.movirt.util.Version;
+import org.ovirt.mobile.movirt.util.VersionManager;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ public class OVirtClient {
     OVirtRestClient restClient;
 
     @Bean
-    LoginClient loginClient;
+    VersionManager versionManager;
 
     @Bean
     RequestHandler requestHandler;
@@ -79,20 +80,20 @@ public class OVirtClient {
 
     private boolean isV3Api = true;
 
+    private final VersionManager.ApiVersionChangedListener versionChangedListener = new VersionManager.ApiVersionChangedListener() {
+        @Override
+        public void onVersionChanged(Version newVersion) {
+            setupVersionHeader(restClient, newVersion);
+            isV3Api = newVersion.isV3Api();
+        }
+    };
+
     @AfterInject
     public void init() {
         initClient(restClient, requestFactory);
-        org.ovirt.mobile.movirt.auth.Version version = authenticator.getApiVersion();
-        isV3Api = version.isV3Api();
-        setupVersionHeader(restClient, version);
 
-        loginClient.registerListener(new LoginClient.ApiVersionChangedListener() {
-            @Override
-            public void onVersionChanged(Version version) {
-                setupVersionHeader(restClient, version);
-                isV3Api = version.isV3Api();
-            }
-        });
+        versionManager.notifyListener(versionChangedListener);
+        versionManager.registerListener(versionChangedListener);
     }
 
     @UiThread(propagation = UiThread.Propagation.REUSE)
@@ -373,7 +374,7 @@ public class OVirtClient {
                         }
                         wrappers = restClient.getDisksV3(vmId);
                     } finally {
-                        setupVersionHeader(restClient, authenticator.getApiVersion());
+                        setupVersionHeader(restClient, versionManager.getApiVersion());
                     }
                     entities = mapToEntities(wrappers);
                 }
@@ -613,11 +614,11 @@ public class OVirtClient {
         }, response);
     }
 
-    private  <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList) {
+    private <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList) {
         return mapToEntities(wrappersList, null);
     }
 
-    private  <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList, WrapPredicate<U> predicate) {
+    private <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList, WrapPredicate<U> predicate) {
         if (wrappersList == null) {
             return Collections.emptyList();
         }

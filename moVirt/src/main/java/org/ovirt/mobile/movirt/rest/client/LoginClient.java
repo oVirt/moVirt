@@ -5,14 +5,12 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.rest.spring.annotations.RestService;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
-import org.ovirt.mobile.movirt.auth.Version;
 import org.ovirt.mobile.movirt.rest.OvirtTimeoutSimpleClientHttpRequestFactory;
 import org.ovirt.mobile.movirt.rest.dto.Api;
+import org.ovirt.mobile.movirt.util.VersionManager;
 import org.springframework.util.StringUtils;
 
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.ovirt.mobile.movirt.rest.RestHelper.JSESSIONID;
 import static org.ovirt.mobile.movirt.rest.RestHelper.initClient;
@@ -28,8 +26,6 @@ import static org.ovirt.mobile.movirt.rest.RestHelper.updateClientBeforeCall;
 public class LoginClient {
     private static final String TAG = LoginClient.class.getSimpleName();
 
-    private List<ApiVersionChangedListener> listeners = new ArrayList<>();
-
     @RestService
     OVirtLoginV3RestClient loginV3RestClient;
 
@@ -38,6 +34,9 @@ public class LoginClient {
 
     @Bean
     MovirtAuthenticator authenticator;
+
+    @Bean
+    VersionManager versionManager;
 
     @Bean
     OvirtTimeoutSimpleClientHttpRequestFactory timeoutRequestFactory;
@@ -81,7 +80,7 @@ public class LoginClient {
             }
 
             Api api = loginV3RestClient.login();
-            notifyVersionChanged(api);
+            versionManager.setApiVersion(api);
 
             if (oldApi && api != null) { // check for api because v4 may set JSESSIONID even if login was unsuccessful
                 token = loginV3RestClient.getCookie(JSESSIONID);
@@ -89,23 +88,5 @@ public class LoginClient {
         }
 
         return token;
-    }
-
-    public void registerListener(ApiVersionChangedListener listener) {
-        listeners.add(listener);
-    }
-
-    private void notifyVersionChanged(Api api) {
-        org.ovirt.mobile.movirt.auth.Version version = api.toVersion();
-        if (!authenticator.getApiVersion().equals(version)) {
-            authenticator.setApiVersion(version);
-            for (ApiVersionChangedListener listener : listeners) {
-                listener.onVersionChanged(version);
-            }
-        }
-    }
-
-    public interface ApiVersionChangedListener {
-        void onVersionChanged(Version version);
     }
 }
