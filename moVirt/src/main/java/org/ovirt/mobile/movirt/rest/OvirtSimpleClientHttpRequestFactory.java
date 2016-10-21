@@ -1,16 +1,17 @@
 package org.ovirt.mobile.movirt.rest;
 
-import android.content.Context;
 import android.util.Log;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.model.CaCert;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.util.properties.AccountProperty;
+import org.ovirt.mobile.movirt.util.properties.PropertyChangedListener;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 import java.io.IOException;
@@ -39,25 +40,28 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
     @Bean
     ListHostnameVerifier listHostnameVerifier;
 
-    @RootContext
-    Context rootContext;
-
     @Bean
     ProviderFacade providerFacade;
 
     @Bean
     MessageHelper messageHelper;
 
-    private SSLSocketFactory properSocketFactory;
+    @Bean
+    AccountPropertiesManager propertiesManager;
 
-    private CertHandlingStrategy certificateHandlingMode;
+    private CertHandlingStrategy certificateHandlingMode = null;
 
     @AfterInject
     void initFactory() {
-        properSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        propertiesManager.notifyAndRegisterListener(AccountProperty.CERT_HANDLING_STRATEGY, new PropertyChangedListener<CertHandlingStrategy>() {
+            @Override
+            public void onPropertyChange(CertHandlingStrategy property) {
+                onHandlingModeChange(property);
+            }
+        });
     }
 
-    public void setCertificateHandlingMode(CertHandlingStrategy certificateHandlingMode) {
+    private void onHandlingModeChange(CertHandlingStrategy certificateHandlingMode) {
         this.certificateHandlingMode = certificateHandlingMode;
 
         switch (certificateHandlingMode) {
@@ -71,10 +75,6 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
                 trustAllHosts();
                 break;
         }
-    }
-
-    public void setCaCertExplicitly(Certificate certificate) {
-        installCustomCertificate(certificate);
     }
 
     @Override
@@ -122,7 +122,7 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
         }
     }
 
-    void trustImportedCert() {
+    private void trustImportedCert() {
         Collection<CaCert> caCerts = providerFacade.query(CaCert.class).all();
         if (caCerts.size() == 1) {
             try {
@@ -136,7 +136,7 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
         }
     }
 
-    synchronized void installCustomCertificate(Certificate ca) {
+    private void installCustomCertificate(Certificate ca) {
         try {
             String keyStoreType = KeyStore.getDefaultType();
             KeyStore keyStore = KeyStore.getInstance(keyStoreType);
@@ -169,7 +169,7 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
      */
     private void trustOnlyKnownCerts() {
         try {
-            HttpsURLConnection.setDefaultSSLSocketFactory(properSocketFactory);
+            HttpsURLConnection.setDefaultSSLSocketFactory((SSLSocketFactory) SSLSocketFactory.getDefault());
         } catch (Exception e) {
             e.printStackTrace();
         }

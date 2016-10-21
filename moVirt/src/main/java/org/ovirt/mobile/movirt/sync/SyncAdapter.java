@@ -19,7 +19,6 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.Broadcasts;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.facade.EntityFacade;
 import org.ovirt.mobile.movirt.facade.EntityFacadeLocator;
 import org.ovirt.mobile.movirt.model.Cluster;
@@ -38,6 +37,7 @@ import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,7 +62,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Bean
     EventsHandler eventsHandler;
     @Bean
-    MovirtAuthenticator authenticator;
+    AccountPropertiesManager propertiesManager;
     @Bean
     NotificationHelper notificationHelper;
     @Bean
@@ -82,7 +82,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient providerClient, SyncResult syncResult) {
-        if (!authenticator.accountConfigured()) {
+        if (!propertiesManager.accountConfigured()) {
             Log.d(TAG, "Account not configured, not performing sync");
             return;
         }

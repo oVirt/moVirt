@@ -18,9 +18,11 @@ import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.util.properties.AccountProperty;
 import org.ovirt.mobile.movirt.util.properties.PropertyChangedListener;
 
-import static org.ovirt.mobile.movirt.rest.RestHelper.initClient;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptEncodingHeaderAndFactory;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptHeader;
-import static org.ovirt.mobile.movirt.rest.RestHelper.setupVersionHeader;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setFilterHeader;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setVersionHeader;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setupAuth;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class VvClient {
@@ -38,20 +40,32 @@ public class VvClient {
     @Bean
     OvirtSimpleClientHttpRequestFactory requestFactory;
 
-    private final PropertyChangedListener<Version> versionChangedListener = new PropertyChangedListener<Version>() {
-        @Override
-        public void onPropertyChange(Version property) {
-            setupVersionHeader(vvRestClient, property);
-        }
-    };
-
     @AfterInject
     public void init() {
-        initClient(vvRestClient, requestFactory);
+        setAcceptEncodingHeaderAndFactory(vvRestClient, requestFactory);
         setAcceptHeader(vvRestClient, VvFileHttpMessageConverter.X_VIRT_VIEWER_MEDIA_TYPE);
 
-        accountPropertiesManager.notifyListener(AccountProperty.VERSION, versionChangedListener);
-        accountPropertiesManager.registerListener(AccountProperty.VERSION, versionChangedListener);
+        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.VERSION, new PropertyChangedListener<Version>() {
+            @Override
+            public void onPropertyChange(Version property) {
+                setVersionHeader(vvRestClient, property);
+                setupAuth(vvRestClient, property);
+            }
+        });
+
+        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.API_URL, new PropertyChangedListener<String>() {
+            @Override
+            public void onPropertyChange(String property) {
+                vvRestClient.setRootUrl(property);
+            }
+        });
+
+        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.HAS_ADMIN_PERMISSIONS, new PropertyChangedListener<Boolean>() {
+            @Override
+            public void onPropertyChange(Boolean property) {
+                setFilterHeader(vvRestClient, property);
+            }
+        });
     }
 
     public void getConsoleConnectionDetails(final String vmId, final String consoleId, Response<ConsoleConnectionDetails> response) {

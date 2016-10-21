@@ -31,7 +31,6 @@ import org.androidannotations.annotations.res.StringArrayRes;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.facade.ConsoleFacade;
 import org.ovirt.mobile.movirt.facade.SnapshotFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
@@ -60,6 +59,7 @@ import org.ovirt.mobile.movirt.ui.events.EventsFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -96,7 +96,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     @Bean
     VvClient vvClient;
     @Bean
-    MovirtAuthenticator movirtAuthenticator;
+    AccountPropertiesManager propertiesManager;
     @Bean
     ProviderFacade provider;
     @ViewById
@@ -429,8 +429,8 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     void showMissingCaCertDialog() {
         ImportCertificateDialogFragment importCertificateDialog = ImportCertificateDialogFragment
                 .newSpiceCaInstance(getString(R.string.can_not_run_console_without_ca),
-                        authenticator.getCertHandlingStrategy().id(),
-                        authenticator.getApiUrl());
+                        propertiesManager.getCertHandlingStrategy().id(),
+                        propertiesManager.getApiUrl());
         importCertificateDialog.show(getFragmentManager(), "certificateDialog");
     }
 

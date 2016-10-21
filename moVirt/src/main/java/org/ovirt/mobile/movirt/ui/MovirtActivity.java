@@ -18,7 +18,6 @@ import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
@@ -39,8 +38,6 @@ public abstract class MovirtActivity extends ActionBarLoaderActivity implements 
     protected ProviderFacade providerFacade;
     @Bean
     protected SyncUtils syncUtils;
-    @Bean
-    protected MovirtAuthenticator authenticator;
     private LoaderManager loaderManager;
     private ConnectionInfo connectionInfo;
     private ConnectionInfoLoader connectionInfoLoader;

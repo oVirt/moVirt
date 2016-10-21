@@ -15,14 +15,13 @@ import org.ovirt.mobile.movirt.rest.dto.Api;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 import static org.ovirt.mobile.movirt.rest.RestHelper.ACCEPT_ENCODING;
-import static org.ovirt.mobile.movirt.rest.RestHelper.FILTER;
 import static org.ovirt.mobile.movirt.rest.RestHelper.JSESSIONID;
 import static org.ovirt.mobile.movirt.rest.RestHelper.PREFER;
 import static org.ovirt.mobile.movirt.rest.RestHelper.SESSION_TTL;
 
 @Rest(converters = MappingJackson2HttpMessageConverter.class)
 @Accept(MediaType.APPLICATION_JSON)
-@RequiresHeader({FILTER, ACCEPT_ENCODING, SESSION_TTL, PREFER})
+@RequiresHeader({ACCEPT_ENCODING, SESSION_TTL, PREFER})
 @SetsCookie(JSESSIONID)
 @RequiresCookie(JSESSIONID)
 @RequiresAuthentication

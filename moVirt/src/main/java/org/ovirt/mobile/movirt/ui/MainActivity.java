@@ -58,6 +58,7 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -70,40 +71,60 @@ public class MainActivity extends MovirtActivity
         implements ConfirmDialogFragment.ConfirmDialogListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
     private static final String[] CLUSTER_PROJECTION = new String[]{OVirtContract.Cluster.NAME,
             OVirtContract.Cluster.ID, OVirtContract.Cluster.VERSION,
             OVirtContract.Cluster.DATA_CENTER_ID};
     private static final int CLUSTER_LOADER = FIRST_CHILD_LOADER;
+
     @StringRes(R.string.needs_configuration)
     String noAccMsg;
+
     @StringRes(R.string.connection_not_correct)
     String accIncorrectMsg;
+
     @App
     MoVirtApp app;
+
     @ViewById
     DrawerLayout drawerLayout;
+
     @ViewById
     ViewPager viewPager;
+
     @ViewById
     PagerTabStrip pagerTabStrip;
+
     @ViewById
     ListView clusterDrawer;
+
     @StringRes(R.string.cluster_scope)
     String CLUSTER_SCOPE;
+
     @StringArrayRes(R.array.main_pager_titles)
     String[] PAGER_TITLES;
+
     @Bean
     OVirtClient client;
+
+    @Bean
+    AccountPropertiesManager propertiesManager;
+
     @ViewById
     ProgressBar progress;
+
     @InstanceState
     String selectedClusterId;
+
     @InstanceState
     String selectedClusterName;
+
     @Bean
     EventsHandler eventsHandler;
+
     @StringRes(R.string.all_clusters)
     String allClusters;
+
     private ActionBarDrawerToggle drawerToggle;
     private MatrixCursor emptyClusterCursor;
     private CursorAdapterLoader clusterAdapterLoader;
@@ -122,7 +143,7 @@ public class MainActivity extends MovirtActivity
 
         setTitle(selectedClusterName == null ? getString(R.string.all_clusters) : selectedClusterName);
 
-        if (!authenticator.accountConfigured()) {
+        if (!propertiesManager.accountConfigured()) {
             showAccountDialog();
         }
 
