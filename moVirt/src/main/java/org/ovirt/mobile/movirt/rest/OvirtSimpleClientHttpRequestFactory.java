@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.rest;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
@@ -12,6 +11,7 @@ import org.androidannotations.annotations.UiThread;
 import org.ovirt.mobile.movirt.model.CaCert;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 import java.io.IOException;
@@ -45,6 +45,9 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
 
     @Bean
     ProviderFacade providerFacade;
+
+    @Bean
+    MessageHelper messageHelper;
 
     private SSLSocketFactory properSocketFactory;
 
@@ -120,11 +123,6 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
         }
     }
 
-    @UiThread(propagation = UiThread.Propagation.REUSE)
-    void showToast(String msg) {
-        Toast.makeText(rootContext, msg, Toast.LENGTH_LONG).show();
-    }
-
     void trustImportedCert() {
         Collection<CaCert> caCerts = providerFacade.query(CaCert.class).all();
         if (caCerts.size() == 1) {
@@ -157,13 +155,13 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
             HttpsURLConnection
                     .setDefaultSSLSocketFactory(context.getSocketFactory());
         } catch (Exception e) {
-            showToast("Error installing certificate - trusting only known certificates" + e.getMessage());
+            messageHelper.showToast("Error installing certificate - trusting only known certificates" + e.getMessage());
             trustOnlyKnownCerts();
         }
     }
 
     private void incorrectCustomCertificate() {
-        showToast("The CA is not correct - trusting only known certificates");
+        messageHelper.showToast("The CA is not correct - trusting only known certificates");
         trustOnlyKnownCerts();
     }
 

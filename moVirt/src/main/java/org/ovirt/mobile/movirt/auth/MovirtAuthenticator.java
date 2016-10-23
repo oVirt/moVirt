@@ -9,18 +9,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.widget.Toast;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.SystemService;
-import org.androidannotations.annotations.UiThread;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.util.JsonUtils;
 import org.ovirt.mobile.movirt.util.Version;
+import org.ovirt.mobile.movirt.util.message.MessageHelper;
 
 
 @EBean
@@ -52,6 +51,9 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     @SystemService
     AccountManager accountManager;
 
+    @Bean
+    MessageHelper messageHelper;
+
     private Context context;
 
     public MovirtAuthenticator(Context context) {
@@ -67,16 +69,11 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     @Override
     public Bundle addAccount(AccountAuthenticatorResponse accountAuthenticatorResponse, String s, String s2, String[] strings, Bundle options) throws NetworkErrorException {
         if (accountConfigured()) {
-            showToast("Only one moVirt account is allowed per device");
+            messageHelper.showToast("Only one moVirt account is allowed per device");
             return null;
         } else {
             return createAccountActivity(accountAuthenticatorResponse);
         }
-    }
-
-    @UiThread(propagation = UiThread.Propagation.REUSE)
-    void showToast(String msg) {
-        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
 
     @Override

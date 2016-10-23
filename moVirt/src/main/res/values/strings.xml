@@ -98,8 +98,30 @@
     <string name="vm_memory_message">Memory usage of VM \'%1$s\' is over %2$d%% (%3$s)</string>
     <string name="event_trigger_message">\'%1$s\' found in: %2$s</string>
     <string name="connected">Successfully connected to datacenter!</string>
-    <string name="rest_req_failed">REST request failed!</string>
-    <string name="rest_request_failed">REST request failed with \'%1$s\'! For more details please see server error log.</string>
+    <string name="rest_request_failed">REST request failed!\n%1$s\n\nFor more details please see server error log.</string>
+    <string name="rest_url_missing">%1$s: oVirt-engine is not found on %2$s.</string>
+    <string name="rest_token_missing">Empty auth token.</string>
+    <string name="rest_error_details">\nConnection details:\nAPI URL: %1$s\nUsername: %2$s\nToken: %3$s%4$s\n\nError details:\n</string>
+    <string name="rest_error_detail_missing_url">url is missing!</string>
+    <string name="rest_error_detail_malformed_url">url is malformed\n\t%1$s</string>
+    <string name="rest_error_detail_token_missing">Token is missing!\n\tauthentication failed</string>
+    <string name="rest_error_detail_certificate_strategy">Certificate strategy: %1$s</string>
+    <string name="rest_error_detail_certificate_stored">certificate is downloaded and stored</string>
+    <string name="rest_error_detail_certificate_missing">certificate is missing!</string>
+
+    <string name="login_error_invalid_api_url">Invalid API URL: %1$s \nExample: %2$s</string>
+    <string name="login_error_invalid_username">Invalid username. Use %1$s pattern.\nExample: %2$s</string>
+    <string name="login_error_empty_password">Password can\'t be empty.</string>
+    <string name="login_error_incorrect_ip_port">Could not connect. Make sure ip address and port are correct.</string>
+    <string name="login_error_timeout">Reached timeout. Make sure ip address and port are correct. Also, check if the connection is stable.</string>
+    <string name="login_error_bad_address_suffix">Not found. \nAddress suffix should be "/ovirt-engine/api"</string>
+    <string name="login_error_incorrect_username_password">Username or password is incorrect.</string>
+    <string name="login_error">Error logging in: %1$s</string>
+    <string name="login_error_empty_token">Error: the returned token is empty. \nTry https protocol and add your certificate into %1$s.</string>
+    <string name="login_error_bad_cert">Use proper certificate, or select %1$s.\nError details: %2$s</string>
+    <string name="login_success">Login successful</string>
+    <string name="message_detailed_info">%1$s\n\nDetailed info:\n %2$s</string>
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="notification_type_info">Blink</string>
     <string name="notification_type_critical">Vibrate</string>

@@ -19,6 +19,12 @@ package org.ovirt.mobile.movirt.camera;
 import android.app.Activity;
 import android.os.Bundle;
 
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.Receiver;
+import org.ovirt.mobile.movirt.Broadcasts;
+import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
+import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
+
 /**
  * The main settings activity.
  *
@@ -26,8 +32,8 @@ import android.os.Bundle;
  * @author Sean Owen
  *         modified by Nika
  */
-public final class PreferencesActivity extends Activity {
-
+@EActivity
+public class PreferencesActivity extends Activity implements CreateDialogBroadcastReceiver {
     public static final String KEY_PLAY_BEEP = "preferences_play_beep";
     public static final String KEY_VIBRATE = "preferences_vibrate";
     public static final String KEY_FRONT_LIGHT_MODE = "preferences_front_light_mode";
@@ -43,5 +49,20 @@ public final class PreferencesActivity extends Activity {
     protected void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         getFragmentManager().beginTransaction().replace(android.R.id.content, new PreferencesFragment()).commit();
+    }
+
+    @Receiver(actions = {Broadcasts.ERROR_MESSAGE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    public void showErrorDialog(
+            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason,
+            @Receiver.Extra(Broadcasts.Extras.REPEATED_MINOR_ERROR) boolean repeatedMinorError) {
+        CreateDialogBroadcastReceiverHelper.showErrorDialog(getFragmentManager(), reason, repeatedMinorError);
+    }
+
+    @Receiver(actions = {Broadcasts.REST_CA_FAILURE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    public void showCertificateDialog(
+            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason) {
+        CreateDialogBroadcastReceiverHelper.showCertificateDialog(getFragmentManager(), reason, true);
     }
 }

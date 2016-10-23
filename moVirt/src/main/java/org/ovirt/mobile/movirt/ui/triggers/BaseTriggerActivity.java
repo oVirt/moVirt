@@ -13,7 +13,9 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.OptionsItem;
+import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.ViewById;
+import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.EntityType;
 import org.ovirt.mobile.movirt.model.Vm;
@@ -24,6 +26,8 @@ import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
+import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -32,7 +36,7 @@ import static org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity.EXTRA_SCO
 import static org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity.EXTRA_TARGET_ENTITY_ID;
 
 @EActivity(R.layout.activity_base_trigger)
-public abstract class BaseTriggerActivity extends ActionBarActivity {
+public abstract class BaseTriggerActivity extends ActionBarActivity implements CreateDialogBroadcastReceiver {
 
     @InstanceState
     protected int selectedCondition = R.id.radio_button_cpu;
@@ -177,5 +181,20 @@ public abstract class BaseTriggerActivity extends ActionBarActivity {
     @OptionsItem(android.R.id.home)
     public void homeSelected() {
         onBackPressed();
+    }
+
+    @Receiver(actions = {Broadcasts.ERROR_MESSAGE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    public void showErrorDialog(
+            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason,
+            @Receiver.Extra(Broadcasts.Extras.REPEATED_MINOR_ERROR) boolean repeatedMinorError) {
+        CreateDialogBroadcastReceiverHelper.showErrorDialog(getFragmentManager(), reason, repeatedMinorError);
+    }
+
+    @Receiver(actions = {Broadcasts.REST_CA_FAILURE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    public void showCertificateDialog(
+            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason) {
+        CreateDialogBroadcastReceiverHelper.showCertificateDialog(getFragmentManager(), reason, true);
     }
 }

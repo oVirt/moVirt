@@ -23,6 +23,7 @@ import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
+import org.ovirt.mobile.movirt.util.message.MessageHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +46,8 @@ public class EventsHandler {
     ProviderFacade.BatchBuilder batch;
     @Bean
     SharedPreferencesHelper sharedPreferencesHelper;
+    @Bean
+    MessageHelper messageHelper;
 
     private int maxEventsStored = -1;
     private boolean deleteEventsBeforeInsert = false;
@@ -94,10 +97,7 @@ public class EventsHandler {
 
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error loading events", e);
-            Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
-            intent.putExtra(Broadcasts.Extras.FAILURE_REASON, e.getMessage());
-            context.sendBroadcast(intent);
+            messageHelper.showError(e);
         }
     }
 

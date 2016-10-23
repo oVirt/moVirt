@@ -14,7 +14,6 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
@@ -25,13 +24,18 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.OptionsMenuItem;
+import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
+import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.CaCert;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
+import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
+import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
+import org.ovirt.mobile.movirt.util.message.MessageHelper;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -52,7 +56,7 @@ import java.util.Collection;
 @EActivity(R.layout.activity_advanced_authenticator)
 @OptionsMenu(R.menu.advanced_authenticator)
 public class AdvancedAuthenticatorActivity extends ActionBarActivity
-        implements ConfirmDialogFragment.ConfirmDialogListener {
+        implements ConfirmDialogFragment.ConfirmDialogListener, CreateDialogBroadcastReceiver {
 
     public final static String CERT_HANDLING_STRATEGY = "org.ovirt.mobile.movirt.ui.CERT_HANDLING_STRATEGY";
     public final static String LOAD_CA_FROM = "org.ovirt.mobile.movirt.ui.LOAD_CA_FROM";
@@ -87,6 +91,8 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
     MenuItem menuRestCaManagement;
     @OptionsMenuItem(R.id.action_spice_ca_management)
     MenuItem menuSpiceCaManagement;
+    @Bean
+    MessageHelper messageHelper;
 
     @AfterViews
     void init() {
@@ -451,9 +457,8 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         return true;
     }
 
-    @UiThread(propagation = UiThread.Propagation.REUSE)
     void showToast(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+        messageHelper.showToast(msg);
     }
 
     @UiThread(propagation = UiThread.Propagation.REUSE)
@@ -470,5 +475,22 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         if (progress != null) {
             progress.setVisibility(View.GONE);
         }
+    }
+
+    @Receiver(actions = {Broadcasts.ERROR_MESSAGE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    public void showErrorDialog(
+            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason,
+            @Receiver.Extra(Broadcasts.Extras.REPEATED_MINOR_ERROR) boolean repeatedMinorError) {
+        CreateDialogBroadcastReceiverHelper.showErrorDialog(getFragmentManager(), reason, repeatedMinorError);
+    }
+
+
+    @Receiver(actions = {Broadcasts.REST_CA_FAILURE},
+            registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    public void showCertificateDialog(
+            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason) {
+        // Do not use CreateDialogBroadcastReceiverHelper implementation, coz we are already setting certificate in this Activity
+        messageHelper.showError(getString(R.string.dialog_certificate_missing_start));
     }
 }
