@@ -7,7 +7,6 @@ import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
-import org.androidannotations.annotations.UiThread;
 import org.ovirt.mobile.movirt.model.CaCert;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;

@@ -204,6 +204,7 @@ public interface OVirtContract {
         String STATE = "state";
         String ATTEMPT = "attempt";
         String SUCCESSFUL = "successful";
+        String DESCRIPTION = "description";
     }
 
     String PATH_SNAPSHOTS = "snapshots";

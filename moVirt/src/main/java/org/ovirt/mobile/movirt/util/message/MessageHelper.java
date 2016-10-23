@@ -143,8 +143,7 @@ public class MessageHelper {
             logPriority = errorType.getDefaultLogPriority();
         }
 
-        showError(logPriority, finalMessage, errorType.isMinorType(), errorType.isConnectionType());
-
+        showError(errorType, logPriority, finalMessage);
     }
 
     @Background
@@ -152,17 +151,18 @@ public class MessageHelper {
         updateConnectionInfo(true);
     }
 
-    private void showError(int logPriority, String msg, boolean isMinor, boolean updateConnectionInfo) {
+    private void showError(ErrorType errorType, Integer logPriority, String msg) {
         Log.println(logPriority, TAG, msg);
         boolean failedRepeatedly = false;
 
-        if (updateConnectionInfo) {
-            ConnectionInfo connectionInfo = updateConnectionInfo(false);
+        if (errorType.isConnectionType()) {
+            ConnectionInfo connectionInfo = updateConnectionInfo(false, errorType.isNotifiable(), msg);
             failedRepeatedly = connectionInfo.getState() == ConnectionInfo.State.FAILED_REPEATEDLY;
         }
+
         Intent intent = new Intent(Broadcasts.ERROR_MESSAGE);
         intent.putExtra(Broadcasts.Extras.ERROR_REASON, msg);
-        intent.putExtra(Broadcasts.Extras.REPEATED_MINOR_ERROR, failedRepeatedly && isMinor);
+        intent.putExtra(Broadcasts.Extras.REPEATED_MINOR_ERROR, failedRepeatedly && errorType.isMinorType());
         context.sendBroadcast(intent);
     }
 
@@ -201,6 +201,10 @@ public class MessageHelper {
     }
 
     private ConnectionInfo updateConnectionInfo(boolean success) {
+        return updateConnectionInfo(success, false, null);
+    }
+
+    private ConnectionInfo updateConnectionInfo(boolean success, boolean notifiable, String description) {
         ConnectionInfo connectionInfo;
         ConnectionInfo.State state;
         boolean prevFailed = false;
@@ -222,7 +226,10 @@ public class MessageHelper {
             state = prevFailed ? ConnectionInfo.State.FAILED_REPEATEDLY : ConnectionInfo.State.FAILED;
         } else {
             state = ConnectionInfo.State.OK;
+            description = null;
         }
+
+        connectionInfo.setDescription(description);
         connectionInfo.updateWithCurrentTime(state);
 
         //update in DB
@@ -233,7 +240,7 @@ public class MessageHelper {
         }
 
         //show Notification
-        if (!success && !prevFailed && configured) {
+        if (notifiable && !success && !prevFailed && configured) {
             Intent resultIntent = new Intent(context, MainActivity_.class);
             resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent resultPendingIntent =

@@ -6,20 +6,22 @@ import android.util.Log;
  * Minor errors don't get shown repeatedly
  */
 public enum ErrorType {
-    NORMAL(Log.ERROR, false, false),
-    USER(Log.INFO, false, false),
-    LOGIN(Log.INFO, true, false),
-    REST_MINOR(Log.INFO, true, true),
-    REST_MAJOR(Log.ERROR, true, false);
+    NORMAL(Log.ERROR, false, false, true),
+    USER(Log.INFO, false, false, false),
+    LOGIN(Log.INFO, true, false, false),
+    REST_MINOR(Log.INFO, true, true, true),
+    REST_MAJOR(Log.ERROR, true, false, true);
 
     private int defaultLogPriority;
-    private boolean connectionType;
-    private boolean minorType;
+    private boolean connectionType; // updates connection info
+    private boolean minorType; // minor errors don't flood user with errors
+    private boolean notifiable; // shows system notification
 
-    ErrorType(int defaultLogPriority, boolean connectionType, boolean minorType) {
+    ErrorType(int defaultLogPriority, boolean connectionType, boolean minorType, boolean notifiable) {
         this.defaultLogPriority = defaultLogPriority;
         this.connectionType = connectionType;
         this.minorType = minorType;
+        this.notifiable = notifiable;
     }
 
     public int getDefaultLogPriority() {
@@ -32,5 +34,9 @@ public enum ErrorType {
 
     public boolean isMinorType() {
         return minorType;
+    }
+
+    public boolean isNotifiable() {
+        return notifiable;
     }
 }
