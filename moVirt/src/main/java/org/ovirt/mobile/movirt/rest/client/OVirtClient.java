@@ -38,8 +38,10 @@ import org.ovirt.mobile.movirt.rest.dto.Events;
 import org.ovirt.mobile.movirt.rest.dto.SnapshotAction;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.Version;
-import org.ovirt.mobile.movirt.util.VersionManager;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.util.properties.AccountProperty;
+import org.ovirt.mobile.movirt.util.properties.PropertyChangedListener;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -57,7 +59,7 @@ public class OVirtClient {
     OVirtRestClient restClient;
 
     @Bean
-    VersionManager versionManager;
+    AccountPropertiesManager accountPropertiesManager;
 
     @Bean
     RequestHandler requestHandler;
@@ -82,11 +84,11 @@ public class OVirtClient {
 
     private boolean isV3Api = true;
 
-    private final VersionManager.ApiVersionChangedListener versionChangedListener = new VersionManager.ApiVersionChangedListener() {
+    private final PropertyChangedListener<Version> versionChangedListener = new PropertyChangedListener<Version>() {
         @Override
-        public void onVersionChanged(Version newVersion) {
-            setupVersionHeader(restClient, newVersion);
-            isV3Api = newVersion.isV3Api();
+        public void onPropertyChange(Version property) {
+            setupVersionHeader(restClient, property);
+            isV3Api = property.isV3Api();
         }
     };
 
@@ -94,8 +96,8 @@ public class OVirtClient {
     public void init() {
         initClient(restClient, requestFactory);
 
-        versionManager.notifyListener(versionChangedListener);
-        versionManager.registerListener(versionChangedListener);
+        accountPropertiesManager.notifyListener(AccountProperty.VERSION, versionChangedListener);
+        accountPropertiesManager.registerListener(AccountProperty.VERSION, versionChangedListener);
     }
 
     public void startVm(final String vmId, Response<Void> response) {
@@ -371,7 +373,7 @@ public class OVirtClient {
                         }
                         wrappers = restClient.getDisksV3(vmId);
                     } finally {
-                        setupVersionHeader(restClient, versionManager.getApiVersion());
+                        setupVersionHeader(restClient, accountPropertiesManager.getApiVersion());
                     }
                     entities = mapToEntities(wrappers);
                 }

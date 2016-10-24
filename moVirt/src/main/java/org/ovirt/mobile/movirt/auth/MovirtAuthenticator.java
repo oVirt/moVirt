@@ -158,7 +158,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
 
     /**
-     * Intended to be used only by VersionManager
+     * Intended to be used only by AccountPropertiesManager
      *
      * @return api version
      */
@@ -176,7 +176,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     }
 
     /**
-     * Intended to be used only by VersionManager
+     * Intended to be used only by AccountPropertiesManager
      *
      * @param version api version
      */

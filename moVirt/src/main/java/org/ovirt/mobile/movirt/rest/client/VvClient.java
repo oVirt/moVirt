@@ -14,7 +14,9 @@ import org.ovirt.mobile.movirt.rest.Response;
 import org.ovirt.mobile.movirt.rest.VvFileHttpMessageConverter;
 import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
 import org.ovirt.mobile.movirt.util.Version;
-import org.ovirt.mobile.movirt.util.VersionManager;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.util.properties.AccountProperty;
+import org.ovirt.mobile.movirt.util.properties.PropertyChangedListener;
 
 import static org.ovirt.mobile.movirt.rest.RestHelper.initClient;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptHeader;
@@ -28,7 +30,7 @@ public class VvClient {
     OVirtVvRestClient vvRestClient;
 
     @Bean
-    VersionManager versionManager;
+    AccountPropertiesManager accountPropertiesManager;
 
     @Bean
     RequestHandler requestHandler;
@@ -36,10 +38,10 @@ public class VvClient {
     @Bean
     OvirtSimpleClientHttpRequestFactory requestFactory;
 
-    private final VersionManager.ApiVersionChangedListener versionChangedListener = new VersionManager.ApiVersionChangedListener() {
+    private final PropertyChangedListener<Version> versionChangedListener = new PropertyChangedListener<Version>() {
         @Override
-        public void onVersionChanged(Version version) {
-            setupVersionHeader(vvRestClient, version);
+        public void onPropertyChange(Version property) {
+            setupVersionHeader(vvRestClient, property);
         }
     };
 
@@ -48,8 +50,8 @@ public class VvClient {
         initClient(vvRestClient, requestFactory);
         setAcceptHeader(vvRestClient, VvFileHttpMessageConverter.X_VIRT_VIEWER_MEDIA_TYPE);
 
-        versionManager.notifyListener(versionChangedListener);
-        versionManager.registerListener(versionChangedListener);
+        accountPropertiesManager.notifyListener(AccountProperty.VERSION, versionChangedListener);
+        accountPropertiesManager.registerListener(AccountProperty.VERSION, versionChangedListener);
     }
 
     public void getConsoleConnectionDetails(final String vmId, final String consoleId, Response<ConsoleConnectionDetails> response) {

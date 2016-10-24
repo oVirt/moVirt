@@ -7,7 +7,7 @@ import org.androidannotations.rest.spring.annotations.RestService;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.rest.OvirtTimeoutSimpleClientHttpRequestFactory;
 import org.ovirt.mobile.movirt.rest.dto.Api;
-import org.ovirt.mobile.movirt.util.VersionManager;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
 import org.springframework.util.StringUtils;
 
 import java.net.SocketTimeoutException;
@@ -36,7 +36,7 @@ public class LoginClient {
     MovirtAuthenticator authenticator;
 
     @Bean
-    VersionManager versionManager;
+    AccountPropertiesManager accountPropertiesManager;
 
     @Bean
     OvirtTimeoutSimpleClientHttpRequestFactory timeoutRequestFactory;
@@ -80,7 +80,7 @@ public class LoginClient {
             }
 
             Api api = loginV3RestClient.login();
-            versionManager.setApiVersion(api);
+            accountPropertiesManager.setApiVersion(api);
 
             if (oldApi && api != null) { // check for api because v4 may set JSESSIONID even if login was unsuccessful
                 token = loginV3RestClient.getCookie(JSESSIONID);

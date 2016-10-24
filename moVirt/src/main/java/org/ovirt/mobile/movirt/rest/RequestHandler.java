@@ -19,10 +19,13 @@ import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
+import org.ovirt.mobile.movirt.rest.dto.Api;
 import org.ovirt.mobile.movirt.util.Version;
-import org.ovirt.mobile.movirt.util.VersionManager;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.util.properties.AccountProperty;
+import org.ovirt.mobile.movirt.util.properties.PropertyChangedListener;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
@@ -41,7 +44,7 @@ public class RequestHandler {
     AccountManager accountManager;
 
     @Bean
-    VersionManager versionManager;
+    AccountPropertiesManager accountPropertiesManager;
 
     @Bean
     MovirtAuthenticator authenticator;
@@ -51,17 +54,17 @@ public class RequestHandler {
 
     private boolean isV3Api = true;
 
-    private final VersionManager.ApiVersionChangedListener versionChangedListener = new VersionManager.ApiVersionChangedListener() {
+    private final PropertyChangedListener<Version> versionChangedListener = new PropertyChangedListener<Version>() {
         @Override
-        public void onVersionChanged(Version version) {
-            isV3Api = version.isV3Api();
+        public void onPropertyChange(Version property) {
+            isV3Api = property.isV3Api();
         }
     };
 
     @AfterInject
     public void init() {
-        versionManager.notifyListener(versionChangedListener);
-        versionManager.registerListener(versionChangedListener);
+        accountPropertiesManager.notifyListener(AccountProperty.VERSION, versionChangedListener);
+        accountPropertiesManager.registerListener(AccountProperty.VERSION, versionChangedListener);
     }
 
     /**
