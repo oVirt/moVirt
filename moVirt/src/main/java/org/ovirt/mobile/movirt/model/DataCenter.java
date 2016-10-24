@@ -14,7 +14,7 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.DataCenter.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class DataCenter extends OVirtEntity implements OVirtContract.DataCenter{
+public class DataCenter extends OVirtEntity implements OVirtContract.DataCenter {
 
     @Override
     public Uri getBaseUri() {

@@ -9,6 +9,7 @@ import org.ovirt.mobile.movirt.util.CursorHelper;
 
 public abstract class BaseEntity<ID> implements OVirtContract.BaseEntity {
     public abstract ID getId();
+
     public abstract void setId(ID value);
 
     public abstract Uri getBaseUri();

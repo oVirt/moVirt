@@ -15,25 +15,32 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
-import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
+import org.ovirt.mobile.movirt.facade.ConsoleFacade;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.facade.SnapshotFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Cluster;
+import org.ovirt.mobile.movirt.model.Console;
 import org.ovirt.mobile.movirt.model.DataCenter;
+import org.ovirt.mobile.movirt.model.Display;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.OVirtClient;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
-import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 import org.ovirt.mobile.movirt.util.MemorySize;
+import org.springframework.util.StringUtils;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 @EFragment(R.layout.fragment_vm_detail_general)
 public class VmDetailGeneralFragment extends RefreshableLoaderFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -43,6 +50,7 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     private static final int CLUSTER_LOADER = 1;
     private static final int DATA_CENTER_LOADER = 2;
     private static final int HOST_LOADER = 3;
+    private static final int CONSOLES_LOADER = 4;
 
     private static final String VM_URI = "vm_uri";
 
@@ -98,8 +106,11 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     @Bean
     SnapshotFacade snapshotFacade;
 
-    @StringRes(R.string.details_for_vm)
-    String VM_DETAILS;
+    @Bean
+    ConsoleFacade consoleFacade;
+
+    @Bean
+    MovirtAuthenticator movirtAuthenticator;
 
     Vm vm;
 
@@ -121,11 +132,18 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         args.putParcelable(VM_URI, vmUri);
         getLoaderManager().initLoader(VMS_LOADER, args, this);
         vmId = vmUri.getLastPathSegment();
+        if (movirtAuthenticator.isV4Api()) {
+            renderDisplayView("");
+            getLoaderManager().initLoader(CONSOLES_LOADER, args, this);
+        }
     }
 
     @Override
     public void restartLoader() {
         getLoaderManager().restartLoader(VMS_LOADER, args, this);
+        if (movirtAuthenticator.isV4Api()) {
+            getLoaderManager().restartLoader(CONSOLES_LOADER, args, this);
+        }
     }
 
     @Override
@@ -134,6 +152,9 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         getLoaderManager().destroyLoader(CLUSTER_LOADER);
         getLoaderManager().destroyLoader(DATA_CENTER_LOADER);
         getLoaderManager().destroyLoader(HOST_LOADER);
+        if (movirtAuthenticator.isV4Api()) {
+            getLoaderManager().destroyLoader(CONSOLES_LOADER);
+        }
     }
 
     @Override
@@ -163,6 +184,12 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
             case HOST_LOADER:
                 if (vm != null) {
                     loader = provider.query(Host.class).id(vm.getHostId()).asLoader();
+                }
+                break;
+            case CONSOLES_LOADER:
+                if (movirtAuthenticator.isV4Api()) {
+                    vmId = args.<Uri>getParcelable(VM_URI).getLastPathSegment();
+                    loader = provider.query(Console.class).where(OVirtContract.Console.VM_ID, vmId).asLoader();
                 }
                 break;
             default:
@@ -214,6 +241,21 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
                 host = hostFacade.mapFromCursor(data);
                 renderHost(host);
                 break;
+            case CONSOLES_LOADER: // no consoles for snapshots
+                if (movirtAuthenticator.isV4Api()) {
+                    Set<Display> displays = Display.getDisplayTypes(consoleFacade.mapAllFromCursor(data));
+                    Iterator<Display> it = displays.iterator();
+                    String displayTypes = "";
+
+                    while (it.hasNext()) {
+                        displayTypes += it.next();
+                        if (it.hasNext()) {
+                            displayTypes += " + ";
+                        }
+                    }
+                    renderDisplayView(displayTypes);
+                }
+                break;
             default:
                 break;
         }
@@ -226,10 +268,6 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     }
 
     public void renderVm(Vm vm) {
-        if (!vm.isSnapshotEmbedded()) {
-            getActivity().setTitle(String.format(VM_DETAILS, vm.getName()));
-        }
-
         statusView.setText(vm.getStatus().toString().toLowerCase());
         cpuView.setText(getString(R.string.percentage, vm.getCpuUsage()));
         memView.setText(getString(R.string.percentage, vm.getMemoryUsage()));
@@ -238,15 +276,17 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         socketView.setText(String.valueOf(vm.getSockets()));
         coreView.setText(String.valueOf(vm.getCoresPerSocket()));
         osView.setText(vm.getOsType());
-        if (vm.getDisplayType() != null) {
-            displayView.setText(vm.getDisplayType().toString());
-        } else {
-            displayView.setText(getString(R.string.NA));
+        if (movirtAuthenticator.isV3Api()) {
+            if (!vm.isSnapshotEmbedded() && vm.getDisplayType() != null) {
+                renderDisplayView(vm.getDisplayType().toString());
+            } else {
+                renderDisplayView("");
+            }
         }
+    }
 
-        if (getActivity() instanceof UpdateMenuItemAware) {
-            ((UpdateMenuItemAware) getActivity()).updateMenuItem(vm);
-        }
+    public void renderDisplayView(String displayTypes) {
+        displayView.setText(StringUtils.isEmpty(displayTypes) ? getString(R.string.NA) : displayTypes);
     }
 
     public void renderHost(Host host) {
@@ -290,6 +330,9 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
             snapshotFacade.syncOne(new ProgressBarResponse<Snapshot>(this), snapshotId, vmId);
         } else {
             vmFacade.syncOne(new ProgressBarResponse<Vm>(this), vmId);
+            if (movirtAuthenticator.isV4Api()) {
+                consoleFacade.syncAll(new ProgressBarResponse<List<Console>>(this), vmId);
+            }
         }
     }
 }

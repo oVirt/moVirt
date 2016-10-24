@@ -3,24 +3,19 @@ package org.ovirt.mobile.movirt.ui.dashboard;
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
 
-import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.BaseEntity;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
-import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.SnapshotEmbeddableEntity;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.SEVERITY;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 
 public class DashboardBoxDataLoader extends AsyncTaskLoader<List<DashboardBoxData>> {

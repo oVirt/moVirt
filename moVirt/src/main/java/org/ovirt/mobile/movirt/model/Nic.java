@@ -107,7 +107,7 @@ public class Nic extends SnapshotEmbeddableEntity implements OVirtContract.Nic {
     public void initFromCursorHelper(CursorHelper cursorHelper) {
         super.initFromCursorHelper(cursorHelper);
 
-        setVmId(cursorHelper.getString(MAC_ADDRESS));
+        setMacAddress(cursorHelper.getString(MAC_ADDRESS));
         setLinked(cursorHelper.getBoolean(LINKED));
         setPlugged(cursorHelper.getBoolean(PLUGGED));
         setVmId(cursorHelper.getString(VM_ID));

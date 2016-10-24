@@ -7,7 +7,7 @@ public enum CertHandlingStrategy {
 
     long index;
 
-    private CertHandlingStrategy(long index) {
+    CertHandlingStrategy(long index) {
         this.index = index;
     }
 
@@ -20,7 +20,7 @@ public enum CertHandlingStrategy {
     }
 
     public long id() {
-       return index;
+        return index;
     }
 
     public boolean is(long selected) {

@@ -33,7 +33,7 @@ import com.google.zxing.ResultPoint;
  * transparency outside it, as well as the laser scanner animation and result points.
  *
  * @author dswitkin@google.com (Daniel Switkin)
- * modified by Nika
+ *         modified by Nika
  */
 public final class ViewfinderView extends View {
     private final Paint paint;

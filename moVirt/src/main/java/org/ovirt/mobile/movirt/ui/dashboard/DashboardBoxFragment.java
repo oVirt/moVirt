@@ -27,7 +27,7 @@ public class DashboardBoxFragment extends LoaderFragment implements LoaderManage
     DashboardBoxListAdapter dashboardBoxListAdapter;
 
     @AfterViews
-    void init () {
+    void init() {
         dashboardBoxListAdapter = new DashboardBoxListAdapter(getActivity());
         boxGridView.setAdapter(dashboardBoxListAdapter);
 

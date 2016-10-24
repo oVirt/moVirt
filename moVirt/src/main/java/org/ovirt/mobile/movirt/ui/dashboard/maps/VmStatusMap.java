@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public enum VmStatusMap {
     // dashboard position depends on the order
-    WARNING(Vm.Status.POWERING_UP, Vm.Status.PAUSED,  Vm.Status.MIGRATING, Vm.Status.UNKNOWN,
+    WARNING(Vm.Status.POWERING_UP, Vm.Status.PAUSED, Vm.Status.MIGRATING, Vm.Status.UNKNOWN,
             Vm.Status.WAIT_FOR_LAUNCH, Vm.Status.SUSPENDED, Vm.Status.POWERING_DOWN, Vm.Status.UNASSIGNED),
     UP(Vm.Status.UP, Vm.Status.SAVING_STATE, Vm.Status.RESTORING_STATE),
     DOWN(Vm.Status.DOWN, Vm.Status.NOT_RESPONDING, Vm.Status.REBOOT_IN_PROGRESS,

@@ -14,14 +14,12 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ViewById;
-import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
-import org.ovirt.mobile.movirt.ui.UpdateMenuItemAware;
 import org.ovirt.mobile.movirt.util.MemorySize;
 
 @EFragment(R.layout.fragment_host_detail_general)
@@ -65,9 +63,6 @@ public class HostDetailGeneralFragment extends RefreshableLoaderFragment impleme
 
     @ViewById
     SwipeRefreshLayout swipeGeneralContainer;
-
-    @StringRes(R.string.details_for_host)
-    String HOST_DETAILS;
 
     @Bean
     ProviderFacade provider;
@@ -119,7 +114,6 @@ public class HostDetailGeneralFragment extends RefreshableLoaderFragment impleme
     }
 
     private void renderHost(Host host) {
-        getActivity().setTitle(String.format(HOST_DETAILS, host.getName()));
         statusView.setText(host.getStatus().toString().toLowerCase());
         cpuView.setText(getString(R.string.percentage, host.getCpuUsage()));
         memView.setText(getString(R.string.percentage, host.getMemoryUsage()));
@@ -131,10 +125,6 @@ public class HostDetailGeneralFragment extends RefreshableLoaderFragment impleme
         threadView.setText(String.valueOf(host.getThreadsPerCore()));
         osVersionView.setText(host.getOsVersion());
         addressView.setText(host.getAddress());
-
-        if (getActivity() instanceof UpdateMenuItemAware) {
-            ((UpdateMenuItemAware) getActivity()).updateMenuItem(host);
-        }
     }
 
     @Override

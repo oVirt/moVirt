@@ -37,6 +37,10 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     public static final String API_MAJOR_VERSION = "org.ovirt.mobile.movirt.apimajorversion";
 
+    public static final String API_MINOR_VERSION = "org.ovirt.mobile.movirt.apiminorversion";
+
+    public static final String API_BUILD_VERSION = "org.ovirt.mobile.movirt.apibuildversion";
+
     public static final String CERT_HANDLING_STRATEGY = "org.ovirt.mobile.movirt.certhandlingstrategy";
 
     public static final String HAS_ADMIN_PERMISSIONS = "org.ovirt.mobile.movirt.adminpermissionsm";
@@ -46,7 +50,10 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     public static final Account MOVIRT_ACCOUNT = new Account(MovirtAuthenticator.ACCOUNT_NAME, MovirtAuthenticator.ACCOUNT_TYPE);
 
 
-    private static final String fallbackMajorVersion = "3";
+    private static final String API_FALLBACK_MAJOR_VERSION = "3";
+    private static final String API_FALLBACK_MINOR_VERSION = "0";
+    private static final String API_FALLBACK_BUILD_VERSION = "0";
+
     @Bean
     OVirtClient client;
 
@@ -160,32 +167,76 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         return getApiUrl().replaceFirst("/api$", "");
     }
 
+
+    public Version getApiVersion() {
+        return new Version(getApiMajorVersionAsInt(), getApiMinorVersionAsInt(),
+                getApiBuildVersionAsInt());
+    }
+
     public String getApiMajorVersion() {
-        return read(API_MAJOR_VERSION, fallbackMajorVersion);
+        return read(API_MAJOR_VERSION, API_FALLBACK_MAJOR_VERSION);
     }
 
-    public String getFallbackMajorVersion() {
-        return fallbackMajorVersion;
+    public String getApiMinorVersion() {
+        return read(API_MINOR_VERSION, API_FALLBACK_MINOR_VERSION);
     }
 
-    public int getApiMajorVersionAsInt() {
+    public String getApiBuildVersion() {
+        return read(API_BUILD_VERSION, API_FALLBACK_BUILD_VERSION);
+    }
+
+    public String getApiFallbackMajorVersion() {
+        return API_FALLBACK_MAJOR_VERSION;
+    }
+
+    private int getApiMajorVersionAsInt() {
         return Integer.parseInt(getApiMajorVersion());
     }
 
-    public boolean isApiV3() {
+    private int getApiMinorVersionAsInt() {
+        return Integer.parseInt(getApiMinorVersion());
+    }
+
+    private int getApiBuildVersionAsInt() {
+        return Integer.parseInt(getApiBuildVersion());
+    }
+
+    public boolean isApiWithinRange(Version from, Version to) {
+        Version current = getApiVersion();
+        return current.compareTo(from) >= 0 && current.compareTo(to) <= 0;
+    }
+
+    public boolean isV3Api() {
         return getApiMajorVersionAsInt() < 4;
     }
 
-    public void setApiMajorVersion(Api api) {
+    public boolean isV4Api() {
+        return getApiMajorVersionAsInt() >= 4;
+    }
+
+    public void setApiVersion(Api api) {
         try {
-            setApiMajorVersion(api.getProductInfo().getVersion().getMajor());
+            org.ovirt.mobile.movirt.rest.Version version = api.getProductInfo().getVersion();
+            setApiMajorVersion(version.getMajor());
+            setApiMinorVersion(version.getMinor());
+            setApiBuildVersion(version.getBuild());
         } catch (Exception x) {
-            setApiMajorVersion(""); // fallback version is used instead
+            setApiMajorVersion(""); // fallback versions are used instead
+            setApiMinorVersion("");
+            setApiBuildVersion("");
         }
     }
 
-    public void setApiMajorVersion(String majorVersion) {
+    private void setApiMajorVersion(String majorVersion) {
         accountManager.setUserData(MOVIRT_ACCOUNT, API_MAJOR_VERSION, majorVersion);
+    }
+
+    private void setApiMinorVersion(String minorVersion) {
+        accountManager.setUserData(MOVIRT_ACCOUNT, API_MINOR_VERSION, minorVersion);
+    }
+
+    private void setApiBuildVersion(String buildVersion) {
+        accountManager.setUserData(MOVIRT_ACCOUNT, API_BUILD_VERSION, buildVersion);
     }
 
     public String getUserName() {
@@ -224,5 +275,61 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     private String read(String id) {
         return accountManager.getUserData(MOVIRT_ACCOUNT, id);
+    }
+
+    public static class Version implements Comparable<Version> {
+        private int major;
+        private int minor;
+        private int build;
+
+        public Version(int major, int minor, int build) {
+            this.major = major;
+            this.minor = minor;
+            this.build = build;
+        }
+
+        public int getMajor() {
+            return major;
+        }
+
+        public void setMajor(int major) {
+            this.major = major;
+        }
+
+        public int getMinor() {
+            return minor;
+        }
+
+        public void setMinor(int minor) {
+            this.minor = minor;
+        }
+
+        public int getBuild() {
+            return build;
+        }
+
+        public void setBuild(int build) {
+            this.build = build;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s.%s.%s", major, minor, build);
+        }
+
+        /**
+         * @param another version to be compared to
+         * @return a negative integer, zero, or a positive integer if this object version is less than, equal to, or greater than the specified object.
+         */
+        @Override
+        public int compareTo(Version another) {
+            if (major == another.major) {
+                if (minor == another.minor) {
+                    return build - another.build;
+                }
+                return minor - another.minor;
+            }
+            return major - another.major;
+        }
     }
 }

@@ -64,6 +64,6 @@ public class StorageDomainDetailActivity extends MovirtActivity implements HasPr
 
     @OptionsItem(android.R.id.home)
     public void homeSelected() {
-       app.startMainActivity();
+        app.startMainActivity();
     }
 }

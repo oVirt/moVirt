@@ -89,7 +89,7 @@ public class CreateSnapshotDialogFragment extends DialogFragment {
                 String description = descriptionEdit.getText().toString();
                 boolean persistMem = persistMemory.isChecked();
 
-                org.ovirt.mobile.movirt.rest.Snapshot snapshot = authenticator.isApiV3() ?
+                org.ovirt.mobile.movirt.rest.Snapshot snapshot = authenticator.isV3Api() ?
                         new org.ovirt.mobile.movirt.rest.v3.Snapshot(description, persistMem) :
                         new org.ovirt.mobile.movirt.rest.v4.Snapshot(description, persistMem);
                 listenerActivity.onDialogResult(snapshot);

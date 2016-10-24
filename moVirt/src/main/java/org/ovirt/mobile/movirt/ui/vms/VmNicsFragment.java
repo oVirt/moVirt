@@ -84,7 +84,7 @@ public class VmNicsFragment extends ResumeSyncableBaseEntityListFragment<Nic> {
 
     @Override
     public boolean isResumeSyncable() {
-        return !authenticator.isApiV3() || isSnapshotFragment(); //we fetch nics with vm in v3 API
+        return authenticator.isV4Api() || isSnapshotFragment(); //we fetch nics with vm in v3 API
     }
 
     @Background

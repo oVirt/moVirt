@@ -31,7 +31,7 @@ import org.ovirt.mobile.movirt.ui.CameraActivity;
  * This class handles all the messaging which comprises the state machine for capture.
  *
  * @author dswitkin@google.com (Daniel Switkin)
- * modified by Nika
+ *         modified by Nika
  */
 public final class CaptureActivityHandler extends Handler {
 
