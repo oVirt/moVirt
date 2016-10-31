@@ -36,8 +36,9 @@ import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.rest.SnapshotAction;
+import org.ovirt.mobile.movirt.rest.SimpleResponse;
+import org.ovirt.mobile.movirt.rest.client.OVirtClient;
+import org.ovirt.mobile.movirt.rest.dto.SnapshotAction;
 import org.ovirt.mobile.movirt.ui.BooleanListener;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
@@ -313,7 +314,7 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
 
     @Background
     public void doDelete() {
-        client.deleteSnapshot(vmId, snapshotId, new OVirtClient.SimpleResponse<Void>() {
+        client.deleteSnapshot(vmId, snapshotId, new SimpleResponse<Void>() {
             @Override
             public void onResponse(Void aVoid) throws RemoteException {
                 snapshotFacade.syncAll(vmId);
@@ -345,8 +346,8 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
     }
 
     @NonNull
-    private OVirtClient.SimpleResponse<Void> getSyncSnapshotsResponse() {
-        return new OVirtClient.SimpleResponse<Void>() {
+    private SimpleResponse<Void> getSyncSnapshotsResponse() {
+        return new SimpleResponse<Void>() {
             @Override
             public void onResponse(Void aVoid) throws RemoteException {
                 syncSnapshots();

@@ -10,9 +10,10 @@ import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
-import org.ovirt.mobile.movirt.rest.OVirtClient.CompositeResponse;
-import org.ovirt.mobile.movirt.rest.OVirtClient.SimpleResponse;
+import org.ovirt.mobile.movirt.rest.CompositeResponse;
+import org.ovirt.mobile.movirt.rest.Request;
+import org.ovirt.mobile.movirt.rest.Response;
+import org.ovirt.mobile.movirt.rest.SimpleResponse;
 import org.ovirt.mobile.movirt.ui.snapshots.SnapshotDetailActivity_;
 
 import java.util.ArrayList;
@@ -40,24 +41,24 @@ public class SnapshotFacade extends BaseEntityFacade<Snapshot> {
     }
 
     @Override
-    protected OVirtClient.Request<Snapshot> getSyncOneRestRequest(String snapshotId, String... ids) {
+    protected Request<Snapshot> getSyncOneRestRequest(String snapshotId, String... ids) {
         requireSignature(ids, "vmId");
         String vmId = ids[0];
         return oVirtClient.getSnapshotRequest(vmId, snapshotId);
     }
 
     @Override
-    protected OVirtClient.Request<List<Snapshot>> getSyncAllRestRequest(String... ids) {
+    protected Request<List<Snapshot>> getSyncAllRestRequest(String... ids) {
         requireSignature(ids, "vmId");
         String vmId = ids[0];
         return oVirtClient.getSnapshotsRequest(vmId);
     }
 
     @Override
-    protected CompositeResponse<Snapshot> getSyncOneResponse(final OVirtClient.Response<Snapshot> response, final String... ids) {
+    protected CompositeResponse<Snapshot> getSyncOneResponse(final Response<Snapshot> response, final String... ids) {
         requireSignature(ids, "vmId");
 
-        OVirtClient.CompositeResponse<Snapshot> res = super.getSyncOneResponse(response);
+        CompositeResponse<Snapshot> res = super.getSyncOneResponse(response);
         res.addResponse(new SimpleResponse<Snapshot>() {
             @Override
             public void onResponse(Snapshot snapshot) throws RemoteException {
@@ -72,7 +73,7 @@ public class SnapshotFacade extends BaseEntityFacade<Snapshot> {
     }
 
     @Override
-    protected CompositeResponse<List<Snapshot>> getSyncAllResponse(final OVirtClient.Response<List<Snapshot>> response, final String... ids) {
+    protected CompositeResponse<List<Snapshot>> getSyncAllResponse(final Response<List<Snapshot>> response, final String... ids) {
         requireSignature(ids, "vmId");
         String vmId = ids[0];
 

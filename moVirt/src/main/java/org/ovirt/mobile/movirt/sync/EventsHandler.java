@@ -17,7 +17,8 @@ import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.trigger.EventTriggerResolver;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.SimpleResponse;
+import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
@@ -68,7 +69,7 @@ public class EventsHandler {
 
                 final int lastEventId = deleteEventsBeforeInsert ? 0 : provider.getLastEventId();
 
-                oVirtClient.getEventsSince(!deleteEventsBeforeInsert ? lastEventId : 0, new OVirtClient.SimpleResponse<List<Event>>() {
+                oVirtClient.getEventsSince(!deleteEventsBeforeInsert ? lastEventId : 0, new SimpleResponse<List<Event>>() {
 
                     @Override
                     public void before() {

@@ -24,15 +24,15 @@ import org.ovirt.mobile.movirt.facade.SnapshotFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Console;
+import org.ovirt.mobile.movirt.model.ConsoleProtocol;
 import org.ovirt.mobile.movirt.model.DataCenter;
-import org.ovirt.mobile.movirt.model.Display;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
 import org.ovirt.mobile.movirt.util.MemorySize;
@@ -132,18 +132,14 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         args.putParcelable(VM_URI, vmUri);
         getLoaderManager().initLoader(VMS_LOADER, args, this);
         vmId = vmUri.getLastPathSegment();
-        if (movirtAuthenticator.isV4Api()) {
-            renderDisplayView("");
-            getLoaderManager().initLoader(CONSOLES_LOADER, args, this);
-        }
+        renderDisplayView("");
+        getLoaderManager().initLoader(CONSOLES_LOADER, args, this);
     }
 
     @Override
     public void restartLoader() {
         getLoaderManager().restartLoader(VMS_LOADER, args, this);
-        if (movirtAuthenticator.isV4Api()) {
-            getLoaderManager().restartLoader(CONSOLES_LOADER, args, this);
-        }
+        getLoaderManager().restartLoader(CONSOLES_LOADER, args, this);
     }
 
     @Override
@@ -152,9 +148,7 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         getLoaderManager().destroyLoader(CLUSTER_LOADER);
         getLoaderManager().destroyLoader(DATA_CENTER_LOADER);
         getLoaderManager().destroyLoader(HOST_LOADER);
-        if (movirtAuthenticator.isV4Api()) {
-            getLoaderManager().destroyLoader(CONSOLES_LOADER);
-        }
+        getLoaderManager().destroyLoader(CONSOLES_LOADER);
     }
 
     @Override
@@ -187,10 +181,8 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
                 }
                 break;
             case CONSOLES_LOADER:
-                if (movirtAuthenticator.isV4Api()) {
-                    vmId = args.<Uri>getParcelable(VM_URI).getLastPathSegment();
-                    loader = provider.query(Console.class).where(OVirtContract.Console.VM_ID, vmId).asLoader();
-                }
+                vmId = args.<Uri>getParcelable(VM_URI).getLastPathSegment();
+                loader = provider.query(Console.class).where(OVirtContract.Console.VM_ID, vmId).asLoader();
                 break;
             default:
                 break;
@@ -241,20 +233,18 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
                 host = hostFacade.mapFromCursor(data);
                 renderHost(host);
                 break;
-            case CONSOLES_LOADER: // no consoles for snapshots
-                if (movirtAuthenticator.isV4Api()) {
-                    Set<Display> displays = Display.getDisplayTypes(consoleFacade.mapAllFromCursor(data));
-                    Iterator<Display> it = displays.iterator();
-                    String displayTypes = "";
+            case CONSOLES_LOADER: // no consoles for snapshots, because they have different id
+                Set<ConsoleProtocol> protocols = ConsoleProtocol.getProtocolTypes(consoleFacade.mapAllFromCursor(data));
+                Iterator<ConsoleProtocol> it = protocols.iterator();
+                String displayTypes = "";
 
-                    while (it.hasNext()) {
-                        displayTypes += it.next();
-                        if (it.hasNext()) {
-                            displayTypes += " + ";
-                        }
+                while (it.hasNext()) {
+                    displayTypes += it.next();
+                    if (it.hasNext()) {
+                        displayTypes += " + ";
                     }
-                    renderDisplayView(displayTypes);
                 }
+                renderDisplayView(displayTypes);
                 break;
             default:
                 break;
@@ -276,13 +266,6 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         socketView.setText(String.valueOf(vm.getSockets()));
         coreView.setText(String.valueOf(vm.getCoresPerSocket()));
         osView.setText(vm.getOsType());
-        if (movirtAuthenticator.isV3Api()) {
-            if (!vm.isSnapshotEmbedded() && vm.getDisplayType() != null) {
-                renderDisplayView(vm.getDisplayType().toString());
-            } else {
-                renderDisplayView("");
-            }
-        }
     }
 
     public void renderDisplayView(String displayTypes) {
@@ -330,9 +313,7 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
             snapshotFacade.syncOne(new ProgressBarResponse<Snapshot>(this), snapshotId, vmId);
         } else {
             vmFacade.syncOne(new ProgressBarResponse<Vm>(this), vmId);
-            if (movirtAuthenticator.isV4Api()) {
-                consoleFacade.syncAll(new ProgressBarResponse<List<Console>>(this), vmId);
-            }
+            consoleFacade.syncAll(new ProgressBarResponse<List<Console>>(this), vmId);
         }
     }
 }

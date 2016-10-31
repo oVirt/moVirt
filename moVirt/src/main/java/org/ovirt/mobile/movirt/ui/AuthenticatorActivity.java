@@ -36,7 +36,7 @@ import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
@@ -74,7 +74,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     @SystemService
     AccountManager accountManager;
     @Bean
-    OVirtClient client;
+    LoginClient loginClient;
     @ViewById
     MultiAutoCompleteTextView txtEndpoint;
     @ViewById
@@ -308,7 +308,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             // without option SYNC_EXTRAS_EXPEDITED which may be interrupted by our future sync with option SYNC_EXTRAS_EXPEDITED
             setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv);
 
-            String token = client.login(username, password);
+            String token = loginClient.login(username, password);
             onLoginResultReceived(token, urlChanged, usernameChanged);
         } catch (Exception e) {
             setLoginInProgress(false);

@@ -71,7 +71,7 @@ public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> 
 
     @Override
     public boolean isResumeSyncable() {
-        return authenticator.isV4Api() || isSnapshotFragment(); //we fetch disks with vm in v3 API
+        return authenticator.getApiVersion().isV4Api() || isSnapshotFragment(); //we fetch disks with vm in v3 API
     }
 
     @Background

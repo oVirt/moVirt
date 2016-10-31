@@ -7,7 +7,11 @@ import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.OVirtEntity;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.CompositeResponse;
+import org.ovirt.mobile.movirt.rest.Request;
+import org.ovirt.mobile.movirt.rest.RequestHandler;
+import org.ovirt.mobile.movirt.rest.Response;
+import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.sync.SyncAdapter;
 
 import java.util.Collection;
@@ -23,22 +27,25 @@ public abstract class BaseEntityFacade<E extends OVirtEntity> implements EntityF
     @Bean
     OVirtClient oVirtClient;
 
+    @Bean
+    RequestHandler requestHandler;
+
     private final Class<E> clazz;
 
     protected BaseEntityFacade(Class<E> clazz) {
         this.clazz = clazz;
     }
 
-    protected abstract OVirtClient.Request<E> getSyncOneRestRequest(String id, String... ids);
+    protected abstract Request<E> getSyncOneRestRequest(String id, String... ids);
 
-    protected abstract OVirtClient.Request<List<E>> getSyncAllRestRequest(String... ids);
+    protected abstract Request<List<E>> getSyncAllRestRequest(String... ids);
 
-    protected OVirtClient.CompositeResponse<E> getSyncOneResponse(final OVirtClient.Response<E> response, String... ids) {
-        return new OVirtClient.CompositeResponse<>(syncAdapter.getUpdateEntityResponse(clazz), response);
+    protected CompositeResponse<E> getSyncOneResponse(final Response<E> response, String... ids) {
+        return new CompositeResponse<>(syncAdapter.getUpdateEntityResponse(clazz), response);
     }
 
-    protected OVirtClient.CompositeResponse<List<E>> getSyncAllResponse(final OVirtClient.Response<List<E>> response, String... ids) {
-        return new OVirtClient.CompositeResponse<>(syncAdapter.getUpdateEntitiesResponse(clazz), response);
+    protected CompositeResponse<List<E>> getSyncAllResponse(final Response<List<E>> response, String... ids) {
+        return new CompositeResponse<>(syncAdapter.getUpdateEntitiesResponse(clazz), response);
     }
 
     @Override
@@ -52,8 +59,8 @@ public abstract class BaseEntityFacade<E extends OVirtEntity> implements EntityF
     }
 
     @Override
-    public void syncOne(OVirtClient.Response<E> response, String id, String... ids) {
-        oVirtClient.fireRestRequest(getSyncOneRestRequest(id, ids), getSyncOneResponse(response, ids));
+    public void syncOne(Response<E> response, String id, String... ids) {
+        requestHandler.fireRestRequest(getSyncOneRestRequest(id, ids), getSyncOneResponse(response, ids));
     }
 
     @Override
@@ -62,8 +69,8 @@ public abstract class BaseEntityFacade<E extends OVirtEntity> implements EntityF
     }
 
     @Override
-    public void syncAll(OVirtClient.Response<List<E>> response, String... ids) {
-        oVirtClient.fireRestRequest(getSyncAllRestRequest(ids), getSyncAllResponse(response, ids));
+    public void syncAll(Response<List<E>> response, String... ids) {
+        requestHandler.fireRestRequest(getSyncAllRestRequest(ids), getSyncAllResponse(response, ids));
     }
 
     @Override

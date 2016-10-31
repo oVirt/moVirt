@@ -15,11 +15,12 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.UiThread;
-import org.ovirt.mobile.movirt.rest.Api;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.util.JsonUtils;
+import org.ovirt.mobile.movirt.util.Version;
 
 
 @EBean
@@ -35,11 +36,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     public static final String API_URL = "org.ovirt.mobile.movirt.apiurl";
 
-    public static final String API_MAJOR_VERSION = "org.ovirt.mobile.movirt.apimajorversion";
-
-    public static final String API_MINOR_VERSION = "org.ovirt.mobile.movirt.apiminorversion";
-
-    public static final String API_BUILD_VERSION = "org.ovirt.mobile.movirt.apibuildversion";
+    public static final String API_VERSION = "org.ovirt.mobile.movirt.apiversion";
 
     public static final String CERT_HANDLING_STRATEGY = "org.ovirt.mobile.movirt.certhandlingstrategy";
 
@@ -49,13 +46,8 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     public static final Account MOVIRT_ACCOUNT = new Account(MovirtAuthenticator.ACCOUNT_NAME, MovirtAuthenticator.ACCOUNT_TYPE);
 
-
-    private static final String API_FALLBACK_MAJOR_VERSION = "3";
-    private static final String API_FALLBACK_MINOR_VERSION = "0";
-    private static final String API_FALLBACK_BUILD_VERSION = "0";
-
     @Bean
-    OVirtClient client;
+    LoginClient loginClient;
 
     @SystemService
     AccountManager accountManager;
@@ -102,7 +94,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             if (username != null && password != null) {
                 try {
                     if (!AuthenticatorActivity.isInUserLogin()) { // do not attempt to login while user tries
-                        authToken = client.login(username, password);
+                        authToken = loginClient.login(username, password);
                     }
                 } catch (Exception x) { // do not fail on bad login info
                 }
@@ -168,75 +160,31 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     }
 
 
+    /**
+     * Intended to be used only by VersionManager
+     *
+     * @return api version
+     */
     public Version getApiVersion() {
-        return new Version(getApiMajorVersionAsInt(), getApiMinorVersionAsInt(),
-                getApiBuildVersionAsInt());
-    }
-
-    public String getApiMajorVersion() {
-        return read(API_MAJOR_VERSION, API_FALLBACK_MAJOR_VERSION);
-    }
-
-    public String getApiMinorVersion() {
-        return read(API_MINOR_VERSION, API_FALLBACK_MINOR_VERSION);
-    }
-
-    public String getApiBuildVersion() {
-        return read(API_BUILD_VERSION, API_FALLBACK_BUILD_VERSION);
-    }
-
-    public String getApiFallbackMajorVersion() {
-        return API_FALLBACK_MAJOR_VERSION;
-    }
-
-    private int getApiMajorVersionAsInt() {
-        return Integer.parseInt(getApiMajorVersion());
-    }
-
-    private int getApiMinorVersionAsInt() {
-        return Integer.parseInt(getApiMinorVersion());
-    }
-
-    private int getApiBuildVersionAsInt() {
-        return Integer.parseInt(getApiBuildVersion());
-    }
-
-    public boolean isApiWithinRange(Version from, Version to) {
-        Version current = getApiVersion();
-        return current.compareTo(from) >= 0 && current.compareTo(to) <= 0;
-    }
-
-    public boolean isV3Api() {
-        return getApiMajorVersionAsInt() < 4;
-    }
-
-    public boolean isV4Api() {
-        return getApiMajorVersionAsInt() >= 4;
-    }
-
-    public void setApiVersion(Api api) {
+        Version result = null;
         try {
-            org.ovirt.mobile.movirt.rest.Version version = api.getProductInfo().getVersion();
-            setApiMajorVersion(version.getMajor());
-            setApiMinorVersion(version.getMinor());
-            setApiBuildVersion(version.getBuild());
-        } catch (Exception x) {
-            setApiMajorVersion(""); // fallback versions are used instead
-            setApiMinorVersion("");
-            setApiBuildVersion("");
+            result = JsonUtils.stringToObject(read(API_VERSION), Version.class);
+        } catch (Exception ignored) {
         }
+
+        if (result == null) {
+            result = new Version();
+        }
+        return result;
     }
 
-    private void setApiMajorVersion(String majorVersion) {
-        accountManager.setUserData(MOVIRT_ACCOUNT, API_MAJOR_VERSION, majorVersion);
-    }
-
-    private void setApiMinorVersion(String minorVersion) {
-        accountManager.setUserData(MOVIRT_ACCOUNT, API_MINOR_VERSION, minorVersion);
-    }
-
-    private void setApiBuildVersion(String buildVersion) {
-        accountManager.setUserData(MOVIRT_ACCOUNT, API_BUILD_VERSION, buildVersion);
+    /**
+     * Intended to be used only by VersionManager
+     *
+     * @param version api version
+     */
+    public void setApiVersion(Version version) {
+        accountManager.setUserData(MOVIRT_ACCOUNT, API_VERSION, JsonUtils.objectToString(version));
     }
 
     public String getUserName() {
@@ -277,59 +225,4 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         return accountManager.getUserData(MOVIRT_ACCOUNT, id);
     }
 
-    public static class Version implements Comparable<Version> {
-        private int major;
-        private int minor;
-        private int build;
-
-        public Version(int major, int minor, int build) {
-            this.major = major;
-            this.minor = minor;
-            this.build = build;
-        }
-
-        public int getMajor() {
-            return major;
-        }
-
-        public void setMajor(int major) {
-            this.major = major;
-        }
-
-        public int getMinor() {
-            return minor;
-        }
-
-        public void setMinor(int minor) {
-            this.minor = minor;
-        }
-
-        public int getBuild() {
-            return build;
-        }
-
-        public void setBuild(int build) {
-            this.build = build;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("%s.%s.%s", major, minor, build);
-        }
-
-        /**
-         * @param another version to be compared to
-         * @return a negative integer, zero, or a positive integer if this object version is less than, equal to, or greater than the specified object.
-         */
-        @Override
-        public int compareTo(Version another) {
-            if (major == another.major) {
-                if (minor == another.minor) {
-                    return build - another.build;
-                }
-                return minor - another.minor;
-            }
-            return major - another.major;
-        }
-    }
 }

@@ -13,7 +13,10 @@ import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.trigger.VmTriggerResolver;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.CompositeResponse;
+import org.ovirt.mobile.movirt.rest.Request;
+import org.ovirt.mobile.movirt.rest.Response;
+import org.ovirt.mobile.movirt.rest.SimpleResponse;
 import org.ovirt.mobile.movirt.ui.vms.VmDetailActivity_;
 
 import java.util.ArrayList;
@@ -41,10 +44,10 @@ public class VmFacade extends BaseEntityFacade<Vm> {
     }
 
     @Override
-    protected OVirtClient.CompositeResponse<Vm> getSyncOneResponse(final OVirtClient.Response<Vm> response, String... ids) {
+    protected CompositeResponse<Vm> getSyncOneResponse(final Response<Vm> response, String... ids) {
         requireSignature(ids);
-        OVirtClient.CompositeResponse<Vm> res = super.getSyncOneResponse(response);
-        res.addResponse(new OVirtClient.SimpleResponse<Vm>() {
+        CompositeResponse<Vm> res = super.getSyncOneResponse(response);
+        res.addResponse(new SimpleResponse<Vm>() {
             @Override
             public void onResponse(Vm entity) throws RemoteException {
                 String vmId = entity.getId();
@@ -57,13 +60,13 @@ public class VmFacade extends BaseEntityFacade<Vm> {
     }
 
     @Override
-    protected OVirtClient.CompositeResponse<List<Vm>> getSyncAllResponse(final OVirtClient.Response<List<Vm>> response, String... ids) {
+    protected CompositeResponse<List<Vm>> getSyncAllResponse(final Response<List<Vm>> response, String... ids) {
         requireSignature(ids);
-        OVirtClient.CompositeResponse<List<Vm>> res = new OVirtClient.CompositeResponse<>(
+        CompositeResponse<List<Vm>> res = new CompositeResponse<>(
                 syncAdapter.getUpdateEntitiesResponse(Vm.class, new NotSnapshotEmbeddedPredicate<Vm>()),
                 response);
 
-        res.addResponse(new OVirtClient.SimpleResponse<List<Vm>>() {
+        res.addResponse(new SimpleResponse<List<Vm>>() {
             @Override
             public void onResponse(List<Vm> entities) throws RemoteException {
                 List<Disk> disks = new ArrayList<>();
@@ -82,13 +85,13 @@ public class VmFacade extends BaseEntityFacade<Vm> {
     }
 
     @Override
-    protected OVirtClient.Request<Vm> getSyncOneRestRequest(String vmId, String... ids) {
+    protected Request<Vm> getSyncOneRestRequest(String vmId, String... ids) {
         requireSignature(ids);
         return oVirtClient.getVmRequest(vmId);
     }
 
     @Override
-    protected OVirtClient.Request<List<Vm>> getSyncAllRestRequest(String... ids) {
+    protected Request<List<Vm>> getSyncAllRestRequest(String... ids) {
         requireSignature(ids);
         return oVirtClient.getVmsRequest();
     }

@@ -30,7 +30,8 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.OVirtClient;
+import org.ovirt.mobile.movirt.rest.SimpleResponse;
+import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
@@ -195,7 +196,7 @@ public class HostDetailActivity extends MovirtActivity
     /**
      * Refreshes Host upon success
      */
-    private class SyncHostResponse extends OVirtClient.SimpleResponse<Void> {
+    private class SyncHostResponse extends SimpleResponse<Void> {
         @Override
         public void onResponse(Void aVoid) throws RemoteException {
             syncHost();

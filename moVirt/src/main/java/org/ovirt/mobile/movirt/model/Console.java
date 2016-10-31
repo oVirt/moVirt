@@ -20,55 +20,18 @@ public class Console extends OVirtEntity implements OVirtContract.Console {
         return CONTENT_URI;
     }
 
-    @DatabaseField(columnName = ADDRESS)
-    private String address;
-
-    @DatabaseField(columnName = DISPLAY_TYPE)
-    private Display displayType;
-
-    @DatabaseField(columnName = PORT)
-    private int port;
-
-    @DatabaseField(columnName = TLS_PORT)
-    private int tlsPort;
+    @DatabaseField(columnName = PROTOCOL)
+    private ConsoleProtocol protocol;
 
     @DatabaseField(columnName = VM_ID, canBeNull = false)
     private String vmId;
 
-    public String getAddress() {
-        return address;
+    public ConsoleProtocol getProtocol() {
+        return protocol;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public Display getDisplayType() {
-        return displayType;
-    }
-
-    public void setDisplayType(Display displayType) {
-        this.displayType = displayType;
-    }
-
-    public String getProtocol() {
-        return getDisplayType().getProtocol();
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public int getTlsPort() {
-        return tlsPort;
-    }
-
-    public void setTlsPort(int tlsPort) {
-        this.tlsPort = tlsPort;
+    public void setProtocol(ConsoleProtocol protocol) {
+        this.protocol = protocol;
     }
 
     @Override
@@ -89,11 +52,7 @@ public class Console extends OVirtEntity implements OVirtContract.Console {
 
         Console console = (Console) o;
 
-
-        if (!ObjectUtils.equals(address, console.address)) return false;
-        if (displayType != console.displayType) return false;
-        if (port != console.port) return false;
-        if (tlsPort != console.tlsPort) return false;
+        if (protocol != console.protocol) return false;
         if (!ObjectUtils.equals(vmId, console.vmId)) return false;
 
         return true;
@@ -103,10 +62,7 @@ public class Console extends OVirtEntity implements OVirtContract.Console {
     public int hashCode() {
         int result = super.hashCode();
 
-        result = 31 * result + (address != null ? address.hashCode() : 0);
-        result = 31 * result + (displayType != null ? displayType.hashCode() : 0);
-        result = 31 * result + port;
-        result = 31 * result + tlsPort;
+        result = 31 * result + (protocol != null ? protocol.hashCode() : 0);
         result = 31 * result + (vmId != null ? vmId.hashCode() : 0);
 
         return result;
@@ -115,10 +71,7 @@ public class Console extends OVirtEntity implements OVirtContract.Console {
     @Override
     public ContentValues toValues() {
         ContentValues contentValues = super.toValues();
-        contentValues.put(ADDRESS, getAddress());
-        contentValues.put(DISPLAY_TYPE, getDisplayType().toString());
-        contentValues.put(PORT, getPort());
-        contentValues.put(TLS_PORT, getTlsPort());
+        contentValues.put(PROTOCOL, getProtocol().toString());
         contentValues.put(VM_ID, getVmId());
 
         return contentValues;
@@ -128,10 +81,7 @@ public class Console extends OVirtEntity implements OVirtContract.Console {
     public void initFromCursorHelper(CursorHelper cursorHelper) {
         super.initFromCursorHelper(cursorHelper);
 
-        setAddress(cursorHelper.getString(ADDRESS));
-        setDisplayType(cursorHelper.getEnum(DISPLAY_TYPE, Display.class));
-        setPort(cursorHelper.getInt(PORT));
-        setTlsPort(cursorHelper.getInt(TLS_PORT));
+        setProtocol(cursorHelper.getEnum(PROTOCOL, ConsoleProtocol.class));
         setVmId(cursorHelper.getString(VM_ID));
     }
 }
