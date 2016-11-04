@@ -37,6 +37,7 @@ import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
+import org.ovirt.mobile.movirt.util.message.MessageHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,6 +65,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     MovirtAuthenticator authenticator;
     @Bean
     NotificationHelper notificationHelper;
+    @Bean
+    MessageHelper messageHelper;
 
     public SyncAdapter(Context context) {
         super(context, true);
@@ -95,10 +98,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 facadeSync(StorageDomain.class);
                 eventsHandler.updateEvents(false);
             } catch (Exception e) {
-                Log.e(TAG, "Error updating data", e);
-                Intent intent = new Intent(Broadcasts.CONNECTION_FAILURE);
-                intent.putExtra(Broadcasts.Extras.FAILURE_REASON, e.getMessage());
-                context.sendBroadcast(intent);
+                messageHelper.showError(e);
             } finally {
                 inSync.set(false);
                 sendSyncIntent(false);

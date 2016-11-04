@@ -119,7 +119,7 @@
             android:theme="@style/cameraViewStyle" />
 
         <activity
-            android:name=".camera.PreferencesActivity"
+            android:name=".camera.PreferencesActivity_"
             android:label="@string/preferences_name"
             android:stateNotNeeded="true" />
 

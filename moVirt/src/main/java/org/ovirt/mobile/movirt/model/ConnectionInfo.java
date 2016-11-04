@@ -11,6 +11,8 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.DateUtils;
 
+import static org.springframework.util.StringUtils.isEmpty;
+
 /**
  * Class used to store connection information in database
  * Created by Nika on 23.06.2015.
@@ -27,6 +29,8 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
     private long lastAttempt;
     @DatabaseField(columnName = ConnectionInfo.SUCCESSFUL)
     private long lastSuccessful;
+    @DatabaseField(columnName = ConnectionInfo.DESCRIPTION)
+    private String description;
 
     public ConnectionInfo() {
         this.id = 1;
@@ -56,6 +60,7 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
         values.put(STATE, state.toString());
         values.put(ATTEMPT, lastAttempt);
         values.put(SUCCESSFUL, lastSuccessful);
+        values.put(DESCRIPTION, description);
         return values;
     }
 
@@ -77,6 +82,7 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
         } catch (Exception e) {
             setLastSuccessful(UNKNOWN_TIME);
         }
+        setDescription(cursorHelper.getString(DESCRIPTION));
     }
 
     public State getState() {
@@ -103,6 +109,14 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
         this.lastSuccessful = lastSuccessful;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public Integer getId() {
         return id;
@@ -114,10 +128,15 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
     }
 
     public String getMessage(Context context) {
-        return "Connection: " + state.toString().replace('_', ' ') +
-                ".\nLast Attempt: " + getLastAttemptWithTimeZone(context) +
-                ".\nLast Successful: " + getLastSuccessfulWithTimeZone(context) +
-                '.';
+        StringBuilder builder = new StringBuilder();
+        builder.append("Connection: ").append(state.toString().replace('_', ' '))
+                .append(".\nLast Attempt: ").append(getLastAttemptWithTimeZone(context))
+                .append(".\nLast Successful: ").append(getLastSuccessfulWithTimeZone(context)).append('.');
+        if (!isEmpty(description)) {
+            builder.append("\n\nLast Error: \n").append(description);
+        }
+
+        return builder.toString();
     }
 
     public String getLastAttemptWithTimeZone(Context context) {

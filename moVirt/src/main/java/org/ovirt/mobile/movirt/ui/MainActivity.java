@@ -131,8 +131,11 @@ public class MainActivity extends MovirtActivity
     }
 
     private void showAccountDialog() {
+        String dialogTag = "accountDialog";
         DialogFragment accountDialog = new AccountDialogFragment();
-        accountDialog.show(getFragmentManager(), "accountDialog");
+        if (getFragmentManager().findFragmentByTag(dialogTag) == null) {
+            accountDialog.show(getFragmentManager(), dialogTag);
+        }
     }
 
     private void initPagers() {

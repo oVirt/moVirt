@@ -4,14 +4,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
-import org.androidannotations.annotations.UiThread;
 import org.androidannotations.rest.spring.annotations.RestService;
 import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
@@ -41,6 +39,7 @@ import org.ovirt.mobile.movirt.rest.dto.SnapshotAction;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.Version;
 import org.ovirt.mobile.movirt.util.VersionManager;
+import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -78,6 +77,9 @@ public class OVirtClient {
     @Bean
     SharedPreferencesHelper sharedPreferencesHelper;
 
+    @Bean
+    MessageHelper messageHelper;
+
     private boolean isV3Api = true;
 
     private final VersionManager.ApiVersionChangedListener versionChangedListener = new VersionManager.ApiVersionChangedListener() {
@@ -94,11 +96,6 @@ public class OVirtClient {
 
         versionManager.notifyListener(versionChangedListener);
         versionManager.registerListener(versionChangedListener);
-    }
-
-    @UiThread(propagation = UiThread.Propagation.REUSE)
-    void showToast(String msg) {
-        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
 
     public void startVm(final String vmId, Response<Void> response) {
@@ -637,7 +634,7 @@ public class OVirtClient {
                 }
             } catch (Exception e) {
                 // showing only as a toast since this problem may persist and we don't want to flood the user with messages like this as dialogs...
-                showToast("Error parsing rest response, ignoring: " + rest.toString() + " error: " + e.getMessage());
+                messageHelper.showToast("Error parsing rest response, ignoring: " + rest.toString() + " error: " + e.getMessage());
             }
         }
         return entities;

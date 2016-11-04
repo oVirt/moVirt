@@ -40,7 +40,7 @@ import org.ovirt.mobile.movirt.camera.BeepManager;
 import org.ovirt.mobile.movirt.camera.CameraManager;
 import org.ovirt.mobile.movirt.camera.CaptureActivityHandler;
 import org.ovirt.mobile.movirt.camera.InactivityTimer;
-import org.ovirt.mobile.movirt.camera.PreferencesActivity;
+import org.ovirt.mobile.movirt.camera.PreferencesActivity_;
 import org.ovirt.mobile.movirt.camera.ViewfinderView;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Event;
@@ -399,7 +399,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
 
     @OptionsItem(R.id.menu_settings)
     public void openSettings() {
-        Intent intent = new Intent(this, PreferencesActivity.class);
+        Intent intent = new Intent(this, PreferencesActivity_.class);
         startActivity(intent);
     }
 

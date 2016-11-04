@@ -2,8 +2,7 @@ package org.ovirt.mobile.movirt;
 
 
 public interface Broadcasts {
-    String CONNECTION_FAILURE = "org.ovirt.mobile.movirt.CONNECTION_FAILURE";
-    String LOGIN_FAILURE = "org.ovirt.mobile.movirt.LOGIN_FAILURE";
+    String ERROR_MESSAGE = "org.ovirt.mobile.movirt.ERROR_MESSAGE";
     String REST_CA_FAILURE = "org.ovirt.mobile.movirt.REST_CA_FAILURE";
     String IN_SYNC = "org.ovirt.mobile.movirt.IN_SYNC";
     String EVENTS_IN_SYNC = "org.ovirt.mobile.movirt.EVENTS_IN_SYNC";
@@ -11,8 +10,8 @@ public interface Broadcasts {
     String IN_USER_LOGIN = "org.ovirt.mobile.movirt.IN_USER_LOGIN";
 
     interface Extras {
-        String FAILURE_REASON = "org.ovirt.mobile.movirt.FAILURE_REASON";
-        String REPEATED_CONNECTION_FAILURE = "org.ovirt.mobile.movirt.REPEATED_CONNECTION_FAILURE";
+        String ERROR_REASON = "org.ovirt.mobile.movirt.ERROR_REASON";
+        String REPEATED_MINOR_ERROR = "org.ovirt.mobile.movirt.REPEATED_MINOR_ERROR";
         String SYNCING = "org.ovirt.mobile.movirt.SYNCING";
         String MESSAGE = "org.ovirt.mobile.movirt.MESSAGE";
     }

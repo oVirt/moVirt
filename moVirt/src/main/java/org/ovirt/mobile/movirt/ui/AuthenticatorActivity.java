@@ -17,7 +17,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.AfterViews;
@@ -40,10 +39,11 @@ import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
-import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
-import org.ovirt.mobile.movirt.ui.dialogs.ImportCertificateDialogFragment;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
-import org.springframework.http.HttpStatus;
+import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
+import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
+import org.ovirt.mobile.movirt.util.message.ErrorType;
+import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
@@ -57,7 +57,7 @@ import java.util.Arrays;
 import javax.net.ssl.SSLHandshakeException;
 
 @EActivity(R.layout.activity_authenticator)
-public class AuthenticatorActivity extends AccountAuthenticatorActivity {
+public class AuthenticatorActivity extends AccountAuthenticatorActivity implements CreateDialogBroadcastReceiver {
 
     private static final String TAG = AuthenticatorActivity.class.getSimpleName();
     private static final int SECONDS_IN_MINUTE = 60;
@@ -113,6 +113,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     String endpoint;
     @Bean
     SharedPreferencesHelper sharedPreferencesHelper;
+    @Bean
+    MessageHelper messageHelper;
 
     public static void addPeriodicSync(int intervalInMinutes) {
         long intervalInSeconds =
@@ -238,24 +240,22 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         try {
             endpointUrl = new URL(endpoint);
         } catch (MalformedURLException e) {
-            String message = "Invalid API URL: " + e.getMessage() + "\nExample: " +
-                    getString(R.string.default_endpoint);
-            fireError(message);
+            messageHelper.showError(ErrorType.USER, getString(R.string.login_error_invalid_api_url,
+                    e.getMessage(), getString(R.string.default_endpoint)));
             return;
         }
         endpoint = endpointUrl.toString();
 
         username = txtUsername.getText().toString();
         if (!username.matches(".+@.+")) {
-            fireError("Invalid username. Use " +
-                    getString(R.string.account_username) + " pattern.\nExample: " +
-                    getString(R.string.default_username));
+            messageHelper.showError(ErrorType.USER, getString(R.string.login_error_invalid_username,
+                    getString(R.string.account_username), getString(R.string.default_username)));
             return;
         }
 
         password = txtPassword.getText().toString();
         if (password.length() == 0) {
-            showToast("Password can't be empty.");
+            messageHelper.showToast(getString(R.string.login_error_empty_password));
             return;
         }
 
@@ -273,8 +273,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     public void fixUrlAndLogin() {
         URL endpointUrlFixed = null;
         try {
-            endpointUrlFixed =
-                    new URL(endpointUrl, getString(R.string.default_api_path));
+            endpointUrlFixed = new URL(endpointUrl, getString(R.string.default_api_path));
         } catch (MalformedURLException ignored) {
         }
         assert endpointUrlFixed != null;
@@ -310,25 +309,30 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
             String token = loginClient.login(username, password);
             onLoginResultReceived(token, urlChanged, usernameChanged);
+        } catch (HttpClientErrorException e) {
+            setLoginInProgress(false);
+            switch (e.getStatusCode()) {
+                case NOT_FOUND:
+                    messageHelper.showError(ErrorType.LOGIN, e, getString(R.string.login_error_bad_address_suffix));
+                    break;
+                case UNAUTHORIZED:
+                    messageHelper.showError(ErrorType.LOGIN, e, getString(R.string.login_error_incorrect_username_password));
+                    break;
+                default:
+                    messageHelper.showError(ErrorType.LOGIN, messageHelper.createMessage(e));
+                    break;
+            }
         } catch (Exception e) {
             setLoginInProgress(false);
             Throwable cause = e.getCause();
             if (cause != null && cause instanceof SSLHandshakeException) {
                 fireCertificateError(cause);
             } else if (cause != null && (cause instanceof ConnectException || cause instanceof UnknownHostException)) {
-                fireError("Could not connect. Make sure ip address and port are correct.", e.getMessage());
+                messageHelper.showError(ErrorType.LOGIN, e, getString(R.string.login_error_incorrect_ip_port));
             } else if (cause != null && cause instanceof SocketTimeoutException) {
-                fireError("Reached timeout. Make sure ip address and port are correct. Also, check if the connection is stable.", e.getMessage());
-            } else if (e instanceof HttpClientErrorException) {
-                HttpStatus statusCode = ((HttpClientErrorException) e).getStatusCode();
-
-                if (statusCode == HttpStatus.NOT_FOUND) {
-                    fireError("Not found.\nAddress suffix should be \"/ovirt-engine/api\"", e.getMessage());
-                } else if (statusCode == HttpStatus.UNAUTHORIZED) {
-                    fireError("Username or password is incorrect.", e.getMessage());
-                }
+                messageHelper.showError(ErrorType.LOGIN, e, getString(R.string.login_error_timeout));
             } else {
-                fireError("Error logging in: " + e.getMessage());
+                messageHelper.showError(ErrorType.LOGIN, getString(R.string.login_error, e.getMessage()));
             }
         }
     }
@@ -337,9 +341,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     void onLoginResultReceived(String token, boolean urlChanged, boolean usernameChanged) {
         if (TextUtils.isEmpty(token)) {
             setLoginInProgress(false);
-            fireError("Error: the returned token is empty." +
-                    "\nTry https protocol and add your certificate in " +
-                    getString(R.string.ca_management) + ".");
+            messageHelper.showError(ErrorType.LOGIN,
+                    getString(R.string.login_error_empty_token, getString(R.string.ca_management)));
             return;
         }
 
@@ -355,7 +358,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
         accountManager.setAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, token);
         setLoginInProgress(false);
-        showToast("Login successful");
+        messageHelper.showToast(getString(R.string.login_success));
         syncUtils.triggerRefresh();
 
         final Intent intent = new Intent();
@@ -413,27 +416,11 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 .indexOf("ignore");
         String certIgnore = getResources()
                 .getStringArray(R.array.certificate_handling_strategy)[ignoreIndex];
-        String message = "Use proper certificate, or select " + certIgnore +
-                ".\nError details: " + cause.getMessage();
+        String message = getString(R.string.login_error_bad_cert, certIgnore, cause.getMessage());
 
         Intent intent = new Intent(Broadcasts.REST_CA_FAILURE);
-        intent.putExtra(Broadcasts.Extras.FAILURE_REASON, message);
+        intent.putExtra(Broadcasts.Extras.ERROR_REASON, message);
         getApplicationContext().sendBroadcast(intent);
-    }
-
-    void fireError(String msg, String detailedInfo) {
-        fireError(String.format("%s\n\nDetailed info:\n %s", msg, detailedInfo));
-    }
-
-    void fireError(String msg) {
-        Intent intent = new Intent(Broadcasts.LOGIN_FAILURE);
-        intent.putExtra(Broadcasts.Extras.FAILURE_REASON, msg);
-        getApplicationContext().sendBroadcast(intent);
-    }
-
-    @UiThread(propagation = UiThread.Propagation.REUSE)
-    void showToast(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }
 
     private void setUserData(Account account, String apiUrl, String name, String password, Boolean hasAdminPermissions) {
@@ -444,34 +431,18 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         accountManager.setPassword(account, password); //triggers sync in later APIs (Android 6)
     }
 
-    // notifications
-
-    @Receiver(actions = {Broadcasts.CONNECTION_FAILURE},
+    @Receiver(actions = {Broadcasts.ERROR_MESSAGE},
             registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    void connectionFailure(
-            @Receiver.Extra(Broadcasts.Extras.FAILURE_REASON) String reason,
-            @Receiver.Extra(Broadcasts.Extras.REPEATED_CONNECTION_FAILURE) boolean repeatedFailure) {
-        if (!repeatedFailure) {
-            DialogFragment dialogFragment = ErrorDialogFragment
-                    .newInstance(this, authenticator, providerFacade, reason);
-            dialogFragment.show(getFragmentManager(), "error");
-        }
-    }
-
-    @Receiver(actions = {Broadcasts.LOGIN_FAILURE},
-            registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    void loginFailure(
-            @Receiver.Extra(Broadcasts.Extras.FAILURE_REASON) String reason) {
-        DialogFragment dialogFragment = ErrorDialogFragment.newInstance(reason);
-        dialogFragment.show(getFragmentManager(), "login_error");
+    public void showErrorDialog(
+            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason,
+            @Receiver.Extra(Broadcasts.Extras.REPEATED_MINOR_ERROR) boolean repeatedMinorError) {
+        CreateDialogBroadcastReceiverHelper.showErrorDialog(getFragmentManager(), reason, repeatedMinorError);
     }
 
     @Receiver(actions = {Broadcasts.REST_CA_FAILURE},
             registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    void certificateFailure(
-            @Receiver.Extra(Broadcasts.Extras.FAILURE_REASON) String reason) {
-        DialogFragment importCertificateDialog =
-                ImportCertificateDialogFragment.newRestCaInstance(reason, false);
-        importCertificateDialog.show(getFragmentManager(), "certificate_error");
+    public void showCertificateDialog(
+            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason) {
+        CreateDialogBroadcastReceiverHelper.showCertificateDialog(getFragmentManager(), reason, false);
     }
 }
