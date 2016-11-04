@@ -4,8 +4,12 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.view.View;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
@@ -60,14 +64,37 @@ public class EventsFragment extends RefreshableLoaderFragment {
     @ViewById
     SwipeRefreshLayout swipeEventsContainer;
 
+    private TextView lastSelectedTextView = null;
+
     private int page = 1;
     private static final int EVENTS_PER_PAGE = 20;
     private static final String TAG = EventsFragment.class.getSimpleName();
 
-    private EndlessScrollListener endlessScrollListener = new EndlessScrollListener() {
+    private final EndlessScrollListener endlessScrollListener = new EndlessScrollListener() {
         @Override
         public void onLoadMore(int page, int totalItemsCount) {
             loadMoreData(page);
+        }
+
+        @Override
+        public void onScrollStateChanged(AbsListView view, int scrollState) {
+            super.onScrollStateChanged(view, scrollState);
+            if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
+                deselectLastTextView();
+            }
+        }
+    };
+
+    private final AdapterView.OnItemLongClickListener onItemLongClickListener = new AdapterView.OnItemLongClickListener() {
+        @Override
+        public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+            if (view != lastSelectedTextView) { // selects different part of the same view
+                deselectLastTextView();
+            }
+            if (view instanceof TextView) {
+                lastSelectedTextView = (TextView) view;
+            }
+            return false;
         }
     };
 
@@ -76,7 +103,6 @@ public class EventsFragment extends RefreshableLoaderFragment {
     @AfterViews
     void init() {
         SimpleCursorAdapter eventListAdapter = new EventsCursorAdapter(getActivity());
-
         list.setAdapter(eventListAdapter);
 
         cursorAdapterLoader = new CursorAdapterLoader(eventListAdapter) {
@@ -102,6 +128,7 @@ public class EventsFragment extends RefreshableLoaderFragment {
         getLoaderManager().initLoader(0, null, cursorAdapterLoader);
 
         list.setOnScrollListener(endlessScrollListener);
+        list.setOnItemLongClickListener(onItemLongClickListener);
     }
 
     @Override
@@ -168,5 +195,12 @@ public class EventsFragment extends RefreshableLoaderFragment {
     @Override
     protected SwipeRefreshLayout getSwipeRefreshLayout() {
         return swipeEventsContainer;
+    }
+
+    private void deselectLastTextView() {
+        if (lastSelectedTextView != null && lastSelectedTextView.hasSelection()) {
+            lastSelectedTextView.setTextIsSelectable(false);
+            lastSelectedTextView.setTextIsSelectable(true);
+        }
     }
 }
