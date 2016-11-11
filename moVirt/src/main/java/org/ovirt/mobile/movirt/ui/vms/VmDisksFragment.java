@@ -12,11 +12,11 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.ResumeSyncableBaseEntityListFragment;
 import org.ovirt.mobile.movirt.util.MemorySize;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> 
     private static final String TAG = VmDisksFragment.class.getSimpleName();
 
     @Bean
-    MovirtAuthenticator authenticator;
+    AccountPropertiesManager propertiesManager;
 
     public VmDisksFragment() {
         super(Disk.class);
@@ -71,7 +71,7 @@ public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> 
 
     @Override
     public boolean isResumeSyncable() {
-        return authenticator.getApiVersion().isV4Api() || isSnapshotFragment(); //we fetch disks with vm in v3 API
+        return propertiesManager.getApiVersion().isV4Api() || isSnapshotFragment(); //we fetch disks with vm in v3 API
     }
 
     @Background

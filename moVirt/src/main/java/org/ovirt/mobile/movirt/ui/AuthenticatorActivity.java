@@ -1,14 +1,10 @@
 package org.ovirt.mobile.movirt.ui;
 
-import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
 import android.app.DialogFragment;
 import android.content.ContentResolver;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -26,7 +22,6 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.Receiver;
-import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
@@ -39,11 +34,12 @@ import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
-import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.util.properties.AccountProperty;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
@@ -60,7 +56,6 @@ import javax.net.ssl.SSLHandshakeException;
 public class AuthenticatorActivity extends AccountAuthenticatorActivity implements CreateDialogBroadcastReceiver {
 
     private static final String TAG = AuthenticatorActivity.class.getSimpleName();
-    private static final int SECONDS_IN_MINUTE = 60;
     private static final String[] URL_COMPLETE = {"http://", "https://", "ovirt-engine/api", "80",
             "443", "api"};
     private static final String[] USERNAME_COMPLETE = {"admin@", "internal", "admin@internal"};
@@ -71,8 +66,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
 
     @Bean
     NullHostnameVerifier verifier;
-    @SystemService
-    AccountManager accountManager;
+    @Bean
+    AccountPropertiesManager propertiesManager;
     @Bean
     LoginClient loginClient;
     @ViewById
@@ -112,23 +107,11 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     @InstanceState
     String endpoint;
     @Bean
-    SharedPreferencesHelper sharedPreferencesHelper;
-    @Bean
     MessageHelper messageHelper;
-
-    public static void addPeriodicSync(int intervalInMinutes) {
-        long intervalInSeconds =
-                (long) intervalInMinutes * (long) SECONDS_IN_MINUTE;
-        ContentResolver.addPeriodicSync(
-                MovirtAuthenticator.MOVIRT_ACCOUNT,
-                OVirtContract.CONTENT_AUTHORITY,
-                Bundle.EMPTY,
-                intervalInSeconds);
-    }
 
     @AfterViews
     void init() {
-        txtEndpoint.setText(authenticator.getApiUrl());
+        txtEndpoint.setText(propertiesManager.getApiUrl());
         ArrayAdapter<String> urlAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, URL_COMPLETE);
         txtEndpoint.setAdapter(urlAdapter);
@@ -162,7 +145,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
             }
         });
 
-        txtUsername.setText(authenticator.getUserName());
+        txtUsername.setText(propertiesManager.getUsername());
         ArrayAdapter<String> usernameAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, USERNAME_COMPLETE);
         txtUsername.setAdapter(usernameAdapter);
@@ -196,7 +179,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
             }
         });
 
-        txtPassword.setText(authenticator.getPassword());
+        txtPassword.setText(propertiesManager.getPassword());
         chkAdminPriv.setChecked(true);
         loginProgress(inProgress);
         if (getIntent().getBooleanExtra(SHOW_ADVANCED_AUTHENTICATOR, false)) {
@@ -211,7 +194,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         }
         advancedFieldsInited = true;
 
-        certHandlingStrategy = authenticator.getCertHandlingStrategy();
+        certHandlingStrategy = propertiesManager.getCertHandlingStrategy();
     }
 
     @Click(R.id.btnAdvanced)
@@ -287,25 +270,16 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         if (endpoint == null || username == null || password == null) {
             return;
         }
-        boolean usernameChanged = !TextUtils.equals(username, authenticator.getUserName());
-        boolean urlChanged = !TextUtils.equals(endpoint, authenticator.getApiUrl());
+        boolean usernameChanged = propertiesManager.propertyDiffers(AccountProperty.USERNAME, username);
+        boolean urlChanged = propertiesManager.propertyDiffers(AccountProperty.API_URL, endpoint);
 
         try {
-            if (accountManager.getAccountsByType(MovirtAuthenticator.ACCOUNT_TYPE).length == 0) {
-                if (accountManager.addAccountExplicitly(MovirtAuthenticator.MOVIRT_ACCOUNT, password, null)) {
-                    ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, 1);
-                    ContentResolver.setSyncAutomatically(MovirtAuthenticator.MOVIRT_ACCOUNT, OVirtContract.CONTENT_AUTHORITY, true);
-                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-                    if (sharedPreferences.getBoolean(SharedPreferencesHelper.KEY_PERIODIC_SYNC, false)) {
-                        int intervalInMinutes = sharedPreferencesHelper.getSyncIntervalInMinutes();
-                        addPeriodicSync(intervalInMinutes);
-                    }
-                }
+            if (!propertiesManager.accountConfigured()) {
+                authenticator.initAccount(password);
             }
-
             setLoginInProgress(true); // disables syncs because setUserData() may trigger sync
             // without option SYNC_EXTRAS_EXPEDITED which may be interrupted by our future sync with option SYNC_EXTRAS_EXPEDITED
-            setUserData(MovirtAuthenticator.MOVIRT_ACCOUNT, endpoint, username, password, adminPriv);
+            setUserData(endpoint, username, password, adminPriv);
 
             String token = loginClient.login(username, password);
             onLoginResultReceived(token, urlChanged, usernameChanged);
@@ -356,7 +330,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
             deleteCaFile();
         }
 
-        accountManager.setAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, token);
+        propertiesManager.setAuthToken(token);
         setLoginInProgress(false);
         messageHelper.showToast(getString(R.string.login_success));
         syncUtils.triggerRefresh();
@@ -381,7 +355,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
 
     void setLoginInProgress(boolean loginInProgress) {
         inProgress = loginInProgress;
-        ContentResolver.setIsSyncable(MovirtAuthenticator.MOVIRT_ACCOUNT,
+        ContentResolver.setIsSyncable(authenticator.getAccount(),
                 OVirtContract.CONTENT_AUTHORITY, loginInProgress ? 0 : 1);
         Intent intent = new Intent(Broadcasts.IN_USER_LOGIN);
         intent.putExtra(Broadcasts.Extras.MESSAGE, loginInProgress);
@@ -423,12 +397,13 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         getApplicationContext().sendBroadcast(intent);
     }
 
-    private void setUserData(Account account, String apiUrl, String name, String password, Boolean hasAdminPermissions) {
-        accountManager.setUserData(account, MovirtAuthenticator.API_URL, apiUrl);
-        accountManager.setUserData(account, MovirtAuthenticator.USER_NAME, name);
-        accountManager.setUserData(account, MovirtAuthenticator.HAS_ADMIN_PERMISSIONS, Boolean.toString(hasAdminPermissions));
-        accountManager.setUserData(account, MovirtAuthenticator.CERT_HANDLING_STRATEGY, Long.toString(certHandlingStrategy.id()));
-        accountManager.setPassword(account, password); //triggers sync in later APIs (Android 6)
+    private void setUserData(String apiUrl, String name, String password, Boolean hasAdminPermissions) {
+        propertiesManager.setApiUrl(apiUrl);
+        propertiesManager.setUsername(name);
+        propertiesManager.setAdminPermissions(hasAdminPermissions);
+        propertiesManager.setCertHandlingStrategy(CertHandlingStrategy.TRUST_ALL); // refreshes saved certificate TODO: this is only temporary, will be fixed in the next patch, where listener for certificates will be used
+        propertiesManager.setCertHandlingStrategy(certHandlingStrategy);
+        propertiesManager.setPassword(password); // triggers sync in later APIs (Android 6)
     }
 
     @Receiver(actions = {Broadcasts.ERROR_MESSAGE},

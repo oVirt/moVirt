@@ -17,7 +17,6 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.facade.ConsoleFacade;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.facade.SnapshotFacade;
@@ -32,7 +31,6 @@ import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
 import org.ovirt.mobile.movirt.util.MemorySize;
@@ -40,7 +38,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.SortedSet;
 
 @EFragment(R.layout.fragment_vm_detail_general)
 public class VmDetailGeneralFragment extends RefreshableLoaderFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -92,9 +90,6 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     Bundle args;
 
     @Bean
-    OVirtClient client;
-
-    @Bean
     ProviderFacade provider;
 
     @Bean
@@ -108,9 +103,6 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
 
     @Bean
     ConsoleFacade consoleFacade;
-
-    @Bean
-    MovirtAuthenticator movirtAuthenticator;
 
     Vm vm;
 
@@ -234,7 +226,7 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
                 renderHost(host);
                 break;
             case CONSOLES_LOADER: // no consoles for snapshots, because they have different id
-                Set<ConsoleProtocol> protocols = ConsoleProtocol.getProtocolTypes(consoleFacade.mapAllFromCursor(data));
+                SortedSet<ConsoleProtocol> protocols = ConsoleProtocol.getProtocolTypes(consoleFacade.mapAllFromCursor(data));
                 Iterator<ConsoleProtocol> it = protocols.iterator();
                 String displayTypes = "";
 

@@ -15,7 +15,6 @@ import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.MoVirtApp;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Console;
 import org.ovirt.mobile.movirt.model.DataCenter;
@@ -38,16 +37,20 @@ import org.ovirt.mobile.movirt.rest.dto.Events;
 import org.ovirt.mobile.movirt.rest.dto.SnapshotAction;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.Version;
-import org.ovirt.mobile.movirt.util.VersionManager;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.util.properties.AccountProperty;
+import org.ovirt.mobile.movirt.util.properties.PropertyChangedListener;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.rest.RestHelper.initClient;
-import static org.ovirt.mobile.movirt.rest.RestHelper.setupVersionHeader;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptEncodingHeaderAndFactory;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setFilterHeader;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setVersionHeader;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setupAuth;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class OVirtClient {
@@ -57,7 +60,7 @@ public class OVirtClient {
     OVirtRestClient restClient;
 
     @Bean
-    VersionManager versionManager;
+    AccountPropertiesManager accountPropertiesManager;
 
     @Bean
     RequestHandler requestHandler;
@@ -69,7 +72,7 @@ public class OVirtClient {
     Context context;
 
     @Bean
-    MovirtAuthenticator authenticator;
+    AccountPropertiesManager propertiesManager;
 
     @App
     MoVirtApp app;
@@ -82,20 +85,32 @@ public class OVirtClient {
 
     private boolean isV3Api = true;
 
-    private final VersionManager.ApiVersionChangedListener versionChangedListener = new VersionManager.ApiVersionChangedListener() {
-        @Override
-        public void onVersionChanged(Version newVersion) {
-            setupVersionHeader(restClient, newVersion);
-            isV3Api = newVersion.isV3Api();
-        }
-    };
-
     @AfterInject
     public void init() {
-        initClient(restClient, requestFactory);
+        setAcceptEncodingHeaderAndFactory(restClient, requestFactory);
 
-        versionManager.notifyListener(versionChangedListener);
-        versionManager.registerListener(versionChangedListener);
+        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.VERSION, new PropertyChangedListener<Version>() {
+            @Override
+            public void onPropertyChange(Version property) {
+                setVersionHeader(restClient, property);
+                setupAuth(restClient, property);
+                isV3Api = property.isV3Api();
+            }
+        });
+
+        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.API_URL, new PropertyChangedListener<String>() {
+            @Override
+            public void onPropertyChange(String property) {
+                restClient.setRootUrl(property);
+            }
+        });
+
+        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.HAS_ADMIN_PERMISSIONS, new PropertyChangedListener<Boolean>() {
+            @Override
+            public void onPropertyChange(Boolean property) {
+                setFilterHeader(restClient, property);
+            }
+        });
     }
 
     public void startVm(final String vmId, Response<Void> response) {
@@ -367,11 +382,11 @@ public class OVirtClient {
                     // https://bugzilla.redhat.com/show_bug.cgi?id=1377359
                     try {
                         if (!isV3Api) {
-                            setupVersionHeader(restClient, Version.API_FALLBACK_MAJOR_VERSION);
+                            setVersionHeader(restClient, Version.API_FALLBACK_MAJOR_VERSION);
                         }
                         wrappers = restClient.getDisksV3(vmId);
                     } finally {
-                        setupVersionHeader(restClient, versionManager.getApiVersion());
+                        setVersionHeader(restClient, accountPropertiesManager.getApiVersion());
                     }
                     entities = mapToEntities(wrappers);
                 }
@@ -493,7 +508,7 @@ public class OVirtClient {
             public List<Vm> fire() {
                 RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Vm> wrappers;
 
-                if (authenticator.hasAdminPermissions()) {
+                if (propertiesManager.hasAdminPermissions()) {
                     int maxVms = sharedPreferencesHelper.getMaxVms();
                     String query = sharedPreferences.getString("vms_search_query", "");
                     if (StringUtils.isEmpty(query)) {
@@ -585,7 +600,7 @@ public class OVirtClient {
             public List<Event> fire() {
                 Events loadedEvents = null;
 
-                if (authenticator.hasAdminPermissions()) {
+                if (propertiesManager.hasAdminPermissions()) {
                     int maxEventsStored = sharedPreferencesHelper.getMaxEvents();
                     String query = sharedPreferences.getString("events_search_query", "");
                     if (!"".equals(query)) {

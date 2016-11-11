@@ -1,7 +1,6 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.app.Dialog;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -15,8 +14,6 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
@@ -42,8 +39,6 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     SharedPreferencesHelper sharedPreferencesHelper;
     @Bean
     ProviderFacade providerFacade;
-    @Bean
-    MovirtAuthenticator authenticator;
 
     private Preference periodicSyncIntervalPref;
     private Preference maxEventsPref;
@@ -136,21 +131,11 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
                                           String key) {
         switch (key) {
             case SharedPreferencesHelper.KEY_PERIODIC_SYNC:
-                if (sharedPreferences.getBoolean(key, false)) {
-                    periodicSyncIntervalPref.setEnabled(true);
-                    int intervalInMinutes = sharedPreferencesHelper.getSyncIntervalInMinutes();
-                    AuthenticatorActivity.addPeriodicSync(intervalInMinutes);
-                } else {
-                    periodicSyncIntervalPref.setEnabled(false);
-                    ContentResolver.removePeriodicSync(
-                            MovirtAuthenticator.MOVIRT_ACCOUNT,
-                            OVirtContract.CONTENT_AUTHORITY,
-                            Bundle.EMPTY);
-                }
+                periodicSyncIntervalPref.setEnabled(sharedPreferences.getBoolean(key, false));
+                sharedPreferencesHelper.updatePeriodicSync();
                 break;
             case SharedPreferencesHelper.KEY_PERIODIC_SYNC_INTERVAL:
-                int intervalInMinutes = sharedPreferencesHelper.getSyncIntervalInMinutes();
-                AuthenticatorActivity.addPeriodicSync(intervalInMinutes);
+                sharedPreferencesHelper.updatePeriodicSync();
                 setSyncIntervalPrefSummary();
                 break;
             case SharedPreferencesHelper.KEY_MAX_EVENTS:

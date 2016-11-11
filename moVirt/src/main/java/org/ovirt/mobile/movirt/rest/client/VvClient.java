@@ -14,11 +14,15 @@ import org.ovirt.mobile.movirt.rest.Response;
 import org.ovirt.mobile.movirt.rest.VvFileHttpMessageConverter;
 import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
 import org.ovirt.mobile.movirt.util.Version;
-import org.ovirt.mobile.movirt.util.VersionManager;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.util.properties.AccountProperty;
+import org.ovirt.mobile.movirt.util.properties.PropertyChangedListener;
 
-import static org.ovirt.mobile.movirt.rest.RestHelper.initClient;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptEncodingHeaderAndFactory;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptHeader;
-import static org.ovirt.mobile.movirt.rest.RestHelper.setupVersionHeader;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setFilterHeader;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setVersionHeader;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setupAuth;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class VvClient {
@@ -28,7 +32,7 @@ public class VvClient {
     OVirtVvRestClient vvRestClient;
 
     @Bean
-    VersionManager versionManager;
+    AccountPropertiesManager accountPropertiesManager;
 
     @Bean
     RequestHandler requestHandler;
@@ -36,20 +40,32 @@ public class VvClient {
     @Bean
     OvirtSimpleClientHttpRequestFactory requestFactory;
 
-    private final VersionManager.ApiVersionChangedListener versionChangedListener = new VersionManager.ApiVersionChangedListener() {
-        @Override
-        public void onVersionChanged(Version version) {
-            setupVersionHeader(vvRestClient, version);
-        }
-    };
-
     @AfterInject
     public void init() {
-        initClient(vvRestClient, requestFactory);
+        setAcceptEncodingHeaderAndFactory(vvRestClient, requestFactory);
         setAcceptHeader(vvRestClient, VvFileHttpMessageConverter.X_VIRT_VIEWER_MEDIA_TYPE);
 
-        versionManager.notifyListener(versionChangedListener);
-        versionManager.registerListener(versionChangedListener);
+        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.VERSION, new PropertyChangedListener<Version>() {
+            @Override
+            public void onPropertyChange(Version property) {
+                setVersionHeader(vvRestClient, property);
+                setupAuth(vvRestClient, property);
+            }
+        });
+
+        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.API_URL, new PropertyChangedListener<String>() {
+            @Override
+            public void onPropertyChange(String property) {
+                vvRestClient.setRootUrl(property);
+            }
+        });
+
+        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.HAS_ADMIN_PERMISSIONS, new PropertyChangedListener<Boolean>() {
+            @Override
+            public void onPropertyChange(Boolean property) {
+                setFilterHeader(vvRestClient, property);
+            }
+        });
     }
 
     public void getConsoleConnectionDetails(final String vmId, final String consoleId, Response<ConsoleConnectionDetails> response) {

@@ -3,6 +3,7 @@ package org.ovirt.mobile.movirt.model;
 import android.support.annotation.NonNull;
 
 import java.util.List;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 public enum ConsoleProtocol {
@@ -19,8 +20,8 @@ public enum ConsoleProtocol {
         }
     }
 
-    public static TreeSet<ConsoleProtocol> getProtocolTypes(List<Console> consoles) {
-        TreeSet<ConsoleProtocol> result = new TreeSet<>(); // sorted, so that SPICE is first
+    public static SortedSet<ConsoleProtocol> getProtocolTypes(List<Console> consoles) {
+        SortedSet<ConsoleProtocol> result = new TreeSet<>();
 
         for (Console console : consoles) {
             result.add(console.getProtocol());

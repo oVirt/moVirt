@@ -1,6 +1,5 @@
 package org.ovirt.mobile.movirt.util.message;
 
-import android.accounts.AccountManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -17,7 +16,6 @@ import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.UiThread;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.model.CaCert;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -26,6 +24,7 @@ import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.net.MalformedURLException;
@@ -48,7 +47,7 @@ public class MessageHelper {
     NotificationHelper notificationHelper;
 
     @Bean
-    MovirtAuthenticator authenticator;
+    AccountPropertiesManager propertiesManager;
 
     @Bean
     SharedPreferencesHelper sharedPreferencesHelper;
@@ -167,24 +166,23 @@ public class MessageHelper {
     }
 
     private String getConnectionDetails() {
-        String token = AccountManager.get(context).peekAuthToken(
-                MovirtAuthenticator.MOVIRT_ACCOUNT,
-                MovirtAuthenticator.AUTH_TOKEN_TYPE);
+        String token = propertiesManager.peekAuthToken();
         if (token == null) {
             token = context.getString(R.string.rest_error_detail_token_missing);
         }
-        String apiUrl = "";
+
         StringBuilder certificate = new StringBuilder();
-        if (authenticator.getApiUrl() != null) {
-            apiUrl = authenticator.getApiUrl();
-            URL url;
+        String apiUrl = propertiesManager.getApiUrl();
+        if (apiUrl != null) {
             try {
-                url = new URL(apiUrl);
+                URL url = new URL(apiUrl);
+                CertHandlingStrategy certHandlingStrategy = propertiesManager.getCertHandlingStrategy();
+
                 if (url.getProtocol().equalsIgnoreCase("https")) {
                     certificate.append("\n").append(context.getString(R.string.rest_error_detail_certificate_strategy,
-                            authenticator.getCertHandlingStrategy().toString()));
+                            certHandlingStrategy.toString()));
                 }
-                if (authenticator.getCertHandlingStrategy() == CertHandlingStrategy.TRUST_CUSTOM) {
+                if (certHandlingStrategy == CertHandlingStrategy.TRUST_CUSTOM) {
                     boolean hasCert = provider.query(CaCert.class).all().size() > 0;
                     certificate.append("\n\t")
                             .append(context.getString(hasCert ? R.string.rest_error_detail_certificate_stored :
@@ -197,7 +195,7 @@ public class MessageHelper {
             apiUrl = context.getString(R.string.rest_error_detail_missing_url);
         }
         return context.getString(R.string.rest_error_details,
-                apiUrl, authenticator.getUserName(), token, certificate.toString());
+                apiUrl, propertiesManager.getUsername(), token, certificate.toString());
     }
 
     private ConnectionInfo updateConnectionInfo(boolean success) {

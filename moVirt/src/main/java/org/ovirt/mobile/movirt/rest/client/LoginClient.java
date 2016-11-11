@@ -4,19 +4,19 @@ import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.rest.spring.annotations.RestService;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.rest.OvirtTimeoutSimpleClientHttpRequestFactory;
 import org.ovirt.mobile.movirt.rest.dto.Api;
-import org.ovirt.mobile.movirt.util.VersionManager;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.util.properties.AccountProperty;
+import org.ovirt.mobile.movirt.util.properties.PropertyChangedListener;
 import org.springframework.util.StringUtils;
 
 import java.net.SocketTimeoutException;
 
 import static org.ovirt.mobile.movirt.rest.RestHelper.JSESSIONID;
-import static org.ovirt.mobile.movirt.rest.RestHelper.initClient;
-import static org.ovirt.mobile.movirt.rest.RestHelper.resetClientSettings;
+import static org.ovirt.mobile.movirt.rest.RestHelper.clearAuth;
+import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptEncodingHeaderAndFactory;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setPersistentV3AuthHeaders;
-import static org.ovirt.mobile.movirt.rest.RestHelper.updateClientBeforeCall;
 
 /**
  * Created by suomiy on 10/14/16.
@@ -33,18 +33,28 @@ public class LoginClient {
     OVirtLoginV4RestClient loginV4RestClient;
 
     @Bean
-    MovirtAuthenticator authenticator;
-
-    @Bean
-    VersionManager versionManager;
+    AccountPropertiesManager accountPropertiesManager;
 
     @Bean
     OvirtTimeoutSimpleClientHttpRequestFactory timeoutRequestFactory;
 
     @AfterInject
     public void init() {
-        initClient(loginV3RestClient, timeoutRequestFactory);
-        initClient(loginV4RestClient, timeoutRequestFactory);
+        setAcceptEncodingHeaderAndFactory(loginV3RestClient, timeoutRequestFactory);
+        setAcceptEncodingHeaderAndFactory(loginV4RestClient, timeoutRequestFactory);
+
+        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.API_URL, new PropertyChangedListener<String>() {
+            @Override
+            public void onPropertyChange(String property) {
+                loginV3RestClient.setRootUrl(property);
+            }
+        });
+        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.API_BASE_URL, new PropertyChangedListener<String>() {
+            @Override
+            public void onPropertyChange(String property) {
+                loginV4RestClient.setRootUrl(property);
+            }
+        });
     }
 
     /**
@@ -57,7 +67,6 @@ public class LoginClient {
 
         synchronized (loginV4RestClient) {
             try {
-                updateClientBeforeCall(loginV4RestClient, authenticator.getBaseUrl(), authenticator);
                 token = loginV4RestClient.login(username, password).getAccessToken();
             } catch (Exception ex) {// 405 Method Not Allowed - old API
                 Throwable cause = ex.getCause();
@@ -70,8 +79,7 @@ public class LoginClient {
         boolean oldApi = StringUtils.isEmpty(token);
 
         synchronized (loginV3RestClient) {
-            resetClientSettings(loginV3RestClient);
-            updateClientBeforeCall(loginV3RestClient, authenticator);
+            clearAuth(loginV3RestClient);
             if (oldApi) {
                 loginV3RestClient.setHttpBasicAuth(username, password);
                 setPersistentV3AuthHeaders(loginV3RestClient);
@@ -80,7 +88,7 @@ public class LoginClient {
             }
 
             Api api = loginV3RestClient.login();
-            versionManager.setApiVersion(api);
+            accountPropertiesManager.setApiVersion(api);
 
             if (oldApi && api != null) { // check for api because v4 may set JSESSIONID even if login was unsuccessful
                 token = loginV3RestClient.getCookie(JSESSIONID);

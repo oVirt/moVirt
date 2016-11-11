@@ -1,7 +1,6 @@
 package org.ovirt.mobile.movirt.rest;
 
 import android.accounts.AccountManager;
-import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.content.Context;
 import android.content.Intent;
@@ -12,24 +11,21 @@ import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
-import org.androidannotations.annotations.SystemService;
 import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.util.Version;
-import org.ovirt.mobile.movirt.util.VersionManager;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.util.properties.AccountProperty;
+import org.ovirt.mobile.movirt.util.properties.PropertyChangedListener;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
-import static org.ovirt.mobile.movirt.rest.RestHelper.JSESSIONID;
-import static org.ovirt.mobile.movirt.rest.RestHelper.resetClientSettings;
-import static org.ovirt.mobile.movirt.rest.RestHelper.setPersistentV3AuthHeaders;
-import static org.ovirt.mobile.movirt.rest.RestHelper.updateClientBeforeCall;
+import static org.ovirt.mobile.movirt.rest.RestHelper.prepareAuthToken;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class RequestHandler {
@@ -37,31 +33,22 @@ public class RequestHandler {
     @RootContext
     Context context;
 
-    @SystemService
-    AccountManager accountManager;
-
     @Bean
-    VersionManager versionManager;
-
-    @Bean
-    MovirtAuthenticator authenticator;
+    AccountPropertiesManager accountPropertiesManager;
 
     @Bean
     MessageHelper messageHelper;
 
-    private boolean isV3Api = true;
-
-    private final VersionManager.ApiVersionChangedListener versionChangedListener = new VersionManager.ApiVersionChangedListener() {
-        @Override
-        public void onVersionChanged(Version version) {
-            isV3Api = version.isV3Api();
-        }
-    };
+    private Version version;
 
     @AfterInject
     public void init() {
-        versionManager.notifyListener(versionChangedListener);
-        versionManager.registerListener(versionChangedListener);
+        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.VERSION, new PropertyChangedListener<Version>() {
+            @Override
+            public void onPropertyChange(Version property) {
+                version = property;
+            }
+        });
     }
 
     /**
@@ -72,11 +59,11 @@ public class RequestHandler {
             response.before();
         }
 
-        RestCallResult result = doFireRequestWithPersistentAuth(request, response, request.getRestClient()); // not possible to create generic variable inside
+        RestCallResult result = doFireRequestWithPersistentAuth(request, response);
         if (result == RestCallResult.AUTH_ERROR) {
             // if it is an expired session it has been cleared - try again.
             // If the credentials were filled well, now it will pass
-            result = doFireRequestWithPersistentAuth(request, response, request.getRestClient());
+            result = doFireRequestWithPersistentAuth(request, response);
         }
 
         if (result != RestCallResult.SUCCESS && response != null) {
@@ -88,28 +75,19 @@ public class RequestHandler {
         }
     }
 
-    private <T, U extends RestClientRootUrl & RestClientHeaders & RestClientSupport> RestCallResult doFireRequestWithPersistentAuth(Request<T> request, Response<T> response, U restClient) {
-        AccountManagerFuture<Bundle> resp = accountManager.getAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, null, false, null, null);
+    private <T, U extends RestClientRootUrl & RestClientHeaders & RestClientSupport> RestCallResult doFireRequestWithPersistentAuth(Request<T> request, Response<T> response) {
         RestCallResult result = RestCallResult.OTHER_ERROR;
-        String authToken = null;
+        U restClient = request.getRestClient();
 
         try {
-            Bundle bundle = resp.getResult();
+            Bundle bundle = accountPropertiesManager.getAuthToken().getResult();
             if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
-                authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
+                String authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
 
                 if (TextUtils.isEmpty(authToken)) {
                     messageHelper.showError(ErrorType.REST_MAJOR, context.getString(R.string.rest_token_missing));
                 } else {
-                    resetClientSettings(restClient);
-                    updateClientBeforeCall(restClient, authenticator);
-                    if (isV3Api) {
-                        restClient.setCookie(JSESSIONID, authToken);
-                        setPersistentV3AuthHeaders(restClient);
-                    } else {
-                        restClient.setBearerAuth(authToken);
-                    }
-
+                    prepareAuthToken(restClient, version, authToken);
                     T restResponse = request.fire();
                     result = RestCallResult.SUCCESS;
                     if (response != null) {
@@ -132,8 +110,7 @@ public class RequestHandler {
             switch (e.getStatusCode()) {
                 case UNAUTHORIZED:
                     // ok, session id is not valid anymore - invalidate it
-                    accountManager.invalidateAuthToken(MovirtAuthenticator.AUTH_TOKEN_TYPE, authToken);
-                    accountManager.setAuthToken(MovirtAuthenticator.MOVIRT_ACCOUNT, MovirtAuthenticator.AUTH_TOKEN_TYPE, null);
+                    accountPropertiesManager.setAuthToken(null);
                     result = RestCallResult.AUTH_ERROR;
                     break;
                 case NOT_FOUND:
