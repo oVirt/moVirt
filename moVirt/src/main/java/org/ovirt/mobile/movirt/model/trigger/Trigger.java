@@ -37,7 +37,7 @@ public class Trigger<E extends BaseEntity<?>> extends BaseEntity<Integer> implem
         INFO(R.string.notification_type_info),
         CRITICAL(R.string.notification_type_critical);
 
-        private int displayResource;
+        private final int displayResource;
 
         NotificationType(int displayResource) {
             this.displayResource = displayResource;

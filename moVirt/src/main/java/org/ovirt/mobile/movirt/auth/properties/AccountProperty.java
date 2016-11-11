@@ -1,6 +1,11 @@
 package org.ovirt.mobile.movirt.auth.properties;
 
 import org.ovirt.mobile.movirt.Constants;
+import org.ovirt.mobile.movirt.auth.Cert;
+
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * Types of Account Properties
@@ -31,7 +36,7 @@ public enum AccountProperty {
      */
     USERNAME,
     /**
-     * Should be used together with {@link String}.
+     * Should be used together with {@link String}. See also {@linkplain this#getDependentProperties()}
      */
     API_URL,
     /**
@@ -51,13 +56,30 @@ public enum AccountProperty {
      */
     HAS_ADMIN_PERMISSIONS,
     /**
-     * Should be used together with {@link org.ovirt.mobile.movirt.auth.CaCert org.ovirt.mobile.movirt.auth.CaCert[]}.
+     * Should be used together with {@link Cert org.ovirt.mobile.movirt.auth.Cert[]}.
      */
-    CERTIFICATE_CHAIN;
+    CERTIFICATE_CHAIN,
+    /**
+     * Should be used together with {@link String}. This property is not settable.
+     */
+    VALID_HOSTNAMES(false),
+    /**
+     * Should be used together with {@link String String[] }. See also {@linkplain this#getDependentProperties()}
+     */
+    VALID_HOSTNAME_LIST;
 
     private boolean settable = true;
 
+    private Set<AccountProperty> dependentProperties = Collections.unmodifiableSet(Collections.<AccountProperty>emptySet());
+
     private String packageKey = Constants.APP_PACKAGE_DOT + this.name();
+
+    static {
+        API_URL.dependentProperties = Collections.unmodifiableSet(EnumSet.of(
+                API_BASE_URL));
+        VALID_HOSTNAME_LIST.dependentProperties = Collections.unmodifiableSet(EnumSet.of(
+                VALID_HOSTNAMES));
+    }
 
     AccountProperty() {
     }
@@ -68,6 +90,15 @@ public enum AccountProperty {
 
     public boolean isSettable() {
         return settable;
+    }
+
+    /**
+     * Any change on this property will also fire changes in dependent properties
+     *
+     * @return dependent properties of this property
+     */
+    public Set<AccountProperty> getDependentProperties() {
+        return dependentProperties;
     }
 
     public String getPackageKey() {

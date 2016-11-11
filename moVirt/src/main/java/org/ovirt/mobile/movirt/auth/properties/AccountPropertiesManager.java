@@ -8,7 +8,7 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.UiThread;
-import org.ovirt.mobile.movirt.auth.CaCert;
+import org.ovirt.mobile.movirt.auth.Cert;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.rest.dto.Api;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
@@ -229,16 +229,34 @@ public class AccountPropertiesManager {
     }
 
     @NonNull
-    public CaCert[] getCertificateChain() {
-        return authenticator.getResource(AccountProperty.CERTIFICATE_CHAIN, CaCert[].class);
+    public Cert[] getCertificateChain() {
+        return authenticator.getResource(AccountProperty.CERTIFICATE_CHAIN, Cert[].class);
     }
 
-    public boolean setCertificateChain(CaCert[] certChain) {
+    public boolean setCertificateChain(Cert[] certChain) {
         return setCertificateChain(certChain, OnThread.CURRENT);
     }
 
-    public boolean setCertificateChain(CaCert[] certChain, OnThread runOnThread) {
+    public boolean setCertificateChain(Cert[] certChain, OnThread runOnThread) {
         return setAndNotify(runOnThread, AccountProperty.CERTIFICATE_CHAIN, certChain);
+    }
+
+    @NonNull
+    public String getValidHostnames() {
+        return authenticator.getResource(AccountProperty.VALID_HOSTNAMES, String.class);
+    }
+
+    @NonNull
+    public String[] getValidHostnameList() {
+        return authenticator.getResource(AccountProperty.VALID_HOSTNAME_LIST, String[].class);
+    }
+
+    public boolean setValidHostnameList(String[] hostnameList) {
+        return setValidHostnameList(hostnameList, OnThread.CURRENT);
+    }
+
+    public boolean setValidHostnameList(String[] hostnameList, OnThread runOnThread) {
+        return setAndNotify(runOnThread, AccountProperty.VALID_HOSTNAME_LIST, hostnameList);
     }
 
     /**
@@ -272,16 +290,18 @@ public class AccountPropertiesManager {
             authenticator.setResource(property, object);
             if (!propertyDiffers(property, object)) { // setter worked
                 notifyListeners(runOnThread, property, authenticator.getResource(property)); // get set value
-                switch (property) {
-                    case API_URL:
-                        notifyListeners(runOnThread, AccountProperty.API_BASE_URL, authenticator.getResource(AccountProperty.API_BASE_URL));
-                        break;
-                }
+                notifyDependentProperties(runOnThread, property);
             } else {
                 throw new IllegalStateException("Setter of account property " + property.name() + " doesn't set anything!");
             }
         }
         return propertyChanged;
+    }
+
+    private void notifyDependentProperties(OnThread runOnThread, AccountProperty property) {
+        for (AccountProperty prop : property.getDependentProperties()) {
+            notifyListeners(runOnThread, prop, authenticator.getResource(prop));
+        }
     }
 
     private void notifyListeners(OnThread runOnThread, AccountProperty property, Object o) {

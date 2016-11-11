@@ -5,7 +5,7 @@ import android.util.Log;
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.auth.CaCert;
+import org.ovirt.mobile.movirt.auth.Cert;
 import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
@@ -55,15 +55,22 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
             }
         });
 
-        propertiesManager.registerListener(AccountProperty.CERTIFICATE_CHAIN, new PropertyChangedListener<CaCert[]>() {
+        propertiesManager.registerListener(AccountProperty.CERTIFICATE_CHAIN, new PropertyChangedListener<Cert[]>() {
             @Override
-            public void onPropertyChange(CaCert[] property) {
+            public void onPropertyChange(Cert[] property) {
                 onHandlingModeChange(certificateHandlingMode, property);
+            }
+        });
+
+        propertiesManager.notifyAndRegisterListener(AccountProperty.VALID_HOSTNAME_LIST, new PropertyChangedListener<String[]>() {
+            @Override
+            public void onPropertyChange(String[] property) {
+                listHostnameVerifier.setTrustedHosts(property);
             }
         });
     }
 
-    private void onHandlingModeChange(CertHandlingStrategy certificateHandlingMode, CaCert[] certChain) {
+    private void onHandlingModeChange(CertHandlingStrategy certificateHandlingMode, Cert[] certChain) {
         this.certificateHandlingMode = certificateHandlingMode;
 
         switch (certificateHandlingMode) {
@@ -127,15 +134,14 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
         }
     }
 
-    private void trustImportedCert(CaCert[] certChain) {
+    private void trustImportedCert(Cert[] certChain) {
         try {
             String keyStoreType = KeyStore.getDefaultType();
             KeyStore keyStore = KeyStore.getInstance(keyStoreType);
             keyStore.load(null, null);
             // try to add certificate - if adding fails do not trust anything
-            CaCert cert = (certChain.length == 1) ? certChain[0] : null;
+            Cert cert = (certChain.length == 1) ? certChain[0] : null;
             if (cert != null) {
-                listHostnameVerifier.initToTrustedHosts(cert.validForAsList());
                 keyStore.setCertificateEntry("ca", cert.asCertificate());
             }
 

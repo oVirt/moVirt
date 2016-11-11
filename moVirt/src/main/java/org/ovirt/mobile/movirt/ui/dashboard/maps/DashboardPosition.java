@@ -10,7 +10,7 @@ public enum DashboardPosition {
     UNKNOWN(-1), FIRST(0), SECOND(1), THIRD(2);
 
     private static Map<Integer, DashboardPosition> map;
-    private int value;
+    private final int value;
 
     static {
         DashboardPosition[] values = DashboardPosition.values();

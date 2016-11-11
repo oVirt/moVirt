@@ -3,6 +3,7 @@ package org.ovirt.mobile.movirt.ui.dashboard.maps;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ public enum StorageStatusMap {
     UP(StorageDomain.Status.ACTIVE),
     DOWN(StorageDomain.Status.UNKNOWN, StorageDomain.Status.LOCKED);
 
-    private List<StorageDomain.Status> values;
+    private final List<StorageDomain.Status> values;
     private static Map<StorageDomain.Status, StorageStatusMap> map = new EnumMap<>(StorageDomain.Status.class);
 
     static {
@@ -30,7 +31,7 @@ public enum StorageStatusMap {
     }
 
     StorageStatusMap(StorageDomain.Status... values) {
-        this.values = Arrays.asList(values);
+        this.values = Collections.unmodifiableList(Arrays.asList(values));
     }
 
     public List<StorageDomain.Status> getValues() {

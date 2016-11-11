@@ -6,7 +6,7 @@ public enum Relation {
     NOT_EQUAL(" <> "),
     IS_LIKE(" LIKE ");
 
-    String val;
+    private final String val;
 
     Relation(String val) {
         this.val = val;

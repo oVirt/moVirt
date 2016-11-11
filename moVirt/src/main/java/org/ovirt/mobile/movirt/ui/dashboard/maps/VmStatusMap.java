@@ -3,6 +3,7 @@ package org.ovirt.mobile.movirt.ui.dashboard.maps;
 import org.ovirt.mobile.movirt.model.Vm;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ public enum VmStatusMap {
     DOWN(Vm.Status.DOWN, Vm.Status.NOT_RESPONDING, Vm.Status.REBOOT_IN_PROGRESS,
             Vm.Status.IMAGE_LOCKED);
 
-    private List<Vm.Status> values;
+    private final List<Vm.Status> values;
     private static Map<Vm.Status, VmStatusMap> map = new EnumMap<>(Vm.Status.class);
 
     static {
@@ -30,7 +31,7 @@ public enum VmStatusMap {
     }
 
     VmStatusMap(Vm.Status... values) {
-        this.values = Arrays.asList(values);
+        this.values = Collections.unmodifiableList(Arrays.asList(values));
     }
 
     public List<Vm.Status> getValues() {

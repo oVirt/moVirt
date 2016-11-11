@@ -5,7 +5,7 @@ public enum CertHandlingStrategy {
     TRUST_CUSTOM(1),
     TRUST_ALL(2);
 
-    long index;
+    private final long index;
 
     CertHandlingStrategy(long index) {
         this.index = index;

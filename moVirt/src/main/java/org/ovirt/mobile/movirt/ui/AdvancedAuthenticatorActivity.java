@@ -26,13 +26,15 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.CaCert;
+import org.ovirt.mobile.movirt.auth.Cert;
 import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
+import org.ovirt.mobile.movirt.auth.properties.ParseUtils;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
+import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 
 import java.io.BufferedInputStream;
@@ -120,14 +122,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                CaCert[] certs = propertiesManager.getCertificateChain();
-                if (certs.length == 1) {
-                    CaCert cert = certs[0];
-                    if (!cert.getValidFor().equals(s.toString())) { // check here, because it is expensive to check full array in propertiesManager
-                        cert.setValidFor(s.toString());
-                        propertiesManager.setCertificateChain(certs);
-                    }
-                }
+                propertiesManager.setValidHostnameList(ParseUtils.parseHostnames(s.toString()));
             }
 
             @Override
@@ -141,37 +136,40 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         propertiesManager.notifyAndRegisterListener(AccountProperty.CERT_HANDLING_STRATEGY, new PropertyChangedListener<CertHandlingStrategy>() {
             @Override
             public void onPropertyChange(CertHandlingStrategy property) {
-                updateViews(property, propertiesManager.getCertificateChain());
+                updateViews(property, null);
             }
         });
 
-        propertiesManager.registerListener(AccountProperty.CERTIFICATE_CHAIN, new PropertyChangedListener<CaCert[]>() {
+        propertiesManager.registerListener(AccountProperty.CERTIFICATE_CHAIN, new PropertyChangedListener<Cert[]>() {
             @Override
-            public void onPropertyChange(CaCert[] property) {
+            public void onPropertyChange(Cert[] property) {
                 updateViews(propertiesManager.getCertHandlingStrategy(), property);
+            }
+        });
+
+        propertiesManager.notifyAndRegisterListener(AccountProperty.VALID_HOSTNAMES, new PropertyChangedListener<String>() {
+            @Override
+            public void onPropertyChange(String property) {
+                updateHostnames(property);
             }
         });
     }
 
     @UiThread(propagation = UiThread.Propagation.REUSE)
-    void updateViews(CertHandlingStrategy certHandlingStrategy, CaCert[] caCerts) {
-        int id = (int) certHandlingStrategy.id();
-        if (certHandlingStrategySpinner.getSelectedItemId() != id) { // check it was not fired by by view listener
-            certHandlingStrategySpinner.setSelection((int) certHandlingStrategy.id());
-        }
+    void updateViews(CertHandlingStrategy certHandlingStrategy, Cert[] certs) {
+        updateCertHandlingStrategy(certHandlingStrategy);
 
         switch (certHandlingStrategy) {
             case TRUST_CUSTOM:
                 seCustomCertVisibility(true);
-                if (caCerts.length == 1) {
-                    setCertDataToView(caCerts[0]);
-                } else {
-                    setCertDataToView(null);
+                if (certs == null) {
+                    certs = propertiesManager.getCertificateChain();
                 }
+                showCerts(certs);
                 break;
             default:
                 seCustomCertVisibility(false);
-                setCertDataToView(null);
+                hideCertDetail();
                 break;
         }
     }
@@ -180,6 +178,53 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         txtCaUrl.setVisibility(visible ? View.VISIBLE : View.GONE);
         btnDelete.setVisibility(visible ? View.VISIBLE : View.GONE);
         btnLoad.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
+    private void updateCertHandlingStrategy(CertHandlingStrategy certHandlingStrategy) {
+        int id = (int) certHandlingStrategy.id();
+        if (certHandlingStrategySpinner.getSelectedItemId() != id) { // check it was not fired by by view listener
+            certHandlingStrategySpinner.setSelection((int) certHandlingStrategy.id());
+        }
+    }
+
+    @UiThread(propagation = UiThread.Propagation.REUSE)
+    void updateHostnames(String hostnames) {
+        boolean propertyDiffers = propertiesManager.propertyDiffers(AccountProperty.VALID_HOSTNAME_LIST,
+                ParseUtils.parseHostnames(txtValidForHostnames.getText().toString()));
+        if (propertyDiffers) {  // check if it is different after parsing
+            txtValidForHostnames.setText(hostnames);
+        }
+    }
+
+    private void showCerts(Cert[] certs) {
+        if (certs.length > 0) {
+            String caValue = "";
+            for (Cert cert : certs) {
+                caValue += cert.asCertificate().toString();
+            }
+            setCertToView(caValue, true);
+        } else {
+            hideCertDetail();
+        }
+    }
+
+    private void hideCertDetail() {
+        setCertToView("", false);
+    }
+
+    private void setCertToView(String caValue, boolean visible) {
+        if (btnDelete != null) {
+            btnDelete.setEnabled(visible);
+        }
+
+        if (txtValidForHostnames != null) {
+            txtValidForHostnames.setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
+
+        if (txtCertDetails != null) {
+            txtCertDetails.setVisibility(visible ? View.VISIBLE : View.GONE);
+            txtCertDetails.setText(caValue);
+        }
     }
 
     @Click(R.id.btnDelete)
@@ -203,7 +248,8 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
 
     @Background
     void deleteAllCerts() {
-        propertiesManager.setCertificateChain(new CaCert[]{});
+        propertiesManager.setCertificateChain(new Cert[]{});
+        propertiesManager.setValidHostnameList(new String[]{});
     }
 
     @Background
@@ -251,11 +297,12 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
 
         try {
             Certificate ca = cf.generateCertificate(caInput);
-            storeImportedCa(ca, url.getHost());
-        } catch (CertificateException e) {
+            propertiesManager.setValidHostnameList(new String[]{url.getHost()});
+            storeImportedCa(ca);
+        } catch (Exception e) {
             hideProgressBar();
-            showToast("Error CA generation: " + e.getMessage());
-            return;
+            deleteAllCerts(); // hostname and ca must be atomic
+            messageHelper.showError(ErrorType.NORMAL, e, "Error storing certificate");
         } finally {
             try {
                 caInput.close();
@@ -267,67 +314,29 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         }
     }
 
-    void setCertDataToView(CaCert cert) {
-        boolean visible = cert != null;
-
-        String caValue = visible ? cert.asCertificate().toString() : "";
-        String urlsValue = visible ? cert.getValidFor() : "";
-
-        if (btnDelete != null) {
-            btnDelete.setEnabled(visible);
-        }
-
-        if (txtCertDetails != null) {
-            txtCertDetails.setVisibility(visible ? View.VISIBLE : View.GONE);
-            if (visible && !txtCertDetails.getText().equals(caValue)) { // ignore setter when set to null && check it was not fired by by view listener
-                txtCertDetails.setText(caValue);
-            }
-        }
-
-        if (txtValidForHostnames != null) {
-            txtValidForHostnames.setVisibility(visible ? View.VISIBLE : View.GONE);
-            if (visible && !txtValidForHostnames.getText().toString().equals(urlsValue)) { // same
-                txtValidForHostnames.setText(urlsValue);
-            }
-        }
-    }
-
-    boolean storeImportedCa(Certificate ca, String validFor) {
-        if (ca == null) {
-            return false;
+    private void storeImportedCa(Certificate certificate) throws Exception {
+        if (certificate == null) {
+            throw new IllegalArgumentException("Certificate is null");
         }
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutput out = null;
         try {
-            try {
-                out = new ObjectOutputStream(bos);
-                out.writeObject(ca);
-                byte[] caAsBlob = bos.toByteArray();
-                CaCert caCert = new CaCert();
-                caCert.setContent(caAsBlob);
-                caCert.setValidFor(validFor);
-                propertiesManager.setCertificateChain(new CaCert[]{caCert}); // current thread is already background
-            } catch (IOException e) {
-                e.printStackTrace();
-                showToast("Error storing certificate: " + e.getMessage());
-                return false;
-            }
+            out = new ObjectOutputStream(bos);
+            out.writeObject(certificate);
+            byte[] caAsBlob = bos.toByteArray();
+            Cert cert = new Cert();
+            cert.setContent(caAsBlob);
+            propertiesManager.setCertificateChain(new Cert[]{cert}); // current thread is already background
         } finally {
             try {
                 if (out != null) {
                     out.close();
                 }
-            } catch (IOException ignore) {
-            }
-            try {
+            } finally {
                 bos.close();
-            } catch (IOException ignore) {
             }
         }
-
-        // if the output stream is not closed successfully the cert is still stored well
-        return true;
     }
 
     void showToast(String msg) {
