@@ -5,9 +5,9 @@ import android.util.Log;
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.model.CaCert;
-import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.auth.CaCert;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.util.properties.AccountProperty;
@@ -17,10 +17,8 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.security.KeyStore;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -41,9 +39,6 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
     ListHostnameVerifier listHostnameVerifier;
 
     @Bean
-    ProviderFacade providerFacade;
-
-    @Bean
     MessageHelper messageHelper;
 
     @Bean
@@ -56,12 +51,19 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
         propertiesManager.notifyAndRegisterListener(AccountProperty.CERT_HANDLING_STRATEGY, new PropertyChangedListener<CertHandlingStrategy>() {
             @Override
             public void onPropertyChange(CertHandlingStrategy property) {
-                onHandlingModeChange(property);
+                onHandlingModeChange(property, null);
+            }
+        });
+
+        propertiesManager.registerListener(AccountProperty.CERTIFICATE_CHAIN, new PropertyChangedListener<CaCert[]>() {
+            @Override
+            public void onPropertyChange(CaCert[] property) {
+                onHandlingModeChange(certificateHandlingMode, property);
             }
         });
     }
 
-    private void onHandlingModeChange(CertHandlingStrategy certificateHandlingMode) {
+    private void onHandlingModeChange(CertHandlingStrategy certificateHandlingMode, CaCert[] certChain) {
         this.certificateHandlingMode = certificateHandlingMode;
 
         switch (certificateHandlingMode) {
@@ -69,7 +71,10 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
                 trustOnlyKnownCerts();
                 break;
             case TRUST_CUSTOM:
-                trustImportedCert();
+                if (certChain == null) {
+                    certChain = propertiesManager.getCertificateChain();
+                }
+                trustImportedCert(certChain);
                 break;
             case TRUST_ALL:
                 trustAllHosts();
@@ -118,30 +123,21 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
             HttpsURLConnection
                     .setDefaultSSLSocketFactory(sc.getSocketFactory());
         } catch (Exception e) {
-            e.printStackTrace();
+            messageHelper.showError(e);
         }
     }
 
-    private void trustImportedCert() {
-        Collection<CaCert> caCerts = providerFacade.query(CaCert.class).all();
-        if (caCerts.size() == 1) {
-            try {
-                CaCert cert = caCerts.iterator().next();
-                installCustomCertificate(cert.asCertificate());
-                listHostnameVerifier.initToTrustedHosts(cert.validForAsList());
-            } catch (Exception e) {
-                e.printStackTrace();
-                incorrectCustomCertificate();
-            }
-        }
-    }
-
-    private void installCustomCertificate(Certificate ca) {
+    private void trustImportedCert(CaCert[] certChain) {
         try {
             String keyStoreType = KeyStore.getDefaultType();
             KeyStore keyStore = KeyStore.getInstance(keyStoreType);
             keyStore.load(null, null);
-            keyStore.setCertificateEntry("ca", ca);
+            // try to add certificate - if adding fails do not trust anything
+            CaCert cert = (certChain.length == 1) ? certChain[0] : null;
+            if (cert != null) {
+                listHostnameVerifier.initToTrustedHosts(cert.validForAsList());
+                keyStore.setCertificateEntry("ca", cert.asCertificate());
+            }
 
             // Create a TrustManager that trusts the CAs in our KeyStore
             String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
@@ -154,14 +150,10 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
             HttpsURLConnection
                     .setDefaultSSLSocketFactory(context.getSocketFactory());
         } catch (Exception e) {
-            messageHelper.showToast("Error installing certificate - trusting only known certificates" + e.getMessage());
-            trustOnlyKnownCerts();
+            messageHelper.showError(ErrorType.NORMAL, e,
+                    "Error installing custom certificates - trusting system certificates!");
+            propertiesManager.setCertHandlingStrategy(CertHandlingStrategy.TRUST_SYSTEM);
         }
-    }
-
-    private void incorrectCustomCertificate() {
-        messageHelper.showToast("The CA is not correct - trusting only known certificates");
-        trustOnlyKnownCerts();
     }
 
     /**
@@ -171,7 +163,7 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
         try {
             HttpsURLConnection.setDefaultSSLSocketFactory((SSLSocketFactory) SSLSocketFactory.getDefault());
         } catch (Exception e) {
-            e.printStackTrace();
+            messageHelper.showError(e);
         }
     }
 }

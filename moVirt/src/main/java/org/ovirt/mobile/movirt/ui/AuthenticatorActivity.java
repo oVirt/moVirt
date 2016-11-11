@@ -1,5 +1,6 @@
 package org.ovirt.mobile.movirt.ui;
 
+import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
 import android.app.DialogFragment;
@@ -14,7 +15,6 @@ import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.ProgressBar;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
@@ -59,7 +59,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     private static final String[] URL_COMPLETE = {"http://", "https://", "ovirt-engine/api", "80",
             "443", "api"};
     private static final String[] USERNAME_COMPLETE = {"admin@", "internal", "admin@internal"};
-    private static int REQUEST_ACCOUNT_DETAILS = 1;
     private static volatile boolean inProgress;
 
     public static final String SHOW_ADVANCED_AUTHENTICATOR = "SHOW_ADVANCED_AUTHENTICATOR";
@@ -93,10 +92,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     @Bean
     ProviderFacade providerFacade;
     @InstanceState
-    CertHandlingStrategy certHandlingStrategy;
-    @InstanceState
-    boolean advancedFieldsInited = false;
-    @InstanceState
     URL endpointUrl;
     @InstanceState
     String username;
@@ -111,6 +106,12 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
 
     @AfterViews
     void init() {
+        if (!propertiesManager.accountConfigured()) {
+            if (authenticator.initAccount("")) {
+                messageHelper.showToast("Added new account.");
+            }
+        }
+
         txtEndpoint.setText(propertiesManager.getApiUrl());
         ArrayAdapter<String> urlAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, URL_COMPLETE);
@@ -187,34 +188,11 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         }
     }
 
-    @AfterInject
-    void initAdvanced() {
-        if (advancedFieldsInited) {
-            return;
-        }
-        advancedFieldsInited = true;
-
-        certHandlingStrategy = propertiesManager.getCertHandlingStrategy();
-    }
-
     @Click(R.id.btnAdvanced)
     public void btnAdvancedClicked() {
         Intent intent = new Intent(this, AdvancedAuthenticatorActivity_.class);
-        intent.putExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY, certHandlingStrategy.id());
         intent.putExtra(AdvancedAuthenticatorActivity.LOAD_CA_FROM, txtEndpoint.getText().toString());
-        startActivityForResult(intent, REQUEST_ACCOUNT_DETAILS);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_ACCOUNT_DETAILS) {
-            if (resultCode == RESULT_OK) {
-                long certHandlingStrategyId = data.getLongExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY, certHandlingStrategy.id());
-                certHandlingStrategy = CertHandlingStrategy.from(certHandlingStrategyId);
-            }
-        }
+        startActivity(intent);
     }
 
     @Click(R.id.btnCreate)
@@ -274,9 +252,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         boolean urlChanged = propertiesManager.propertyDiffers(AccountProperty.API_URL, endpoint);
 
         try {
-            if (!propertiesManager.accountConfigured()) {
-                authenticator.initAccount(password);
-            }
             setLoginInProgress(true); // disables syncs because setUserData() may trigger sync
             // without option SYNC_EXTRAS_EXPEDITED which may be interrupted by our future sync with option SYNC_EXTRAS_EXPEDITED
             setUserData(endpoint, username, password, adminPriv);
@@ -311,12 +286,11 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         }
     }
 
-
     void onLoginResultReceived(String token, boolean urlChanged, boolean usernameChanged) {
         if (TextUtils.isEmpty(token)) {
             setLoginInProgress(false);
             messageHelper.showError(ErrorType.LOGIN,
-                    getString(R.string.login_error_empty_token, getString(R.string.ca_management)));
+                    getString(R.string.login_error_empty_token, getString(R.string.certificate_management)));
             return;
         }
 
@@ -335,12 +309,13 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         messageHelper.showToast(getString(R.string.login_success));
         syncUtils.triggerRefresh();
 
+        Account account = authenticator.getAccount();
         final Intent intent = new Intent();
-        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, MovirtAuthenticator.ACCOUNT_NAME);
-        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, MovirtAuthenticator.ACCOUNT_TYPE);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, account.type);
         intent.putExtra(AccountManager.KEY_AUTHTOKEN, token);
 
-        setAccountAuthenticatorResult(intent.getExtras());
+//        setAccountAuthenticatorResult(intent.getExtras());
         setResult(RESULT_OK, intent);
         finish();
     }
@@ -401,8 +376,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         propertiesManager.setApiUrl(apiUrl);
         propertiesManager.setUsername(name);
         propertiesManager.setAdminPermissions(hasAdminPermissions);
-        propertiesManager.setCertHandlingStrategy(CertHandlingStrategy.TRUST_ALL); // refreshes saved certificate TODO: this is only temporary, will be fixed in the next patch, where listener for certificates will be used
-        propertiesManager.setCertHandlingStrategy(certHandlingStrategy);
         propertiesManager.setPassword(password); // triggers sync in later APIs (Android 6)
     }
 

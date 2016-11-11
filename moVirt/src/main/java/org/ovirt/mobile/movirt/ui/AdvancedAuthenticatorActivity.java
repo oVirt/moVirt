@@ -2,11 +2,10 @@ package org.ovirt.mobile.movirt.ui;
 
 import android.app.DialogFragment;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
+import android.text.Editable;
 import android.text.TextUtils;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -22,26 +21,23 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.OptionsItem;
-import org.androidannotations.annotations.OptionsMenu;
-import org.androidannotations.annotations.OptionsMenuItem;
 import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.CaCert;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
-import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.auth.CaCert;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.util.properties.AccountProperty;
+import org.ovirt.mobile.movirt.util.properties.PropertyChangedListener;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutput;
@@ -51,22 +47,16 @@ import java.net.URL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.util.Collection;
+
+import static org.ovirt.mobile.movirt.Constants.APP_PACKAGE_DOT;
 
 @EActivity(R.layout.activity_advanced_authenticator)
-@OptionsMenu(R.menu.advanced_authenticator)
 public class AdvancedAuthenticatorActivity extends ActionBarActivity
         implements ConfirmDialogFragment.ConfirmDialogListener, CreateDialogBroadcastReceiver {
+    public final static String LOAD_CA_FROM = APP_PACKAGE_DOT + "ui.LOAD_CA_FROM";
 
-    public final static String CERT_HANDLING_STRATEGY = "org.ovirt.mobile.movirt.ui.CERT_HANDLING_STRATEGY";
-    public final static String LOAD_CA_FROM = "org.ovirt.mobile.movirt.ui.LOAD_CA_FROM";
-    public final static String MODE = "org.ovirt.mobile.movirt.ui.MODE";
-    public final static int MODE_REST_CA_MANAGEMENT = 1;
-    public final static int MODE_SPICE_CA_MANAGEMENT = 2;
-    @Bean
-    ProviderFacade providerFacade;
     @ViewById
-    Spinner certHandlingStrategy;
+    Spinner certHandlingStrategySpinner;
     @ViewById
     EditText txtCaUrl;
     @ViewById
@@ -77,22 +67,14 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
     Button btnDelete;
     @ViewById
     Button btnLoad;
-    @InstanceState
-    Certificate certificate;
     @ViewById
     ProgressBar progress;
     @InstanceState
     boolean inProgress;
-    @InstanceState
-    byte[] caCert;
-    @InstanceState
-    int mode;
-    @OptionsMenuItem(R.id.action_rest_ca_management)
-    MenuItem menuRestCaManagement;
-    @OptionsMenuItem(R.id.action_spice_ca_management)
-    MenuItem menuSpiceCaManagement;
     @Bean
     MessageHelper messageHelper;
+    @Bean
+    AccountPropertiesManager propertiesManager;
 
     @AfterViews
     void init() {
@@ -102,15 +84,6 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         } else {
             hideProgressBar();
         }
-
-        if (mode == 0) {
-            mode = getIntent().getIntExtra(MODE, MODE_REST_CA_MANAGEMENT);
-        }
-
-        certHandlingStrategy.setOnItemSelectedListener(new CertHandlingSelectionChanged());
-
-        long handlingStrategyId = getIntent().getLongExtra(CERT_HANDLING_STRATEGY, CertHandlingStrategy.TRUST_SYSTEM.id());
-        certHandlingStrategy.setSelection((int) handlingStrategyId);
 
         String endpoint = getIntent().getStringExtra(LOAD_CA_FROM);
         if (!TextUtils.isEmpty(endpoint)) {
@@ -122,92 +95,91 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
             }
         }
 
-        updateViews();
+        setViewListeners();
+        setPropertyListeners();
     }
 
-    private void updateViews() {
-        switch (mode) {
-            case MODE_REST_CA_MANAGEMENT:
-                certHandlingStrategy.setVisibility(View.VISIBLE);
-                setCertDataToView(null, null);
+    private void setViewListeners() {
+        certHandlingStrategySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                propertiesManager.setCertHandlingStrategy(CertHandlingStrategy.from(id), AccountPropertiesManager.OnThread.BACKGROUND);
+            }
 
-                if (CertHandlingStrategy.from(certHandlingStrategy.getSelectedItemId()) == CertHandlingStrategy.TRUST_CUSTOM) {
-                    setVisibilityForCaViews(true);
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
 
-                    Collection<CaCert> caCerts = providerFacade.query(CaCert.class).all();
-                    if (caCerts.size() == 1) {
-                        CaCert trustedCert = caCerts.iterator().next();
+            }
+        });
 
-                        setCertDataToView(trustedCert.asCertificate(), trustedCert.getValidFor());
-                        certificate = trustedCert.asCertificate();
+        txtValidForHostnames.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-                        btnDelete.setEnabled(true);
-                    } else {
-                        btnDelete.setEnabled(false);
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                CaCert[] certs = propertiesManager.getCertificateChain();
+                if (certs.length == 1) {
+                    CaCert cert = certs[0];
+                    if (!cert.getValidFor().equals(s.toString())) { // check here, because it is expensive to check full array in propertiesManager
+                        cert.setValidFor(s.toString());
+                        propertiesManager.setCertificateChain(certs);
                     }
-                } else {
-                    setVisibilityForCaViews(false);
                 }
+            }
 
-                setTitle(R.string.rest_ca_management);
+            @Override
+            public void afterTextChanged(Editable s) {
 
-                break;
-            case MODE_SPICE_CA_MANAGEMENT:
-                certHandlingStrategy.setVisibility(View.GONE);
-                setVisibilityForCaViews(true);
-                txtValidForHostnames.setVisibility(View.GONE);
-                setCertDataToView(null, null);
+            }
+        });
+    }
 
-                setTitle(R.string.spice_ca_management);
+    private void setPropertyListeners() {
+        propertiesManager.notifyAndRegisterListener(AccountProperty.CERT_HANDLING_STRATEGY, new PropertyChangedListener<CertHandlingStrategy>() {
+            @Override
+            public void onPropertyChange(CertHandlingStrategy property) {
+                updateViews(property, propertiesManager.getCertificateChain());
+            }
+        });
 
-                if (isCaFileExists()) {
-                    btnDelete.setEnabled(true);
+        propertiesManager.registerListener(AccountProperty.CERTIFICATE_CHAIN, new PropertyChangedListener<CaCert[]>() {
+            @Override
+            public void onPropertyChange(CaCert[] property) {
+                updateViews(propertiesManager.getCertHandlingStrategy(), property);
+            }
+        });
+    }
+
+    @UiThread(propagation = UiThread.Propagation.REUSE)
+    void updateViews(CertHandlingStrategy certHandlingStrategy, CaCert[] caCerts) {
+        int id = (int) certHandlingStrategy.id();
+        if (certHandlingStrategySpinner.getSelectedItemId() != id) { // check it was not fired by by view listener
+            certHandlingStrategySpinner.setSelection((int) certHandlingStrategy.id());
+        }
+
+        switch (certHandlingStrategy) {
+            case TRUST_CUSTOM:
+                seCustomCertVisibility(true);
+                if (caCerts.length == 1) {
+                    setCertDataToView(caCerts[0]);
                 } else {
-                    btnDelete.setEnabled(false);
+                    setCertDataToView(null);
                 }
-
                 break;
             default:
+                seCustomCertVisibility(false);
+                setCertDataToView(null);
                 break;
         }
     }
 
-    private void setVisibilityForCaViews(boolean visible) {
+    private void seCustomCertVisibility(boolean visible) {
         txtCaUrl.setVisibility(visible ? View.VISIBLE : View.GONE);
-        txtValidForHostnames.setVisibility(visible ? View.VISIBLE : View.GONE);
-        txtCertDetails.setVisibility(visible ? View.VISIBLE : View.GONE);
         btnDelete.setVisibility(visible ? View.VISIBLE : View.GONE);
         btnLoad.setVisibility(visible ? View.VISIBLE : View.GONE);
-    }
-
-    private boolean isCaFileExists() {
-        File file = new File(Constants.getCaCertPath(this));
-        return file.exists();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        updateMenuItem();
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    private void updateMenuItem() {
-        switch (mode) {
-            case MODE_REST_CA_MANAGEMENT:
-                if (menuRestCaManagement != null && menuSpiceCaManagement != null) {
-                    menuRestCaManagement.setVisible(false);
-                    menuSpiceCaManagement.setVisible(true);
-                }
-                break;
-            case MODE_SPICE_CA_MANAGEMENT:
-                if (menuRestCaManagement != null && menuSpiceCaManagement != null) {
-                    menuRestCaManagement.setVisible(true);
-                    menuSpiceCaManagement.setVisible(false);
-                }
-                break;
-            default:
-                break;
-        }
     }
 
     @Click(R.id.btnDelete)
@@ -220,92 +192,26 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
     @Override
     public void onDialogResult(int dialogButton, int actionId) {
         if (dialogButton == DialogInterface.BUTTON_POSITIVE) {
-            switch (mode) {
-                case MODE_REST_CA_MANAGEMENT:
-                    deleteAllCaCerts();
-                    certificate = null;
-                    certHandlingStrategy.setSelection((int) CertHandlingStrategy.TRUST_SYSTEM.id());
-                    setCertDataToView(null, null);
-                    break;
-                case MODE_SPICE_CA_MANAGEMENT:
-                    deleteCaFile();
-                    setCertDataToView(null, null);
-                    break;
-                default:
-                    break;
-            }
-
-            btnDelete.setEnabled(false);
+            deleteAllCerts();
         }
-    }
-
-    @Click(R.id.btnSave)
-    void btnSave() {
-        switch (mode) {
-            case MODE_REST_CA_MANAGEMENT:
-                Intent response = new Intent();
-
-                if (CertHandlingStrategy.from(certHandlingStrategy.getSelectedItemId()) == CertHandlingStrategy.TRUST_CUSTOM) {
-                    if (storeImportedCa()) {
-                        response.putExtra(CERT_HANDLING_STRATEGY, certHandlingStrategy.getSelectedItemId());
-                    } else {
-                        // not stored - fallback to trust system certs only
-                        response.putExtra(CERT_HANDLING_STRATEGY, CertHandlingStrategy.TRUST_SYSTEM.id());
-                    }
-                } else {
-                    response.putExtra(CERT_HANDLING_STRATEGY, certHandlingStrategy.getSelectedItemId());
-                }
-
-                setResult(RESULT_OK, response);
-                break;
-            case MODE_SPICE_CA_MANAGEMENT:
-                storeImportedCaToFile();
-                break;
-            default:
-                break;
-        }
-
-        finish();
     }
 
     @Click(R.id.btnLoad)
     void btnLoad() {
-        downloadCa();
-    }
-
-    @OptionsItem(R.id.action_rest_ca_management)
-    void restCaManagement() {
-        mode = MODE_REST_CA_MANAGEMENT;
-        updateViews();
-        updateMenuItem();
-    }
-
-    @OptionsItem(R.id.action_spice_ca_management)
-    void spiceCaManagement() {
-        mode = MODE_SPICE_CA_MANAGEMENT;
-        updateViews();
-        updateMenuItem();
-    }
-
-    class CertHandlingSelectionChanged implements AdapterView.OnItemSelectedListener {
-
-        @Override
-        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long index) {
-            updateViews();
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> adapterView) {
-
-        }
+        downloadCert();
     }
 
     @Background
-    void downloadCa() {
+    void deleteAllCerts() {
+        propertiesManager.setCertificateChain(new CaCert[]{});
+    }
+
+    @Background
+    void downloadCert() {
         showProgressBar();
-        String endpoint = txtCaUrl.getText().toString();
         URL url = null;
         try {
+            String endpoint = txtCaUrl.getText().toString();
             url = new URL(endpoint);
         } catch (MalformedURLException e) {
             hideProgressBar();
@@ -324,6 +230,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
 
         InputStream caInput = null;
         ByteArrayOutputStream caOutput = null;
+
         try {
             caInput = new BufferedInputStream(url.openStream());
 
@@ -335,9 +242,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
             }
             caOutput.flush();
 
-            caCert = caOutput.toByteArray();
             caInput = new ByteArrayInputStream(caOutput.toByteArray());
-
         } catch (IOException e) {
             hideProgressBar();
             showToast("Error loading certificate: " + e.getMessage());
@@ -346,8 +251,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
 
         try {
             Certificate ca = cf.generateCertificate(caInput);
-            setCertDataToView(ca, url.getHost());
-            this.certificate = ca;
+            storeImportedCa(ca, url.getHost());
         } catch (CertificateException e) {
             hideProgressBar();
             showToast("Error CA generation: " + e.getMessage());
@@ -363,59 +267,33 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         }
     }
 
-    @UiThread(propagation = UiThread.Propagation.REUSE)
-    void setCertDataToView(Certificate ca, String urls) {
+    void setCertDataToView(CaCert cert) {
+        boolean visible = cert != null;
+
+        String caValue = visible ? cert.asCertificate().toString() : "";
+        String urlsValue = visible ? cert.getValidFor() : "";
+
+        if (btnDelete != null) {
+            btnDelete.setEnabled(visible);
+        }
+
         if (txtCertDetails != null) {
-            txtCertDetails.setText(ca != null ? ca.toString() : "");
+            txtCertDetails.setVisibility(visible ? View.VISIBLE : View.GONE);
+            if (visible && !txtCertDetails.getText().equals(caValue)) { // ignore setter when set to null && check it was not fired by by view listener
+                txtCertDetails.setText(caValue);
+            }
         }
 
         if (txtValidForHostnames != null) {
-            txtValidForHostnames.setText(urls != null ? urls : "");
-        }
-    }
-
-    @Background
-    public void deleteAllCaCerts() {
-        providerFacade.deleteAll(OVirtContract.CaCert.CONTENT_URI);
-    }
-
-    @Background
-    public void deleteCaFile() {
-        File file = new File(Constants.getCaCertPath(this));
-        if (file.isFile() && file.exists()) {
-            file.delete();
-        }
-    }
-
-    boolean storeImportedCaToFile() {
-        if (caCert == null) {
-            return false;
-        }
-
-        FileOutputStream out = null;
-        try {
-            File file = new File(Constants.getCaCertPath(this));
-            file.createNewFile();
-            out = new FileOutputStream(file);
-            out.write(caCert, 0, caCert.length);
-        } catch (IOException e) {
-            e.printStackTrace();
-            showToast("Error storing certificate to file: " + e.getMessage());
-            return false;
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException ex) {
-                // ignore close exception
+            txtValidForHostnames.setVisibility(visible ? View.VISIBLE : View.GONE);
+            if (visible && !txtValidForHostnames.getText().toString().equals(urlsValue)) { // same
+                txtValidForHostnames.setText(urlsValue);
             }
         }
-        return true;
     }
 
-    boolean storeImportedCa() {
-        if (certificate == null) {
+    boolean storeImportedCa(Certificate ca, String validFor) {
+        if (ca == null) {
             return false;
         }
 
@@ -424,15 +302,12 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         try {
             try {
                 out = new ObjectOutputStream(bos);
-                out.writeObject(certificate);
+                out.writeObject(ca);
                 byte[] caAsBlob = bos.toByteArray();
-                CaCert caCertEntity = new CaCert();
-                // nvm, only support one
-                caCertEntity.setId(1);
-                caCertEntity.setContent(caAsBlob);
-                caCertEntity.setValidFor(txtValidForHostnames.getText().toString());
-                providerFacade.deleteAll(OVirtContract.CaCert.CONTENT_URI);
-                providerFacade.batch().insert(caCertEntity).apply();
+                CaCert caCert = new CaCert();
+                caCert.setContent(caAsBlob);
+                caCert.setValidFor(validFor);
+                propertiesManager.setCertificateChain(new CaCert[]{caCert}); // current thread is already background
             } catch (IOException e) {
                 e.printStackTrace();
                 showToast("Error storing certificate: " + e.getMessage());
@@ -443,13 +318,11 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
                 if (out != null) {
                     out.close();
                 }
-            } catch (IOException ex) {
-                // ignore close exception
+            } catch (IOException ignore) {
             }
             try {
                 bos.close();
-            } catch (IOException ex) {
-                // ignore close exception
+            } catch (IOException ignore) {
             }
         }
 
@@ -477,6 +350,11 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         }
     }
 
+    @OptionsItem(android.R.id.home)
+    public void homeSelected() {
+        finish();
+    }
+
     @Receiver(actions = {Broadcasts.ERROR_MESSAGE},
             registerAt = Receiver.RegisterAt.OnResumeOnPause)
     public void showErrorDialog(
@@ -484,7 +362,6 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
             @Receiver.Extra(Broadcasts.Extras.REPEATED_MINOR_ERROR) boolean repeatedMinorError) {
         CreateDialogBroadcastReceiverHelper.showErrorDialog(getFragmentManager(), reason, repeatedMinorError);
     }
-
 
     @Receiver(actions = {Broadcasts.REST_CA_FAILURE},
             registerAt = Receiver.RegisterAt.OnResumeOnPause)

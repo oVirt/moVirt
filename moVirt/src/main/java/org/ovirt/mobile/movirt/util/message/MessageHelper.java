@@ -16,7 +16,6 @@ import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.UiThread;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.CaCert;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.dto.ErrorBody;
@@ -27,6 +26,8 @@ import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -56,7 +57,6 @@ public class MessageHelper {
     public void showToast(String msg) {
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
-
 
     public String createMessage(HttpClientErrorException ex) {
         String result = "";
@@ -92,11 +92,11 @@ public class MessageHelper {
     }
 
     public void showError(Throwable message) {
-        showError(new Message(message.getMessage()));
+        showError(new Message(getThrowableMessage(message)));
     }
 
     public void showError(ErrorType type, Throwable message) {
-        showError(new Message(type, message.getMessage()));
+        showError(new Message(type, getThrowableMessage(message)));
     }
 
     public void showError(ErrorType type, String message) {
@@ -108,7 +108,14 @@ public class MessageHelper {
     }
 
     public void showError(ErrorType type, Throwable message, String header) {
-        showError(new Message(type, message.getMessage(), header));
+        showError(new Message(type, getThrowableMessage(message), header));
+    }
+
+    private String getThrowableMessage(Throwable throwable) {
+        StringWriter sw = new StringWriter();
+        throwable.printStackTrace(new PrintWriter(sw));
+
+        return sw.toString();
     }
 
     /**
@@ -183,7 +190,7 @@ public class MessageHelper {
                             certHandlingStrategy.toString()));
                 }
                 if (certHandlingStrategy == CertHandlingStrategy.TRUST_CUSTOM) {
-                    boolean hasCert = provider.query(CaCert.class).all().size() > 0;
+                    boolean hasCert = propertiesManager.getCertificateChain().length > 0;
                     certificate.append("\n\t")
                             .append(context.getString(hasCert ? R.string.rest_error_detail_certificate_stored :
                                     R.string.rest_error_detail_certificate_missing));

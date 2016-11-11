@@ -39,8 +39,9 @@
 
         <activity
             android:name=".ui.AdvancedAuthenticatorActivity_"
-            android:label="@string/title_activity_settings_advanced"
-            android:windowSoftInputMode="stateHidden" />
+            android:label="@string/certificate_management"
+            android:windowSoftInputMode="stateHidden"
+            android:parentActivityName=".ui.AuthenticatorActivity_"/>
 
         <activity
             android:name=".ui.AuthenticatorActivity_"

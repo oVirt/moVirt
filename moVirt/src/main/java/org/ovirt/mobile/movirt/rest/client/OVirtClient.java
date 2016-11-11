@@ -60,9 +60,6 @@ public class OVirtClient {
     OVirtRestClient restClient;
 
     @Bean
-    AccountPropertiesManager accountPropertiesManager;
-
-    @Bean
     RequestHandler requestHandler;
 
     @Bean
@@ -89,7 +86,7 @@ public class OVirtClient {
     public void init() {
         setAcceptEncodingHeaderAndFactory(restClient, requestFactory);
 
-        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.VERSION, new PropertyChangedListener<Version>() {
+        propertiesManager.notifyAndRegisterListener(AccountProperty.VERSION, new PropertyChangedListener<Version>() {
             @Override
             public void onPropertyChange(Version property) {
                 setVersionHeader(restClient, property);
@@ -98,14 +95,14 @@ public class OVirtClient {
             }
         });
 
-        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.API_URL, new PropertyChangedListener<String>() {
+        propertiesManager.notifyAndRegisterListener(AccountProperty.API_URL, new PropertyChangedListener<String>() {
             @Override
             public void onPropertyChange(String property) {
                 restClient.setRootUrl(property);
             }
         });
 
-        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.HAS_ADMIN_PERMISSIONS, new PropertyChangedListener<Boolean>() {
+        propertiesManager.notifyAndRegisterListener(AccountProperty.HAS_ADMIN_PERMISSIONS, new PropertyChangedListener<Boolean>() {
             @Override
             public void onPropertyChange(Boolean property) {
                 setFilterHeader(restClient, property);
@@ -131,7 +128,6 @@ public class OVirtClient {
                 return null;
             }
         }, response);
-
     }
 
     public void rebootVm(final String vmId, Response<Void> response) {
@@ -386,7 +382,7 @@ public class OVirtClient {
                         }
                         wrappers = restClient.getDisksV3(vmId);
                     } finally {
-                        setVersionHeader(restClient, accountPropertiesManager.getApiVersion());
+                        setVersionHeader(restClient, propertiesManager.getApiVersion());
                     }
                     entities = mapToEntities(wrappers);
                 }
@@ -536,7 +532,6 @@ public class OVirtClient {
                     return mapToEntities(restClient.getStorageDomainsV3());
                 }
                 return mapToEntities(restClient.getStorageDomainsV4());
-
             }
         };
     }

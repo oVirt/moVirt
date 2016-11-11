@@ -93,7 +93,6 @@ public class VvFileHttpMessageConverter extends AbstractHttpMessageConverter<Obj
         Scanner sc = new Scanner(is, DEFAULT_CHARSET.name());
         Pattern p = Pattern.compile("^([^#\\[][^=]*)=(.*)$");
 
-
         while (sc.hasNextLine()) {
             Matcher matcher = p.matcher(sc.nextLine());
             if (matcher.matches()) {
@@ -105,10 +104,11 @@ public class VvFileHttpMessageConverter extends AbstractHttpMessageConverter<Obj
         String address = vvFileMap.get(VvFileParam.HOST);
         String password = vvFileMap.get(VvFileParam.PASSWORD);
         String subject = vvFileMap.get(VvFileParam.HOST_SUBJECT);
+        String certificate = vvFileMap.get(VvFileParam.CA).replace("\\n", "\n");
         int port = ParseUtils.intOrDefault(vvFileMap.get(VvFileParam.PORT));
         int tlsPort = ParseUtils.intOrDefault(vvFileMap.get(VvFileParam.TLS_PORT));
 
-        return new ConsoleConnectionDetails(protocol, address, port, tlsPort, subject, password);
+        return new ConsoleConnectionDetails(protocol, address, port, tlsPort, password, subject, certificate);
     }
 
     interface VvFileParam {
@@ -118,6 +118,7 @@ public class VvFileHttpMessageConverter extends AbstractHttpMessageConverter<Obj
         String TLS_PORT = "tls-port";
         String PASSWORD = "password";
         String HOST_SUBJECT = "host-subject";
+        String CA = "ca";
     }
 }
 

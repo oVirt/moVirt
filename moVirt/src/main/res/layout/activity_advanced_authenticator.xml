@@ -32,7 +32,7 @@
             android:orientation="vertical">
 
             <Spinner
-                android:id="@+id/certHandlingStrategy"
+                android:id="@+id/certHandlingStrategySpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
@@ -92,17 +92,6 @@
             android:layout_marginRight="4dp"
             android:text="@string/load_ca_from_addr"
             android:visibility="gone" />
-
-        <Button
-            android:id="@+id/btnSave"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginLeft="4dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginStart="4dp"
-            android:text="@string/done_advanced_settings" />
     </LinearLayout>
 
 </RelativeLayout>

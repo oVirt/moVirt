@@ -1,15 +1,6 @@
-package org.ovirt.mobile.movirt.model;
+package org.ovirt.mobile.movirt.auth;
 
-import android.content.ContentValues;
-import android.net.Uri;
 import android.text.TextUtils;
-
-import com.j256.ormlite.field.DataType;
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
-
-import org.ovirt.mobile.movirt.provider.OVirtContract;
-import org.ovirt.mobile.movirt.util.CursorHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -17,35 +8,15 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.CaCert.TABLE;
+public class CaCert {
 
-@DatabaseTable(tableName = TABLE)
-public class CaCert extends BaseEntity<Integer> implements OVirtContract.CaCert {
-
-    @Override
-    public Uri getBaseUri() {
-        return CONTENT_URI;
-    }
-
-    @DatabaseField(columnName = ID, id = true)
-    private int id;
-
-    @DatabaseField(columnName = CONTENT, canBeNull = false, dataType = DataType.BYTE_ARRAY)
     private byte[] content;
 
-    @DatabaseField(columnName = VALID_FOR, canBeNull = false, dataType = DataType.STRING)
     private String validFor;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
 
     public byte[] getContent() {
         return content;
@@ -59,22 +30,6 @@ public class CaCert extends BaseEntity<Integer> implements OVirtContract.CaCert 
         this.validFor = validFor;
     }
 
-    public ContentValues toValues() {
-        ContentValues values = new ContentValues();
-        values.put(ID, id);
-        values.put(CONTENT, content);
-        values.put(VALID_FOR, validFor);
-
-        return values;
-    }
-
-    @Override
-    protected void initFromCursorHelper(CursorHelper cursorHelper) {
-        setId(cursorHelper.getInt(ID));
-        setContent(cursorHelper.getByteArray(CONTENT));
-        setValidFor(cursorHelper.getString(VALID_FOR));
-    }
-
     public List<String> validForAsList() {
         if (TextUtils.isEmpty(validFor)) {
             return Collections.EMPTY_LIST;
@@ -86,7 +41,6 @@ public class CaCert extends BaseEntity<Integer> implements OVirtContract.CaCert 
         }
 
         return validForHostnames;
-
     }
 
     public String getValidFor() {
@@ -110,20 +64,35 @@ public class CaCert extends BaseEntity<Integer> implements OVirtContract.CaCert 
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException("Error creating caCert from the blob provided: " + e.getMessage());
             }
-
         } finally {
             try {
                 bis.close();
-            } catch (IOException ex) {
-                // ignore close exception
+            } catch (IOException ignore) {
             }
             try {
                 if (in != null) {
                     in.close();
                 }
-            } catch (IOException ex) {
-                // ignore close exception
+            } catch (IOException ignore) {
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CaCert)) return false;
+
+        CaCert caCert = (CaCert) o;
+
+        if (!Arrays.equals(content, caCert.content)) return false;
+        return validFor != null ? validFor.equals(caCert.validFor) : caCert.validFor == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(content);
+        result = 31 * result + (validFor != null ? validFor.hashCode() : 0);
+        return result;
     }
 }

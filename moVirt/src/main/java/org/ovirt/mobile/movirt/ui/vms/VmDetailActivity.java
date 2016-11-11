@@ -59,10 +59,16 @@ import org.ovirt.mobile.movirt.ui.events.EventsFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
+import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
 import org.springframework.util.StringUtils;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -272,7 +278,6 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         startActivity(intent);
     }
 
-
     @OptionsItem(R.id.action_run)
     @Background
     void start() {
@@ -408,15 +413,14 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
 
     private void connectToConsole(final ConsoleConnectionDetails details) {
         try {
+            String caCertPath = null;
             if (details.getProtocol() == ConsoleProtocol.SPICE && details.getTlsPort() > 0) {
-                if (!isCaFileExists()) {
-                    showMissingCaCertDialog();
-                    return;
-                }
+                caCertPath = Constants.getCaCertPath(this);
+                saveCertToFile(caCertPath, details.getCertificate());
             }
             Intent intent = new Intent(Intent.ACTION_VIEW)
                     .setType("application/vnd.vnc")
-                    .setData(Uri.parse(makeConsoleUrl(details)));
+                    .setData(Uri.parse(makeConsoleUrl(details, caCertPath)));
             startActivity(intent);
         } catch (IllegalArgumentException e) {
             makeToast(e.getMessage());
@@ -425,13 +429,23 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         }
     }
 
-    @UiThread(propagation = UiThread.Propagation.REUSE)
-    void showMissingCaCertDialog() {
-        ImportCertificateDialogFragment importCertificateDialog = ImportCertificateDialogFragment
-                .newSpiceCaInstance(getString(R.string.can_not_run_console_without_ca),
-                        propertiesManager.getCertHandlingStrategy().id(),
-                        propertiesManager.getApiUrl());
-        importCertificateDialog.show(getFragmentManager(), "certificateDialog");
+    private void saveCertToFile(String caCertPath, String certificate) {
+        if (StringUtils.isEmpty(certificate)) {
+            throw new IllegalArgumentException("Certificate is missing");
+        }
+        Writer writer = null;
+
+        try {
+            writer = new FileWriter(new File(caCertPath));
+            writer.write(certificate);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error storing certificate to file: " + e.getMessage());
+        } finally {
+            try {
+                writer.close();
+            } catch (Exception ignore) {
+            }
+        }
     }
 
     @Background
@@ -450,7 +464,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
      * @throws java.lang.IllegalArgumentException with description
      *                                            if the URL can't be created from input.
      */
-    private String makeConsoleUrl(ConsoleConnectionDetails details)
+    private String makeConsoleUrl(ConsoleConnectionDetails details, String caCertPath)
             throws IllegalArgumentException {
         ConsoleProtocol protocol = details.getProtocol();
 
@@ -478,7 +492,10 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
                         throw new IllegalArgumentException("Certificate subject is missing");
                     }
 
-                    String caCertPath = Constants.getCaCertPath(this);
+                    if (StringUtils.isEmpty(caCertPath)) {
+                        throw new IllegalArgumentException("Certificate path is missing");
+                    }
+
                     String tlsPortPart = Constants.PARAM_TLS_PORT + "=" + details.getTlsPort();
                     String certSubjectPart = Constants.PARAM_CERT_SUBJECT + "=" + details.getCertificateSubject();
                     String caCertPathPart = Constants.PARAM_CA_CERT_PATH + "=" + caCertPath;
@@ -491,17 +508,10 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         return protocol.getProtocol() + "://" + details.getAddress() + ":" + details.getPort() + "?" + parameters;
     }
 
-
-    private boolean isCaFileExists() {
-        File file = new File(Constants.getCaCertPath(this));
-        return file.exists();
-    }
-
     @UiThread(propagation = UiThread.Propagation.REUSE)
     void makeToast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }
-
 
     /**
      * Refreshes VM upon success
@@ -517,5 +527,4 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     public void homeSelected() {
         app.startMainActivity();
     }
-
 }

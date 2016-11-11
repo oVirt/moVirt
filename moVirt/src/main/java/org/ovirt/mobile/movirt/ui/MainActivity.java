@@ -178,7 +178,6 @@ public class MainActivity extends MovirtActivity
         emptyClusterCursor = new MatrixCursor(CLUSTER_PROJECTION);
         emptyClusterCursor.addRow(new String[]{allClusters, null, null, null});
 
-
         SimpleCursorAdapter clusterListAdapter = new SimpleCursorAdapter(this,
                 R.layout.cluster_list_item,
                 null,
@@ -225,7 +224,6 @@ public class MainActivity extends MovirtActivity
         getSupportActionBar().setHomeButtonEnabled(true);
 
         drawerToggle.syncState();
-
     }
 
     @Override
@@ -319,8 +317,7 @@ public class MainActivity extends MovirtActivity
         drawerLayout.closeDrawers();
     }
 
-
-    @Receiver(actions = Broadcasts.NO_CONNECTION_SPEFICIED, registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    @Receiver(actions = Broadcasts.NO_CONNECTION_SPECIFIED, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void noConnection(@Receiver.Extra(AccountManager.KEY_INTENT) Parcelable toOpen) {
         showAccountDialog();
     }

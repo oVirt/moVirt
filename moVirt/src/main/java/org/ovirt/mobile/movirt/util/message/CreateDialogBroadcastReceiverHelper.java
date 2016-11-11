@@ -20,7 +20,7 @@ public class CreateDialogBroadcastReceiverHelper {
     public static void showCertificateDialog(FragmentManager manager, String reason, boolean startActivity) {
         if (manager.findFragmentByTag(CERTIFICATE_DIALOG_TAG) == null) {
             DialogFragment importCertificateDialog =
-                    ImportCertificateDialogFragment.newRestCaInstance(reason, startActivity);
+                    ImportCertificateDialogFragment.newInstance(reason, startActivity);
             importCertificateDialog.show(manager, CERTIFICATE_DIALOG_TAG);
         }
     }

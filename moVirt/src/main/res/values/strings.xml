@@ -50,7 +50,7 @@
     <string name="done_advanced_settings">Done</string>
     <string name="delete_stored_ca">Delete</string>
     <string name="load_ca_from_addr">Download</string>
-    <string name="ca_management">CA Management</string>
+    <string name="certificate_management">Certificate Management</string>
     <string name="trigger_scope">Editing triggers for: </string>
     <string name="add_trigger">Add Trigger</string>
     <string name="ADD">ADD</string>
@@ -190,10 +190,6 @@
 
     <string name="activate">activate</string>
     <string name="deactivate">deactivate</string>
-
-    <string name="can_not_run_console_without_ca">The console can not run without the Certificate Authority for SPICE</string>
-    <string name="spice_ca_management">SPICE CA Management</string>
-    <string name="rest_ca_management">REST CA Management</string>
 
     <string name="title_activity_dashboard">Dashboard</string>
     <string name="dashboard">Dashboard</string>

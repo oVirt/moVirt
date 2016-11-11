@@ -2,23 +2,29 @@ package org.ovirt.mobile.movirt.util.properties;
 
 import android.accounts.AccountManagerFuture;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.UiThread;
+import org.ovirt.mobile.movirt.auth.CaCert;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.rest.dto.Api;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
-import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.Version;
 
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Only methods registerListener, notifyAndRegisterListener and notifyListener are safe to use from @AfterInject.
+ * Other methods are NOT SAFE to call! Call isInitialized() for checking the state of this class.
+ * It is not needed to check isInitialized() after all of the classes have been initialized.
+ */
 @EBean(scope = EBean.Scope.Singleton)
 public class AccountPropertiesManager {
     private static final String TAG = AccountPropertiesManager.class.getSimpleName();
@@ -27,17 +33,48 @@ public class AccountPropertiesManager {
         UI, BACKGROUND, CURRENT
     }
 
-    @Bean
-    MovirtAuthenticator authenticator;
+    // beware of circular injection, this is not guaranteed to be set when this class has been already injected somewhere else
+    private MovirtAuthenticator authenticator;
 
-    private Map<AccountProperty, Set<WrappedPropertyChangedListener>> listeners;
+    private boolean initialized = false;
 
-    @AfterInject
-    public void init() {
-        listeners = new HashMap<>(AccountProperty.values().length);
+    private static Map<AccountProperty, Set<WrappedPropertyChangedListener>> listeners;
+    private static Map<AccountProperty, Set<WrappedPropertyChangedListener>> initQueueListeners;
+
+    static {
+        listeners = new EnumMap<>(AccountProperty.class);
+        initQueueListeners = new EnumMap<>(AccountProperty.class);
+
         for (AccountProperty property : AccountProperty.values()) {
             listeners.put(property, new HashSet<WrappedPropertyChangedListener>());
+            initQueueListeners.put(property, new HashSet<WrappedPropertyChangedListener>());
         }
+    }
+
+    @Bean
+    void setAuthenticator(MovirtAuthenticator authenticator) {
+        this.authenticator = authenticator;
+        initialized = true;
+
+        for (AccountProperty property : AccountProperty.values()) { // should be run in current thread
+            Set<WrappedPropertyChangedListener> toNotify = initQueueListeners.get(property);
+            if (!toNotify.isEmpty()) {
+                notifyListeners(toNotify, authenticator.getResource(property));
+            }
+        }
+        initQueueListeners = null; // free
+    }
+
+    /**
+     * Must be checked before any method (of this class) from @AfterInject of other classes, except for methods registerListener and
+     * notifyAndRegisterListener or notifyListener which will be invoked the first time this component is initialized.
+     * <p>
+     * Other methods are NOT SAFE to call from @AfterInject!
+     *
+     * @return true if this component is initialized
+     */
+    public boolean isInitialized() {
+        return initialized;
     }
 
     /**
@@ -60,7 +97,11 @@ public class AccountPropertiesManager {
      */
     @SuppressWarnings("unchecked")
     public <E> void notifyListener(final AccountProperty property, final PropertyChangedListener<E> listener) {
-        listener.onPropertyChange((E) authenticator.getResource(property));
+        if (isInitialized()) {
+            listener.onPropertyChange((E) authenticator.getResource(property));
+        } else {
+            registerListenerImpl(initQueueListeners, property, listener);
+        }
     }
 
     /**
@@ -74,6 +115,11 @@ public class AccountPropertiesManager {
      */
     @SuppressWarnings("unchecked")
     public <E> void registerListener(final AccountProperty property, final PropertyChangedListener<E> listener) {
+        registerListenerImpl(listeners, property, listener);
+    }
+
+    private <E> void registerListenerImpl(Map<AccountProperty, Set<WrappedPropertyChangedListener>> listeners,
+                                          AccountProperty property, final PropertyChangedListener<E> listener) {
         listeners.get(property).add(new WrappedPropertyChangedListener() {
             @Override
             public void onPropertyChange(Object newProperty) {
@@ -143,6 +189,7 @@ public class AccountPropertiesManager {
         return authenticator.getResource(AccountProperty.API_BASE_URL, String.class);
     }
 
+    @NonNull
     public Version getApiVersion() {
         return authenticator.getResource(AccountProperty.VERSION, Version.class);
     }
@@ -156,6 +203,7 @@ public class AccountPropertiesManager {
         return setAndNotify(runOnThread, AccountProperty.VERSION, newVersion);
     }
 
+    @NonNull
     public CertHandlingStrategy getCertHandlingStrategy() {
         return authenticator.getResource(AccountProperty.CERT_HANDLING_STRATEGY, CertHandlingStrategy.class);
     }
@@ -180,13 +228,37 @@ public class AccountPropertiesManager {
         return setAndNotify(runOnThread, AccountProperty.HAS_ADMIN_PERMISSIONS, hasAdminPermissions);
     }
 
+    @NonNull
+    public CaCert[] getCertificateChain() {
+        return authenticator.getResource(AccountProperty.CERTIFICATE_CHAIN, CaCert[].class);
+    }
+
+    public boolean setCertificateChain(CaCert[] certChain) {
+        return setCertificateChain(certChain, OnThread.CURRENT);
+    }
+
+    public boolean setCertificateChain(CaCert[] certChain, OnThread runOnThread) {
+        return setAndNotify(runOnThread, AccountProperty.CERTIFICATE_CHAIN, certChain);
+    }
+
     /**
      * @param property property to be checked against
      * @param object   data to be checked against
      * @return true if property state is different than object
      */
     public boolean propertyDiffers(AccountProperty property, Object object) {
-        return !ObjectUtils.equals(authenticator.getResource(property), object);
+        Object old = authenticator.getResource(property);
+        boolean result;
+
+        if (old == null || object == null) {
+            result = old == object;
+        } else if (old instanceof Object[] && object instanceof Object[]) {
+            result = Arrays.equals((Object[]) old, (Object[]) object);
+        } else {
+            result = old.equals(object);
+        }
+
+        return !result;
     }
 
     /**
@@ -213,22 +285,22 @@ public class AccountPropertiesManager {
     }
 
     private void notifyListeners(OnThread runOnThread, AccountProperty property, Object o) {
-        Set<WrappedPropertyChangedListener> listeners = this.listeners.get(property);
+        Set<WrappedPropertyChangedListener> propertyListeners = listeners.get(property);
         switch (runOnThread) {
             case UI:
-                notifyUiListeners(listeners, o);
+                notifyUiListeners(propertyListeners, o);
                 break;
             case BACKGROUND:
-                notifyBackgroundListeners(listeners, o);
+                notifyBackgroundListeners(propertyListeners, o);
                 break;
             case CURRENT:
-                notifyListeners(listeners, o);
+                notifyListeners(propertyListeners, o);
                 break;
         }
     }
 
-    private void notifyListeners(Set<WrappedPropertyChangedListener> backgroundListeners, Object o) {
-        for (WrappedPropertyChangedListener listener : backgroundListeners) {
+    private void notifyListeners(Set<WrappedPropertyChangedListener> currentListeners, Object o) {
+        for (WrappedPropertyChangedListener listener : currentListeners) {
             listener.onPropertyChange(o);
         }
     }
@@ -248,7 +320,6 @@ public class AccountPropertiesManager {
     void notifyUiListeners(Set<WrappedPropertyChangedListener> uiThreadListeners, Object o) {
         notifyListeners(uiThreadListeners, o);
     }
-
 
     interface WrappedPropertyChangedListener {
         void onPropertyChange(Object o);

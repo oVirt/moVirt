@@ -1,5 +1,7 @@
 package org.ovirt.mobile.movirt.util.properties;
 
+import org.ovirt.mobile.movirt.Constants;
+
 /**
  * Types of Account Properties
  */
@@ -13,7 +15,7 @@ public enum AccountProperty {
      */
     PEEK_AUTH_TOKEN(false),
     /**
-     * Should be used together with {@link android.accounts.AccountManagerFuture<android.os.Bundle>}.class. This property is not settable.
+     * Should be used together with {@link android.accounts.AccountManagerFuture<android.os.Bundle>}. This property is not settable.
      */
     FUTURE_AUTH_TOKEN(false),
     /**
@@ -21,15 +23,15 @@ public enum AccountProperty {
      */
     ACCOUNT_CONFIGURED(false),
     /**
-     * Should be used together with {@link String}
-     */
-    USERNAME,
-    /**
-     * Should be used together with {@link String}
+     * Should be used together with {@link String}.
      */
     PASSWORD,
     /**
-     * Should be used together with {@link String}
+     * Should be used together with {@link String}.
+     */
+    USERNAME,
+    /**
+     * Should be used together with {@link String}.
      */
     API_URL,
     /**
@@ -37,19 +39,25 @@ public enum AccountProperty {
      */
     API_BASE_URL(false),
     /**
-     * Should be used together with {@link org.ovirt.mobile.movirt.util.Version}
+     * Should be used together with {@link org.ovirt.mobile.movirt.util.Version}.
      */
     VERSION,
     /**
-     * Should be used together {@link org.ovirt.mobile.movirt.ui.CertHandlingStrategy}
+     * Should be used together {@link org.ovirt.mobile.movirt.ui.CertHandlingStrategy}.
      */
     CERT_HANDLING_STRATEGY,
     /**
-     * Should be used together {@link Boolean}
+     * Should be used together {@link Boolean}.
      */
-    HAS_ADMIN_PERMISSIONS;
+    HAS_ADMIN_PERMISSIONS,
+    /**
+     * Should be used together with {@link org.ovirt.mobile.movirt.auth.CaCert org.ovirt.mobile.movirt.auth.CaCert[]}.
+     */
+    CERTIFICATE_CHAIN;
 
     private boolean settable = true;
+
+    private String packageKey = Constants.APP_PACKAGE_DOT + this.name();
 
     AccountProperty() {
     }
@@ -60,5 +68,9 @@ public enum AccountProperty {
 
     public boolean isSettable() {
         return settable;
+    }
+
+    public String getPackageKey() {
+        return packageKey;
     }
 }

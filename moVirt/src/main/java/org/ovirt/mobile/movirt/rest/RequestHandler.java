@@ -96,7 +96,7 @@ public class RequestHandler {
                 }
             } else if (bundle.containsKey(AccountManager.KEY_INTENT)) {
                 Intent accountAuthenticatorResponse = bundle.getParcelable(AccountManager.KEY_INTENT);
-                Intent editConnectionIntent = new Intent(Broadcasts.NO_CONNECTION_SPEFICIED);
+                Intent editConnectionIntent = new Intent(Broadcasts.NO_CONNECTION_SPECIFIED);
                 editConnectionIntent.putExtra(AccountManager.KEY_INTENT, accountAuthenticatorResponse);
                 context.sendBroadcast(editConnectionIntent);
 
@@ -124,7 +124,6 @@ public class RequestHandler {
         } catch (Exception e) {
             messageHelper.showError(ErrorType.REST_MAJOR, e);
         }
-
 
         if (result == RestCallResult.SUCCESS) {
             messageHelper.resetMinorErrors();
