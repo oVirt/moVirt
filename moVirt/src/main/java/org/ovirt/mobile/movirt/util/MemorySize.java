@@ -182,7 +182,6 @@ public class MemorySize implements UsageResource {
         return getReadableUnit().name();
     }
 
-
     /**
      * @return human readable value with a unit
      */

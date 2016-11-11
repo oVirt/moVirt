@@ -22,5 +22,4 @@ public class EventTriggerResolver extends BaseTriggerResolver<Event> {
     public List<Trigger<Event>> getTriggers(Event entity, Collection<Trigger<Event>> allTriggers) {
         return getTriggers(entity.getVmId(), entity.getClusterId(), allTriggers);
     }
-
 }

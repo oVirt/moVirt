@@ -134,7 +134,6 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
             intent.setData(vmUri);
         }
 
-
         initLoaders();
         initPagers();
         setProgressBar(progress);
@@ -230,7 +229,6 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
         pagerTabStrip.setTabIndicatorColorResource(R.color.material_deep_teal_200);
     }
 
-
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (currentSnapshot != null && snapshots != null) {
@@ -268,7 +266,6 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
             doPreviewSnapshot(false);
         }
     }
-
 
     @OptionsItem(R.id.action_restore)
     public void restore() {

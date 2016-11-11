@@ -113,5 +113,4 @@ public final class ViewfinderView extends View {
         this.points = points;
         invalidate();
     }
-
 }

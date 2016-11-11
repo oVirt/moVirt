@@ -202,7 +202,6 @@ public class PercentageCircleView extends View {
         return Math.pow(dx, 2) + Math.pow(dy, 2) <= Math.pow(foregroundRectF.height() / 2, 2);
     }
 
-
     private void drawTextAndSummary(Canvas canvas) {
         if (!needShowText) return;
         //draw progress text
@@ -266,7 +265,6 @@ public class PercentageCircleView extends View {
             postInvalidate();
         }
     }
-
 
     public void setMaxResource(UsageResource maxResource) {
         if (maxResource != null) {

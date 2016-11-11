@@ -8,7 +8,6 @@ public class Message {
     private final String header;
     private Integer logPriority;
 
-
     public Message(String detail) {
         this(ErrorType.NORMAL, detail);
     }
@@ -48,7 +47,6 @@ public class Message {
     public String getDetail() {
         return detail;
     }
-
 
     public String getHeader() {
         return header;

@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.App;
@@ -25,12 +24,12 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.OptionsMenuItem;
-import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.facade.ConsoleFacade;
 import org.ovirt.mobile.movirt.facade.SnapshotFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
@@ -54,22 +53,17 @@ import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.CreateSnapshotDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.CreateSnapshotDialogFragment_;
-import org.ovirt.mobile.movirt.ui.dialogs.ImportCertificateDialogFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
-import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
 import org.springframework.util.StringUtils;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Writer;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -113,6 +107,8 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     ConsoleFacade consoleFacade;
     @Bean
     SnapshotFacade snapshotFacade;
+    @Bean
+    MessageHelper messageHelper;
     @App
     MoVirtApp app;
     @OptionsMenuItem(R.id.action_run)
@@ -137,7 +133,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     private boolean menuCreateSnapshotVisibility = false;
     private boolean hasSpiceConsole = false;
     private boolean hasVncConsole = false;
-    private Map<ConsoleProtocol, Console> consoles = new HashMap<>(2);
+    private Map<ConsoleProtocol, Console> consoles = new EnumMap<>(ConsoleProtocol.class);
 
     @AfterViews
     void init() {
@@ -423,9 +419,9 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
                     .setData(Uri.parse(makeConsoleUrl(details, caCertPath)));
             startActivity(intent);
         } catch (IllegalArgumentException e) {
-            makeToast(e.getMessage());
+            messageHelper.showToast(e.getMessage());
         } catch (Exception e) {
-            makeToast("Failed to open console client. Check if aSPICE/bVNC is installed.");
+            messageHelper.showToast("Failed to open console client. Check if aSPICE/bVNC is installed.");
         }
     }
 
@@ -506,11 +502,6 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         }
 
         return protocol.getProtocol() + "://" + details.getAddress() + ":" + details.getPort() + "?" + parameters;
-    }
-
-    @UiThread(propagation = UiThread.Propagation.REUSE)
-    void makeToast(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }
 
     /**

@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.util.properties;
+package org.ovirt.mobile.movirt.auth.properties;
 
 import android.accounts.AccountManagerFuture;
 import android.os.Bundle;
@@ -79,8 +79,8 @@ public class AccountPropertiesManager {
 
     /**
      * Calls
-     * {@link org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager#notifyListener(AccountProperty, PropertyChangedListener)} and
-     * {@link org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager#registerListener(AccountProperty, PropertyChangedListener)}
+     * {@link org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager#notifyListener(AccountProperty, PropertyChangedListener)} and
+     * {@link org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager#registerListener(AccountProperty, PropertyChangedListener)}
      */
     public <E> void notifyAndRegisterListener(final AccountProperty property, final PropertyChangedListener<E> listener) {
         notifyListener(property, listener);
@@ -278,7 +278,7 @@ public class AccountPropertiesManager {
                         break;
                 }
             } else {
-                throw new IllegalStateException("Setter of " + property.name() + " doesn't set anything!");
+                throw new IllegalStateException("Setter of account property " + property.name() + " doesn't set anything!");
             }
         }
         return propertyChanged;

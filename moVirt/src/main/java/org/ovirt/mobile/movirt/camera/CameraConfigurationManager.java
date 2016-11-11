@@ -94,7 +94,6 @@ final class CameraConfigurationManager {
                 CameraConfigurationUtils.setFocusArea(parameters);
                 CameraConfigurationUtils.setMetering(parameters);
             }
-
         }
 
         parameters.setPreviewSize(cameraResolution.x, cameraResolution.y);
@@ -152,5 +151,4 @@ final class CameraConfigurationManager {
             CameraConfigurationUtils.setBestExposure(parameters, newSetting);
         }
     }
-
 }

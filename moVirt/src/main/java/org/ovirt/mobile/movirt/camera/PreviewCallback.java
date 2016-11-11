@@ -52,5 +52,4 @@ final class PreviewCallback implements Camera.PreviewCallback {
             Log.d(TAG, "Got preview callback, but no handler or resolution available");
         }
     }
-
 }

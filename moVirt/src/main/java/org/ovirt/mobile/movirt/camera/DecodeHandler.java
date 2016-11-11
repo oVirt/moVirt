@@ -120,5 +120,4 @@ final class DecodeHandler extends Handler {
             }
         }
     }
-
 }

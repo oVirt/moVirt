@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.widget.Toast;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
@@ -19,6 +18,7 @@ import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
+import org.ovirt.mobile.movirt.util.message.MessageHelper;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -39,6 +39,8 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     SharedPreferencesHelper sharedPreferencesHelper;
     @Bean
     ProviderFacade providerFacade;
+    @Bean
+    MessageHelper messageHelper;
 
     private Preference periodicSyncIntervalPref;
     private Preference maxEventsPref;
@@ -86,11 +88,11 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
                 try {
                     newValueInt = Integer.parseInt((String) newValue);
                     if (newValueInt < 1) {
-                        Toast.makeText(SettingsActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                        messageHelper.showToast(errorMessage);
                         return false;
                     }
                 } catch (NumberFormatException e) {
-                    Toast.makeText(SettingsActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                    messageHelper.showToast(e.getMessage());
                     return false;
                 }
                 return true;
@@ -173,7 +175,7 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
             try {
                 Integer.parseInt((String) newValue);
             } catch (NumberFormatException e) {
-                Toast.makeText(SettingsActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                messageHelper.showToast(e.getMessage());
                 return false;
             }
             return true;

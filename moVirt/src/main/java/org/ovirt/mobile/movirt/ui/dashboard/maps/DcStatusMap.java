@@ -3,7 +3,7 @@ package org.ovirt.mobile.movirt.ui.dashboard.maps;
 import org.ovirt.mobile.movirt.model.DataCenter;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +17,7 @@ public enum DcStatusMap {
     DOWN(DataCenter.Status.NOT_OPERATIONAL, DataCenter.Status.PROBLEMATIC);
 
     private List<DataCenter.Status> values;
-    private static Map<DataCenter.Status, DcStatusMap> map = new HashMap<>();
+    private static Map<DataCenter.Status, DcStatusMap> map = new EnumMap<>(DataCenter.Status.class);
 
     static {
         for (DcStatusMap item : DcStatusMap.values()) {

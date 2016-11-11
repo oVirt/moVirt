@@ -58,5 +58,4 @@ public class DashboardBoxFragment extends LoaderFragment implements LoaderManage
     public void onLoaderReset(Loader<List<DashboardBoxData>> loader) {
         dashboardBoxListAdapter.setData(null);
     }
-
 }

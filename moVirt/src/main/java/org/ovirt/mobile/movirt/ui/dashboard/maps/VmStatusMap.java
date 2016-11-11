@@ -3,7 +3,7 @@ package org.ovirt.mobile.movirt.ui.dashboard.maps;
 import org.ovirt.mobile.movirt.model.Vm;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,7 +19,7 @@ public enum VmStatusMap {
             Vm.Status.IMAGE_LOCKED);
 
     private List<Vm.Status> values;
-    private static Map<Vm.Status, VmStatusMap> map = new HashMap<>();
+    private static Map<Vm.Status, VmStatusMap> map = new EnumMap<>(Vm.Status.class);
 
     static {
         for (VmStatusMap item : VmStatusMap.values()) {

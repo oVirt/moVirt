@@ -79,7 +79,6 @@ public abstract class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.
             host.setThreadsPerCore(-1);
         }
 
-
         host.setCpuSpeed(ObjectUtils.parseLong(cpu.speed));
         String osString = "";
         if (os != null && os.type != null) {

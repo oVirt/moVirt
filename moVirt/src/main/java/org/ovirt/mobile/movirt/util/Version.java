@@ -58,7 +58,6 @@ public class Version implements Comparable<Version> {
         return major >= 4;
     }
 
-
     public boolean isApiWithinRange(Version from, Version to) {
         return compareTo(from) >= 0 && compareTo(to) <= 0;
     }
@@ -82,7 +81,6 @@ public class Version implements Comparable<Version> {
         }
         return major - another.major;
     }
-
 
     @Override
     public boolean equals(Object o) {

@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.util.properties;
+package org.ovirt.mobile.movirt.auth.properties;
 
 import org.ovirt.mobile.movirt.Constants;
 

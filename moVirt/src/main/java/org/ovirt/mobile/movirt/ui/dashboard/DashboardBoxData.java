@@ -20,14 +20,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 public class DashboardBoxData {
     private BoxDataEntityClass entityClass;
     private int entityCount = 0;
 
-    private Map<DashboardPosition, DashboardEntityStatus> positionsStatusMap = new HashMap<>(3);
+    private Map<DashboardPosition, DashboardEntityStatus> positionsStatusMap = new EnumMap<>(DashboardPosition.class);
 
     public DashboardBoxData(BoxDataEntityClass entityClass) {
         this.entityClass = entityClass;
@@ -64,7 +64,6 @@ public class DashboardBoxData {
 
     public void setEntityClass(BoxDataEntityClass entityClass) {
         this.entityClass = entityClass;
-
     }
 
     public String getEntityCountFormatStr(Context context) {

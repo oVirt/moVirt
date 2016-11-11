@@ -241,7 +241,6 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
             default:
                 break;
         }
-
     }
 
     @Override

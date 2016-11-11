@@ -1,6 +1,5 @@
 package org.ovirt.mobile.movirt.sync;
 
-
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -94,7 +93,6 @@ public class EventsHandler {
                         sendSyncIntent(false);
                     }
                 });
-
             }
         } catch (Exception e) {
             messageHelper.showError(e);
@@ -193,5 +191,4 @@ public class EventsHandler {
         intent.putExtra(Broadcasts.Extras.SYNCING, syncing);
         context.sendBroadcast(intent);
     }
-
 }
