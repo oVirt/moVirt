@@ -36,7 +36,7 @@ public enum AccountProperty {
      */
     USERNAME,
     /**
-     * Should be used together with {@link String}. See also {@linkplain this#getDependentProperties()}
+     * Should be used together with {@link String}. See also {@linkplain AccountProperty#getDependentProperties()}
      */
     API_URL,
     /**
@@ -64,7 +64,7 @@ public enum AccountProperty {
      */
     VALID_HOSTNAMES(false),
     /**
-     * Should be used together with {@link String String[] }. See also {@linkplain this#getDependentProperties()}
+     * Should be used together with {@link String String[] }. See also {@linkplain AccountProperty#getDependentProperties()}
      */
     VALID_HOSTNAME_LIST;
 

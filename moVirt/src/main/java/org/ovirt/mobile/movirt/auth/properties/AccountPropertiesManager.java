@@ -7,14 +7,15 @@ import android.support.annotation.NonNull;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.UiThread;
 import org.ovirt.mobile.movirt.auth.Cert;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.rest.dto.Api;
 import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.Version;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -29,8 +30,18 @@ import java.util.Set;
 public class AccountPropertiesManager {
     private static final String TAG = AccountPropertiesManager.class.getSimpleName();
 
+    private static final String PROPERTY = "property";
+    private static final String LISTENER = "listener";
+
     public enum OnThread {
-        UI, BACKGROUND, CURRENT
+        /**
+         * Notifies listeners atomically; slower for current thread
+         */
+        CURRENT,
+        /**
+         * Notifies listeners on a new thread in the future; faster for current thread.
+         */
+        BACKGROUND
     }
 
     // beware of circular injection, this is not guaranteed to be set when this class has been already injected somewhere else
@@ -38,7 +49,7 @@ public class AccountPropertiesManager {
 
     private boolean initialized = false;
 
-    private static Map<AccountProperty, Set<WrappedPropertyChangedListener>> listeners;
+    private static final Map<AccountProperty, Set<WrappedPropertyChangedListener>> listeners;
     private static Map<AccountProperty, Set<WrappedPropertyChangedListener>> initQueueListeners;
 
     static {
@@ -46,8 +57,8 @@ public class AccountPropertiesManager {
         initQueueListeners = new EnumMap<>(AccountProperty.class);
 
         for (AccountProperty property : AccountProperty.values()) {
-            listeners.put(property, new HashSet<WrappedPropertyChangedListener>());
-            initQueueListeners.put(property, new HashSet<WrappedPropertyChangedListener>());
+            listeners.put(property, Collections.synchronizedSet(new HashSet<WrappedPropertyChangedListener>()));
+            initQueueListeners.put(property, Collections.synchronizedSet(new HashSet<WrappedPropertyChangedListener>()));
         }
     }
 
@@ -56,11 +67,8 @@ public class AccountPropertiesManager {
         this.authenticator = authenticator;
         initialized = true;
 
-        for (AccountProperty property : AccountProperty.values()) { // should be run in current thread
-            Set<WrappedPropertyChangedListener> toNotify = initQueueListeners.get(property);
-            if (!toNotify.isEmpty()) {
-                notifyListeners(toNotify, authenticator.getResource(property));
-            }
+        for (AccountProperty property : AccountProperty.values()) {
+            notifyListeners(initQueueListeners.get(property), authenticator.getResource(property)); // should be run in current thread
         }
         initQueueListeners = null; // free
     }
@@ -88,7 +96,8 @@ public class AccountPropertiesManager {
     }
 
     /**
-     * Runs on current thread
+     * Notifies listener
+     * The listener IS GUARANTEED to be called from current thread, UNLESS caller of this method created new thread in @AfterViews.
      *
      * @param property describes type of {@linkplain AccountProperty Account Property}.
      * @param listener is notified with present state of {@code property}.
@@ -98,6 +107,8 @@ public class AccountPropertiesManager {
     @SuppressWarnings("unchecked")
     public <E> void notifyListener(final AccountProperty property, final PropertyChangedListener<E> listener) {
         if (isInitialized()) {
+            ObjectUtils.requireNotNull(property, PROPERTY);
+            ObjectUtils.requireNotNull(listener, LISTENER);
             listener.onPropertyChange((E) authenticator.getResource(property));
         } else {
             registerListenerImpl(initQueueListeners, property, listener);
@@ -105,7 +116,9 @@ public class AccountPropertiesManager {
     }
 
     /**
-     * Listener will be called from a thread decided by a caller of a setter of the property
+     * Registers listener.
+     * The listener IS NOT GUARANTEED to be called from the main UI thread (listener will be called from
+     * a thread specified by a caller of a setter of the property)
      *
      * @param property describes type of {@linkplain AccountProperty Account Property}
      * @param listener listens for changes of {@code property}
@@ -113,17 +126,56 @@ public class AccountPropertiesManager {
      * @throws ClassCastException if {@code <E>} doesn't correspond to {@code property}
      * @see OnThread
      */
-    @SuppressWarnings("unchecked")
     public <E> void registerListener(final AccountProperty property, final PropertyChangedListener<E> listener) {
+
         registerListenerImpl(listeners, property, listener);
     }
 
+    /**
+     * @param listener to be removed from this manager
+     * @return true if removed
+     */
+    public boolean removeListener(final PropertyChangedListener listener) {
+        if (listener == null) {
+            return false;
+        }
+
+        WrappedPropertyChangedListener toRemove = new WrappedPropertyChangedListener() {
+            @Override
+            void onPropertyChange(Object o) {
+            }
+
+            @NonNull
+            @Override
+            PropertyChangedListener getListener() {
+                return listener;
+            }
+        };
+        boolean result = false;
+
+        for (Set<WrappedPropertyChangedListener> propertyListeners : listeners.values()) {
+            result = propertyListeners.remove(toRemove) || result;
+        }
+
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
     private <E> void registerListenerImpl(Map<AccountProperty, Set<WrappedPropertyChangedListener>> listeners,
                                           AccountProperty property, final PropertyChangedListener<E> listener) {
+        ObjectUtils.requireNotNull(property, PROPERTY);
+        ObjectUtils.requireNotNull(listener, LISTENER);
+
         listeners.get(property).add(new WrappedPropertyChangedListener() {
             @Override
             public void onPropertyChange(Object newProperty) {
                 listener.onPropertyChange((E) newProperty);
+            }
+
+            @NonNull
+            @Override
+            PropertyChangedListener getListener() {
+                return listener;
             }
         });
     }
@@ -142,7 +194,7 @@ public class AccountPropertiesManager {
     }
 
     public boolean setAuthToken(String token, OnThread runOnThread) {
-        return setAndNotify(runOnThread, AccountProperty.AUTH_TOKEN, token);
+        return setAndNotify(AccountProperty.AUTH_TOKEN, token, runOnThread);
     }
 
     public Boolean accountConfigured() {
@@ -158,7 +210,7 @@ public class AccountPropertiesManager {
     }
 
     public boolean setUsername(String username, OnThread runOnThread) {
-        return setAndNotify(runOnThread, AccountProperty.USERNAME, username);
+        return setAndNotify(AccountProperty.USERNAME, username, runOnThread);
     }
 
     public String getPassword() {
@@ -170,7 +222,7 @@ public class AccountPropertiesManager {
     }
 
     public boolean setPassword(String password, OnThread runOnThread) {  // triggers sync in later APIs (Android 6)
-        return setAndNotify(runOnThread, AccountProperty.PASSWORD, password);
+        return setAndNotify(AccountProperty.PASSWORD, password, runOnThread);
     }
 
     public String getApiUrl() {
@@ -182,7 +234,7 @@ public class AccountPropertiesManager {
     }
 
     public boolean setApiUrl(String apiUrl, OnThread runOnThread) {
-        return setAndNotify(runOnThread, AccountProperty.API_URL, apiUrl);
+        return setAndNotify(AccountProperty.API_URL, apiUrl, runOnThread);
     }
 
     public String getApiBaseUrl() {
@@ -200,7 +252,7 @@ public class AccountPropertiesManager {
 
     public boolean setApiVersion(Api newApi, OnThread runOnThread) {
         Version newVersion = newApi == null ? null : newApi.toVersion();
-        return setAndNotify(runOnThread, AccountProperty.VERSION, newVersion);
+        return setAndNotify(AccountProperty.VERSION, newVersion, runOnThread);
     }
 
     @NonNull
@@ -213,7 +265,7 @@ public class AccountPropertiesManager {
     }
 
     public boolean setCertHandlingStrategy(CertHandlingStrategy certHandlingStrategy, OnThread runOnThread) {
-        return setAndNotify(runOnThread, AccountProperty.CERT_HANDLING_STRATEGY, certHandlingStrategy);
+        return setAndNotify(AccountProperty.CERT_HANDLING_STRATEGY, certHandlingStrategy, runOnThread);
     }
 
     public Boolean hasAdminPermissions() {
@@ -225,7 +277,7 @@ public class AccountPropertiesManager {
     }
 
     public boolean setAdminPermissions(Boolean hasAdminPermissions, OnThread runOnThread) {
-        return setAndNotify(runOnThread, AccountProperty.HAS_ADMIN_PERMISSIONS, hasAdminPermissions);
+        return setAndNotify(AccountProperty.HAS_ADMIN_PERMISSIONS, hasAdminPermissions, runOnThread);
     }
 
     @NonNull
@@ -238,7 +290,7 @@ public class AccountPropertiesManager {
     }
 
     public boolean setCertificateChain(Cert[] certChain, OnThread runOnThread) {
-        return setAndNotify(runOnThread, AccountProperty.CERTIFICATE_CHAIN, certChain);
+        return setAndNotify(AccountProperty.CERTIFICATE_CHAIN, certChain, runOnThread);
     }
 
     @NonNull
@@ -256,7 +308,7 @@ public class AccountPropertiesManager {
     }
 
     public boolean setValidHostnameList(String[] hostnameList, OnThread runOnThread) {
-        return setAndNotify(runOnThread, AccountProperty.VALID_HOSTNAME_LIST, hostnameList);
+        return setAndNotify(AccountProperty.VALID_HOSTNAME_LIST, hostnameList, runOnThread);
     }
 
     /**
@@ -265,6 +317,8 @@ public class AccountPropertiesManager {
      * @return true if property state is different than object
      */
     public boolean propertyDiffers(AccountProperty property, Object object) {
+        ObjectUtils.requireNotNull(property, PROPERTY);
+
         Object old = authenticator.getResource(property);
         boolean result;
 
@@ -280,17 +334,18 @@ public class AccountPropertiesManager {
     }
 
     /**
-     * @param property to be set and notified
-     * @param object   data to be set
+     * @param property    to be set and notified
+     * @param object      data to be set
+     * @param runOnThread thread to fire the listeners on
      * @return true if property state changed and listeners were notified
      */
-    private boolean setAndNotify(OnThread runOnThread, AccountProperty property, Object object) {
+    private boolean setAndNotify(AccountProperty property, Object object, OnThread runOnThread) {
         boolean propertyChanged = propertyDiffers(property, object);
         if (propertyChanged) {
             authenticator.setResource(property, object);
             if (!propertyDiffers(property, object)) { // setter worked
-                notifyListeners(runOnThread, property, authenticator.getResource(property)); // get set value
-                notifyDependentProperties(runOnThread, property);
+                notifyListeners(property, authenticator.getResource(property), runOnThread); // get set value
+                notifyDependentProperties(property, runOnThread);
             } else {
                 throw new IllegalStateException("Setter of account property " + property.name() + " doesn't set anything!");
             }
@@ -298,30 +353,33 @@ public class AccountPropertiesManager {
         return propertyChanged;
     }
 
-    private void notifyDependentProperties(OnThread runOnThread, AccountProperty property) {
+    private void notifyDependentProperties(AccountProperty property, OnThread runOnThread) {
         for (AccountProperty prop : property.getDependentProperties()) {
-            notifyListeners(runOnThread, prop, authenticator.getResource(prop));
+            notifyListeners(prop, authenticator.getResource(prop), runOnThread);
         }
     }
 
-    private void notifyListeners(OnThread runOnThread, AccountProperty property, Object o) {
+    private void notifyListeners(AccountProperty property, Object o, OnThread runOnThread) {
         Set<WrappedPropertyChangedListener> propertyListeners = listeners.get(property);
         switch (runOnThread) {
-            case UI:
-                notifyUiListeners(propertyListeners, o);
+            case CURRENT:
+                notifyListeners(propertyListeners, o);
                 break;
             case BACKGROUND:
                 notifyBackgroundListeners(propertyListeners, o);
-                break;
-            case CURRENT:
-                notifyListeners(propertyListeners, o);
                 break;
         }
     }
 
     private void notifyListeners(Set<WrappedPropertyChangedListener> currentListeners, Object o) {
-        for (WrappedPropertyChangedListener listener : currentListeners) {
-            listener.onPropertyChange(o);
+        if (currentListeners.isEmpty()) {
+            return;
+        }
+
+        synchronized (currentListeners) {
+            for (WrappedPropertyChangedListener listener : currentListeners) {
+                listener.onPropertyChange(o);
+            }
         }
     }
 
@@ -333,15 +391,25 @@ public class AccountPropertiesManager {
         notifyListeners(backgroundListeners, o);
     }
 
-    /**
-     * This method should not be used outside of {@link AccountPropertiesManager}
-     */
-    @UiThread(propagation = UiThread.Propagation.REUSE)
-    void notifyUiListeners(Set<WrappedPropertyChangedListener> uiThreadListeners, Object o) {
-        notifyListeners(uiThreadListeners, o);
-    }
+    abstract class WrappedPropertyChangedListener {
+        abstract void onPropertyChange(Object o);
 
-    interface WrappedPropertyChangedListener {
-        void onPropertyChange(Object o);
+        @NonNull
+        abstract PropertyChangedListener getListener();
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof WrappedPropertyChangedListener)) return false;
+
+            WrappedPropertyChangedListener that = (WrappedPropertyChangedListener) o;
+
+            return getListener().equals(that.getListener());
+        }
+
+        @Override
+        public int hashCode() {
+            return getListener().hashCode();
+        }
     }
 }

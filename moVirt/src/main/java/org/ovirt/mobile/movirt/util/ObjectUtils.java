@@ -31,6 +31,17 @@ public final class ObjectUtils {
     }
 
     /**
+     * @param o    object to be checked against
+     * @param name name of the object o
+     * @throws IllegalArgumentException if o is null
+     */
+    public static void requireNotNull(Object o, String name) {
+        if (o == null) {
+            throw new IllegalArgumentException(name + " cannot be null.");
+        }
+    }
+
+    /**
      * @param value value to be converted
      * @return int, unknown types are set to -1
      */

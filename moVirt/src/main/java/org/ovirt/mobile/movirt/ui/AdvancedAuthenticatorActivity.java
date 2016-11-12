@@ -78,6 +78,8 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
     @Bean
     AccountPropertiesManager propertiesManager;
 
+    private PropertyChangedListener[] listeners;
+
     @AfterViews
     void init() {
         // when turning the device
@@ -133,26 +135,38 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
     }
 
     private void setPropertyListeners() {
-        propertiesManager.notifyAndRegisterListener(AccountProperty.CERT_HANDLING_STRATEGY, new PropertyChangedListener<CertHandlingStrategy>() {
+        PropertyChangedListener certHandlingStrategyListener = new PropertyChangedListener<CertHandlingStrategy>() {
             @Override
             public void onPropertyChange(CertHandlingStrategy property) {
                 updateViews(property, null);
             }
-        });
-
-        propertiesManager.registerListener(AccountProperty.CERTIFICATE_CHAIN, new PropertyChangedListener<Cert[]>() {
-            @Override
-            public void onPropertyChange(Cert[] property) {
-                updateViews(propertiesManager.getCertHandlingStrategy(), property);
-            }
-        });
-
-        propertiesManager.notifyAndRegisterListener(AccountProperty.VALID_HOSTNAMES, new PropertyChangedListener<String>() {
+        };
+        PropertyChangedListener validHostnamesListener = new PropertyChangedListener<String>() {
             @Override
             public void onPropertyChange(String property) {
                 updateHostnames(property);
             }
-        });
+        };
+        PropertyChangedListener certChainListener = new PropertyChangedListener<Cert[]>() {
+            @Override
+            public void onPropertyChange(Cert[] property) {
+                updateViews(propertiesManager.getCertHandlingStrategy(), property);
+            }
+        };
+
+        listeners = new PropertyChangedListener[]{certHandlingStrategyListener, validHostnamesListener, certChainListener};
+
+        propertiesManager.notifyAndRegisterListener(AccountProperty.CERT_HANDLING_STRATEGY, certHandlingStrategyListener);
+        propertiesManager.notifyAndRegisterListener(AccountProperty.VALID_HOSTNAMES, validHostnamesListener);
+        propertiesManager.registerListener(AccountProperty.CERTIFICATE_CHAIN, certChainListener);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        for (PropertyChangedListener listener : listeners) {
+            propertiesManager.removeListener(listener);
+        }
     }
 
     @UiThread(propagation = UiThread.Propagation.REUSE)
