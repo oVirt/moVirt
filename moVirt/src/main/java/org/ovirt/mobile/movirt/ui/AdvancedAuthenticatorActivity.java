@@ -10,9 +10,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import com.unnamed.b.atv.model.TreeNode;
+import com.unnamed.b.atv.view.AndroidTreeView;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
@@ -55,30 +59,52 @@ import static org.ovirt.mobile.movirt.Constants.APP_PACKAGE_DOT;
 @EActivity(R.layout.activity_advanced_authenticator)
 public class AdvancedAuthenticatorActivity extends ActionBarActivity
         implements ConfirmDialogFragment.ConfirmDialogListener, CreateDialogBroadcastReceiver {
+    private static final int MAX_VISIBLE_CERTIFICATES = 10;
+
     public final static String LOAD_CA_FROM = APP_PACKAGE_DOT + "ui.LOAD_CA_FROM";
 
     @ViewById
     Spinner certHandlingStrategySpinner;
+
     @ViewById
-    EditText txtCaUrl;
+    EditText txtCertUrl;
+
     @ViewById
     EditText txtValidForHostnames;
+
     @ViewById
     TextView txtCertDetails;
+
+    @ViewById
+    TextView certUrlLabel;
+
+    @ViewById
+    TextView validHostnamesLabel;
+
     @ViewById
     Button btnDelete;
+
     @ViewById
     Button btnLoad;
+
     @ViewById
     ProgressBar progress;
+
+    @ViewById
+    LinearLayout certTreeContainer;
+
     @InstanceState
     boolean inProgress;
+
     @Bean
     MessageHelper messageHelper;
+
     @Bean
     AccountPropertiesManager propertiesManager;
 
     private PropertyChangedListener[] listeners;
+
+    private boolean maxCertsReachedErrorAlreadyShown;
 
     @AfterViews
     void init() {
@@ -93,7 +119,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         if (!TextUtils.isEmpty(endpoint)) {
             try {
                 URL url = new URL(endpoint);
-                txtCaUrl.setText("http://" + url.getHost() + "/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA");
+                txtCertUrl.setText("http://" + url.getHost() + "/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA");
             } catch (MalformedURLException e) {
                 // no problem - just a convenience to help the most common case
             }
@@ -150,6 +176,9 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         PropertyChangedListener certChainListener = new PropertyChangedListener<Cert[]>() {
             @Override
             public void onPropertyChange(Cert[] property) {
+                if (property.length > MAX_VISIBLE_CERTIFICATES) {
+                    maxCertsReachedErrorAlreadyShown = false;
+                }
                 updateViews(propertiesManager.getCertHandlingStrategy(), property);
             }
         };
@@ -183,13 +212,14 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
                 break;
             default:
                 seCustomCertVisibility(false);
-                hideCertDetail();
+                hideCerts();
                 break;
         }
     }
 
     private void seCustomCertVisibility(boolean visible) {
-        txtCaUrl.setVisibility(visible ? View.VISIBLE : View.GONE);
+        txtCertUrl.setVisibility(visible ? View.VISIBLE : View.GONE);
+        certUrlLabel.setVisibility(visible ? View.VISIBLE : View.GONE);
         btnDelete.setVisibility(visible ? View.VISIBLE : View.GONE);
         btnLoad.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
@@ -210,34 +240,76 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         }
     }
 
+    private void hideCerts() {
+        showCerts(null);
+    }
+
     private void showCerts(Cert[] certs) {
-        if (certs.length > 0) {
-            String caValue = "";
-            for (Cert cert : certs) {
-                caValue += cert.asCertificate().toString();
-            }
-            setCertToView(caValue, true);
-        } else {
-            hideCertDetail();
-        }
-    }
+        boolean visible = certs != null && certs.length > 0;
 
-    private void hideCertDetail() {
-        setCertToView("", false);
-    }
-
-    private void setCertToView(String caValue, boolean visible) {
         if (btnDelete != null) {
             btnDelete.setEnabled(visible);
         }
 
         if (txtValidForHostnames != null) {
             txtValidForHostnames.setVisibility(visible ? View.VISIBLE : View.GONE);
+            validHostnamesLabel.setVisibility(visible ? View.VISIBLE : View.GONE);
         }
 
         if (txtCertDetails != null) {
             txtCertDetails.setVisibility(visible ? View.VISIBLE : View.GONE);
-            txtCertDetails.setText(caValue);
+            txtCertDetails.setText(null);
+        }
+
+        if (certTreeContainer != null) {
+            certTreeContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
+            certTreeContainer.removeAllViews(); // remove previous tree
+            if (visible) {
+                createTreeView(certs);
+            }
+        }
+    }
+
+    private void createTreeView(Cert[] certs) {
+        TreeNode root = TreeNode.root();
+        TreeNode intermediateLeaf = root;
+        CertHolder leafHolder = null;
+        int visibleCertificates;
+
+        if (certs.length > MAX_VISIBLE_CERTIFICATES) {
+            visibleCertificates = MAX_VISIBLE_CERTIFICATES;
+            if (!maxCertsReachedErrorAlreadyShown) {
+                maxCertsReachedErrorAlreadyShown = true;
+                messageHelper.showError(ErrorType.USER, getString(R.string.advanced_authenticator_error_max_visible_certs_reached, MAX_VISIBLE_CERTIFICATES));
+            }
+        } else {
+            visibleCertificates = certs.length;
+        }
+
+        CertHolder.CertificateSelectedListener listener = new CertHolder.CertificateSelectedListener() {
+            @Override
+            public void onSelect(Certificate certificate) {
+                txtCertDetails.setText(certificate.toString());
+            }
+        };
+
+        for (int i = visibleCertificates - 1; i >= 0; i--) { // create tree hierarchy
+            CertHolder.TreeItem data = new CertHolder.TreeItem(certs[i].asCertificate(), listener);
+            leafHolder = new CertHolder(this);
+            TreeNode newNode = new TreeNode(data).setViewHolder(leafHolder);
+
+            intermediateLeaf.addChild(newNode);
+            intermediateLeaf.setExpanded(true);
+            intermediateLeaf = newNode;
+        }
+
+        AndroidTreeView atv = new AndroidTreeView(this, root);
+        atv.setUseAutoToggle(false);
+        atv.setSelectionModeEnabled(true);
+        atv.setDefaultContainerStyle(R.style.CertTreeNodeStyle);
+        certTreeContainer.addView(atv.getView());
+        if (leafHolder != null) {
+            leafHolder.selectNode(); // select Api certificate
         }
     }
 
@@ -271,7 +343,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         showProgressBar();
         URL url = null;
         try {
-            String endpoint = txtCaUrl.getText().toString();
+            String endpoint = txtCertUrl.getText().toString();
             url = new URL(endpoint);
         } catch (MalformedURLException e) {
             hideProgressBar();

@@ -31,7 +31,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/textView3"
-        android:layout_marginBottom="96dp"
+        android:layout_marginBottom="48dp"
         android:clipToPadding="false">
 
         <LinearLayout
@@ -101,15 +101,16 @@
         </LinearLayout>
     </ScrollView>
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/linearLayout2"
-        style="?android:attr/buttonBarStyle"
         android:layout_width="wrap_content"
-        android:layout_height="96dp"
+        android:layout_height="48dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:gravity="end"
+        android:layout_alignParentStart="true"
+        android:gravity="center_vertical"
         android:orientation="vertical">
 
         <Button
@@ -117,6 +118,8 @@
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:text="@string/certificate_management"/>
 
         <Button
@@ -124,7 +127,9 @@
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
             android:text="@string/save_acc"/>
-    </LinearLayout>
+    </RelativeLayout>
 
 </RelativeLayout>
