@@ -19,7 +19,7 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
-import org.ovirt.mobile.movirt.util.Version;
+import org.ovirt.mobile.movirt.auth.properties.property.Version;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.springframework.web.client.HttpClientErrorException;

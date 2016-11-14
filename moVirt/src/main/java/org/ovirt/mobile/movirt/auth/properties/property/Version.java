@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.util;
+package org.ovirt.mobile.movirt.auth.properties.property;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

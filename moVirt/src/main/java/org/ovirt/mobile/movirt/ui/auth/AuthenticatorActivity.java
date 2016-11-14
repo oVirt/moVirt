@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.auth;
 
 import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
@@ -35,6 +35,7 @@ import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
+import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;

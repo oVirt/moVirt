@@ -2,7 +2,7 @@ package org.ovirt.mobile.movirt.auth.properties;
 
 import android.text.TextUtils;
 
-import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.util.JsonUtils;
 
 import java.util.ArrayList;

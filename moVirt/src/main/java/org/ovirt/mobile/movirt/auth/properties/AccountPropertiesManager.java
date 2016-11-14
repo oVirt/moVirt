@@ -10,9 +10,9 @@ import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.auth.Cert;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.rest.dto.Api;
-import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
-import org.ovirt.mobile.movirt.util.Version;
+import org.ovirt.mobile.movirt.auth.properties.property.Version;
 
 import java.util.Arrays;
 import java.util.Collections;

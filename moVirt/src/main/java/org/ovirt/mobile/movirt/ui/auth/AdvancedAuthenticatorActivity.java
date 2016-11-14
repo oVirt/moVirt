@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.auth;
 
 import android.app.DialogFragment;
 import android.content.DialogInterface;
@@ -35,6 +35,7 @@ import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.ParseUtils;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
+import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;

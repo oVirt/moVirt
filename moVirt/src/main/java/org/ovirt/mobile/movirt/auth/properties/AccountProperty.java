@@ -2,6 +2,8 @@ package org.ovirt.mobile.movirt.auth.properties;
 
 import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.auth.Cert;
+import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.auth.properties.property.Version;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -44,11 +46,11 @@ public enum AccountProperty {
      */
     API_BASE_URL(false),
     /**
-     * Should be used together with {@link org.ovirt.mobile.movirt.util.Version}.
+     * Should be used together with {@link Version}.
      */
     VERSION,
     /**
-     * Should be used together {@link org.ovirt.mobile.movirt.ui.CertHandlingStrategy}.
+     * Should be used together {@link CertHandlingStrategy}.
      */
     CERT_HANDLING_STRATEGY,
     /**

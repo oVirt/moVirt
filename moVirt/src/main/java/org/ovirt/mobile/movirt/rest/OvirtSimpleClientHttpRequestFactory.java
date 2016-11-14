@@ -9,7 +9,7 @@ import org.ovirt.mobile.movirt.auth.Cert;
 import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
-import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;

@@ -9,8 +9,8 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
-import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
+import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity;
+import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity_;
 
 /**
  * Dialog asking user to import certificate.

@@ -15,6 +15,7 @@ import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
+import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;

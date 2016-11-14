@@ -16,7 +16,7 @@ import org.ovirt.mobile.movirt.rest.RequestHandler;
 import org.ovirt.mobile.movirt.rest.Response;
 import org.ovirt.mobile.movirt.rest.VvFileHttpMessageConverter;
 import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
-import org.ovirt.mobile.movirt.util.Version;
+import org.ovirt.mobile.movirt.auth.properties.property.Version;
 
 import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptEncodingHeaderAndFactory;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptHeader;

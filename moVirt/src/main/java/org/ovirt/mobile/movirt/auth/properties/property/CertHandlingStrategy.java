@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.auth.properties.property;
 
 public enum CertHandlingStrategy {
     TRUST_SYSTEM(0),
