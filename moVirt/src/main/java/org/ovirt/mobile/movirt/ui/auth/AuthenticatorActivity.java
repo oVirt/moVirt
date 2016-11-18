@@ -35,7 +35,6 @@ import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
-import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
@@ -43,7 +42,6 @@ import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.io.File;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -251,6 +249,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         }
         boolean usernameChanged = propertiesManager.propertyDiffers(AccountProperty.USERNAME, username);
         boolean urlChanged = propertiesManager.propertyDiffers(AccountProperty.API_URL, endpoint);
+        boolean endpointChanged = urlChanged || usernameChanged;
 
         try {
             setLoginInProgress(true); // disables syncs because setUserData() may trigger sync
@@ -258,7 +257,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
             setUserData(endpoint, username, password, adminPriv);
 
             String token = loginClient.login(username, password);
-            onLoginResultReceived(token, urlChanged, usernameChanged);
+            onLoginResultReceived(token, endpointChanged);
         } catch (HttpClientErrorException e) {
             setLoginInProgress(false);
             switch (e.getStatusCode()) {
@@ -287,7 +286,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         }
     }
 
-    void onLoginResultReceived(String token, boolean urlChanged, boolean usernameChanged) {
+    void onLoginResultReceived(String token, boolean endpointChanged) {
         if (TextUtils.isEmpty(token)) {
             setLoginInProgress(false);
             messageHelper.showError(ErrorType.LOGIN,
@@ -295,14 +294,10 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
             return;
         }
 
-        if (urlChanged || usernameChanged) {
+        if (endpointChanged) {
             // there is a different set of events and since we are counting only the increments,
             // this ones are not needed anymore
             eventsHandler.deleteEvents();
-        }
-
-        if (urlChanged) {
-            deleteCaFile();
         }
 
         propertiesManager.setAuthToken(token);
@@ -319,14 +314,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
 //        setAccountAuthenticatorResult(intent.getExtras());
         setResult(RESULT_OK, intent);
         finish();
-    }
-
-    @Background
-    public void deleteCaFile() {
-        File file = new File(Constants.getCaCertPath(this));
-        if (file.isFile() && file.exists()) {
-            file.delete();
-        }
     }
 
     void setLoginInProgress(boolean loginInProgress) {

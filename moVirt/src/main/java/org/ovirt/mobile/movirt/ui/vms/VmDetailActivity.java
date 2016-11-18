@@ -57,6 +57,7 @@ import org.ovirt.mobile.movirt.ui.events.EventsFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.springframework.util.StringUtils;
 
@@ -411,7 +412,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         try {
             String caCertPath = null;
             if (details.getProtocol() == ConsoleProtocol.SPICE && details.getTlsPort() > 0) {
-                caCertPath = Constants.getCaCertPath(this);
+                caCertPath = Constants.getConsoleCertPath(this);
                 saveCertToFile(caCertPath, details.getCertificate());
             }
             Intent intent = new Intent(Intent.ACTION_VIEW)
@@ -437,10 +438,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         } catch (Exception e) {
             throw new IllegalArgumentException("Error storing certificate to file: " + e.getMessage());
         } finally {
-            try {
-                writer.close();
-            } catch (Exception ignore) {
-            }
+            ObjectUtils.closeSilently(writer);
         }
     }
 

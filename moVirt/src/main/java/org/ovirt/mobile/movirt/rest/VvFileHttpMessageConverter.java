@@ -4,10 +4,9 @@ package org.ovirt.mobile.movirt.rest;
  * Created by suomiy on 10/17/16.
  */
 
-import android.util.Log;
-
 import org.ovirt.mobile.movirt.model.ConsoleProtocol;
 import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -45,13 +44,7 @@ public class VvFileHttpMessageConverter extends AbstractHttpMessageConverter<Obj
         } catch (Exception x) {
             throw new IllegalStateException("Couldn't parse .vv file response", x);
         } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    Log.e(TAG, "failed to close input stream");
-                }
-            }
+            ObjectUtils.closeSilently(inputStream);
         }
 
         return result;

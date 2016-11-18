@@ -17,17 +17,16 @@ import org.androidannotations.annotations.UiThread;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.dto.ErrorBody;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
-import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -92,11 +91,11 @@ public class MessageHelper {
     }
 
     public void showError(Throwable message) {
-        showError(new Message(getThrowableMessage(message)));
+        showError(new Message(ObjectUtils.throwableToString(message)));
     }
 
     public void showError(ErrorType type, Throwable message) {
-        showError(new Message(type, getThrowableMessage(message)));
+        showError(new Message(type, ObjectUtils.throwableToString(message)));
     }
 
     public void showError(ErrorType type, String message) {
@@ -108,14 +107,7 @@ public class MessageHelper {
     }
 
     public void showError(ErrorType type, Throwable message, String header) {
-        showError(new Message(type, getThrowableMessage(message), header));
-    }
-
-    private String getThrowableMessage(Throwable throwable) {
-        StringWriter sw = new StringWriter();
-        throwable.printStackTrace(new PrintWriter(sw));
-
-        return sw.toString();
+        showError(new Message(type, ObjectUtils.throwableToString(message), header));
     }
 
     /**

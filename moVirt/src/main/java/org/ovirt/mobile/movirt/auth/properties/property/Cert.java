@@ -1,9 +1,12 @@
-package org.ovirt.mobile.movirt.auth;
+package org.ovirt.mobile.movirt.auth.properties.property;
+
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.security.cert.Certificate;
 import java.util.Arrays;
 
@@ -19,9 +22,28 @@ public class Cert {
         this.content = content;
     }
 
+    public static Cert fromCertificate(Certificate certificate) throws Exception {
+        if (certificate == null) {
+            throw new IllegalArgumentException("Certificate is null");
+        }
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream out = null;
+        try {
+            out = new ObjectOutputStream(bos);
+            out.writeObject(certificate);
+            byte[] caAsBlob = bos.toByteArray();
+            Cert cert = new Cert();
+            cert.setContent(caAsBlob);
+            return cert;
+        } finally {
+            ObjectUtils.close(out, bos);
+        }
+    }
+
     public Certificate asCertificate() {
         ByteArrayInputStream bis = new ByteArrayInputStream(getContent());
-        ObjectInput in = null;
+        ObjectInputStream in = null;
         try {
             try {
                 in = new ObjectInputStream(bis);
@@ -31,22 +53,11 @@ public class Cert {
                 } else {
                     throw new IllegalStateException("The result object is not a Certificate");
                 }
-            } catch (IOException e) {
-                throw new IllegalStateException("Error creating caCert from the blob provided: " + e.getMessage());
-            } catch (ClassNotFoundException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 throw new IllegalStateException("Error creating caCert from the blob provided: " + e.getMessage());
             }
         } finally {
-            try {
-                bis.close();
-            } catch (IOException ignore) {
-            }
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException ignore) {
-            }
+            ObjectUtils.closeSilently(bis, in);
         }
     }
 

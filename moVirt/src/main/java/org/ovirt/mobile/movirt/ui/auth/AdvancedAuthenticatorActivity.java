@@ -30,13 +30,14 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.Cert;
+import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.ParseUtils;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
@@ -47,8 +48,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.Certificate;
@@ -266,7 +265,12 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
             certTreeContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
             certTreeContainer.removeAllViews(); // remove previous tree
             if (visible) {
-                createTreeView(certs);
+                try {
+                    createTreeView(certs);
+                } catch (Exception x) {
+                    messageHelper.showError(ErrorType.NORMAL, x, "Certificates badly formatted");
+                    deleteAllCerts();
+                }
             }
         }
     }
@@ -348,7 +352,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
             url = new URL(endpoint);
         } catch (MalformedURLException e) {
             hideProgressBar();
-            showToast("The endpoint is not a valid URL");
+            messageHelper.showToast("The endpoint is not a valid URL");
             return;
         }
 
@@ -357,7 +361,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
             cf = CertificateFactory.getInstance("X.509");
         } catch (CertificateException e) {
             hideProgressBar();
-            showToast("Problem getting the certificate factory: " + e.getMessage());
+            messageHelper.showToast("Problem getting the certificate factory: " + e.getMessage());
             return;
         }
 
@@ -377,57 +381,24 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
 
             caInput = new ByteArrayInputStream(caOutput.toByteArray());
         } catch (IOException e) {
+            ObjectUtils.closeSilently(caInput, caOutput);
             hideProgressBar();
-            showToast("Error loading certificate: " + e.getMessage());
+            messageHelper.showToast("Error loading certificate: " + e.getMessage());
             return;
         }
 
         try {
-            Certificate ca = cf.generateCertificate(caInput);
+            Certificate certificate = cf.generateCertificate(caInput);
             propertiesManager.setValidHostnameList(new String[]{url.getHost()});
-            storeImportedCa(ca);
+            propertiesManager.setCertificateChain(new Cert[]{Cert.fromCertificate(certificate)});
         } catch (Exception e) {
             hideProgressBar();
             deleteAllCerts(); // hostname and ca must be atomic
             messageHelper.showError(ErrorType.NORMAL, e, "Error storing certificate");
         } finally {
-            try {
-                caInput.close();
-                caOutput.close();
-            } catch (IOException e) {
-                // really nothing to do about this one...
-            }
+            ObjectUtils.closeSilently(caInput, caOutput);
             hideProgressBar();
         }
-    }
-
-    private void storeImportedCa(Certificate certificate) throws Exception {
-        if (certificate == null) {
-            throw new IllegalArgumentException("Certificate is null");
-        }
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out = null;
-        try {
-            out = new ObjectOutputStream(bos);
-            out.writeObject(certificate);
-            byte[] caAsBlob = bos.toByteArray();
-            Cert cert = new Cert();
-            cert.setContent(caAsBlob);
-            propertiesManager.setCertificateChain(new Cert[]{cert}); // current thread is already background
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } finally {
-                bos.close();
-            }
-        }
-    }
-
-    void showToast(String msg) {
-        messageHelper.showToast(msg);
     }
 
     @UiThread(propagation = UiThread.Propagation.REUSE)

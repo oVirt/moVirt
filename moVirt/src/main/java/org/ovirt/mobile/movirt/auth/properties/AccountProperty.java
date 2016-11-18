@@ -1,7 +1,7 @@
 package org.ovirt.mobile.movirt.auth.properties;
 
 import org.ovirt.mobile.movirt.Constants;
-import org.ovirt.mobile.movirt.auth.Cert;
+import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.auth.properties.property.Version;
 
@@ -58,7 +58,7 @@ public enum AccountProperty {
      */
     HAS_ADMIN_PERMISSIONS,
     /**
-     * Should be used together with {@link Cert org.ovirt.mobile.movirt.auth.Cert[]}.
+     * Should be used together with {@link Cert Cert[]}.
      */
     CERTIFICATE_CHAIN,
     /**

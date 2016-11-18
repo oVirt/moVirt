@@ -7,12 +7,12 @@ import android.support.annotation.NonNull;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.auth.Cert;
+import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
-import org.ovirt.mobile.movirt.rest.dto.Api;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
-import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.auth.properties.property.Version;
+import org.ovirt.mobile.movirt.rest.dto.Api;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
