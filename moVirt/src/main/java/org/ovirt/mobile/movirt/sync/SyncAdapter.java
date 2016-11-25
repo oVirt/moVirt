@@ -86,8 +86,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             Log.d(TAG, "Account not configured, not performing sync");
             return;
         }
-        if (true)
-            return;
 
         if (inSync.compareAndSet(false, true)) {
             try {
