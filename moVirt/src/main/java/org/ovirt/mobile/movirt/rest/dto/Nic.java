@@ -32,5 +32,4 @@ public abstract class Nic implements RestEntityWrapper<org.ovirt.mobile.movirt.m
 
         return nic;
     }
-
 }

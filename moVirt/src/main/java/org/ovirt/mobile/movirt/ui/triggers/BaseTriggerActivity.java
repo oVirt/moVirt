@@ -156,7 +156,6 @@ public abstract class BaseTriggerActivity extends ActionBarActivity implements C
         }
     }
 
-
     public EntityType getEntityType(Condition triggerCondition) {
         if (triggerCondition instanceof EventCondition) {
             return EntityType.EVENT;

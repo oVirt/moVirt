@@ -17,5 +17,4 @@ public class Nic extends org.ovirt.mobile.movirt.rest.dto.Nic {
 
         return nic;
     }
-
 }

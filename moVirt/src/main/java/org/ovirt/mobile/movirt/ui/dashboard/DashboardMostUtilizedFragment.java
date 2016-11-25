@@ -88,7 +88,6 @@ public class DashboardMostUtilizedFragment extends LoaderFragment implements OVi
         restartLoader();
     }
 
-
     @Override
     public void restartLoader() {
         getLoaderManager().restartLoader(ACTIVE_LOADER, null, cursorAdapterLoader);

@@ -42,7 +42,6 @@ public class Cluster extends OVirtEntity implements OVirtContract.Cluster {
         return dataCenterId;
     }
 
-
     public Cluster() {
     }
 

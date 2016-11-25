@@ -128,7 +128,6 @@ public final class CameraManager {
                 }
             }
         }
-
     }
 
     public synchronized boolean isOpen() {
@@ -268,7 +267,6 @@ public final class CameraManager {
         return framingRectInPreview;
     }
 
-
     /**
      * Allows third party apps to specify the camera ID, rather than determine
      * it automatically based on available cameras and their orientation.
@@ -324,5 +322,4 @@ public final class CameraManager {
         return new PlanarYUVLuminanceSource(data, width, height, rect.left, rect.top,
                 rect.width(), rect.height(), false);
     }
-
 }

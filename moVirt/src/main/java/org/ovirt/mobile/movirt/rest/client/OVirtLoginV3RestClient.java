@@ -33,5 +33,4 @@ public interface OVirtLoginV3RestClient extends RestClientRootUrl, RestClientHea
 
     @Get("/")
     Api login();
-
 }

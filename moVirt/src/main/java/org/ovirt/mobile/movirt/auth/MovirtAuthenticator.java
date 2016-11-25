@@ -14,41 +14,26 @@ import android.text.TextUtils;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.SystemService;
+import org.ovirt.mobile.movirt.Constants;
+import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
+import org.ovirt.mobile.movirt.auth.properties.PropertyUtils;
+import org.ovirt.mobile.movirt.auth.properties.property.Cert;
+import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.auth.properties.property.Version;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
-import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
-import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
-import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity;
+import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.util.JsonUtils;
-import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
-import org.ovirt.mobile.movirt.util.Version;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
-import org.ovirt.mobile.movirt.util.properties.AccountProperty;
 
-
-@EBean
+@EBean(scope = EBean.Scope.Singleton)
 public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
-    public static final String ACCOUNT_NAME = "oVirt";
+    private static final String ACCOUNT_TYPE = Constants.APP_PACKAGE_DOT + "authenticator";
 
-    public static final String ACCOUNT_TYPE = "org.ovirt.mobile.movirt.authenticator";
-
-    private static final String AUTH_TOKEN_TYPE = "org.ovirt.mobile.movirt.token";
-
-    private static final String USER_NAME = "org.ovirt.mobile.movirt.username";
-
-    private static final String API_URL = "org.ovirt.mobile.movirt.apiurl";
-
-    private static final String API_VERSION = "org.ovirt.mobile.movirt.apiversion";
-
-    private static final String CERT_HANDLING_STRATEGY = "org.ovirt.mobile.movirt.certhandlingstrategy";
-
-    private static final String HAS_ADMIN_PERMISSIONS = "org.ovirt.mobile.movirt.adminpermissionsm";
-
-    private static final String CUSTOM_CERTIFICATE = "org.ovirt.mobile.movirt.customCertificate";
-
-    private static final Account MOVIRT_ACCOUNT = new Account(MovirtAuthenticator.ACCOUNT_NAME, MovirtAuthenticator.ACCOUNT_TYPE);
+    private static final Account MOVIRT_ACCOUNT = new Account("oVirt", MovirtAuthenticator.ACCOUNT_TYPE);
 
     @Bean
     LoginClient loginClient;
@@ -63,7 +48,6 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     SharedPreferencesHelper sharedPreferencesHelper;
 
     private Context context;
-
 
     public MovirtAuthenticator(Context context) {
         super(context);
@@ -143,12 +127,14 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         return null;
     }
 
-    public void initAccount(String password) {
-        if (accountManager.addAccountExplicitly(getAccount(), password, Bundle.EMPTY)) {
+    public boolean initAccount(String password) {
+        boolean initialized = accountManager.addAccountExplicitly(getAccount(), password, Bundle.EMPTY);
+        if (initialized) {
             ContentResolver.setIsSyncable(getAccount(), OVirtContract.CONTENT_AUTHORITY, 1);
             ContentResolver.setSyncAutomatically(getAccount(), OVirtContract.CONTENT_AUTHORITY, true);
             sharedPreferencesHelper.updatePeriodicSync();
         }
+        return initialized;
     }
 
     public Account getAccount() {
@@ -156,7 +142,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     }
 
     /**
-     * @throws IllegalStateException if property is not settable
+     * @throws IllegalArgumentException if property is not settable
      */
     public void setResource(AccountProperty property, Object object) {
         Account account = getAccount();
@@ -164,38 +150,31 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         switch (property) {
             case AUTH_TOKEN:
                 if (object == null) {
-                    accountManager.invalidateAuthToken(AUTH_TOKEN_TYPE, accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE));
+                    accountManager.invalidateAuthToken(property.getPackageKey(),
+                            accountManager.peekAuthToken(account, property.getPackageKey()));
                 }
-                accountManager.setAuthToken(account, AUTH_TOKEN_TYPE, ObjectUtils.convertToString(object));
+                accountManager.setAuthToken(account, property.getPackageKey(), PropertyUtils.convertToString(object));
                 break;
             case PEEK_AUTH_TOKEN:
             case FUTURE_AUTH_TOKEN:
-                throw new IllegalStateException(property.name() + " cannot be set! Use AUTH_TOKEN.");
-            case USERNAME:
-                accountManager.setUserData(account, USER_NAME, ObjectUtils.convertToString(object));
-                break;
+                throw new IllegalArgumentException(property.name() + " cannot be set! Use AUTH_TOKEN.");
             case PASSWORD:
-                accountManager.setPassword(account, ObjectUtils.convertToString(object)); // triggers sync in later APIs (Android 6)
+                accountManager.setPassword(account, PropertyUtils.convertToString(object)); // triggers sync in later APIs (Android 6)
                 break;
+            case USERNAME:
             case API_URL:
-                accountManager.setUserData(account, API_URL, ObjectUtils.convertToString(object));
-                break;
             case VERSION:
-                accountManager.setUserData(account, API_VERSION, ObjectUtils.convertToString(object));
-                break;
             case CERT_HANDLING_STRATEGY:
-                accountManager.setUserData(account, CERT_HANDLING_STRATEGY, ObjectUtils.convertToString(object));
-                break;
             case HAS_ADMIN_PERMISSIONS:
-                accountManager.setUserData(account, HAS_ADMIN_PERMISSIONS, ObjectUtils.convertToString(object));
+            case CERTIFICATE_CHAIN:
+            case VALID_HOSTNAME_LIST:
+            case CUSTOM_CERTIFICATE_LOCATION:
+                accountManager.setUserData(account, property.getPackageKey(), PropertyUtils.convertToString(object));
                 break;
-            case ACCOUNT_CONFIGURED:
-            case API_BASE_URL:
-                throw new IllegalStateException(property.name() + " cannot be set!");
+            default:
+                throw new IllegalArgumentException(property.name() + " cannot be set!");
         }
-
     }
-
 
     @SuppressWarnings("unchecked")
     public <E> E getResource(AccountProperty property, Class<E> clazz) {
@@ -211,46 +190,57 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         switch (property) {
             case AUTH_TOKEN: // fallback to non blocking peek, used exclusively by AccountPropertiesManager.setAndNotify
             case PEEK_AUTH_TOKEN:
-                return accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE);
+                return accountManager.peekAuthToken(account, AccountProperty.AUTH_TOKEN.getPackageKey());
             case FUTURE_AUTH_TOKEN:
-                return accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, null, false, null, null);
+                return accountManager.getAuthToken(account, AccountProperty.AUTH_TOKEN.getPackageKey(), null, false, null, null);
             case ACCOUNT_CONFIGURED:
                 return accountManager.getAccountsByType(ACCOUNT_TYPE).length > 0;
-            case USERNAME:
-                return read(USER_NAME);
             case PASSWORD:
                 return accountManager.getPassword(account);
+            case USERNAME:
             case API_URL:
-                return read(API_URL);
+                return read(property);
             case API_BASE_URL:
-                String baseUrl = read(API_URL);
+                String baseUrl = read(AccountProperty.API_URL);
                 return baseUrl == null ? null : baseUrl.replaceFirst("/api$", "");
             case VERSION:
-                return getApiVersion();
+                return getApiVersion(property);
             case CERT_HANDLING_STRATEGY:
-                return getCertHandlingStrategy();
+                return getCertHandlingStrategy(property);
             case HAS_ADMIN_PERMISSIONS:
-                return read(HAS_ADMIN_PERMISSIONS, false);
+            case CUSTOM_CERTIFICATE_LOCATION:
+                return read(property, false);
+            case CERTIFICATE_CHAIN:
+                return getCertificateChain(property);
+            case VALID_HOSTNAMES:
+                return PropertyUtils.catenateToCsv(getValidHostnames(AccountProperty.VALID_HOSTNAME_LIST));
+            case VALID_HOSTNAME_LIST:
+                return getValidHostnames(property);
             default:
                 return null;
         }
     }
 
-    private Version getApiVersion() {
-        Version result = null;
-        try {
-            result = JsonUtils.stringToObject(read(API_VERSION), Version.class);
-        } catch (Exception ignored) {
-        }
-
+    private Version getApiVersion(AccountProperty property) {
+        Version result = readObject(property, Version.class);
         if (result == null) {
             result = new Version();
         }
         return result;
     }
 
-    private CertHandlingStrategy getCertHandlingStrategy() {
-        String strategy = read(CERT_HANDLING_STRATEGY);
+    private String[] getValidHostnames(AccountProperty property) {
+        String[] result = readObject(property, String[].class);
+        return (result == null) ? new String[]{} : result;
+    }
+
+    private Cert[] getCertificateChain(AccountProperty property) {
+        Cert[] result = readObject(property, Cert[].class);
+        return (result == null) ? new Cert[]{} : result;
+    }
+
+    private CertHandlingStrategy getCertHandlingStrategy(AccountProperty property) {
+        String strategy = read(property);
         if (TextUtils.isEmpty(strategy)) {
             return CertHandlingStrategy.TRUST_SYSTEM;
         }
@@ -262,8 +252,16 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         }
     }
 
-    private Boolean read(String id, boolean defRes) {
-        String res = accountManager.getUserData(getAccount(), id);
+    private <T> T readObject(AccountProperty property, Class<T> clazz) {
+        try {
+            return JsonUtils.stringToObject(read(property), clazz);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private Boolean read(AccountProperty property, boolean defRes) {
+        String res = accountManager.getUserData(getAccount(), property.getPackageKey());
         if (TextUtils.isEmpty(res)) {
             return defRes;
         }
@@ -271,8 +269,8 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         return Boolean.valueOf(res);
     }
 
-    private String read(String id, String defRes) {
-        String res = accountManager.getUserData(getAccount(), id);
+    private String read(AccountProperty property, String defRes) {
+        String res = accountManager.getUserData(getAccount(), property.getPackageKey());
         if (TextUtils.isEmpty(res)) {
             return defRes;
         }
@@ -280,8 +278,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         return res;
     }
 
-    private String read(String id) {
-        return accountManager.getUserData(getAccount(), id);
+    private String read(AccountProperty property) {
+        return accountManager.getUserData(getAccount(), property.getPackageKey());
     }
-
 }

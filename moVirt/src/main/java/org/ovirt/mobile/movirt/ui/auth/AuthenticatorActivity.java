@@ -1,5 +1,6 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.auth;
 
+import android.accounts.Account;
 import android.accounts.AccountAuthenticatorActivity;
 import android.accounts.AccountManager;
 import android.app.DialogFragment;
@@ -14,7 +15,6 @@ import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.ProgressBar;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
@@ -27,22 +27,22 @@ import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
+import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
+import org.ovirt.mobile.movirt.ui.UiUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
-import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
-import org.ovirt.mobile.movirt.util.properties.AccountProperty;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.io.File;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -59,7 +59,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     private static final String[] URL_COMPLETE = {"http://", "https://", "ovirt-engine/api", "80",
             "443", "api"};
     private static final String[] USERNAME_COMPLETE = {"admin@", "internal", "admin@internal"};
-    private static int REQUEST_ACCOUNT_DETAILS = 1;
     private static volatile boolean inProgress;
 
     public static final String SHOW_ADVANCED_AUTHENTICATOR = "SHOW_ADVANCED_AUTHENTICATOR";
@@ -93,10 +92,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     @Bean
     ProviderFacade providerFacade;
     @InstanceState
-    CertHandlingStrategy certHandlingStrategy;
-    @InstanceState
-    boolean advancedFieldsInited = false;
-    @InstanceState
     URL endpointUrl;
     @InstanceState
     String username;
@@ -111,73 +106,23 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
 
     @AfterViews
     void init() {
+        if (!propertiesManager.accountConfigured()) {
+            if (authenticator.initAccount("")) {
+                messageHelper.showToast("Added new account.");
+            }
+        }
+
         txtEndpoint.setText(propertiesManager.getApiUrl());
         ArrayAdapter<String> urlAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, URL_COMPLETE);
         txtEndpoint.setAdapter(urlAdapter);
-        txtEndpoint.setTokenizer(new MultiAutoCompleteTextView.Tokenizer() {
-            @Override
-            public int findTokenStart(CharSequence text, int cursor) {
-                int i = cursor;
-                while (i > 0 && text.charAt(i - 1) != '/' && text.charAt(i - 1) != ':') {
-                    i--;
-                }
-                return i;
-            }
-
-            @Override
-            public int findTokenEnd(CharSequence text, int cursor) {
-                int i = cursor;
-                int len = text.length();
-                while (i < len) {
-                    if (text.charAt(i) == '/') {
-                        return i;
-                    } else {
-                        i++;
-                    }
-                }
-                return len;
-            }
-
-            @Override
-            public CharSequence terminateToken(CharSequence text) {
-                return text;
-            }
-        });
+        txtEndpoint.setTokenizer(UiUtils.getUrlTokenizer());
 
         txtUsername.setText(propertiesManager.getUsername());
         ArrayAdapter<String> usernameAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, USERNAME_COMPLETE);
         txtUsername.setAdapter(usernameAdapter);
-        txtUsername.setTokenizer(new MultiAutoCompleteTextView.Tokenizer() {
-            @Override
-            public int findTokenStart(CharSequence text, int cursor) {
-                int i = cursor;
-                while (i > 0 && text.charAt(i - 1) != '@') {
-                    i--;
-                }
-                return i;
-            }
-
-            @Override
-            public int findTokenEnd(CharSequence text, int cursor) {
-                int i = cursor;
-                int len = text.length();
-                while (i < len) {
-                    if (text.charAt(i) == '@') {
-                        return i;
-                    } else {
-                        i++;
-                    }
-                }
-                return len;
-            }
-
-            @Override
-            public CharSequence terminateToken(CharSequence text) {
-                return text;
-            }
-        });
+        txtUsername.setTokenizer(UiUtils.getUsernameTokenizer());
 
         txtPassword.setText(propertiesManager.getPassword());
         chkAdminPriv.setChecked(true);
@@ -187,34 +132,11 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         }
     }
 
-    @AfterInject
-    void initAdvanced() {
-        if (advancedFieldsInited) {
-            return;
-        }
-        advancedFieldsInited = true;
-
-        certHandlingStrategy = propertiesManager.getCertHandlingStrategy();
-    }
-
     @Click(R.id.btnAdvanced)
     public void btnAdvancedClicked() {
         Intent intent = new Intent(this, AdvancedAuthenticatorActivity_.class);
-        intent.putExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY, certHandlingStrategy.id());
         intent.putExtra(AdvancedAuthenticatorActivity.LOAD_CA_FROM, txtEndpoint.getText().toString());
-        startActivityForResult(intent, REQUEST_ACCOUNT_DETAILS);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_ACCOUNT_DETAILS) {
-            if (resultCode == RESULT_OK) {
-                long certHandlingStrategyId = data.getLongExtra(AdvancedAuthenticatorActivity.CERT_HANDLING_STRATEGY, certHandlingStrategy.id());
-                certHandlingStrategy = CertHandlingStrategy.from(certHandlingStrategyId);
-            }
-        }
+        startActivity(intent);
     }
 
     @Click(R.id.btnCreate)
@@ -272,17 +194,16 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         }
         boolean usernameChanged = propertiesManager.propertyDiffers(AccountProperty.USERNAME, username);
         boolean urlChanged = propertiesManager.propertyDiffers(AccountProperty.API_URL, endpoint);
+        boolean endpointChanged = urlChanged || usernameChanged;
 
         try {
-            if (!propertiesManager.accountConfigured()) {
-                authenticator.initAccount(password);
-            }
             setLoginInProgress(true); // disables syncs because setUserData() may trigger sync
             // without option SYNC_EXTRAS_EXPEDITED which may be interrupted by our future sync with option SYNC_EXTRAS_EXPEDITED
             setUserData(endpoint, username, password, adminPriv);
 
             String token = loginClient.login(username, password);
-            onLoginResultReceived(token, urlChanged, usernameChanged);
+            onLoginResultReceived(token, endpointChanged);
+            setLoginInProgress(false);
         } catch (HttpClientErrorException e) {
             setLoginInProgress(false);
             switch (e.getStatusCode()) {
@@ -311,23 +232,18 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         }
     }
 
-
-    void onLoginResultReceived(String token, boolean urlChanged, boolean usernameChanged) {
+    void onLoginResultReceived(String token, boolean endpointChanged) {
         if (TextUtils.isEmpty(token)) {
             setLoginInProgress(false);
             messageHelper.showError(ErrorType.LOGIN,
-                    getString(R.string.login_error_empty_token, getString(R.string.ca_management)));
+                    getString(R.string.login_error_empty_token, getString(R.string.certificate_management)));
             return;
         }
 
-        if (urlChanged || usernameChanged) {
+        if (endpointChanged) {
             // there is a different set of events and since we are counting only the increments,
             // this ones are not needed anymore
             eventsHandler.deleteEvents();
-        }
-
-        if (urlChanged) {
-            deleteCaFile();
         }
 
         propertiesManager.setAuthToken(token);
@@ -335,22 +251,15 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         messageHelper.showToast(getString(R.string.login_success));
         syncUtils.triggerRefresh();
 
+        Account account = authenticator.getAccount();
         final Intent intent = new Intent();
-        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, MovirtAuthenticator.ACCOUNT_NAME);
-        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, MovirtAuthenticator.ACCOUNT_TYPE);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, account.type);
         intent.putExtra(AccountManager.KEY_AUTHTOKEN, token);
 
-        setAccountAuthenticatorResult(intent.getExtras());
+//        setAccountAuthenticatorResult(intent.getExtras());
         setResult(RESULT_OK, intent);
         finish();
-    }
-
-    @Background
-    public void deleteCaFile() {
-        File file = new File(Constants.getCaCertPath(this));
-        if (file.isFile() && file.exists()) {
-            file.delete();
-        }
     }
 
     void setLoginInProgress(boolean loginInProgress) {
@@ -401,8 +310,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         propertiesManager.setApiUrl(apiUrl);
         propertiesManager.setUsername(name);
         propertiesManager.setAdminPermissions(hasAdminPermissions);
-        propertiesManager.setCertHandlingStrategy(CertHandlingStrategy.TRUST_ALL); // refreshes saved certificate TODO: this is only temporary, will be fixed in the next patch, where listener for certificates will be used
-        propertiesManager.setCertHandlingStrategy(certHandlingStrategy);
         propertiesManager.setPassword(password); // triggers sync in later APIs (Android 6)
     }
 

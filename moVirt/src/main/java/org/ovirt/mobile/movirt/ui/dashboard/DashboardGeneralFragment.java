@@ -171,7 +171,6 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
         }
     }
 
-
     private void renderCpuPercentageCircle() {
         renderOverCommit(overCommitCpuPercentageCircle, cpuResource, cpuVirtualResource);
 
@@ -222,7 +221,6 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
             }
         });
     }
-
 
     private void renderStoragePercentageCircle() {
         renderOverCommit(overCommitStoragePercentageCircle, storageResource, storageVirtualResource);
@@ -363,7 +361,6 @@ public class DashboardGeneralFragment extends LoaderFragment implements LoaderMa
 
         return new UtilizationResource(used, total, available);
     }
-
 
     public boolean getVirtualViewState() {
         FragmentActivity activity = getActivity();

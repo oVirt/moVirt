@@ -127,5 +127,4 @@ final class AutoFocusManager implements Camera.AutoFocusCallback {
             return null;
         }
     }
-
 }

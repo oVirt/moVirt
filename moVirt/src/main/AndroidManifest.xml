@@ -38,12 +38,13 @@
             android:label="@string/title_activity_settings" />
 
         <activity
-            android:name=".ui.AdvancedAuthenticatorActivity_"
-            android:label="@string/title_activity_settings_advanced"
-            android:windowSoftInputMode="stateHidden" />
+            android:name=".ui.auth.AdvancedAuthenticatorActivity_"
+            android:label="@string/certificate_management"
+            android:windowSoftInputMode="stateHidden"
+            android:parentActivityName=".ui.auth.AuthenticatorActivity_"/>
 
         <activity
-            android:name=".ui.AuthenticatorActivity_"
+            android:name=".ui.auth.AuthenticatorActivity_"
             android:label="@string/title_activity_settings" />
 
         <provider

@@ -113,5 +113,4 @@ public final class CaptureActivityHandler extends Handler {
         SUCCESS,
         DONE
     }
-
 }

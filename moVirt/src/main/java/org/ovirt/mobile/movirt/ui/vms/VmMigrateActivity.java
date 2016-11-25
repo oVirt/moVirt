@@ -24,15 +24,17 @@ import org.ovirt.mobile.movirt.provider.Relation;
 import org.ovirt.mobile.movirt.ui.ActionBarLoaderActivity;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
+import static org.ovirt.mobile.movirt.Constants.APP_PACKAGE_DOT;
+
 @EActivity(R.layout.activity_migrate_vm)
 public class VmMigrateActivity extends ActionBarLoaderActivity {
 
-    public static final String CLUSTER_ID_EXTRA = "org.ovirt.mobile.movirt.CLUSTER_ID_EXTRA";
-    public static final String HOST_ID_EXTRA = "org.ovirt.mobile.movirt.HOST_ID_EXTRA";
+    public static final String CLUSTER_ID_EXTRA = APP_PACKAGE_DOT + "CLUSTER_ID_EXTRA";
+    public static final String HOST_ID_EXTRA = APP_PACKAGE_DOT + "HOST_ID_EXTRA";
     public static final int RESULT_DEFAULT = RESULT_FIRST_USER;
     public static final int RESULT_SELECT = RESULT_FIRST_USER + 1;
     public static final
-    String RESULT_HOST_ID_EXTRA = "org.ovirt.mobile.movirt.RESULT_HOST_ID_EXTRA";
+    String RESULT_HOST_ID_EXTRA = APP_PACKAGE_DOT + "RESULT_HOST_ID_EXTRA";
     private static final int HOSTS_LOADER = 0;
     @ViewById
     TextView labelEmpty;

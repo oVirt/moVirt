@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.ui;
 
 import org.ovirt.mobile.movirt.model.OVirtEntity;
 
-
 public abstract class ResumeSyncableBaseEntityListFragment<E extends OVirtEntity> extends BaseEntityListFragment<E> {
 
     private boolean synced = false;

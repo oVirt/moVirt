@@ -48,9 +48,9 @@
     <string name="save">Save</string>
     <string name="save_acc">Save Account</string>
     <string name="done_advanced_settings">Done</string>
-    <string name="delete_stored_ca">Delete</string>
-    <string name="load_ca_from_addr">Download</string>
-    <string name="ca_management">CA Management</string>
+    <string name="delete_stored_cert">Delete</string>
+    <string name="load_cert_from_addr">Download</string>
+    <string name="certificate_management">Certificate Management</string>
     <string name="trigger_scope">Editing triggers for: </string>
     <string name="add_trigger">Add Trigger</string>
     <string name="ADD">ADD</string>
@@ -120,6 +120,12 @@
     <string name="login_error_empty_token">Error: the returned token is empty. \nTry https protocol and add your certificate into %1$s.</string>
     <string name="login_error_bad_cert">Use proper certificate, or select %1$s.\nError details: %2$s</string>
     <string name="login_success">Login successful</string>
+
+    <string name="advanced_authenticator_error_max_visible_certs_reached">Maximum of %1$d visible certificates is supported. Showing only %1$d bottom certificates of the hierarchy.</string>
+    <string name="advanced_authenticator_custom">Custom</string>
+    <string name="advanced_authenticator_engine">Engine</string>
+    <string name="advanced_authenticator_custom_url">Custom URL</string>
+
     <string name="message_detailed_info">%1$s\n\nDetailed info:\n %2$s</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
@@ -148,7 +154,8 @@
     <string name="vnc_console">VNC Console</string>
 
     <string name="account_endpoint">protocol://host:port/path/to/api</string>
-    <string name="ca_cert_account_endpoint">CA Location (e.g. http://my-instance/ca.crt before 3.5 or http://my-instance/ovirt-engine/services/pki-resource?resource=ca-certificate&amp;format=X509-PEM-CA in 3.6+)</string>
+    <string name="cert_endpoint">protocol://host:port/path/to/cert</string>
+    <string name="cert_account_endpoint">Certificate Fetched from</string>
     <string name="account_endpoint_summary">For example: https://my-instance:443/ovirt-engine/api</string>
     <string name="account_username">name@domain</string>
     <string name="account_password">password</string>
@@ -191,10 +198,6 @@
     <string name="activate">activate</string>
     <string name="deactivate">deactivate</string>
 
-    <string name="can_not_run_console_without_ca">The console can not run without the Certificate Authority for SPICE</string>
-    <string name="spice_ca_management">SPICE CA Management</string>
-    <string name="rest_ca_management">REST CA Management</string>
-
     <string name="title_activity_dashboard">Dashboard</string>
     <string name="dashboard">Dashboard</string>
     <string name="show_physical">Show Physical</string>
@@ -223,7 +226,8 @@
     <string name="migrate_to_default">Migrate to default</string>
     <string name="migrate_empty_list">No suitable hosts to migrate</string>
 
-    <string name="dialog_action_delete_certificate">delete stored certificate</string>
+    <string name="dialog_action_delete_certificate">delete stored certificates</string>
+    <string name="dialog_action_delete_certificate_header">It is needed to delete old certificates to switch between engine/custom url.</string>
     <string name="dialog_action_stop_vm">stop the VM</string>
     <string name="dialog_action_reboot_vm">reboot the VM</string>
     <string name="dialog_action_stop_migrate_vm">cancel VM migration</string>
@@ -253,5 +257,20 @@
     <string name="radio_button_event">Event</string>
     <string name="radio_button_blink">Blink</string>
     <string name="radio_button_vibrate">Vibrate</string>
+
+    <string name="cert_tree_item_expanded_tree_node">Expanded tree node</string>
+    <string name="cert_tree_item_collapsed_tree_node">Collapsed tree node</string>
+    <string name="cert_tree_item_selected">Selected %1$s</string>
+    <string name="cert_tree_item_ca">CA:&#160;</string>
+    <string name="cert_tree_item_self_signed">Self-signed:&#160;</string>
+    <string name="cert_dialog_download_issuer">Download Issuer Certificate</string>
+    <string name="cert_dialog_download_custom">Download Custom Certificate</string>
+    <string name="cert_dialog_url">URL</string>
+    <string name="cert_dialog_issuer_reason">Last certificate in the chain isn\'t Certificate Authority. The issuer of this certificate is required.</string>
+    <string name="download">Download</string>
+    <string name="download_issuer">Download Issuer</string>
+    <string name="wrong_url_in_connection_settings">Wrong API URL in Connection Settings!</string>
+    <string name="deleted_cert_chain">Deleted Certificate Chain</string>
+    <string name="api_url_not_null">API URL must not be null</string>
 
 </resources>

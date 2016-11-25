@@ -161,4 +161,7 @@
         <item name="android:background">?android:attr/listDivider</item>
     </style>
 
+    <style name="CertTreeNodeStyle">
+        <item name="android:paddingLeft">18dp</item>
+    </style>
 </resources>

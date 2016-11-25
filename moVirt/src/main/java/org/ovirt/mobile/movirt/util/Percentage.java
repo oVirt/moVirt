@@ -27,7 +27,6 @@ public class Percentage implements UsageResource {
         return value;
     }
 
-
     /**
      * @param value truncated to 0 if value < 0
      */
@@ -36,7 +35,6 @@ public class Percentage implements UsageResource {
             this.value = value;
         }
     }
-
 
     /**
      * @param value adds value, no operation occurs if value < 0

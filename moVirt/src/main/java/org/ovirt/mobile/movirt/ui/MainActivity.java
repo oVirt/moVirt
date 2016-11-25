@@ -40,6 +40,7 @@ import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
@@ -58,7 +59,6 @@ import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
-import org.ovirt.mobile.movirt.util.properties.AccountPropertiesManager;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -178,7 +178,6 @@ public class MainActivity extends MovirtActivity
         emptyClusterCursor = new MatrixCursor(CLUSTER_PROJECTION);
         emptyClusterCursor.addRow(new String[]{allClusters, null, null, null});
 
-
         SimpleCursorAdapter clusterListAdapter = new SimpleCursorAdapter(this,
                 R.layout.cluster_list_item,
                 null,
@@ -225,7 +224,6 @@ public class MainActivity extends MovirtActivity
         getSupportActionBar().setHomeButtonEnabled(true);
 
         drawerToggle.syncState();
-
     }
 
     @Override
@@ -319,8 +317,7 @@ public class MainActivity extends MovirtActivity
         drawerLayout.closeDrawers();
     }
 
-
-    @Receiver(actions = Broadcasts.NO_CONNECTION_SPEFICIED, registerAt = Receiver.RegisterAt.OnResumeOnPause)
+    @Receiver(actions = Broadcasts.NO_CONNECTION_SPECIFIED, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void noConnection(@Receiver.Extra(AccountManager.KEY_INTENT) Parcelable toOpen) {
         showAccountDialog();
     }

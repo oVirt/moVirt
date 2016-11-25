@@ -207,5 +207,4 @@ public class StorageDomain extends OVirtEntity implements OVirtContract.StorageD
         setStoragePath(cursorHelper.getString(STORAGE_PATH));
         setStorageFormat(cursorHelper.getString(STORAGE_FORMAT));
     }
-
 }

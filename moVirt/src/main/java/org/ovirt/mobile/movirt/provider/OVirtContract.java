@@ -4,9 +4,11 @@ import android.content.ContentResolver;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import static org.ovirt.mobile.movirt.Constants.APP_PACKAGE_DOT;
+
 public interface OVirtContract {
 
-    String CONTENT_AUTHORITY = "org.ovirt.mobile.movirt.provider";
+    String CONTENT_AUTHORITY = APP_PACKAGE_DOT + "provider";
 
     Uri BASE_CONTENT_URI = new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(CONTENT_AUTHORITY).build();
 
@@ -178,19 +180,6 @@ public interface OVirtContract {
         String TIME = "time";
         String VM_ID = "vm_id";
         String STORAGE_DOMAIN_ID = "storage_domain_id";
-    }
-
-
-    String PATH_CA_CRTS = "cacerts";
-
-    interface CaCert extends BaseEntity {
-        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_CA_CRTS).build();
-
-        String TABLE = "cacerts";
-
-        String CONTENT = "content";
-        String VALID_FOR = "valid_for";
-
     }
 
     String PATH_CONNECTION_INFOS = "connectioninfos";

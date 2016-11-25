@@ -112,5 +112,4 @@ final public class InactivityTimer {
             return null;
         }
     }
-
 }

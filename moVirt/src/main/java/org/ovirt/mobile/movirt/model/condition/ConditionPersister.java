@@ -44,6 +44,4 @@ public class ConditionPersister extends BaseDataType {
     public Class<?> getPrimaryClass() {
         return Condition.class;
     }
-
-
 }

@@ -113,7 +113,6 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
     private int vmsPage = 1;
     private HostsLoader hostsLoader;
 
-
     @AfterViews
     void init() {
         //set visibility
@@ -307,7 +306,6 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         }
         return super.onKeyDown(keyCode, event);
     }
-
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {

@@ -55,6 +55,5 @@ public abstract class StorageDomain implements RestEntityWrapper<org.ovirt.mobil
             // guess it is this...
             return org.ovirt.mobile.movirt.model.StorageDomain.Type.DATA;
         }
-
     }
 }

@@ -7,7 +7,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.ui.AuthenticatorActivity;
+import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity;
 
 /**
  * Dialog asks user to use default API path in URL

@@ -12,10 +12,10 @@ public enum ErrorType {
     REST_MINOR(Log.INFO, true, true, true),
     REST_MAJOR(Log.ERROR, true, false, true);
 
-    private int defaultLogPriority;
-    private boolean connectionType; // updates connection info
-    private boolean minorType; // minor errors don't flood user with errors
-    private boolean notifiable; // shows system notification
+    private final int defaultLogPriority;
+    private final boolean connectionType; // updates connection info
+    private final boolean minorType; // minor errors don't flood user with errors
+    private final boolean notifiable; // shows system notification
 
     ErrorType(int defaultLogPriority, boolean connectionType, boolean minorType, boolean notifiable) {
         this.defaultLogPriority = defaultLogPriority;

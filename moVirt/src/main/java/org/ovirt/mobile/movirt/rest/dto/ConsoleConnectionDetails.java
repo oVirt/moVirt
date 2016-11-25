@@ -10,19 +10,21 @@ public class ConsoleConnectionDetails {
     private String address;
     private int port;
     private int tlsPort;
-    private String certificateSubject;
     private String password;
+    private String certificateSubject;
+    private String certificate;
 
     public ConsoleConnectionDetails() {
     }
 
-    public ConsoleConnectionDetails(ConsoleProtocol protocol, String address, int port, int tlsPort, String certificateSubject, String password) {
+    public ConsoleConnectionDetails(ConsoleProtocol protocol, String address, int port, int tlsPort, String password, String certificateSubject, String certificate) {
         this.protocol = protocol;
         this.address = address;
         this.port = port;
         this.tlsPort = tlsPort;
-        this.certificateSubject = certificateSubject;
         this.password = password;
+        this.certificateSubject = certificateSubject;
+        this.certificate = certificate;
     }
 
     public ConsoleProtocol getProtocol() {
@@ -57,6 +59,14 @@ public class ConsoleConnectionDetails {
         this.tlsPort = tlsPort;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public String getCertificateSubject() {
         return certificateSubject;
     }
@@ -65,11 +75,11 @@ public class ConsoleConnectionDetails {
         this.certificateSubject = certificateSubject;
     }
 
-    public String getPassword() {
-        return password;
+    public String getCertificate() {
+        return certificate;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setCertificate(String certificate) {
+        this.certificate = certificate;
     }
 }

@@ -69,7 +69,6 @@ public class DashboardBoxListAdapter extends ArrayAdapter<DashboardBoxData> {
             thirdStatusImage.setImageResource(third.getIconResourceId());
         }
 
-
         return view;
     }
 }

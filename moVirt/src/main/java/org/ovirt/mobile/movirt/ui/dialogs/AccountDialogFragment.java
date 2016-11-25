@@ -8,7 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.ui.AuthenticatorActivity_;
+import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity_;
 
 /**
  * Dialog shown on app start up asking user to configure account with connection settings

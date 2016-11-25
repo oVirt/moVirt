@@ -3,7 +3,8 @@ package org.ovirt.mobile.movirt.ui.dashboard.maps;
 import org.ovirt.mobile.movirt.model.Host;
 
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,8 +20,8 @@ public enum HostStatusMap {
     DOWN(Host.Status.DOWN, Host.Status.NON_RESPONSIVE, Host.Status.ERROR, Host.Status.INSTALL_FAILED,
             Host.Status.NON_OPERATIONAL, Host.Status.INITIALIZING);
 
-    private List<Host.Status> values;
-    private static Map<Host.Status, HostStatusMap> map = new HashMap<>();
+    private final List<Host.Status> values;
+    private static Map<Host.Status, HostStatusMap> map = new EnumMap<>(Host.Status.class);
 
     static {
         for (HostStatusMap item : HostStatusMap.values()) {
@@ -31,7 +32,7 @@ public enum HostStatusMap {
     }
 
     HostStatusMap(Host.Status... values) {
-        this.values = Arrays.asList(values);
+        this.values = Collections.unmodifiableList(Arrays.asList(values));
     }
 
     public List<Host.Status> getValues() {

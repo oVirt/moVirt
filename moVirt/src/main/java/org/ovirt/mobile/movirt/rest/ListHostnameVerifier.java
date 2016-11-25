@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.rest;
 
 import org.androidannotations.annotations.EBean;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
@@ -21,7 +22,7 @@ public class ListHostnameVerifier implements HostnameVerifier {
         return trustedHosts.contains(hostname);
     }
 
-    public void initToTrustedHosts(List<String> trustedHosts) {
-        this.trustedHosts = trustedHosts;
+    public void setTrustedHosts(String[] trustedHosts) {
+        this.trustedHosts = Arrays.asList(trustedHosts);
     }
 }

@@ -26,5 +26,4 @@ public class StorageDomain extends org.ovirt.mobile.movirt.rest.dto.StorageDomai
             return org.ovirt.mobile.movirt.model.StorageDomain.Status.UNKNOWN;
         }
     }
-
 }

@@ -1,8 +1,15 @@
 package org.ovirt.mobile.movirt.util;
 
-import org.ovirt.mobile.movirt.ui.CertHandlingStrategy;
+import android.util.Log;
+
+import java.io.Closeable;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Locale;
 
 public final class ObjectUtils {
+    private static final String TAG = ObjectUtils.class.getSimpleName();
+
     public static boolean equals(Object a, Object b) {
         return (a == null) ? (b == null) : a.equals(b);
     }
@@ -19,7 +26,7 @@ public final class ObjectUtils {
 
         if (ids.length != length) {
             StringBuilder sb = new StringBuilder();
-            sb.append(String.format("Expected %d parameters", length));
+            sb.append(String.format(Locale.ENGLISH, "Expected %d parameters", length));
             if (length > 0) {
                 sb.append(":");
 
@@ -33,22 +40,13 @@ public final class ObjectUtils {
     }
 
     /**
-     * @param value value to be converted
-     * @return String, unknown types are converted to JSON
+     * @param o    object to be checked against
+     * @param name name of the object o
+     * @throws IllegalArgumentException if o is null
      */
-    public static String convertToString(Object value) {
-        if (value == null) {
-            return null;
-        } else if (value instanceof String) {
-            return (String) value;
-        } else if (value instanceof Boolean) {
-            return Boolean.toString((Boolean) value);
-        } else if (value instanceof Long) {
-            return Long.toString((Long) value);
-        } else if (value instanceof CertHandlingStrategy) {
-            return Long.toString(((CertHandlingStrategy) value).id());
-        } else {
-            return JsonUtils.objectToString(value);
+    public static void requireNotNull(Object o, String name) {
+        if (o == null) {
+            throw new IllegalArgumentException(name + " cannot be null.");
         }
     }
 
@@ -73,6 +71,71 @@ public final class ObjectUtils {
             return Long.parseLong(value);
         } catch (Exception e) {
             return -1;
+        }
+    }
+
+    public static String throwableToString(Throwable throwable) {
+        StringWriter sw = new StringWriter();
+        throwable.printStackTrace(new PrintWriter(sw));
+
+        return sw.toString();
+    }
+
+    /**
+     * @param closeables objects to be closed while ignoring exceptions
+     * @return true if all objects were closed correctly
+     * false if some object wasn't closed correctly or if no objects were passed
+     */
+    @SafeVarargs
+    public static <T extends Closeable> boolean closeSilently(T... closeables) {
+        if (closeables == null || closeables.length == 0) {
+            return false;
+        }
+
+        boolean closed = true;
+        for (Closeable c : closeables) {
+            try {
+                if (c != null) {
+                    c.close();
+                }
+            } catch (Exception x) {
+                try {
+                    Log.e(TAG, throwableToString(x));
+                } catch (Exception ignored) {
+                }
+                closed = false;
+            }
+        }
+
+        return closed;
+    }
+
+    /**
+     * Closes everything and throws last exception which occured
+     *
+     * @param closeables objects to be closed
+     * @throws Exception last exception
+     */
+    @SafeVarargs
+    public static <T extends Closeable> void close(T... closeables) throws Exception {
+        if (closeables == null || closeables.length == 0) {
+            return;
+        }
+
+        Exception throwOut = null;
+
+        for (Closeable c : closeables) {
+            try {
+                if (c != null) {
+                    c.close();
+                }
+            } catch (Exception x) {
+                throwOut = x;
+            }
+        }
+
+        if (throwOut != null) {
+            throw throwOut;
         }
     }
 }

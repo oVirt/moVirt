@@ -3,7 +3,7 @@ package org.ovirt.mobile.movirt.ui;
 import android.content.Context;
 
 public class Constants {
-    public static final String DEFAULT_CA_CERT_FILE_NAME = "ca.crt";
+    public static final String DEFAULT_CONSOLE_CERT_FILE_NAME = "ca.crt";
 
     // URI Parameters
     public static final String PARAM_SPICE_PWD = "SpicePassword";
@@ -16,7 +16,7 @@ public class Constants {
     public static final String PARAM_CA_CERT_PATH = "CaCertPath";
     public static final String PARAM_CERT_SUBJECT = "CertSubject";
 
-    public static String getCaCertPath(Context context) {
-        return context.getExternalCacheDir() + "/" + Constants.DEFAULT_CA_CERT_FILE_NAME;
+    public static String getConsoleCertPath(Context context) {
+        return context.getExternalCacheDir() + "/" + Constants.DEFAULT_CONSOLE_CERT_FILE_NAME;
     }
 }

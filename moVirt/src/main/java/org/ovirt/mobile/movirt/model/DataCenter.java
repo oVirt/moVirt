@@ -1,6 +1,5 @@
 package org.ovirt.mobile.movirt.model;
 
-
 import android.content.ContentValues;
 import android.net.Uri;
 

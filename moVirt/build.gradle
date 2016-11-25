@@ -42,7 +42,8 @@ dependencies {
     compile "org.androidannotations:rest-spring-api:$androidAnnottationVersion"
     apt "org.androidannotations:rest-spring:$androidAnnottationVersion"
     compile 'com.melnykov:floatingactionbutton:1.3.0'
-
+    compile 'com.github.bmelnychuk:atv:1.2.9'
+    compile 'com.madgag.spongycastle:pkix:1.54.0.0'
     }
 
 android {

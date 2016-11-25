@@ -1,11 +1,11 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.auth.properties.property;
 
 public enum CertHandlingStrategy {
     TRUST_SYSTEM(0),
     TRUST_CUSTOM(1),
     TRUST_ALL(2);
 
-    long index;
+    private final long index;
 
     CertHandlingStrategy(long index) {
         this.index = index;
