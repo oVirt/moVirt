@@ -27,12 +27,4 @@ public class ParseUtils {
             return -1;
         }
     }
-
-    public static URL tryToParseUrl(String endpoint) {
-        try {
-            return new URL(endpoint);
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("URL is not valid");
-        }
-    }
 }

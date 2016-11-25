@@ -8,6 +8,7 @@ import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
 import org.ovirt.mobile.movirt.rest.OvirtTimeoutSimpleClientHttpRequestFactory;
+import org.ovirt.mobile.movirt.rest.client.errorhandler.LoginRedirectException;
 import org.ovirt.mobile.movirt.rest.dto.Api;
 import org.springframework.util.StringUtils;
 
@@ -68,10 +69,12 @@ public class LoginClient {
         synchronized (loginV4RestClient) {
             try {
                 token = loginV4RestClient.login(username, password).getAccessToken();
-            } catch (Exception ex) {// 405 Method Not Allowed - old API
-                Throwable cause = ex.getCause();
+            } catch (LoginRedirectException e) { // inform about redirect
+                throw e;
+            } catch (Exception e) {// 405 Method Not Allowed - old API
+                Throwable cause = e.getCause();
                 if (cause != null && cause instanceof SocketTimeoutException) {
-                    throw ex;
+                    throw e;
                 }
             }
         }
