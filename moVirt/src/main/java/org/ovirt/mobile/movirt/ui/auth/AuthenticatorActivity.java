@@ -41,6 +41,7 @@ import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.net.ConnectException;
@@ -205,16 +206,24 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
             onLoginResultReceived(token, endpointChanged);
         } catch (HttpClientErrorException e) {
             setLoginInProgress(false);
-            switch (e.getStatusCode()) {
-                case NOT_FOUND:
-                    messageHelper.showError(ErrorType.LOGIN, e, getString(R.string.login_error_bad_address_suffix));
-                    break;
-                case UNAUTHORIZED:
-                    messageHelper.showError(ErrorType.LOGIN, e, getString(R.string.login_error_incorrect_username_password));
+            HttpStatus statusCode = e.getStatusCode();
+
+            switch (statusCode.series()) {
+                case REDIRECTION:
+                    messageHelper.showError(ErrorType.USER, e.getMessage());
                     break;
                 default:
-                    messageHelper.showError(ErrorType.LOGIN, messageHelper.createMessage(e));
-                    break;
+                    switch (statusCode) {
+                        case NOT_FOUND:
+                            messageHelper.showError(ErrorType.LOGIN, e, getString(R.string.login_error_bad_address_suffix));
+                            break;
+                        case UNAUTHORIZED:
+                            messageHelper.showError(ErrorType.LOGIN, e, getString(R.string.login_error_incorrect_username_password));
+                            break;
+                        default:
+                            messageHelper.showError(ErrorType.LOGIN, messageHelper.createMessage(e));
+                            break;
+                    }
             }
         } catch (Exception e) {
             setLoginInProgress(false);

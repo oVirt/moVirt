@@ -39,10 +39,10 @@ import org.ovirt.mobile.movirt.auth.properties.PropertyUtils;
 import org.ovirt.mobile.movirt.auth.properties.UiAwareProperty;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
-import org.ovirt.mobile.movirt.rest.ParseUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.DialogListener;
 import org.ovirt.mobile.movirt.util.CertHelper;
+import org.ovirt.mobile.movirt.util.URIUtils;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
@@ -186,13 +186,13 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
     void downloadAndSaveCert(URL[] urls, boolean startNewChain) {
         URL hostUrl = null;
         try {
-            hostUrl = ParseUtils.tryToParseUrl(getIntent().getStringExtra(LOAD_CA_FROM));
+            hostUrl = URIUtils.tryToParseUrl(getIntent().getStringExtra(LOAD_CA_FROM));
         }catch (Exception x){
-            messageHelper.showError(ErrorType.USER,getString(R.string.api_url_not_null));
+            messageHelper.showError(ErrorType.USER,getString(R.string.api_url_not_valid));
             return;
         }
         if (urls == null) {
-            urls = PropertyUtils.getEngineCertificateUrls(hostUrl);
+            urls = URIUtils.getEngineCertificateUrls(hostUrl);
         }
 
         try {
