@@ -1,10 +1,11 @@
 package org.ovirt.mobile.movirt.ui.auth;
 
 import android.app.DialogFragment;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
@@ -13,6 +14,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.unnamed.b.atv.model.TreeNode;
@@ -30,35 +32,38 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
-import org.ovirt.mobile.movirt.auth.properties.ParseUtils;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
+import org.ovirt.mobile.movirt.auth.properties.PropertyUtils;
+import org.ovirt.mobile.movirt.auth.properties.UiAwareProperty;
+import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.rest.ParseUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
-import org.ovirt.mobile.movirt.util.ObjectUtils;
+import org.ovirt.mobile.movirt.ui.dialogs.DialogListener;
+import org.ovirt.mobile.movirt.util.CertHelper;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 
 import static org.ovirt.mobile.movirt.Constants.APP_PACKAGE_DOT;
 
 @EActivity(R.layout.activity_advanced_authenticator)
 public class AdvancedAuthenticatorActivity extends ActionBarActivity
-        implements ConfirmDialogFragment.ConfirmDialogListener, CreateDialogBroadcastReceiver {
+        implements ConfirmDialogFragment.ConfirmDialogListener, CreateDialogBroadcastReceiver, DialogListener.UrlListener {
+    private static final String TAG = AdvancedAuthenticatorActivity.class.getSimpleName();
+
+    private static final String CUSTOM_DIALOG_TAG = "downloadCaIssuer";
+    private static final String DELETE_DIALOG_TAG = "deleteCert";
+    private static final String DELETE_DIALOG_FROM_CUSTOM_LOCATION_LISTENER_TAG = "deleteCertFromCustomLocationListener";
+
+    private static final int NORMAL_DELETE_DIALOG = 0;
+    private static final int CUSTOM_SWITCH_DELETE_DIALOG = 1;
     private static final int MAX_VISIBLE_CERTIFICATES = 10;
 
     public final static String LOAD_CA_FROM = APP_PACKAGE_DOT + "ui.LOAD_CA_FROM";
@@ -67,7 +72,10 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
     Spinner certHandlingStrategySpinner;
 
     @ViewById
-    EditText txtCertUrl;
+    Switch customCertificateLocationSwitch;
+
+    @ViewById
+    TextView txtCertUrl;
 
     @ViewById
     EditText txtValidForHostnames;
@@ -96,11 +104,16 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
     @InstanceState
     boolean inProgress;
 
+    private boolean initializedUi;
+
     @Bean
     MessageHelper messageHelper;
 
     @Bean
     AccountPropertiesManager propertiesManager;
+
+    @Bean
+    CertHelper certHelper;
 
     private PropertyChangedListener[] listeners;
 
@@ -108,174 +121,241 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
 
     @AfterViews
     void init() {
-        // when turning the device
-        if (inProgress) {
-            showProgressBar();
-        } else {
-            hideProgressBar();
-        }
-
-        String endpoint = getIntent().getStringExtra(LOAD_CA_FROM);
-        if (!TextUtils.isEmpty(endpoint)) {
-            try {
-                URL url = new URL(endpoint);
-                txtCertUrl.setText("http://" + url.getHost() + "/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA");
-            } catch (MalformedURLException e) {
-                // no problem - just a convenience to help the most common case
-            }
-        }
-
-        setViewListeners();
-        setPropertyListeners();
-    }
-
-    private void setViewListeners() {
-        certHandlingStrategySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                propertiesManager.setCertHandlingStrategy(CertHandlingStrategy.from(id), AccountPropertiesManager.OnThread.BACKGROUND);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        txtValidForHostnames.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                propertiesManager.setValidHostnameList(ParseUtils.parseHostnames(s.toString()));
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
-    }
-
-    private void setPropertyListeners() {
-        PropertyChangedListener certHandlingStrategyListener = new PropertyChangedListener<CertHandlingStrategy>() {
-            @Override
-            public void onPropertyChange(CertHandlingStrategy property) {
-                updateViews(property, null);
-            }
-        };
-        PropertyChangedListener validHostnamesListener = new PropertyChangedListener<String>() {
-            @Override
-            public void onPropertyChange(String property) {
-                updateHostnames(property);
-            }
-        };
-        PropertyChangedListener certChainListener = new PropertyChangedListener<Cert[]>() {
-            @Override
-            public void onPropertyChange(Cert[] property) {
-                if (property.length > MAX_VISIBLE_CERTIFICATES) {
-                    maxCertsReachedErrorAlreadyShown = false;
-                }
-                updateViews(propertiesManager.getCertHandlingStrategy(), property);
-            }
-        };
-
-        listeners = new PropertyChangedListener[]{certHandlingStrategyListener, validHostnamesListener, certChainListener};
-
-        propertiesManager.notifyAndRegisterListener(AccountProperty.CERT_HANDLING_STRATEGY, certHandlingStrategyListener);
-        propertiesManager.notifyAndRegisterListener(AccountProperty.VALID_HOSTNAMES, validHostnamesListener);
-        propertiesManager.registerListener(AccountProperty.CERTIFICATE_CHAIN, certChainListener);
+        showProgressBar(inProgress);
+        initViewListeners();
+        initPropertyListeners();
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         for (PropertyChangedListener listener : listeners) {
             propertiesManager.removeListener(listener);
         }
+        super.onDestroy();
     }
 
     @UiThread(propagation = UiThread.Propagation.REUSE)
-    void updateViews(CertHandlingStrategy certHandlingStrategy, Cert[] certs) {
+    void updateViews(UiAwareProperty<CertHandlingStrategy> certHandlingStrategy, UiAwareProperty<Cert[]> certs,
+                     UiAwareProperty<String> hostnames, UiAwareProperty<Boolean> isCustomCertificateLocation) {
         updateCertHandlingStrategy(certHandlingStrategy);
 
-        switch (certHandlingStrategy) {
+        switch (certHandlingStrategy.getProperty()) {
             case TRUST_CUSTOM:
                 seCustomCertVisibility(true);
-                if (certs == null) {
-                    certs = propertiesManager.getCertificateChain();
-                }
-                showCerts(certs);
+
+                updateHostnames(hostnames);
+                updateCertificateLocationType(isCustomCertificateLocation);
+
+                Cert[] chain = certs.getProperty();
+                assertMaxCertsMessage(chain);
+                showCerts(chain, isCustomCertificateLocation.getProperty());
                 break;
             default:
                 seCustomCertVisibility(false);
+
                 hideCerts();
                 break;
         }
     }
 
-    private void seCustomCertVisibility(boolean visible) {
-        txtCertUrl.setVisibility(visible ? View.VISIBLE : View.GONE);
-        certUrlLabel.setVisibility(visible ? View.VISIBLE : View.GONE);
-        btnDelete.setVisibility(visible ? View.VISIBLE : View.GONE);
-        btnLoad.setVisibility(visible ? View.VISIBLE : View.GONE);
-    }
+    @Click(R.id.btnLoad)
+    void btnDownLoad() {
+        try {
+            if (propertiesManager.isCustomCertificateLocation()) {
+                Cert[] certs = propertiesManager.getCertificateChain();
 
-    private void updateCertHandlingStrategy(CertHandlingStrategy certHandlingStrategy) {
-        int id = (int) certHandlingStrategy.id();
-        if (certHandlingStrategySpinner.getSelectedItemId() != id) { // check it was not fired by by view listener
-            certHandlingStrategySpinner.setSelection((int) certHandlingStrategy.id());
-        }
-    }
-
-    @UiThread(propagation = UiThread.Propagation.REUSE)
-    void updateHostnames(String hostnames) {
-        boolean propertyDiffers = propertiesManager.propertyDiffers(AccountProperty.VALID_HOSTNAME_LIST,
-                ParseUtils.parseHostnames(txtValidForHostnames.getText().toString()));
-        if (propertyDiffers) {  // check if it is different after parsing
-            txtValidForHostnames.setText(hostnames);
-        }
-    }
-
-    private void hideCerts() {
-        showCerts(null);
-    }
-
-    private void showCerts(Cert[] certs) {
-        boolean visible = certs != null && certs.length > 0;
-
-        if (btnDelete != null) {
-            btnDelete.setEnabled(visible);
-        }
-
-        if (txtValidForHostnames != null) {
-            txtValidForHostnames.setVisibility(visible ? View.VISIBLE : View.GONE);
-            validHostnamesLabel.setVisibility(visible ? View.VISIBLE : View.GONE);
-        }
-
-        if (txtCertDetails != null) {
-            txtCertDetails.setVisibility(visible ? View.VISIBLE : View.GONE);
-            txtCertDetails.setText(null);
-        }
-
-        if (certTreeContainer != null) {
-            certTreeContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
-            certTreeContainer.removeAllViews(); // remove previous tree
-            if (visible) {
-                try {
-                    createTreeView(certs);
-                } catch (Exception x) {
-                    messageHelper.showError(ErrorType.NORMAL, x, "Certificates badly formatted");
-                    deleteAllCerts();
+                if (certs.length == 0) {
+                    downloadCustomCa(null, true);
+                } else {
+                    assertCaIncluded(certs);
                 }
+            } else {
+                downloadAndSaveCert(null, true);
+            }
+        } catch (IllegalArgumentException parseError) {
+            messageHelper.showError(ErrorType.USER, parseError.getMessage(), getString(R.string.wrong_url_in_connection_settings));
+        }
+    }
+
+    @Override
+    public void onNewDialogUrl(URL url, boolean startNewChain) {
+        downloadAndSaveCert(new URL[]{url}, startNewChain);
+    }
+
+    @Background
+    void downloadAndSaveCert(URL[] urls, boolean startNewChain) {
+        URL hostUrl = null;
+        try {
+            hostUrl = ParseUtils.tryToParseUrl(getIntent().getStringExtra(LOAD_CA_FROM));
+        }catch (Exception x){
+            messageHelper.showError(ErrorType.USER,getString(R.string.api_url_not_null));
+            return;
+        }
+        if (urls == null) {
+            urls = PropertyUtils.getEngineCertificateUrls(hostUrl);
+        }
+
+        try {
+            broadcastProgress(true);
+            for (int i = 0; i < urls.length; i++) { // try all URLs - used in ENGINE certificate location
+                try {
+                    certHelper.downloadAndStoreCert(urls[i], hostUrl, startNewChain);
+                    break;
+                } catch (Exception x) {
+                    if (i == urls.length - 1) {
+                        throw x;
+                    }
+                }
+            }
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            messageHelper.showError(ErrorType.USER, e.getMessage());
+        } catch (Exception e) {
+            messageHelper.showError(e);
+        } finally {
+            broadcastProgress(false);
+        }
+    }
+
+    @Click(R.id.btnDelete)
+    void btnDelete() {
+        DialogFragment confirmDialog = ConfirmDialogFragment
+                .newInstance(NORMAL_DELETE_DIALOG, getString(R.string.dialog_action_delete_certificate));
+        confirmDialog.show(getFragmentManager(), DELETE_DIALOG_TAG);
+    }
+
+    @Override
+    public void onDialogResult(int dialogButton, int actionId) {
+        if (dialogButton == DialogInterface.BUTTON_POSITIVE) {
+            if (actionId == CUSTOM_SWITCH_DELETE_DIALOG) { // toggle switch
+                boolean isChecked = customCertificateLocationSwitch.isChecked();
+                changeCertificateLocation(isChecked);
+            } else {
+                deleteAllCertsInBackground();
             }
         }
     }
 
-    private void createTreeView(Cert[] certs) {
+    private void deleteAllCertsInBackground() {
+        certHelper.deleteAllCertsInBackground();
+        messageHelper.showToast(getString(R.string.deleted_cert_chain));
+    }
+
+    @Background
+    void changeCertificateLocation(boolean customCertificateChecked) {
+        certHelper.deleteAllCerts(); // before cert location
+        messageHelper.showToast(getString(R.string.deleted_cert_chain));
+        propertiesManager.setCustomCertificateLocation(!customCertificateChecked, AccountPropertiesManager.OnThread.BACKGROUND);
+    }
+
+    private void downloadCustomCa(String url, boolean startNewChain) {
+        if (getFragmentManager().findFragmentByTag(CUSTOM_DIALOG_TAG) == null) { // updateViews can call this multiple times
+            DownloadCustomCertDialogFragment dialog = new DownloadCustomCertDialogFragment_();
+            dialog.setUrl(url);
+            dialog.setStartNewChain(startNewChain);
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            transaction.add(dialog, CUSTOM_DIALOG_TAG);
+            transaction.commitAllowingStateLoss();
+        }
+    }
+
+    private boolean assertCaIncluded(Cert[] certs) {
+        return !(certs == null || certs.length == 0) && assertCaIncluded(certs[certs.length - 1].asCertificate());
+    }
+
+    /**
+     * check if Ca is included and show dialog to import issuer certs if isn't
+     */
+    private boolean assertCaIncluded(Certificate certificate) {
+        boolean isCA = CertHelper.isCA(certificate);
+        if (!isCA) {
+            downloadCustomCa(CertHelper.getIssuerUrl(certificate), false);
+        }
+
+        return isCA;
+    }
+
+    // update view functions
+    private void updateCertHandlingStrategy(UiAwareProperty<CertHandlingStrategy> certHandlingStrategy) {
+        if (certHandlingStrategy.uiNotUpdated()) {
+            certHandlingStrategySpinner.setSelection((int) certHandlingStrategy.getProperty().id());
+        }
+    }
+
+    private void assertMaxCertsMessage(Cert[] certs) {
+        if (certs.length > MAX_VISIBLE_CERTIFICATES) {
+            maxCertsReachedErrorAlreadyShown = false;
+        }
+    }
+
+    private void updateHostnames(UiAwareProperty<String> hostnames) {
+        if (hostnames.uiNotUpdated()) {
+            txtValidForHostnames.setText(hostnames.getProperty());
+        }
+    }
+
+    private void updateCertificateLocationType(UiAwareProperty<Boolean> isCustomCertificateLocation) {
+        if (isCustomCertificateLocation.uiNotUpdated()) {
+            customCertificateLocationSwitch.setChecked(isCustomCertificateLocation.getProperty());
+        }
+    }
+
+    private void hideCerts() {
+        showCerts(null, null);
+    }
+
+    private void showCerts(Cert[] certs, Boolean isCustomCert) {
+        boolean hasCerts = certs != null && certs.length > 0;
+
+        setHasCertsVisibility(hasCerts);
+        certTreeContainer.removeAllViews(); // remove previous tree
+        boolean isCA = false;
+        if (hasCerts) {
+            try {
+                isCA = assertCaIncluded(certs);
+                createTreeView(certTreeContainer, certs);
+            } catch (Exception x) {
+                messageHelper.showError(ErrorType.NORMAL, x, "Certificates badly formatted");
+                deleteAllCertsInBackground();
+            }
+
+            if (!isCustomCert && !isCA) { //engine
+                messageHelper.showError(ErrorType.USER, "Engine doesn't use self-signed CA, please report this issue.");
+            }
+        }
+
+        if (isCustomCert != null) { // null -> already hidden
+            setLoadButton(isCA, isCustomCert, hasCerts);
+        }
+    }
+
+    private void seCustomCertVisibility(boolean visible) {
+        btnDelete.setVisibility(visible ? View.VISIBLE : View.GONE);
+        btnLoad.setVisibility(visible ? View.VISIBLE : View.GONE);
+        customCertificateLocationSwitch.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
+    private void setLoadButton(boolean isCA, boolean isCustomCert, boolean hasCerts) {
+        boolean visible = !isCustomCert || !isCA; // show allways for engine and for custom without CA
+
+        btnLoad.setVisibility(visible ? View.VISIBLE : View.GONE);
+        btnLoad.setText(isCustomCert && hasCerts ? R.string.download_issuer : R.string.download);
+    }
+
+    private void setHasCertsVisibility(boolean hasCerts) {
+        btnDelete.setEnabled(hasCerts);
+        txtValidForHostnames.setVisibility(hasCerts ? View.VISIBLE : View.GONE);
+        validHostnamesLabel.setVisibility(hasCerts ? View.VISIBLE : View.GONE);
+
+        txtCertUrl.setVisibility(hasCerts ? View.VISIBLE : View.GONE);
+        certUrlLabel.setVisibility(hasCerts ? View.VISIBLE : View.GONE);
+
+        txtCertDetails.setVisibility(hasCerts ? View.VISIBLE : View.GONE);
+        txtCertDetails.setText(null);
+
+        certTreeContainer.setVisibility(hasCerts ? View.VISIBLE : View.GONE);
+    }
+
+    private void createTreeView(LinearLayout container, Cert[] certs) {
         TreeNode root = TreeNode.root();
         TreeNode intermediateLeaf = root;
         CertHolder leafHolder = null;
@@ -293,13 +373,14 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
 
         CertHolder.CertificateSelectedListener listener = new CertHolder.CertificateSelectedListener() {
             @Override
-            public void onSelect(Certificate certificate) {
+            public void onSelect(Certificate certificate, String location) {
                 txtCertDetails.setText(certificate.toString());
+                txtCertUrl.setText(location);
             }
         };
 
         for (int i = visibleCertificates - 1; i >= 0; i--) { // create tree hierarchy
-            CertHolder.TreeItem data = new CertHolder.TreeItem(certs[i].asCertificate(), listener);
+            CertHolder.TreeItem data = new CertHolder.TreeItem(certs[i], listener);
             leafHolder = new CertHolder(this);
             TreeNode newNode = new TreeNode(data).setViewHolder(leafHolder);
 
@@ -312,114 +393,158 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         atv.setUseAutoToggle(false);
         atv.setSelectionModeEnabled(true);
         atv.setDefaultContainerStyle(R.style.CertTreeNodeStyle);
-        certTreeContainer.addView(atv.getView());
+        container.addView(atv.getView());
         if (leafHolder != null) {
             leafHolder.selectNode(); // select Api certificate
         }
     }
 
-    @Click(R.id.btnDelete)
-    void btnDelete() {
-        DialogFragment confirmDialog = ConfirmDialogFragment
-                .newInstance(0, getString(R.string.dialog_action_delete_certificate));
-        confirmDialog.show(getFragmentManager(), "confirmDeleteCert");
-    }
-
-    @Override
-    public void onDialogResult(int dialogButton, int actionId) {
-        if (dialogButton == DialogInterface.BUTTON_POSITIVE) {
-            deleteAllCerts();
-        }
-    }
-
-    @Click(R.id.btnLoad)
-    void btnLoad() {
-        downloadCert();
-    }
-
-    @Background
-    void deleteAllCerts() {
-        propertiesManager.setCertificateChain(new Cert[]{});
-        propertiesManager.setValidHostnameList(new String[]{});
-    }
-
-    @Background
-    void downloadCert() {
-        showProgressBar();
-        URL url = null;
-        try {
-            String endpoint = txtCertUrl.getText().toString();
-            url = new URL(endpoint);
-        } catch (MalformedURLException e) {
-            hideProgressBar();
-            messageHelper.showToast("The endpoint is not a valid URL");
-            return;
-        }
-
-        CertificateFactory cf = null;
-        try {
-            cf = CertificateFactory.getInstance("X.509");
-        } catch (CertificateException e) {
-            hideProgressBar();
-            messageHelper.showToast("Problem getting the certificate factory: " + e.getMessage());
-            return;
-        }
-
-        InputStream caInput = null;
-        ByteArrayOutputStream caOutput = null;
-
-        try {
-            caInput = new BufferedInputStream(url.openStream());
-
-            caOutput = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = caInput.read(buffer, 0, buffer.length)) != -1) {
-                caOutput.write(buffer, 0, len);
+    // Data Flow and listeners
+    private void initViewListeners() {
+        certHandlingStrategySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                propertiesManager.setCertHandlingStrategy(CertHandlingStrategy.from(id),
+                        AccountPropertiesManager.OnThread.BACKGROUND);
             }
-            caOutput.flush();
 
-            caInput = new ByteArrayInputStream(caOutput.toByteArray());
-        } catch (IOException e) {
-            ObjectUtils.closeSilently(caInput, caOutput);
-            hideProgressBar();
-            messageHelper.showToast("Error loading certificate: " + e.getMessage());
-            return;
-        }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
 
-        try {
-            Certificate certificate = cf.generateCertificate(caInput);
-            propertiesManager.setValidHostnameList(new String[]{url.getHost()});
-            propertiesManager.setCertificateChain(new Cert[]{Cert.fromCertificate(certificate)});
-        } catch (Exception e) {
-            hideProgressBar();
-            deleteAllCerts(); // hostname and ca must be atomic
-            messageHelper.showError(ErrorType.NORMAL, e, "Error storing certificate");
-        } finally {
-            ObjectUtils.closeSilently(caInput, caOutput);
-            hideProgressBar();
-        }
+        txtValidForHostnames.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                propertiesManager.setValidHostnameList(PropertyUtils.parseHostnames(s.toString()),
+                        AccountPropertiesManager.OnThread.BACKGROUND);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        customCertificateLocationSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (propertiesManager.getCertificateChain().length > 0) {
+                    customCertificateLocationSwitch.setChecked(propertiesManager.isCustomCertificateLocation());
+                    // delete certs before switching mode
+                    DialogFragment confirmDialog = ConfirmDialogFragment
+                            .newInstance(CUSTOM_SWITCH_DELETE_DIALOG, getString(R.string.dialog_action_delete_certificate),
+                                    getString(R.string.dialog_action_delete_certificate_header));
+                    confirmDialog.show(getFragmentManager(), DELETE_DIALOG_FROM_CUSTOM_LOCATION_LISTENER_TAG);
+                } else {
+                    propertiesManager.setCustomCertificateLocation(!propertiesManager.isCustomCertificateLocation(),
+                            AccountPropertiesManager.OnThread.BACKGROUND);
+                }
+            }
+        });
     }
 
-    @UiThread(propagation = UiThread.Propagation.REUSE)
-    public void showProgressBar() {
-        inProgress = true;
-        if (progress != null) {
-            progress.setVisibility(View.VISIBLE);
-        }
+    private void initPropertyListeners() {
+        PropertyChangedListener certHandlingStrategyListener = new PropertyChangedListener<CertHandlingStrategy>() {
+            @Override
+            public void onPropertyChange(final CertHandlingStrategy property) {
+                prepareDataAndUpdateViews(property, null, null, null);
+            }
+        };
+
+        PropertyChangedListener certChainListener = new PropertyChangedListener<Cert[]>() {
+            @Override
+            public void onPropertyChange(Cert[] property) {
+                prepareDataAndUpdateViews(null, property, null, null);
+            }
+        };
+
+        PropertyChangedListener validHostnamesListener = new PropertyChangedListener<String>() {
+            @Override
+            public void onPropertyChange(String property) {
+                prepareDataAndUpdateViews(null, null, property, null);
+            }
+        };
+
+        PropertyChangedListener customCertificateLocationListener = new PropertyChangedListener<Boolean>() {
+            @Override
+            public void onPropertyChange(Boolean property) {
+                prepareDataAndUpdateViews(null, null, null, property);
+            }
+        };
+
+        listeners = new PropertyChangedListener[]{
+                certHandlingStrategyListener,
+                certChainListener,
+                validHostnamesListener,
+                customCertificateLocationListener};
+
+        propertiesManager.notifyAndRegisterListener(AccountProperty.CERT_HANDLING_STRATEGY, certHandlingStrategyListener);
+        propertiesManager.registerListener(AccountProperty.CERTIFICATE_CHAIN, certChainListener);
+        propertiesManager.registerListener(AccountProperty.VALID_HOSTNAMES, validHostnamesListener);
+        propertiesManager.registerListener(AccountProperty.CUSTOM_CERTIFICATE_LOCATION, customCertificateLocationListener);
     }
 
-    @UiThread(propagation = UiThread.Propagation.REUSE)
-    public void hideProgressBar() {
-        inProgress = false;
-        if (progress != null) {
-            progress.setVisibility(View.GONE);
+    private void prepareDataAndUpdateViews(CertHandlingStrategy certHandlingStrategy, Cert[] certs, String hostnames, Boolean isCustomCertificateLocation) {
+        boolean initialized = initializedUi; //first time propagate all properties to UI
+        if (!initializedUi) {
+            initializedUi = true;
         }
+
+        // fill empty properties
+        if (certHandlingStrategy == null) {
+            certHandlingStrategy = propertiesManager.getCertHandlingStrategy();
+        }
+
+        if (certs == null) {
+            certs = propertiesManager.getCertificateChain();
+        }
+
+        if (hostnames == null) {
+            hostnames = propertiesManager.getValidHostnames();
+        }
+
+        if (isCustomCertificateLocation == null) {
+            isCustomCertificateLocation = propertiesManager.isCustomCertificateLocation();
+        }
+
+        // set which changes were updated from this UI
+        CertHandlingStrategy oldStrategy = initialized ? CertHandlingStrategy.from(certHandlingStrategySpinner.getSelectedItemId()) : null;
+        UiAwareProperty<CertHandlingStrategy> uiStrategy = new UiAwareProperty<>(certHandlingStrategy, oldStrategy);
+
+        String oldHostnames = initialized ? PropertyUtils.catenateToCsv(PropertyUtils.parseHostnames(txtValidForHostnames.getText().toString())) : null;
+        UiAwareProperty<String> uiHostnames = new UiAwareProperty<>(hostnames, oldHostnames);
+
+        Boolean oldLocation = initialized ? customCertificateLocationSwitch.isChecked() : null;
+
+        UiAwareProperty<Boolean> uiLocation = new UiAwareProperty<>(isCustomCertificateLocation, oldLocation);
+
+        UiAwareProperty<Cert[]> uiCerts = new UiAwareProperty<>(certs); // doesn't depend on UI
+
+        updateViews(uiStrategy, uiCerts, uiHostnames, uiLocation);
     }
 
     @OptionsItem(android.R.id.home)
     public void homeSelected() {
         finish();
+    }
+
+    void broadcastProgress(boolean inProgress) {
+        Intent intent = new Intent(Broadcasts.DOWNLOADING_CERTIFICATE);
+        intent.putExtra(Broadcasts.Extras.IN_PROGRESS, inProgress);
+        getApplicationContext().sendBroadcast(intent);
+    }
+
+    @Receiver(actions = {Broadcasts.DOWNLOADING_CERTIFICATE},
+            registerAt = Receiver.RegisterAt.OnCreateOnDestroy)
+    void showProgressBar(@Receiver.Extra(Broadcasts.Extras.IN_PROGRESS) boolean inProgress) {
+        this.inProgress = inProgress;
+        if (progress != null) {
+            progress.setVisibility(inProgress ? View.VISIBLE : View.GONE);
+        }
     }
 
     @Receiver(actions = {Broadcasts.ERROR_MESSAGE},

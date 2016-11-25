@@ -16,7 +16,7 @@ import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.SystemService;
 import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
-import org.ovirt.mobile.movirt.auth.properties.ParseUtils;
+import org.ovirt.mobile.movirt.auth.properties.PropertyUtils;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.auth.properties.property.Version;
@@ -153,13 +153,13 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
                     accountManager.invalidateAuthToken(property.getPackageKey(),
                             accountManager.peekAuthToken(account, property.getPackageKey()));
                 }
-                accountManager.setAuthToken(account, property.getPackageKey(), ParseUtils.convertToString(object));
+                accountManager.setAuthToken(account, property.getPackageKey(), PropertyUtils.convertToString(object));
                 break;
             case PEEK_AUTH_TOKEN:
             case FUTURE_AUTH_TOKEN:
                 throw new IllegalArgumentException(property.name() + " cannot be set! Use AUTH_TOKEN.");
             case PASSWORD:
-                accountManager.setPassword(account, ParseUtils.convertToString(object)); // triggers sync in later APIs (Android 6)
+                accountManager.setPassword(account, PropertyUtils.convertToString(object)); // triggers sync in later APIs (Android 6)
                 break;
             case USERNAME:
             case API_URL:
@@ -168,7 +168,8 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             case HAS_ADMIN_PERMISSIONS:
             case CERTIFICATE_CHAIN:
             case VALID_HOSTNAME_LIST:
-                accountManager.setUserData(account, property.getPackageKey(), ParseUtils.convertToString(object));
+            case CUSTOM_CERTIFICATE_LOCATION:
+                accountManager.setUserData(account, property.getPackageKey(), PropertyUtils.convertToString(object));
                 break;
             default:
                 throw new IllegalArgumentException(property.name() + " cannot be set!");
@@ -207,11 +208,12 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             case CERT_HANDLING_STRATEGY:
                 return getCertHandlingStrategy(property);
             case HAS_ADMIN_PERMISSIONS:
+            case CUSTOM_CERTIFICATE_LOCATION:
                 return read(property, false);
             case CERTIFICATE_CHAIN:
                 return getCertificateChain(property);
             case VALID_HOSTNAMES:
-                return ParseUtils.catenateToCsv(getValidHostnames(AccountProperty.VALID_HOSTNAME_LIST));
+                return PropertyUtils.catenateToCsv(getValidHostnames(AccountProperty.VALID_HOSTNAME_LIST));
             case VALID_HOSTNAME_LIST:
                 return getValidHostnames(property);
             default:

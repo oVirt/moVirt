@@ -95,7 +95,9 @@ public final class ObjectUtils {
         boolean closed = true;
         for (Closeable c : closeables) {
             try {
-                c.close();
+                if (c != null) {
+                    c.close();
+                }
             } catch (Exception x) {
                 try {
                     Log.e(TAG, throwableToString(x));
@@ -124,7 +126,9 @@ public final class ObjectUtils {
 
         for (Closeable c : closeables) {
             try {
-                c.close();
+                if (c != null) {
+                    c.close();
+                }
             } catch (Exception x) {
                 throwOut = x;
             }

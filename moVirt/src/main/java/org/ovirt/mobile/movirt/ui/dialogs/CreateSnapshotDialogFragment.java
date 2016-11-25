@@ -23,7 +23,6 @@ import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.dto.Snapshot;
-import org.ovirt.mobile.movirt.ui.NewSnapshotListener;
 import org.springframework.util.StringUtils;
 
 /**
@@ -39,7 +38,7 @@ public class CreateSnapshotDialogFragment extends DialogFragment {
     @Bean
     AccountPropertiesManager propertiesManager;
 
-    private NewSnapshotListener listenerActivity;
+    private DialogListener.NewSnapshotListener listenerActivity;
 
     private String vmId;
     private Vm currentVm;
@@ -51,7 +50,7 @@ public class CreateSnapshotDialogFragment extends DialogFragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            listenerActivity = (NewSnapshotListener) activity;
+            listenerActivity = (DialogListener.NewSnapshotListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString() + " must implement NewSnapshotListener");
         }

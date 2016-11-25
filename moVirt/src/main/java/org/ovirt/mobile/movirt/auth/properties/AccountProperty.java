@@ -68,7 +68,11 @@ public enum AccountProperty {
     /**
      * Should be used together with {@link String String[] }. See also {@linkplain AccountProperty#getDependentProperties()}
      */
-    VALID_HOSTNAME_LIST;
+    VALID_HOSTNAME_LIST,
+    /**
+     * Should be used together with {@link Boolean }.
+     */
+    CUSTOM_CERTIFICATE_LOCATION;
 
     private boolean settable = true;
 

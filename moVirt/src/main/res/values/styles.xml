@@ -164,5 +164,4 @@
     <style name="CertTreeNodeStyle">
         <item name="android:paddingLeft">18dp</item>
     </style>
-
 </resources>

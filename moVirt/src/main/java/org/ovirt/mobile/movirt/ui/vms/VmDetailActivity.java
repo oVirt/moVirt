@@ -48,11 +48,11 @@ import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
-import org.ovirt.mobile.movirt.ui.NewSnapshotListener;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.CreateSnapshotDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.CreateSnapshotDialogFragment_;
+import org.ovirt.mobile.movirt.ui.dialogs.DialogListener;
 import org.ovirt.mobile.movirt.ui.events.EventsFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
@@ -71,7 +71,7 @@ import java.util.Map;
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
 public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
-        ConfirmDialogFragment.ConfirmDialogListener, NewSnapshotListener,
+        ConfirmDialogFragment.ConfirmDialogListener, DialogListener.NewSnapshotListener,
         LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = VmDetailActivity.class.getSimpleName();

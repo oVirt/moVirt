@@ -10,11 +10,10 @@ import com.unnamed.b.atv.model.TreeNode;
 import com.unnamed.b.atv.view.AndroidTreeView;
 
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.properties.property.Cert;
+import org.ovirt.mobile.movirt.util.CertHelper;
 
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 class CertHolder extends TreeNode.BaseNodeViewHolder<CertHolder.TreeItem> {
     private static final int rightIconId = R.drawable.ic_chevron_right_white_24dp;
@@ -25,6 +24,9 @@ class CertHolder extends TreeNode.BaseNodeViewHolder<CertHolder.TreeItem> {
 
     private TreeNode node;
     private Certificate certificate;
+    private String location;
+
+    private boolean standalone;
 
     private CertificateSelectedListener certificateSelectedListener;
 
@@ -33,31 +35,39 @@ class CertHolder extends TreeNode.BaseNodeViewHolder<CertHolder.TreeItem> {
     }
 
     interface CertificateSelectedListener {
-        void onSelect(Certificate certificate);
+        void onSelect(Certificate certificate, String location);
     }
 
     static class TreeItem {
-        private Certificate certificate;
+        private Cert cert;
         private CertificateSelectedListener certificateSelectedListener;
 
-        TreeItem(Certificate certificate, CertificateSelectedListener listener) {
-            this.certificate = certificate;
+        TreeItem(Cert cert, CertificateSelectedListener listener) {
+            this.cert = cert;
             this.certificateSelectedListener = listener;
         }
     }
 
     @Override
     public View createNodeView(final TreeNode treeNode, TreeItem item) {
-        this.certificate = item.certificate;
+        this.certificate = item.cert.asCertificate();
+        this.location = item.cert.getLocation();
         this.certificateSelectedListener = item.certificateSelectedListener;
         this.node = treeNode;
+        this.standalone = node.isLeaf() && node.getParent().isRoot();
 
         final LayoutInflater inflater = LayoutInflater.from(context);
-        final View view = inflater.inflate(R.layout.cert_tree_node, null, false);
+        final View view = inflater.inflate(standalone ? R.layout.cert_tree_node :
+                R.layout.cert_tree_image_node, null, false);
         this.textView = (TextView) view.findViewById(R.id.node_value);
 
-        String certText = getCommonName(certificate);
-        certText = isCA(node, certificate) ? context.getString(R.string.cert_tree_item_ca) + certText : certText;
+        String certText = CertHelper.getCommonName(certificate);
+
+        if (CertHelper.isCA(certificate)) {
+            String certDesc = context.getString(node.isLeaf() ? R.string.cert_tree_item_self_signed : R.string.cert_tree_item_ca);
+            certText = certDesc + certText;
+        }
+
         textView.setText(certText);
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,9 +125,12 @@ class CertHolder extends TreeNode.BaseNodeViewHolder<CertHolder.TreeItem> {
         }
 
         node.setSelected(true);
-        setSelectedBackground(true);
 
-        certificateSelectedListener.onSelect(certificate);
+        if (!standalone) {
+            setSelectedBackground(true);
+        }
+
+        certificateSelectedListener.onSelect(certificate, location);
     }
 
     private boolean isAncestorOf(TreeNode ancestor, TreeNode child) {
@@ -133,29 +146,6 @@ class CertHolder extends TreeNode.BaseNodeViewHolder<CertHolder.TreeItem> {
         textView.setContentDescription(selected ? context.getString(R.string.cert_tree_item_selected, textView.getText()) : textView.getText());
         textView.setBackground(context.getResources().getDrawable(selected ?
                 R.drawable.abc_list_pressed_holo_dark : R.drawable.abc_item_background_holo_dark));
-    }
-
-    private String getCommonName(Certificate certificate) {
-        if (!(certificate instanceof X509Certificate)) {
-            throw new IllegalArgumentException("Certificate is not X509Certificate");
-        }
-
-        String subject = ((X509Certificate) certificate).getSubjectX500Principal().getName();
-        Pattern pattern = Pattern.compile("CN=([^,]*)");
-        Matcher matcher = pattern.matcher(subject);
-        return matcher.find() ? matcher.group(1) : subject;
-    }
-
-    private boolean isCA(TreeNode node, Certificate certificate) { // TODO: move into some CertUtils in the future
-        try {
-            if (!node.getParent().isRoot()) {
-                return false;
-            }
-            certificate.verify(certificate.getPublicKey());
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
     }
 
     @Override

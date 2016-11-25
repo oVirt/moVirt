@@ -35,6 +35,7 @@ import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
+import org.ovirt.mobile.movirt.ui.UiUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
@@ -115,69 +116,13 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         ArrayAdapter<String> urlAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, URL_COMPLETE);
         txtEndpoint.setAdapter(urlAdapter);
-        txtEndpoint.setTokenizer(new MultiAutoCompleteTextView.Tokenizer() {
-            @Override
-            public int findTokenStart(CharSequence text, int cursor) {
-                int i = cursor;
-                while (i > 0 && text.charAt(i - 1) != '/' && text.charAt(i - 1) != ':') {
-                    i--;
-                }
-                return i;
-            }
-
-            @Override
-            public int findTokenEnd(CharSequence text, int cursor) {
-                int i = cursor;
-                int len = text.length();
-                while (i < len) {
-                    if (text.charAt(i) == '/') {
-                        return i;
-                    } else {
-                        i++;
-                    }
-                }
-                return len;
-            }
-
-            @Override
-            public CharSequence terminateToken(CharSequence text) {
-                return text;
-            }
-        });
+        txtEndpoint.setTokenizer(UiUtils.getUrlTokenizer());
 
         txtUsername.setText(propertiesManager.getUsername());
         ArrayAdapter<String> usernameAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, USERNAME_COMPLETE);
         txtUsername.setAdapter(usernameAdapter);
-        txtUsername.setTokenizer(new MultiAutoCompleteTextView.Tokenizer() {
-            @Override
-            public int findTokenStart(CharSequence text, int cursor) {
-                int i = cursor;
-                while (i > 0 && text.charAt(i - 1) != '@') {
-                    i--;
-                }
-                return i;
-            }
-
-            @Override
-            public int findTokenEnd(CharSequence text, int cursor) {
-                int i = cursor;
-                int len = text.length();
-                while (i < len) {
-                    if (text.charAt(i) == '@') {
-                        return i;
-                    } else {
-                        i++;
-                    }
-                }
-                return len;
-            }
-
-            @Override
-            public CharSequence terminateToken(CharSequence text) {
-                return text;
-            }
-        });
+        txtUsername.setTokenizer(UiUtils.getUsernameTokenizer());
 
         txtPassword.setText(propertiesManager.getPassword());
         chkAdminPriv.setChecked(true);
@@ -258,6 +203,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
 
             String token = loginClient.login(username, password);
             onLoginResultReceived(token, endpointChanged);
+            setLoginInProgress(false);
         } catch (HttpClientErrorException e) {
             setLoginInProgress(false);
             switch (e.getStatusCode()) {

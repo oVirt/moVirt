@@ -5,11 +5,12 @@ import android.util.Log;
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
+import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.util.CertHelper;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -17,6 +18,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.security.KeyStore;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
@@ -140,9 +142,12 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
             KeyStore keyStore = KeyStore.getInstance(keyStoreType);
             keyStore.load(null, null);
             // try to add certificate - if adding fails do not trust anything
-            Cert cert = (certChain.length == 1) ? certChain[0] : null;
+            Cert cert = (certChain.length == 0) ? null : certChain[certChain.length - 1];
             if (cert != null) {
-                keyStore.setCertificateEntry("ca", cert.asCertificate());
+                Certificate certificate = cert.asCertificate();
+                if (CertHelper.isCA(certificate)) {
+                    keyStore.setCertificateEntry("ca", certificate);
+                }
             }
 
             // Create a TrustManager that trusts the CAs in our KeyStore

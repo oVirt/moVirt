@@ -7,14 +7,13 @@ import android.support.annotation.NonNull;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
+import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.auth.properties.property.Version;
 import org.ovirt.mobile.movirt.rest.dto.Api;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -311,6 +310,19 @@ public class AccountPropertiesManager {
         return setAndNotify(AccountProperty.VALID_HOSTNAME_LIST, hostnameList, runOnThread);
     }
 
+    @NonNull
+    public Boolean isCustomCertificateLocation() {
+        return authenticator.getResource(AccountProperty.CUSTOM_CERTIFICATE_LOCATION, Boolean.class);
+    }
+
+    public boolean setCustomCertificateLocation(Boolean customCertificateLocation) {
+        return setCustomCertificateLocation(customCertificateLocation, OnThread.CURRENT);
+    }
+
+    public boolean setCustomCertificateLocation(Boolean customCertificateLocation, OnThread runOnThread) {
+        return setAndNotify(AccountProperty.CUSTOM_CERTIFICATE_LOCATION, customCertificateLocation, runOnThread);
+    }
+
     /**
      * @param property property to be checked against
      * @param object   data to be checked against
@@ -320,17 +332,7 @@ public class AccountPropertiesManager {
         ObjectUtils.requireNotNull(property, PROPERTY);
 
         Object old = authenticator.getResource(property);
-        boolean result;
-
-        if (old == null || object == null) {
-            result = old == object;
-        } else if (old instanceof Object[] && object instanceof Object[]) {
-            result = Arrays.equals((Object[]) old, (Object[]) object);
-        } else {
-            result = old.equals(object);
-        }
-
-        return !result;
+        return !PropertyUtils.propertyObjectEquals(old, object);
     }
 
     /**

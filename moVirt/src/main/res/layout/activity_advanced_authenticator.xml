@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 xmlns:tools="http://schemas.android.com/tools"
+
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:paddingBottom="@dimen/activity_vertical_margin"
@@ -40,24 +42,21 @@
                 android:layout_marginBottom="16dp"
                 android:entries="@array/certificate_handling_strategy"/>
 
-            <TextView
-                android:id="@+id/certUrlLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/cert_account_endpoint"
-                android:textAppearance="?android:attr/textAppearanceSmall"/>
 
-            <EditText
-                android:id="@+id/txtCertUrl"
+            <Switch
+                android:id="@+id/customCertificateLocationSwitch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:hint="@string/cert_account_endpoint_hint"
-                android:inputType="textUri"/>
+                android:showText="true"
+                android:text="@string/advanced_authenticator_custom_url"
+                android:textOff="@string/advanced_authenticator_engine"
+                android:textOn="@string/advanced_authenticator_custom"
+                app:showText="true"/>
 
             <TextView
                 android:id="@+id/validHostnamesLabel"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/valid_for_hostnames"
                 android:textAppearance="?android:attr/textAppearanceSmall"/>
@@ -75,6 +74,21 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:orientation="vertical"/>
+
+            <TextView
+                android:id="@+id/certUrlLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/cert_account_endpoint"
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
+
+            <TextView
+                android:id="@+id/txtCertUrl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="28sp"
+                android:layout_marginBottom="16dp"/>
 
             <TextView
                 android:id="@+id/txtCertDetails"
