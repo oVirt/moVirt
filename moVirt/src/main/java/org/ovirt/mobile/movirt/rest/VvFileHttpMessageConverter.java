@@ -29,6 +29,7 @@ public class VvFileHttpMessageConverter extends AbstractHttpMessageConverter<Obj
 
     public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
     public static final String X_VIRT_VIEWER_MEDIA_TYPE = "application/x-virt-viewer";
+    public static final String VIRT_VIEWER_DEFINITION = "virt-viewer";
 
     public VvFileHttpMessageConverter() {
         super(new MediaType("application", "x-virt-viewer", DEFAULT_CHARSET));
@@ -84,20 +85,36 @@ public class VvFileHttpMessageConverter extends AbstractHttpMessageConverter<Obj
     private ConsoleConnectionDetails convertStreamToConsoleConnectionDetails(InputStream is) throws IOException {
         Map<String, String> vvFileMap = new HashMap<>();
         Scanner sc = new Scanner(is, DEFAULT_CHARSET.name());
-        Pattern p = Pattern.compile("^([^#\\[][^=]*)=(.*)$");
+        Pattern pattern = Pattern.compile("^([^#\\[][^=]*)=(.*)$");
+        Pattern definitionPattern = Pattern.compile("^\\[([^\\]]*)\\]$");
+        boolean virtViewerBlockFound = false;
 
         while (sc.hasNextLine()) {
-            Matcher matcher = p.matcher(sc.nextLine());
+            String line = sc.nextLine();
+            Matcher definitionMatcher = definitionPattern.matcher(line);
+            if (definitionMatcher.matches()) {
+                String definition = definitionMatcher.group(1);
+                virtViewerBlockFound = definition.equals(VIRT_VIEWER_DEFINITION);
+                continue;
+            }
+
+            if (!virtViewerBlockFound) {
+                continue;
+            }
+
+            Matcher matcher = pattern.matcher(line);
             if (matcher.matches()) {
                 MatchResult result = matcher.toMatchResult();
                 vvFileMap.put(result.group(1), result.group(2));
             }
         }
+
         ConsoleProtocol protocol = ConsoleProtocol.mapProtocol(vvFileMap.get(VvFileParam.TYPE));
         String address = vvFileMap.get(VvFileParam.HOST);
         String password = vvFileMap.get(VvFileParam.PASSWORD);
         String subject = vvFileMap.get(VvFileParam.HOST_SUBJECT);
-        String certificate = vvFileMap.get(VvFileParam.CA).replace("\\n", "\n");
+        String unescapedCa = vvFileMap.get(VvFileParam.CA);
+        String certificate = unescapedCa == null ? "" : unescapedCa.replace("\\n", "\n");
         int port = ParseUtils.intOrDefault(vvFileMap.get(VvFileParam.PORT));
         int tlsPort = ParseUtils.intOrDefault(vvFileMap.get(VvFileParam.TLS_PORT));
 
