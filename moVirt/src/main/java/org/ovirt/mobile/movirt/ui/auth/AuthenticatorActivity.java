@@ -203,7 +203,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
 
             String token = loginClient.login(username, password);
             onLoginResultReceived(token, endpointChanged);
-            setLoginInProgress(false);
         } catch (HttpClientErrorException e) {
             setLoginInProgress(false);
             switch (e.getStatusCode()) {
