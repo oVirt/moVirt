@@ -7,6 +7,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -15,6 +16,7 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.ConsoleFacade;
@@ -79,10 +81,16 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     TextView displayView;
 
     @ViewById
+    TextView displayLabel;
+
+    @ViewById
     TextView clusterView;
 
     @ViewById
     TextView dataCenterView;
+
+    @ViewById
+    TextView hostLabel;
 
     @ViewById
     Button hostButton;
@@ -104,13 +112,16 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     @Bean
     ConsoleFacade consoleFacade;
 
-    Vm vm;
+    @InstanceState
+    boolean isSnapshot;
 
-    Host host;
+    private Vm vm;
 
-    Cluster cluster;
+    private Host host;
 
-    DataCenter dataCenter;
+    private Cluster cluster;
+
+    private DataCenter dataCenter;
 
     @ViewById
     SwipeRefreshLayout swipeGeneralContainer;
@@ -122,16 +133,21 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
 
         args = new Bundle();
         args.putParcelable(VM_URI, vmUri);
-        getLoaderManager().initLoader(VMS_LOADER, args, this);
         vmId = vmUri.getLastPathSegment();
-        renderDisplayView("");
-        getLoaderManager().initLoader(CONSOLES_LOADER, args, this);
+        renderSnapshotVm();
+        getLoaderManager().initLoader(VMS_LOADER, args, this);
+        if (!isSnapshot) {
+            renderDisplayView("");
+            getLoaderManager().initLoader(CONSOLES_LOADER, args, this);
+        }
     }
 
     @Override
     public void restartLoader() {
         getLoaderManager().restartLoader(VMS_LOADER, args, this);
-        getLoaderManager().restartLoader(CONSOLES_LOADER, args, this);
+        if (!isSnapshot) {
+            getLoaderManager().restartLoader(CONSOLES_LOADER, args, this);
+        }
     }
 
     @Override
@@ -139,8 +155,10 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         getLoaderManager().destroyLoader(VMS_LOADER);
         getLoaderManager().destroyLoader(CLUSTER_LOADER);
         getLoaderManager().destroyLoader(DATA_CENTER_LOADER);
-        getLoaderManager().destroyLoader(HOST_LOADER);
-        getLoaderManager().destroyLoader(CONSOLES_LOADER);
+        if (!isSnapshot) {
+            getLoaderManager().destroyLoader(HOST_LOADER);
+            getLoaderManager().destroyLoader(CONSOLES_LOADER);
+        }
     }
 
     @Override
@@ -203,7 +221,7 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
                     getLoaderManager().initLoader(CLUSTER_LOADER, null, this);
                 }
 
-                if (getLoaderManager().getLoader(HOST_LOADER) != null) {
+                if (!isSnapshot && getLoaderManager().getLoader(HOST_LOADER) != null) {
                     getLoaderManager().restartLoader(HOST_LOADER, null, this);
                 }
                 break;
@@ -217,7 +235,7 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
             case DATA_CENTER_LOADER:
                 dataCenter = EntityMapper.forEntity(DataCenter.class).fromCursor(data);
                 renderDataCenter(dataCenter);
-                if (getLoaderManager().getLoader(HOST_LOADER) == null) {
+                if (!isSnapshot && getLoaderManager().getLoader(HOST_LOADER) == null) {
                     getLoaderManager().initLoader(HOST_LOADER, null, this);
                 }
                 break;
@@ -248,6 +266,10 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         // do nothing
     }
 
+    public void setIsSnapshot(boolean isSnapshot) {
+        this.isSnapshot = isSnapshot;
+    }
+
     public void renderVm(Vm vm) {
         statusView.setText(vm.getStatus().toString().toLowerCase());
         cpuView.setText(getString(R.string.percentage, vm.getCpuUsage()));
@@ -257,6 +279,15 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
         socketView.setText(String.valueOf(vm.getSockets()));
         coreView.setText(String.valueOf(vm.getCoresPerSocket()));
         osView.setText(vm.getOsType());
+    }
+
+    public void renderSnapshotVm() {
+        if (isSnapshot) {
+            displayView.setVisibility(View.GONE);
+            displayLabel.setVisibility(View.GONE);
+            hostButton.setVisibility(View.GONE);
+            hostLabel.setVisibility(View.GONE);
+        }
     }
 
     public void renderDisplayView(String displayTypes) {

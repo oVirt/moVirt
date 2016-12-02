@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.PagerTabStrip;
@@ -213,6 +214,7 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
         VmDisksFragment diskList = new VmDisksFragment_();
         VmNicsFragment nicList = new VmNicsFragment_();
 
+        vmDetailFragment.setIsSnapshot(true);
         diskList.setFilterVmId(vmId);
         diskList.setFilterSnapshotId(snapshotId);
         nicList.setFilterVmId(vmId);
