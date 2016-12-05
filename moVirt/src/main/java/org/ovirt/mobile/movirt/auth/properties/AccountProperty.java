@@ -34,6 +34,10 @@ public enum AccountProperty {
      */
     PASSWORD,
     /**
+     * Should be used together with {@link Boolean}.
+     */
+    PASSWORD_VISIBILITY,
+    /**
      * Should be used together with {@link String}.
      */
     USERNAME,

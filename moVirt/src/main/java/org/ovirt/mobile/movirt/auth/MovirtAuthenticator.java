@@ -162,6 +162,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
                 accountManager.setPassword(account, PropertyUtils.convertToString(object)); // triggers sync in later APIs (Android 6)
                 break;
             case USERNAME:
+            case PASSWORD_VISIBILITY:
             case API_URL:
             case VERSION:
             case CERT_HANDLING_STRATEGY:
@@ -207,6 +208,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
                 return getApiVersion(property);
             case CERT_HANDLING_STRATEGY:
                 return getCertHandlingStrategy(property);
+            case PASSWORD_VISIBILITY:
             case HAS_ADMIN_PERMISSIONS:
             case CUSTOM_CERTIFICATE_LOCATION:
                 return read(property, false);

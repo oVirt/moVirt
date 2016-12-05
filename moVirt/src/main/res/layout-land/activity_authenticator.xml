@@ -82,12 +82,41 @@
                 android:text="@string/account_password_label"
                 android:textAppearance="?android:attr/textAppearanceSmall"/>
 
-            <EditText
-                android:id="@+id/txtPassword"
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/account_password"
-                android:inputType="textPassword"/>
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/txtPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/passwordVisibility"
+                    android:layout_toStartOf="@+id/passwordVisibility"
+                    android:hint="@string/account_password"
+                    android:inputType="textPassword"/>
+
+                <ImageView
+                    android:id="@+id/passwordVisibility"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignBottom="@id/txtPassword"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignTop="@id/txtPassword"
+                    android:layout_centerVertical="true"
+                    android:paddingBottom="3dp"
+                    android:paddingEnd="@dimen/activity_horizontal_margin"
+                    android:paddingLeft="@dimen/activity_horizontal_margin"
+                    android:paddingRight="@dimen/activity_horizontal_margin"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingTop="3dp"/>
+
+            </RelativeLayout>
+
 
             <CheckBox
                 android:id="@+id/chkAdminPriv"

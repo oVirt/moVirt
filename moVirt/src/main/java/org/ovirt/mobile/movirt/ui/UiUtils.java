@@ -5,6 +5,14 @@ import android.widget.MultiAutoCompleteTextView;
 
 public class UiUtils {
 
+    public static int addAlphaToColor(int color, float opacity) {
+        if (opacity > 1 || opacity < 0) {
+            throw new IllegalArgumentException("opacity should be in interval 0-1");
+        }
+
+        return ((int) (opacity * 255.0f) << 24) | (color & 0x00ffffff);
+    }
+
     @NonNull
     public static MultiAutoCompleteTextView.Tokenizer getUrlTokenizer() {
         return new MultiAutoCompleteTextView.Tokenizer() {

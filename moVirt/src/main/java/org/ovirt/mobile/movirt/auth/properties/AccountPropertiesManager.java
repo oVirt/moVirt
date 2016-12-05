@@ -224,6 +224,18 @@ public class AccountPropertiesManager {
         return setAndNotify(AccountProperty.PASSWORD, password, runOnThread);
     }
 
+    public Boolean getPasswordVisibility() {
+        return authenticator.getResource(AccountProperty.PASSWORD_VISIBILITY, Boolean.class);
+    }
+
+    public boolean setPasswordVisibility(Boolean passwordVisibility) {
+        return setAdminPermissions(passwordVisibility, OnThread.CURRENT);
+    }
+
+    public boolean setPasswordVisibility(Boolean passwordVisibility, OnThread runOnThread) {
+        return setAndNotify(AccountProperty.PASSWORD_VISIBILITY, passwordVisibility, runOnThread);
+    }
+
     public String getApiUrl() {
         return authenticator.getResource(AccountProperty.API_URL, String.class);
     }
