@@ -11,6 +11,7 @@ import org.androidannotations.rest.spring.api.MediaType;
 import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
+import org.ovirt.mobile.movirt.rest.client.errorhandler.LoginErrorHandler;
 import org.ovirt.mobile.movirt.rest.dto.Api;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
@@ -19,7 +20,7 @@ import static org.ovirt.mobile.movirt.rest.RestHelper.JSESSIONID;
 import static org.ovirt.mobile.movirt.rest.RestHelper.PREFER;
 import static org.ovirt.mobile.movirt.rest.RestHelper.SESSION_TTL;
 
-@Rest(converters = MappingJackson2HttpMessageConverter.class)
+@Rest(converters = MappingJackson2HttpMessageConverter.class, responseErrorHandler = LoginErrorHandler.class)
 @Accept(MediaType.APPLICATION_JSON)
 @RequiresHeader({ACCEPT_ENCODING, SESSION_TTL, PREFER})
 @SetsCookie(JSESSIONID)

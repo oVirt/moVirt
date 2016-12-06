@@ -24,9 +24,9 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
-import org.ovirt.mobile.movirt.rest.ParseUtils;
 import org.ovirt.mobile.movirt.ui.UiUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.DialogListener;
+import org.ovirt.mobile.movirt.util.URIUtils;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 
 import java.net.URL;
@@ -152,7 +152,7 @@ public class DownloadCustomCertDialogFragment extends DialogFragment {
                 @Override
                 public void onClick(View v) {
                     try {
-                        URL url = ParseUtils.tryToParseUrl(urlText.getText().toString());
+                        URL url = URIUtils.tryToParseUrl(urlText.getText().toString());
                         listenerActivity.onNewDialogUrl(url, startNewChain);
                         dialog.dismiss();
                     } catch (IllegalArgumentException parseError) {

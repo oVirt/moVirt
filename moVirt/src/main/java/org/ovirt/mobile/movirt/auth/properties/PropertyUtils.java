@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class PropertyUtils {
-    private static final String HTTP = "http://";
 
     public static String[] parseHostnames(String hostnames) {
         if (TextUtils.isEmpty(hostnames)) {
@@ -77,14 +76,5 @@ public class PropertyUtils {
         }
 
         return result;
-    }
-
-    public static URL[] getEngineCertificateUrls(URL hostUrl) {
-        String version360 = HTTP + hostUrl.getHost() + "/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA";
-        String versionBasic = HTTP + hostUrl.getHost() + "/ca.crt";
-
-        return new URL[]{
-                ParseUtils.tryToParseUrl(version360),
-                ParseUtils.tryToParseUrl(versionBasic)};
     }
 }
