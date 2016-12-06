@@ -6,12 +6,16 @@ import android.accounts.AccountManager;
 import android.app.DialogFragment;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.graphics.Color;
+import android.text.InputType;
 import android.text.TextUtils;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.ProgressBar;
 
@@ -29,6 +33,7 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
+import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
@@ -76,6 +81,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     @ViewById
     EditText txtPassword;
     @ViewById
+    ImageView passwordVisibility;
+    @ViewById
     CheckBox chkAdminPriv;
     @ViewById
     ProgressBar authProgress;
@@ -104,6 +111,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     @Bean
     MessageHelper messageHelper;
 
+    private PropertyChangedListener[] listeners;
+
     @AfterViews
     void init() {
         if (!propertiesManager.accountConfigured()) {
@@ -130,6 +139,66 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         if (getIntent().getBooleanExtra(SHOW_ADVANCED_AUTHENTICATOR, false)) {
             btnAdvancedClicked();
         }
+
+        initViewListeners();
+        initPropertyListeners();
+    }
+
+    private void initPropertyListeners() {
+        final PropertyChangedListener<Boolean> passVisibilityListener = new PropertyChangedListener<Boolean>() {
+            @Override
+            public void onPropertyChange(Boolean property) {
+                setPasswordVisibility(property);
+            }
+        };
+        listeners = new PropertyChangedListener[]{passVisibilityListener};
+        propertiesManager.notifyAndRegisterListener(AccountProperty.PASSWORD_VISIBILITY, passVisibilityListener);
+    }
+
+    @Override
+    protected void onDestroy() {
+        for (PropertyChangedListener listener : listeners) {
+            propertiesManager.removeListener(listener);
+        }
+        super.onDestroy();
+    }
+
+    @Click(R.id.passwordVisibility)
+    void togglePasswordVisibility(){
+        propertiesManager.setPasswordVisibility(!propertiesManager.getPasswordVisibility(), AccountPropertiesManager.OnThread.BACKGROUND);
+    }
+
+    private void initViewListeners() {
+        passwordVisibility.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: {
+                        ImageView view = (ImageView) v;
+                        view.setBackgroundColor(UiUtils.addAlphaToColor(Color.WHITE, 0.25f));
+                        view.invalidate();
+                        break;
+                    }
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL: {
+                        ImageView view = (ImageView) v;
+                        view.setBackground(null);
+                        view.invalidate();
+                        break;
+                    }
+                }
+
+                return false;
+            }
+        });
+    }
+
+    @UiThread
+    public void setPasswordVisibility(Boolean visible) {
+        passwordVisibility.setImageResource(visible ? R.drawable.ic_visibility_white_24dp :
+                R.drawable.ic_visibility_off_white_24dp);
+        txtPassword.setInputType(visible ? InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD :
+                InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
     }
 
     @Click(R.id.btnAdvanced)
