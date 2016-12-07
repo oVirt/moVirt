@@ -187,8 +187,8 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         URL hostUrl = null;
         try {
             hostUrl = URIUtils.tryToParseUrl(getIntent().getStringExtra(LOAD_CA_FROM));
-        }catch (Exception x){
-            messageHelper.showError(ErrorType.USER,getString(R.string.api_url_not_valid));
+        } catch (Exception x) {
+            messageHelper.showError(ErrorType.USER, getString(R.string.api_url_not_valid));
             return;
         }
         if (urls == null) {
@@ -208,9 +208,9 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
                 }
             }
         } catch (IllegalArgumentException | IllegalStateException e) {
-            messageHelper.showError(ErrorType.USER, e.getMessage());
+            messageHelper.showError(ErrorType.USER, e.getMessage(), checkedUrlsToString(urls));
         } catch (Exception e) {
-            messageHelper.showError(e);
+            messageHelper.showError(ErrorType.NORMAL, e, checkedUrlsToString(urls));
         } finally {
             broadcastProgress(false);
         }
@@ -256,6 +256,18 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
             transaction.add(dialog, CUSTOM_DIALOG_TAG);
             transaction.commitAllowingStateLoss();
         }
+    }
+
+    private static String checkedUrlsToString(URL[] urls) {
+        StringBuilder urlsChecked = new StringBuilder("Urls checked:\n");
+        for (int u = 0; u < urls.length; u++) {
+            urlsChecked.append(urls[u]);
+            if (u != urls.length - 1) {
+                urlsChecked.append(",\n");
+            }
+        }
+        urlsChecked.append("\n");
+        return urlsChecked.toString();
     }
 
     private boolean assertCaIncluded(Cert[] certs) {

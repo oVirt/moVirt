@@ -155,7 +155,7 @@
 
     <string name="account_endpoint">protocol://host:port/path/to/api</string>
     <string name="cert_endpoint">protocol://host:port/path/to/cert</string>
-    <string name="cert_account_endpoint">Certificate Fetched from</string>
+    <string name="cert_fetched_from">Fetched from</string>
     <string name="account_endpoint_summary">For example: https://my-instance:443/ovirt-engine/api</string>
     <string name="account_username">name@domain</string>
     <string name="account_password">password</string>
