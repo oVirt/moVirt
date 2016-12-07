@@ -79,7 +79,7 @@
                 android:id="@+id/certUrlLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/cert_account_endpoint"
+                android:text="@string/cert_fetched_from"
                 android:textAppearance="?android:attr/textAppearanceSmall"/>
 
             <TextView
