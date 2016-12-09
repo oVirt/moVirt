@@ -5,9 +5,8 @@ import android.util.Log;
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
-import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.util.CertHelper;
@@ -50,24 +49,24 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
 
     @AfterInject
     void initFactory() {
-        propertiesManager.notifyAndRegisterListener(AccountProperty.CERT_HANDLING_STRATEGY, new PropertyChangedListener<CertHandlingStrategy>() {
+        propertiesManager.notifyAndRegisterListener(new AccountProperty.CertHandlingStrategyListener() {
             @Override
-            public void onPropertyChange(CertHandlingStrategy property) {
-                onHandlingModeChange(property, null);
+            public void onPropertyChange(CertHandlingStrategy certHandlingStrategy) {
+                onHandlingModeChange(certHandlingStrategy, null);
             }
         });
 
-        propertiesManager.registerListener(AccountProperty.CERTIFICATE_CHAIN, new PropertyChangedListener<Cert[]>() {
+        propertiesManager.registerListener(new AccountProperty.CertificateChainListener() {
             @Override
-            public void onPropertyChange(Cert[] property) {
-                onHandlingModeChange(certificateHandlingMode, property);
+            public void onPropertyChange(Cert[] certificates) {
+                onHandlingModeChange(certificateHandlingMode, certificates);
             }
         });
 
-        propertiesManager.notifyAndRegisterListener(AccountProperty.VALID_HOSTNAME_LIST, new PropertyChangedListener<String[]>() {
+        propertiesManager.notifyAndRegisterListener(new AccountProperty.ValidHostnameListListener() {
             @Override
-            public void onPropertyChange(String[] property) {
-                listHostnameVerifier.setTrustedHosts(property);
+            public void onPropertyChange(String[] validHostnameList) {
+                listHostnameVerifier.setTrustedHosts(validHostnameList);
             }
         });
     }

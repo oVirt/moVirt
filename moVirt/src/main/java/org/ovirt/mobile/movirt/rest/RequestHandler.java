@@ -16,9 +16,8 @@ import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
-import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
 import org.ovirt.mobile.movirt.auth.properties.property.Version;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
@@ -43,10 +42,10 @@ public class RequestHandler {
 
     @AfterInject
     public void init() {
-        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.VERSION, new PropertyChangedListener<Version>() {
+        accountPropertiesManager.notifyAndRegisterListener(new AccountProperty.VersionListener() {
             @Override
-            public void onPropertyChange(Version property) {
-                version = property;
+            public void onPropertyChange(Version newVersion) {
+                version = newVersion;
             }
         });
     }

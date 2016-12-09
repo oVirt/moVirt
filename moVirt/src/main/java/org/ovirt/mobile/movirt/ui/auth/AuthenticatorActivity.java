@@ -31,9 +31,10 @@ import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
-import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
+import org.ovirt.mobile.movirt.auth.properties.manager.OnThread;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
@@ -146,14 +147,14 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     }
 
     private void initPropertyListeners() {
-        final PropertyChangedListener<Boolean> passVisibilityListener = new PropertyChangedListener<Boolean>() {
+        final AccountProperty.PasswordVisibilityListener passVisibilityListener = new AccountProperty.PasswordVisibilityListener() {
             @Override
-            public void onPropertyChange(Boolean property) {
-                setPasswordVisibility(property);
+            public void onPropertyChange(Boolean passwordVisibility) {
+                setPasswordVisibility(passwordVisibility);
             }
         };
         listeners = new PropertyChangedListener[]{passVisibilityListener};
-        propertiesManager.notifyAndRegisterListener(AccountProperty.PASSWORD_VISIBILITY, passVisibilityListener);
+        propertiesManager.notifyAndRegisterListener(passVisibilityListener);
     }
 
     @Override
@@ -165,8 +166,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     }
 
     @Click(R.id.passwordVisibility)
-    void togglePasswordVisibility(){
-        propertiesManager.setPasswordVisibility(!propertiesManager.getPasswordVisibility(), AccountPropertiesManager.OnThread.BACKGROUND);
+    void togglePasswordVisibility() {
+        propertiesManager.setPasswordVisibility(!propertiesManager.getPasswordVisibility(), OnThread.BACKGROUND);
     }
 
     private void initViewListeners() {

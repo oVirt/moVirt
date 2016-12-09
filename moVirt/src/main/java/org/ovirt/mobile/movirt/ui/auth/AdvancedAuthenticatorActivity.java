@@ -32,11 +32,12 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
 import org.ovirt.mobile.movirt.auth.properties.PropertyUtils;
 import org.ovirt.mobile.movirt.auth.properties.UiAwareProperty;
+import org.ovirt.mobile.movirt.auth.properties.manager.OnThread;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
@@ -244,7 +245,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
     void changeCertificateLocation(boolean customCertificateChecked) {
         certHelper.deleteAllCerts(); // before cert location
         messageHelper.showToast(getString(R.string.deleted_cert_chain));
-        propertiesManager.setCustomCertificateLocation(!customCertificateChecked, AccountPropertiesManager.OnThread.BACKGROUND);
+        propertiesManager.setCustomCertificateLocation(!customCertificateChecked, OnThread.BACKGROUND);
     }
 
     private void downloadCustomCa(String url, boolean startNewChain) {
@@ -417,7 +418,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 propertiesManager.setCertHandlingStrategy(CertHandlingStrategy.from(id),
-                        AccountPropertiesManager.OnThread.BACKGROUND);
+                        OnThread.BACKGROUND);
             }
 
             @Override
@@ -433,7 +434,7 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 propertiesManager.setValidHostnameList(PropertyUtils.parseHostnames(s.toString()),
-                        AccountPropertiesManager.OnThread.BACKGROUND);
+                        OnThread.BACKGROUND);
             }
 
             @Override
@@ -453,38 +454,38 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
                     confirmDialog.show(getFragmentManager(), DELETE_DIALOG_FROM_CUSTOM_LOCATION_LISTENER_TAG);
                 } else {
                     propertiesManager.setCustomCertificateLocation(!propertiesManager.isCustomCertificateLocation(),
-                            AccountPropertiesManager.OnThread.BACKGROUND);
+                            OnThread.BACKGROUND);
                 }
             }
         });
     }
 
     private void initPropertyListeners() {
-        PropertyChangedListener certHandlingStrategyListener = new PropertyChangedListener<CertHandlingStrategy>() {
+        AccountProperty.CertHandlingStrategyListener certHandlingStrategyListener = new AccountProperty.CertHandlingStrategyListener() {
             @Override
-            public void onPropertyChange(final CertHandlingStrategy property) {
-                prepareDataAndUpdateViews(property, null, null, null);
+            public void onPropertyChange(CertHandlingStrategy certHandlingStrategy) {
+                prepareDataAndUpdateViews(certHandlingStrategy, null, null, null);
             }
         };
 
-        PropertyChangedListener certChainListener = new PropertyChangedListener<Cert[]>() {
+        AccountProperty.CertificateChainListener certChainListener = new AccountProperty.CertificateChainListener() {
             @Override
-            public void onPropertyChange(Cert[] property) {
-                prepareDataAndUpdateViews(null, property, null, null);
+            public void onPropertyChange(Cert[] certificates) {
+                prepareDataAndUpdateViews(null, certificates, null, null);
             }
         };
 
-        PropertyChangedListener validHostnamesListener = new PropertyChangedListener<String>() {
+        AccountProperty.ValidHostnamesListener validHostnamesListener = new AccountProperty.ValidHostnamesListener() {
             @Override
-            public void onPropertyChange(String property) {
-                prepareDataAndUpdateViews(null, null, property, null);
+            public void onPropertyChange(String validHostnames) {
+                prepareDataAndUpdateViews(null, null, validHostnames, null);
             }
         };
 
-        PropertyChangedListener customCertificateLocationListener = new PropertyChangedListener<Boolean>() {
+        AccountProperty.CustomCertificateLocationListener customCertificateLocationListener = new AccountProperty.CustomCertificateLocationListener() {
             @Override
-            public void onPropertyChange(Boolean property) {
-                prepareDataAndUpdateViews(null, null, null, property);
+            public void onPropertyChange(Boolean customCertificateLocation) {
+                prepareDataAndUpdateViews(null, null, null, customCertificateLocation);
             }
         };
 
@@ -494,10 +495,10 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
                 validHostnamesListener,
                 customCertificateLocationListener};
 
-        propertiesManager.notifyAndRegisterListener(AccountProperty.CERT_HANDLING_STRATEGY, certHandlingStrategyListener);
-        propertiesManager.registerListener(AccountProperty.CERTIFICATE_CHAIN, certChainListener);
-        propertiesManager.registerListener(AccountProperty.VALID_HOSTNAMES, validHostnamesListener);
-        propertiesManager.registerListener(AccountProperty.CUSTOM_CERTIFICATE_LOCATION, customCertificateLocationListener);
+        propertiesManager.notifyAndRegisterListener(certHandlingStrategyListener);
+        propertiesManager.registerListener(certChainListener);
+        propertiesManager.registerListener(validHostnamesListener);
+        propertiesManager.registerListener(customCertificateLocationListener);
     }
 
     private void prepareDataAndUpdateViews(CertHandlingStrategy certHandlingStrategy, Cert[] certs, String hostnames, Boolean isCustomCertificateLocation) {

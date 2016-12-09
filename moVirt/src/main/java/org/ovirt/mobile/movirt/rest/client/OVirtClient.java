@@ -15,9 +15,8 @@ import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.MoVirtApp;
-import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
-import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
 import org.ovirt.mobile.movirt.auth.properties.property.Version;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Console;
@@ -86,26 +85,26 @@ public class OVirtClient {
     public void init() {
         setAcceptEncodingHeaderAndFactory(restClient, requestFactory);
 
-        propertiesManager.notifyAndRegisterListener(AccountProperty.VERSION, new PropertyChangedListener<Version>() {
+        propertiesManager.notifyAndRegisterListener(new AccountProperty.VersionListener() {
             @Override
-            public void onPropertyChange(Version property) {
-                setVersionHeader(restClient, property);
-                setupAuth(restClient, property);
-                isV3Api = property.isV3Api();
+            public void onPropertyChange(Version version) {
+                setVersionHeader(restClient, version);
+                setupAuth(restClient, version);
+                isV3Api = version.isV3Api();
             }
         });
 
-        propertiesManager.notifyAndRegisterListener(AccountProperty.API_URL, new PropertyChangedListener<String>() {
+        propertiesManager.notifyAndRegisterListener(new AccountProperty.ApiUrlListener() {
             @Override
-            public void onPropertyChange(String property) {
-                restClient.setRootUrl(property);
+            public void onPropertyChange(String apiUrl) {
+                restClient.setRootUrl(apiUrl);
             }
         });
 
-        propertiesManager.notifyAndRegisterListener(AccountProperty.HAS_ADMIN_PERMISSIONS, new PropertyChangedListener<Boolean>() {
+        propertiesManager.notifyAndRegisterListener(new AccountProperty.HasAdminPermissionsListener() {
             @Override
-            public void onPropertyChange(Boolean property) {
-                setFilterHeader(restClient, property);
+            public void onPropertyChange(Boolean hasAdminPermissions) {
+                setFilterHeader(restClient, hasAdminPermissions);
             }
         });
     }

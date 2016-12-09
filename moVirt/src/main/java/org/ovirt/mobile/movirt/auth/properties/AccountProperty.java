@@ -1,5 +1,8 @@
 package org.ovirt.mobile.movirt.auth.properties;
 
+import android.accounts.AccountManagerFuture;
+import android.os.Bundle;
+
 import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
@@ -113,5 +116,165 @@ public enum AccountProperty {
 
     public String getPackageKey() {
         return packageKey;
+    }
+
+    public abstract static class AuthTokenListener implements PropertyChangedListener<String> {
+        @Override
+        public abstract void onPropertyChange(String authToken);
+
+        @Override
+        public AccountProperty getProperty() {
+            return AUTH_TOKEN;
+        }
+    }
+
+    public abstract static class PeekAuthTokenListener implements PropertyChangedListener<String> {
+        @Override
+        public abstract void onPropertyChange(String authToken);
+
+        @Override
+        public AccountProperty getProperty() {
+            return PEEK_AUTH_TOKEN;
+        }
+    }
+
+    public abstract static class FutureAuthTokenListener implements PropertyChangedListener<AccountManagerFuture<Bundle>> {
+        @Override
+        public abstract void onPropertyChange(AccountManagerFuture<Bundle> authToken);
+
+        @Override
+        public AccountProperty getProperty() {
+            return FUTURE_AUTH_TOKEN;
+        }
+    }
+
+    public abstract static class AccountConfiguredListener implements PropertyChangedListener<Boolean> {
+        @Override
+        public abstract void onPropertyChange(Boolean accountConfigured);
+
+        @Override
+        public AccountProperty getProperty() {
+            return ACCOUNT_CONFIGURED;
+        }
+    }
+
+    public abstract static class PasswordListener implements PropertyChangedListener<String> {
+        @Override
+        public abstract void onPropertyChange(String password);
+
+        @Override
+        public AccountProperty getProperty() {
+            return PASSWORD;
+        }
+    }
+
+    public abstract static class PasswordVisibilityListener implements PropertyChangedListener<Boolean> {
+        @Override
+        public abstract void onPropertyChange(Boolean passwordVisibility);
+
+        @Override
+        public AccountProperty getProperty() {
+            return PASSWORD_VISIBILITY;
+        }
+    }
+
+    public abstract static class UsernameListener implements PropertyChangedListener<String> {
+        @Override
+        public abstract void onPropertyChange(String username);
+
+        @Override
+        public AccountProperty getProperty() {
+            return USERNAME;
+        }
+    }
+
+    public abstract static class ApiUrlListener implements PropertyChangedListener<String> {
+        @Override
+        public abstract void onPropertyChange(String apiUrl);
+
+        @Override
+        public AccountProperty getProperty() {
+            return API_URL;
+        }
+    }
+
+    public abstract static class ApiBaseUrlListener implements PropertyChangedListener<String> {
+        @Override
+        public abstract void onPropertyChange(String apiBaseUrl);
+
+        @Override
+        public AccountProperty getProperty() {
+            return API_BASE_URL;
+        }
+    }
+
+    public abstract static class VersionListener implements PropertyChangedListener<Version> {
+        @Override
+        public abstract void onPropertyChange(Version version);
+
+        @Override
+        public AccountProperty getProperty() {
+            return VERSION;
+        }
+    }
+
+    public abstract static class CertHandlingStrategyListener implements PropertyChangedListener<CertHandlingStrategy> {
+        @Override
+        public abstract void onPropertyChange(CertHandlingStrategy certHandlingStrategy);
+
+        @Override
+        public AccountProperty getProperty() {
+            return CERT_HANDLING_STRATEGY;
+        }
+    }
+
+    public abstract static class HasAdminPermissionsListener implements PropertyChangedListener<Boolean> {
+        @Override
+        public abstract void onPropertyChange(Boolean hasAdminPermissions);
+
+        @Override
+        public AccountProperty getProperty() {
+            return HAS_ADMIN_PERMISSIONS;
+        }
+    }
+
+    public abstract static class CertificateChainListener implements PropertyChangedListener<Cert[]> {
+        @Override
+        public abstract void onPropertyChange(Cert[] certificates);
+
+        @Override
+        public AccountProperty getProperty() {
+            return CERTIFICATE_CHAIN;
+        }
+    }
+
+    public abstract static class ValidHostnamesListener implements PropertyChangedListener<String> {
+        @Override
+        public abstract void onPropertyChange(String validHostnames);
+
+        @Override
+        public AccountProperty getProperty() {
+            return VALID_HOSTNAMES;
+        }
+    }
+
+    public abstract static class ValidHostnameListListener implements PropertyChangedListener<String[]> {
+        @Override
+        public abstract void onPropertyChange(String[] validHostnameList);
+
+        @Override
+        public AccountProperty getProperty() {
+            return VALID_HOSTNAME_LIST;
+        }
+    }
+
+    public abstract static class CustomCertificateLocationListener implements PropertyChangedListener<Boolean> {
+        @Override
+        public abstract void onPropertyChange(Boolean customCertificateLocation);
+
+        @Override
+        public AccountProperty getProperty() {
+            return CUSTOM_CERTIFICATE_LOCATION;
+        }
     }
 }
