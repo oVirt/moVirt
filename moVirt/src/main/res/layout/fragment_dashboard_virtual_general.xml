@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+        <LinearLayout
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="6dp">
+
+            <TextView
+                style="@style/percentageCircleTitle"
+                android:text="@string/title_cpu_percentage_circle"/>
+
+            <!-- hack for keeping the same height, when we change size of inner TextView programmatically -->
+            <LinearLayout style="@style/horizontallyCenteredContent">
+
+                <TextView style="@style/percentageCircleSummary"/>
+
+                <TextView
+                    android:id="@+id/summary_cpu_percentage_circle"
+                    style="@style/percentageCircleSummary"/>
+
+            </LinearLayout>
+
+            <!-- hack for having the same height as physical -->
+            <TextView style="@style/percentageCircleBase"/>
+
+            <!-- hack for having the same height as physical -->
+            <TextView style="@style/percentageCircleSummary"/>
+
+            <org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView
+                android:id="@+id/cpu_percentage_circle"
+                style="@style/percentageCircleView"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="6dp">
+
+            <TextView
+                style="@style/percentageCircleTitle"
+                android:text="@string/title_memory_percentage_circle"/>
+
+            <!-- hack for keeping the same height, when we change size of inner TextView programmatically -->
+            <LinearLayout style="@style/horizontallyCenteredContent">
+
+                <TextView style="@style/percentageCircleSummary"/>
+
+                <TextView
+                    android:id="@+id/summary_memory_percentage_circle"
+                    style="@style/percentageCircleSummary"/>
+
+            </LinearLayout>
+
+            <!-- hack for having the same height as physical -->
+            <TextView style="@style/percentageCircleBase"/>
+
+            <!-- hack for having the same height as physical -->
+            <TextView style="@style/percentageCircleSummary"/>
+
+            <org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView
+                android:id="@+id/memory_percentage_circle"
+                style="@style/percentageCircleView"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="6dp">
+
+            <TextView
+                style="@style/percentageCircleTitle"
+                android:text="@string/title_storage_percentage_circle"/>
+
+            <!-- hack for keeping the same height, when we change size of inner TextView programmatically -->
+            <LinearLayout style="@style/horizontallyCenteredContent">
+
+                <TextView style="@style/percentageCircleSummary"/>
+
+                <TextView
+                    android:id="@+id/summary_storage_percentage_circle"
+                    style="@style/percentageCircleSummary"/>
+
+            </LinearLayout>
+
+            <!-- hack for having the same height as physical -->
+            <TextView style="@style/percentageCircleBase"/>
+
+            <!-- hack for having the same height as physical -->
+            <TextView style="@style/percentageCircleSummary"/>
+
+            <org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView
+                android:id="@+id/storage_percentage_circle"
+                style="@style/percentageCircleView"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="fragment_dashboard_general_virtual_container" type="id"/>
+    <item name="fragment_dashboard_general_physical_container" type="id"/>
+    <item name="fragment_dashboard_most_utilized_virtual_container" type="id"/>
+    <item name="fragment_dashboard_most_utilized_physical_container" type="id"/>
+
+</resources>

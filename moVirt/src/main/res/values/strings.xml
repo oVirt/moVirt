@@ -205,11 +205,11 @@
     <string name="title_cpu_percentage_circle">CPU</string>
     <string name="title_memory_percentage_circle">Memory</string>
     <string name="title_storage_percentage_circle">Storage</string>
-    <string name="summary_available_of">%1$s Available of %2$s %3$s</string>
+    <string name="summary_mem_available_of">%1$s Available of %2$s %3$s</string>
+    <string name="summary_cpu_available_of">%1$s Available of %2$s%3$s</string>
     <string name="used">Used</string>
     <string name="unit_used">%1$s Used</string>
     <string name="over_commit">Over commit</string>
-    <string name="allocated">Allocated</string>
     <string name="over_commit_allocated">%1$d%% (Allocated %2$d%%)</string>
     <string name="most_utilized_vms">Most Utilized VMs</string>
     <string name="most_utilized_hosts">Most Utilized Hosts</string>
@@ -218,6 +218,8 @@
     <string name="hosts">Hosts</string>
     <string name="storage_domains">Storages</string>
     <string name="virtual_machines">VMs</string>
+    <string name="running_virtual_machines">Running VMs</string>
+    <string name="physical_resources">Physical Resources</string>
 
     <string name="title_activity_migrate_vm">Migrate VM</string>
     <string name="migrate_title">Choose host to migrate VM</string>

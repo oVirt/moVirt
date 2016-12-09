@@ -1,27 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="horizontal">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0px"
+        android:layout_width="0px"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical"
         android:padding="5dp">
 
-        <!-- hack for keeping the same height -->
-        <TextView style="@style/percentageCircleBase" />
-
-        <!-- hack for keeping the same height -->
-        <TextView
-            android:id="@+id/summary_cpu_percentage_circle"
-            style="@style/percentageCircleSummary" />
-
         <TextView
             style="@style/percentageCircleTitle"
             android:text="@string/title_cpu_percentage_circle" />
+
+        <!-- hack for keeping the same height, when we change size of inner TextView programmatically -->
+        <LinearLayout style="@style/horizontallyCenteredContent">
+
+            <TextView style="@style/percentageCircleSummary" />
+
+            <TextView
+                android:id="@+id/summary_cpu_percentage_circle"
+                style="@style/percentageCircleSummary" />
+
+        </LinearLayout>
 
         <TextView style="@style/percentageCircleOverCommitTitle" />
 
@@ -36,8 +39,8 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0px"
+        android:layout_width="0px"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical"
         android:padding="5dp">
@@ -45,8 +48,6 @@
         <TextView
             style="@style/percentageCircleTitle"
             android:text="@string/title_memory_percentage_circle" />
-
-        <TextView style="@style/percentageCircleSummaryTitle" />
 
         <!-- hack for keeping the same height, when we change size of inner TextView programmatically -->
         <LinearLayout style="@style/horizontallyCenteredContent">
@@ -72,8 +73,8 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0px"
+        android:layout_width="0px"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical"
         android:padding="5dp">
@@ -81,8 +82,6 @@
         <TextView
             style="@style/percentageCircleTitle"
             android:text="@string/title_storage_percentage_circle" />
-
-        <TextView style="@style/percentageCircleSummaryTitle" />
 
         <!-- hack for keeping the same height, when we change size of inner TextView programmatically -->
         <LinearLayout style="@style/horizontallyCenteredContent">

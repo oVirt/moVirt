@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui.dashboard;
+package org.ovirt.mobile.movirt.ui.dashboard.box;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.ui.dashboard.DashboardEntityStatus;
 import org.ovirt.mobile.movirt.ui.dashboard.maps.DashboardPosition;
 
 import java.util.List;

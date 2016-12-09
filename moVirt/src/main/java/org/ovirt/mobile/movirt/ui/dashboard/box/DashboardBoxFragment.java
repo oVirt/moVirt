@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui.dashboard;
+package org.ovirt.mobile.movirt.ui.dashboard.box;
 
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;

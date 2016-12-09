@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui.dashboard;
+package org.ovirt.mobile.movirt.ui.dashboard.box;
 
 import android.content.Context;
 
@@ -8,7 +8,7 @@ import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.ui.dashboard.DashboardBoxDataLoader.BoxDataEntityClass;
+import org.ovirt.mobile.movirt.ui.dashboard.DashboardEntityStatus;
 import org.ovirt.mobile.movirt.ui.dashboard.maps.DashboardPosition;
 import org.ovirt.mobile.movirt.ui.dashboard.maps.DcStatusMap;
 import org.ovirt.mobile.movirt.ui.dashboard.maps.HostStatusMap;
@@ -24,12 +24,12 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public class DashboardBoxData {
-    private BoxDataEntityClass entityClass;
+    private DashboardBoxDataLoader.BoxDataEntityClass entityClass;
     private int entityCount = 0;
 
     private Map<DashboardPosition, DashboardEntityStatus> positionsStatusMap = new EnumMap<>(DashboardPosition.class);
 
-    public DashboardBoxData(BoxDataEntityClass entityClass) {
+    public DashboardBoxData(DashboardBoxDataLoader.BoxDataEntityClass entityClass) {
         this.entityClass = entityClass;
 
         DashboardEntityStatus first = new DashboardEntityStatus();
@@ -58,11 +58,11 @@ public class DashboardBoxData {
         }
     }
 
-    public BoxDataEntityClass getEntityClass() {
+    public DashboardBoxDataLoader.BoxDataEntityClass getEntityClass() {
         return entityClass;
     }
 
-    public void setEntityClass(BoxDataEntityClass entityClass) {
+    public void setEntityClass(DashboardBoxDataLoader.BoxDataEntityClass entityClass) {
         this.entityClass = entityClass;
     }
 
@@ -117,11 +117,11 @@ public class DashboardBoxData {
     }
 
     public void setData(Collection data) {
-        if (entityClass != BoxDataEntityClass.EVENT) {
+        if (entityClass != DashboardBoxDataLoader.BoxDataEntityClass.EVENT) {
             entityCount = data.size();
         }
 
-        if (entityClass == BoxDataEntityClass.CLUSTER) {
+        if (entityClass == DashboardBoxDataLoader.BoxDataEntityClass.CLUSTER) {
             return;
         }
         Date today = getToday();
