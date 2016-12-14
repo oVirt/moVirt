@@ -21,7 +21,7 @@ import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
-import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
+import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 
 import java.util.ArrayList;

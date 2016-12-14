@@ -24,7 +24,7 @@ import org.ovirt.mobile.movirt.rest.dto.ErrorBody;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
-import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
+import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.net.MalformedURLException;

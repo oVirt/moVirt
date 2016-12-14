@@ -38,7 +38,8 @@ import org.ovirt.mobile.movirt.rest.RestEntityWrapperList;
 import org.ovirt.mobile.movirt.rest.dto.Action;
 import org.ovirt.mobile.movirt.rest.dto.Events;
 import org.ovirt.mobile.movirt.rest.dto.SnapshotAction;
-import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
+import org.ovirt.mobile.movirt.util.preferences.SettingsKey;
+import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.springframework.util.StringUtils;
 
@@ -495,8 +496,6 @@ public class OVirtClient {
     }
 
     public Request<List<Vm>> getVmsRequest() {
-        final SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(app);
 
         return new RestClientRequest<List<Vm>>() {
             @Override
@@ -505,7 +504,7 @@ public class OVirtClient {
 
                 if (propertiesManager.hasAdminPermissions()) {
                     int maxVms = sharedPreferencesHelper.getMaxVms();
-                    String query = sharedPreferences.getString("vms_search_query", "");
+                    String query = sharedPreferencesHelper.getStringPref(SettingsKey.VMS_SEARCH_QUERY);
                     if (StringUtils.isEmpty(query)) {
                         wrappers = isV3Api ? restClient.getVmsV3(maxVms) :
                                 restClient.getVmsV4(maxVms);
@@ -587,8 +586,6 @@ public class OVirtClient {
     }
 
     public void getEventsSince(final int lastEventId, Response<List<Event>> response) {
-        final SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(app);
         requestHandler.fireRestRequest(new RestClientRequest<List<Event>>() {
             @Override
             public List<Event> fire() {
@@ -596,7 +593,7 @@ public class OVirtClient {
 
                 if (propertiesManager.hasAdminPermissions()) {
                     int maxEventsStored = sharedPreferencesHelper.getMaxEvents();
-                    String query = sharedPreferences.getString("events_search_query", "");
+                    String query = sharedPreferencesHelper.getStringPref(SettingsKey.EVENTS_SEARCH_QUERY);
                     if (!"".equals(query)) {
                         loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), query, maxEventsStored);
                     } else {

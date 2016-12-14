@@ -8,28 +8,28 @@
         android:title="@string/prefs_connection_settings" />
 
     <CheckBoxPreference
-        android:defaultValue="true"
+        android:defaultValue="@bool/defaultPollEvents"
         android:key="poll_events"
         android:persistent="true"
         android:summary="@string/prefs_poll_events_summary"
         android:title="@string/prefs_poll_events" />
 
     <CheckBoxPreference
-        android:defaultValue="true"
+        android:defaultValue="@bool/defaultConnectionNotification"
         android:key="connection_notification"
         android:persistent="true"
         android:summary="@string/prefs_connection_notification_summary"
         android:title="@string/prefs_connection_notification" />
 
     <CheckBoxPreference
-        android:defaultValue="false"
+        android:defaultValue="@bool/defaultPeriodicSync"
         android:key="periodic_sync"
         android:persistent="true"
         android:summary="@string/prefs_periodic_sync_summary"
         android:title="@string/prefs_periodic_sync" />
 
     <EditTextPreference
-        android:defaultValue="60"
+        android:defaultValue="@integer/defaultPeriodicSyncInterval"
         android:enabled="false"
         android:inputType="number"
         android:key="periodic_sync_interval"
@@ -38,7 +38,7 @@
         android:title="@string/prefs_periodic_sync_interval" />
 
     <EditTextPreference
-        android:defaultValue="500"
+        android:defaultValue="@integer/defaultMaxEvents"
         android:inputType="number"
         android:key="max_events_stored"
         android:persistent="true"
@@ -46,14 +46,14 @@
         android:title="@string/prefs_max_events_locally" />
 
     <EditTextPreference
-        android:defaultValue=""
+        android:defaultValue="@string/defaultEventsSearchQuery"
         android:key="events_search_query"
         android:persistent="true"
         android:summary="@string/prefs_events_search_query_summary"
         android:title="@string/prefs_events_search_query" />
 
     <EditTextPreference
-        android:defaultValue="500"
+        android:defaultValue="@integer/defaultMaxVms"
         android:inputType="number"
         android:key="max_vms_polled"
         android:persistent="true"
@@ -61,7 +61,7 @@
         android:title="@string/prefs_max_max_vms_polled" />
 
     <EditTextPreference
-        android:defaultValue=""
+        android:defaultValue="@string/defaultVmsSearchQuery"
         android:key="vms_search_query"
         android:persistent="true"
         android:summary="@string/prefs_vm_search_query_summary"

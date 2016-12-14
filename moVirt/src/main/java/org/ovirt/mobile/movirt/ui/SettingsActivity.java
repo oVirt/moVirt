@@ -6,20 +6,27 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
 
+import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
+import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity_;
-import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.preferences.SettingsKey;
+import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
+
+import static org.ovirt.mobile.movirt.util.preferences.SettingsKey.MAX_EVENTS;
+import static org.ovirt.mobile.movirt.util.preferences.SettingsKey.MAX_VMS;
+import static org.ovirt.mobile.movirt.util.preferences.SettingsKey.PERIODIC_SYNC;
+import static org.ovirt.mobile.movirt.util.preferences.SettingsKey.PERIODIC_SYNC_INTERVAL;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -34,6 +41,8 @@ import org.ovirt.mobile.movirt.util.message.MessageHelper;
  */
 @EActivity
 public class SettingsActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener, CreateDialogBroadcastReceiver {
+    @App
+    MoVirtApp app;
     @Bean
     EventsHandler eventsHandler;
     @Bean
@@ -46,13 +55,10 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     private Preference periodicSyncIntervalPref;
     private Preference maxEventsPref;
     private Preference maxVmsPref;
-    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         addPreferencesFromResource(R.xml.preferences);
 
@@ -80,7 +86,7 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
             }
         });
 
-        periodicSyncIntervalPref = findPreference(SharedPreferencesHelper.KEY_PERIODIC_SYNC_INTERVAL);
+        periodicSyncIntervalPref = findPreference(PERIODIC_SYNC_INTERVAL.getValue());
         periodicSyncIntervalPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -99,9 +105,9 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
                 return true;
             }
         });
-        maxEventsPref = findPreference(SharedPreferencesHelper.KEY_MAX_EVENTS);
+        maxEventsPref = findPreference(MAX_EVENTS.getValue());
         maxEventsPref.setOnPreferenceChangeListener(new IntegerValidator());
-        maxVmsPref = findPreference(SharedPreferencesHelper.KEY_MAX_VMS);
+        maxVmsPref = findPreference(MAX_VMS.getValue());
         maxVmsPref.setOnPreferenceChangeListener(new IntegerValidator());
     }
 
@@ -111,12 +117,7 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         getPreferenceScreen().getSharedPreferences()
                 .registerOnSharedPreferenceChangeListener(this);
 
-        if (PreferenceManager.getDefaultSharedPreferences(this)
-                .getBoolean(SharedPreferencesHelper.KEY_PERIODIC_SYNC, false)) {
-            periodicSyncIntervalPref.setEnabled(true);
-        } else {
-            periodicSyncIntervalPref.setEnabled(false);
-        }
+        periodicSyncIntervalPref.setEnabled(sharedPreferencesHelper.getBooleanPref(PERIODIC_SYNC));
 
         setSyncIntervalPrefSummary();
         setMaxVmsSummary();
@@ -131,41 +132,41 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     }
 
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-                                          String key) {
+                                          String prefKey) {
+        SettingsKey key = SettingsKey.from(prefKey);
         switch (key) {
-            case SharedPreferencesHelper.KEY_PERIODIC_SYNC:
-                periodicSyncIntervalPref.setEnabled(sharedPreferences.getBoolean(key, false));
+            case PERIODIC_SYNC:
+                periodicSyncIntervalPref.setEnabled(sharedPreferencesHelper.getBooleanPref(key));
                 sharedPreferencesHelper.updatePeriodicSync();
                 break;
-            case SharedPreferencesHelper.KEY_PERIODIC_SYNC_INTERVAL:
+            case PERIODIC_SYNC_INTERVAL:
                 sharedPreferencesHelper.updatePeriodicSync();
                 setSyncIntervalPrefSummary();
                 break;
-            case SharedPreferencesHelper.KEY_MAX_EVENTS:
+            case MAX_EVENTS:
                 setMaxEventsSummary();
-                eventsHandler.setMaxEventsStored(sharedPreferencesHelper.getMaxEvents());
+                eventsHandler.setMaxEventsStored(sharedPreferencesHelper.getIntPref(key));
                 break;
-            case SharedPreferencesHelper.KEY_MAX_VMS:
+            case MAX_VMS:
                 setMaxVmsSummary();
                 break;
         }
     }
 
     private void setMaxEventsSummary() {
-        String maxEvents = sharedPreferences.getString(SharedPreferencesHelper.KEY_MAX_EVENTS, SharedPreferencesHelper.DEFAULT_MAX_EVENTS);
+        int maxEvents = sharedPreferencesHelper.getMaxEvents();
         maxEventsPref.setSummary(getString(
                 R.string.prefs_max_events_locally_summary, maxEvents));
     }
 
     private void setMaxVmsSummary() {
-        String maxVms = sharedPreferences.getString(SharedPreferencesHelper.KEY_MAX_VMS, SharedPreferencesHelper.DEFAULT_MAX_VMS);
+        int maxVms = sharedPreferencesHelper.getMaxVms();
         maxVmsPref.setSummary(getString(
                 R.string.prefs_max_vms_polled_summary, maxVms));
     }
 
     private void setSyncIntervalPrefSummary() {
-        String interval = sharedPreferences
-                .getString(SharedPreferencesHelper.KEY_PERIODIC_SYNC_INTERVAL, SharedPreferencesHelper.DEFAULT_PERIODIC_SYNC_INTERVAL);
+        int interval = sharedPreferencesHelper.getPeriodicSyncInterval();
         periodicSyncIntervalPref.setSummary(getString(
                 R.string.prefs_periodic_sync_interval_summary, interval));
     }

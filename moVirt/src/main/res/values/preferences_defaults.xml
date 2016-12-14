@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Settings -->
+    <bool name="defaultConnectionNotification">true</bool>
+    <bool name="defaultPollEvents">true</bool>
+    <bool name="defaultPeriodicSync">false</bool>
+    <integer name="defaultPeriodicSyncInterval">60</integer> <!-- minutes -->
+    <integer name="defaultMaxEvents">2000</integer>
+    <integer name="defaultMaxVms">500</integer>
+    <string name="defaultEventsSearchQuery"/>
+    <string name="defaultVmsSearchQuery"/>
+
+</resources>
