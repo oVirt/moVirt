@@ -1,6 +1,6 @@
 package org.ovirt.mobile.movirt.ui;
 
-import org.ovirt.mobile.movirt.model.OVirtEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtEntity;
 
 public abstract class ResumeSyncableBaseEntityListFragment<E extends OVirtEntity> extends BaseEntityListFragment<E> {
 

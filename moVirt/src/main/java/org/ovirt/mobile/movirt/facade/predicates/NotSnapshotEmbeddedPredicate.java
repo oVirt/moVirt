@@ -2,7 +2,7 @@ package org.ovirt.mobile.movirt.facade.predicates;
 
 import com.android.internal.util.Predicate;
 
-import org.ovirt.mobile.movirt.model.SnapshotEmbeddableEntity;
+import org.ovirt.mobile.movirt.model.base.SnapshotEmbeddableEntity;
 
 /**
  * Created by suomiy on 2/3/16.

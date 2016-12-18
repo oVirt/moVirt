@@ -7,6 +7,7 @@ import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.model.Console;
 import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Disk;
+import org.ovirt.mobile.movirt.model.DiskAttachment;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Nic;
@@ -57,5 +58,10 @@ public class UriMatcher extends OrmLiteUriMatcher {
 
         addClass(OVirtContract.PATH_CONSOLES, Console.class);
         addClass(OVirtContract.PATH_CONSOLE, Console.class);
+
+        addClass(OVirtContract.PATH_DISK_ATTACHMENTS, DiskAttachment.class);
+        addClass(OVirtContract.PATH_DISK_ATTACHMENT, DiskAttachment.class);
+
+        addTablesSQL(OVirtContract.PATH_DISKS_AND_ATTACHMENTS, SQLHelper.getDisksAndAttachmentsInnerJoinSQL());
     }
 }

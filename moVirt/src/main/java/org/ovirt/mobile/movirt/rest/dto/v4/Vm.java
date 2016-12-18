@@ -9,7 +9,6 @@ public class Vm extends org.ovirt.mobile.movirt.rest.dto.Vm {
     public String status;
     public Host host;
     public Cluster cluster;
-    public Disks disks;
     public Nics nics;
 
     @Override
@@ -26,7 +25,6 @@ public class Vm extends org.ovirt.mobile.movirt.rest.dto.Vm {
         vm.setHostId(host != null ? host.id : "");
 
         vm.setNics(RestMapper.mapToEntities(nics));
-        vm.setDisks(RestMapper.mapToEntities(disks));
         return vm;
     }
 

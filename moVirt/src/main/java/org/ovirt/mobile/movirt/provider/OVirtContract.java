@@ -12,6 +12,8 @@ public interface OVirtContract {
 
     Uri BASE_CONTENT_URI = new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(CONTENT_AUTHORITY).build();
 
+    String ROW_ID = "rowid";
+
     interface BaseEntity extends BaseColumns {
         String ID = _ID;
     }
@@ -42,6 +44,14 @@ public interface OVirtContract {
         String getVmId();
 
         void setVmId(String vmId);
+    }
+
+    interface HasDisk {
+        String DISK_ID = "disk_id";
+
+        String getDiskId();
+
+        void setDiskId(String diskId);
     }
 
     interface HasDataCenter {
@@ -243,5 +253,23 @@ public interface OVirtContract {
         String TABLE = "consoles";
 
         String PROTOCOL = "protocol";
+    }
+
+    String PATH_DISK_ATTACHMENTS = "disk_attachments";
+    String PATH_DISK_ATTACHMENT = "disk_attachments/*";
+
+    interface DiskAttachment extends BaseEntity, HasVm, HasDisk {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISK_ATTACHMENTS).build();
+
+        String TABLE = "disk_attachments";
+
+        String VM_ID = "vm_id";
+        String DISK_ID = "disk_id";
+    }
+
+    String PATH_DISKS_AND_ATTACHMENTS = "disks_and_attachments";
+
+    interface DiskAndAttachment extends BaseEntity {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISKS_AND_ATTACHMENTS).build();
     }
 }

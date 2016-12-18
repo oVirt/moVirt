@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import org.ovirt.mobile.movirt.MoVirtApp;
-import org.ovirt.mobile.movirt.model.BaseEntity;
+import org.ovirt.mobile.movirt.model.base.BaseEntity;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({@JsonSubTypes.Type(CpuThresholdCondition.class),

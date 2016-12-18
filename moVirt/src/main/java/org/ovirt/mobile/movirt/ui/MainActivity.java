@@ -42,7 +42,7 @@ import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.model.Cluster;
-import org.ovirt.mobile.movirt.model.EntityMapper;
+import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.SortOrder;

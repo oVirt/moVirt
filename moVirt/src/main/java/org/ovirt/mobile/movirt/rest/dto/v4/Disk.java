@@ -10,7 +10,6 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Disk extends org.ovirt.mobile.movirt.rest.dto.Disk {
     public String status;
-    public Vm vm;
     public String provisioned_size;
     public Snapshot snapshot;
 
@@ -18,10 +17,6 @@ public class Disk extends org.ovirt.mobile.movirt.rest.dto.Disk {
         org.ovirt.mobile.movirt.model.Disk disk = super.toEntity();
         disk.setStatus(status);
         disk.setSize(ObjectUtils.parseLong(provisioned_size));
-
-        if (vm != null) {
-            disk.setVmId(vm.id);
-        }
 
         if (snapshot != null) {
             disk.setSnapshotId(snapshot.id);

@@ -13,7 +13,9 @@ import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.facade.DiskAttachmentsFacade;
 import org.ovirt.mobile.movirt.model.Disk;
+import org.ovirt.mobile.movirt.model.DiskAttachment;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.ResumeSyncableBaseEntityListFragment;
 import org.ovirt.mobile.movirt.util.MemorySize;
@@ -24,15 +26,15 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.SIZE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.STATUS;
 
-/**
- * Created by suomiy on 2/2/16.
- */
 @EFragment(R.layout.fragment_base_entity_list)
 public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> {
     private static final String TAG = VmDisksFragment.class.getSimpleName();
 
     @Bean
     AccountPropertiesManager propertiesManager;
+
+    @Bean
+    DiskAttachmentsFacade diskAttachmentsFacade;
 
     public VmDisksFragment() {
         super(Disk.class);
@@ -71,21 +73,26 @@ public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> 
 
     @Override
     public boolean isResumeSyncable() {
-        return propertiesManager.getApiVersion().isV4Api() || isSnapshotFragment(); //we fetch disks with vm in v3 API
+        return !propertiesManager.getApiVersion().isV3Api(); // we emulate attachments in main loop in V3
     }
 
     @Background
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
-        if (syncing && isSnapshotFragment()) {
-            entityFacade.syncAll(filterVmId, filterSnapshotId);
+        if (syncing) {
+            if (!propertiesManager.getApiVersion().isV3Api()) {
+                diskAttachmentsFacade.syncAll(filterVmId);
+            }
         }
     }
 
     @Background
     @Override
     public void onRefresh() {
-        String[] params = isSnapshotFragment() ? new String[]{filterVmId, filterSnapshotId} : new String[]{filterVmId};
-        entityFacade.syncAll(new ProgressBarResponse<List<Disk>>(this), params);
+        if (propertiesManager.getApiVersion().isV3Api()) {
+            entityFacade.syncAll(new ProgressBarResponse<List<Disk>>(this), filterVmId);
+        } else {
+            diskAttachmentsFacade.syncAll(new ProgressBarResponse<List<DiskAttachment>>(this), filterVmId);
+        }
     }
 }

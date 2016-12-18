@@ -7,6 +7,9 @@ public class Version implements Comparable<Version> {
     public static final int API_FALLBACK_MINOR_VERSION = 0;
     public static final int API_FALLBACK_BUILD_VERSION = 0;
 
+    public static final Version V4 = new Version(4, 0, 0);
+    public static final Version V3 = new Version();
+
     private int major;
     private int minor;
     private int build;

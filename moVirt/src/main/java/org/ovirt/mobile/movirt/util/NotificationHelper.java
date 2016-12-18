@@ -13,7 +13,7 @@ import android.util.Pair;
 
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.SystemService;
-import org.ovirt.mobile.movirt.model.BaseEntity;
+import org.ovirt.mobile.movirt.model.base.BaseEntity;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 

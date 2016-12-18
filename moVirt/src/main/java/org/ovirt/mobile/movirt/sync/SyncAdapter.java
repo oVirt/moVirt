@@ -24,10 +24,11 @@ import org.ovirt.mobile.movirt.facade.EntityFacade;
 import org.ovirt.mobile.movirt.facade.EntityFacadeLocator;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.DataCenter;
-import org.ovirt.mobile.movirt.model.EntityMapper;
+import org.ovirt.mobile.movirt.model.Disk;
+import org.ovirt.mobile.movirt.model.base.OVirtEntity;
+import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
 import org.ovirt.mobile.movirt.model.Host;
-import org.ovirt.mobile.movirt.model.OVirtEntity;
-import org.ovirt.mobile.movirt.model.SnapshotEmbeddableEntity;
+import org.ovirt.mobile.movirt.model.base.SnapshotEmbeddableEntity;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
@@ -96,6 +97,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 facadeSync(Vm.class);
                 facadeSync(Host.class);
                 facadeSync(StorageDomain.class);
+                facadeSync(Disk.class);
                 eventsHandler.updateEvents(false);
             } catch (Exception e) {
                 messageHelper.showError(e);
@@ -147,19 +149,24 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     public <E extends OVirtEntity> SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz, final Predicate<E> scopePredicate) {
+        return getUpdateEntitiesResponse(clazz, scopePredicate, true);
+    }
+
+    public <E extends OVirtEntity> SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz, final Predicate<E> scopePredicate,
+                                                                                     final boolean removeExpiredEntities) {
         return new SimpleResponse<List<E>>() {
             @Override
             public void onResponse(List<E> entities) throws RemoteException {
-                updateLocalEntities(entities, clazz, scopePredicate);
+                updateLocalEntities(entities, clazz, scopePredicate, removeExpiredEntities);
             }
         };
     }
 
     private void applyBatch(ProviderFacade.BatchBuilder batch) {
         if (batch.isEmpty()) {
-            Log.i(TAG, "No updates necessary");
+            Log.d(TAG, "No updates necessary");
         } else {
-            Log.i(TAG, "Applying batch update");
+            Log.d(TAG, "Applying batch update");
             batch.apply();
         }
     }
@@ -175,7 +182,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz, Predicate<E> scopePredicate)
             throws RemoteException {
-        final Map<String, E> entityMap = groupEntitiesById(remoteEntities);
+        updateLocalEntities(remoteEntities, clazz, scopePredicate, true);
+    }
+
+    public <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz, Predicate<E> scopePredicate,
+                                                            boolean removeExpiredEntities) throws RemoteException {
+        final Map<String, E> remoteEntityMap = groupEntitiesById(remoteEntities);
         final EntityMapper<E> mapper = EntityMapper.forEntity(clazz);
         final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
         Collection<Trigger<E>> allTriggers = new ArrayList<>();
@@ -194,12 +206,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         while (cursor.moveToNext()) {
             E localEntity = mapper.fromCursor(cursor);
             if (scopePredicate.apply(localEntity)) {
-                E remoteEntity = entityMap.get(localEntity.getId());
+                E remoteEntity = remoteEntityMap.get(localEntity.getId());
                 if (remoteEntity == null) { // local entity obsolete, schedule delete from db
-                    Log.i(TAG, "Scheduling delete for URI" + localEntity.getUri());
-                    batch.delete(localEntity);
+                    if (removeExpiredEntities) { // except for partial updates
+                        Log.d(TAG, String.format("%s: scheduling delete for URI = %s", clazz.getSimpleName(), localEntity.getUri()));
+                        batch.delete(localEntity);
+                    }
                 } else { // existing entity, update stats if changed
-                    entityMap.remove(localEntity.getId());
+                    remoteEntityMap.remove(localEntity.getId());
                     entities.add(new Pair<>(localEntity, remoteEntity));
                 }
             }
@@ -208,8 +222,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         checkEntitiesChanged(entities, entityFacade, allTriggers, batch);
         cursor.close();
 
-        for (E entity : entityMap.values()) {
-            Log.i(TAG, "Scheduling insert for entity: id = " + entity.getId());
+        for (E entity : remoteEntityMap.values()) {
+            Log.d(TAG, String.format("%s: scheduling insert for id = %s", clazz.getSimpleName(), entity.getId()));
             batch.insert(entity);
         }
 
@@ -221,7 +235,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         Collection<E> localEntities = provider.query(clazz).id(remoteEntity.getId()).all();
         if (localEntities.isEmpty()) {
-            Log.i(TAG, "Scheduling insert for entity: id = " + remoteEntity.getId());
+            Log.d(TAG, String.format("%s: scheduling insert for id = %s", clazz.getSimpleName(), remoteEntity.getId()));
             batch.insert(remoteEntity);
         } else {
             E localEntity = localEntities.iterator().next();
@@ -252,7 +266,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 if (processTriggers && entityFacade != null) {
                     final List<Trigger<E>> triggers = entityFacade.getTriggers(localEntity, allTriggers);
-                    Log.i(TAG, "Processing triggers for entity: " + remoteEntity.getId());
+                    Log.d(TAG, String.format("%s: processing triggers for id = %s", localEntity.getClass().getSimpleName(), remoteEntity.getId()));
 
                     for (Trigger<E> trigger : triggers) {
                         if (!trigger.getCondition().evaluate(localEntity) && trigger.getCondition().evaluate(remoteEntity)) {
@@ -260,7 +274,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         }
                     }
                 }
-                Log.i(TAG, "Scheduling update for URI: " + localEntity.getUri());
+                Log.d(TAG, String.format("%s: scheduling update for URI = %s", localEntity.getClass().getSimpleName(), localEntity.getUri()));
                 batch.update(remoteEntity);
             }
         }

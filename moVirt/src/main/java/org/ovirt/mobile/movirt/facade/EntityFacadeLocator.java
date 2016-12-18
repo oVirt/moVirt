@@ -5,9 +5,10 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.model.Console;
 import org.ovirt.mobile.movirt.model.Disk;
+import org.ovirt.mobile.movirt.model.DiskAttachment;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Nic;
-import org.ovirt.mobile.movirt.model.OVirtEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtEntity;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
@@ -34,6 +35,9 @@ public class EntityFacadeLocator {
     DiskFacade diskFacade;
 
     @Bean
+    DiskAttachmentsFacade diskAttachmentsFacade;
+
+    @Bean
     NicFacade nicFacade;
 
     @Bean
@@ -48,6 +52,7 @@ public class EntityFacadeLocator {
         addFacade(StorageDomain.class, storageDomainFacade);
         addFacade(Snapshot.class, snapshotFacade);
         addFacade(Disk.class, diskFacade);
+        addFacade(DiskAttachment.class, diskAttachmentsFacade);
         addFacade(Nic.class, nicFacade);
         addFacade(Console.class, consoleFacade);
     }

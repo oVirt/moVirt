@@ -1,7 +1,9 @@
-package org.ovirt.mobile.movirt.model;
+package org.ovirt.mobile.movirt.model.mapping;
 
 import android.database.Cursor;
 
+import org.ovirt.mobile.movirt.model.Cluster;
+import org.ovirt.mobile.movirt.model.base.BaseEntity;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.model;
+package org.ovirt.mobile.movirt.model.base;
 
 import android.content.ContentValues;
 
@@ -10,7 +10,7 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import static org.springframework.util.StringUtils.isEmpty;
 
-public abstract class SnapshotEmbeddableEntity extends OVirtEntity implements OVirtContract.SnapshotEmbeddableEntity {
+public abstract class SnapshotEmbeddableEntity extends OVirtNamedEntity implements OVirtContract.SnapshotEmbeddableEntity {
 
     protected SnapshotEmbeddableEntity() {
         snapshotId = "";

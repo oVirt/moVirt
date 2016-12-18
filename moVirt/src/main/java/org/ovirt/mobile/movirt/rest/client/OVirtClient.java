@@ -1,8 +1,6 @@
 package org.ovirt.mobile.movirt.rest.client;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 
 import org.androidannotations.annotations.AfterInject;
@@ -15,13 +13,16 @@ import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.MoVirtApp;
-import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.property.Version;
+import org.ovirt.mobile.movirt.auth.properties.property.exceptions.UnsupportedAfterException;
+import org.ovirt.mobile.movirt.auth.properties.property.exceptions.UnsupportedUntilException;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Console;
 import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Disk;
+import org.ovirt.mobile.movirt.model.DiskAttachment;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Nic;
@@ -38,9 +39,9 @@ import org.ovirt.mobile.movirt.rest.RestEntityWrapperList;
 import org.ovirt.mobile.movirt.rest.dto.Action;
 import org.ovirt.mobile.movirt.rest.dto.Events;
 import org.ovirt.mobile.movirt.rest.dto.SnapshotAction;
+import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.ovirt.mobile.movirt.util.preferences.SettingsKey;
 import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
-import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -315,6 +316,7 @@ public class OVirtClient {
         requestHandler.fireRestRequest(getStorageDomainRequest(storageDomainId), response);
     }
 
+    // currently not used
     public Request<Disk> getDiskRequest(final String vmId, final String id) {
         return getDiskRequest(vmId, null, id);
     }
@@ -351,11 +353,22 @@ public class OVirtClient {
         };
     }
 
-    public Request<List<Disk>> getDisksRequest(final String vmId) {
-        return getDisksRequest(vmId, null);
+    public Request<List<DiskAttachment>> getDisksAttachmentsRequest(final String vmId) {
+
+        return new RestClientRequest<List<DiskAttachment>>() {
+            @Override
+            public List<DiskAttachment> fire() {
+                if (version.isV3Api()) {
+                    throw new UnsupportedUntilException(Version.V4, "Disk Attachments");
+                }
+
+                return mapToEntities(restClient.getDisksAttachmentsV4(vmId));
+            }
+        };
     }
 
     public Request<List<Disk>> getDisksRequest(final String vmId, final String snapshotId) {
+        final boolean downloadAll = vmId == null;
         final boolean isSnapshotEmbedded = snapshotId != null;
 
         return new RestClientRequest<List<Disk>>() {
@@ -364,8 +377,14 @@ public class OVirtClient {
                 RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Disk> wrappers;
                 List<Disk> entities;
 
-                if (isSnapshotEmbedded) {
-
+                if (downloadAll) {
+                    if (version.isV3Api()) {
+                        wrappers = restClient.getDisksV3();
+                    } else {
+                        wrappers = restClient.getDisksV4();
+                    }
+                    entities = mapToEntities(wrappers);
+                } else if (isSnapshotEmbedded) {
                     if (version.isV3Api()) {
                         wrappers = restClient.getDisksV3(vmId, snapshotId);
                     } else {
@@ -374,17 +393,10 @@ public class OVirtClient {
                     entities = mapToEntities(wrappers);
                     setVmId(entities, vmId);
                 } else {
-                    // fallback to API 3 here until this feature is fixed
-                    // https://bugzilla.redhat.com/show_bug.cgi?id=1377359
-                    try {
-                        if (version.isV4Api()) {
-                            setVersionHeader(restClient, Version.API_FALLBACK_MAJOR_VERSION);
-                        }
-                        wrappers = restClient.getDisksV3(vmId);
-                    } finally {
-                        setVersionHeader(restClient, propertiesManager.getApiVersion());
+                    if (version.isV4Api()) {
+                        throw new UnsupportedAfterException(Version.V4, "Vm Disks");
                     }
-                    entities = mapToEntities(wrappers);
+                    entities = mapToEntities(restClient.getDisksV3(vmId));
                 }
 
                 return entities;

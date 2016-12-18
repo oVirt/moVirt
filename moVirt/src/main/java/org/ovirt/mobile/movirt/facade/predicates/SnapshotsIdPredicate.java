@@ -3,7 +3,7 @@ package org.ovirt.mobile.movirt.facade.predicates;
 import com.android.internal.util.Predicate;
 
 import org.ovirt.mobile.movirt.model.Snapshot;
-import org.ovirt.mobile.movirt.model.SnapshotEmbeddableEntity;
+import org.ovirt.mobile.movirt.model.base.SnapshotEmbeddableEntity;
 
 import java.util.HashSet;
 import java.util.List;

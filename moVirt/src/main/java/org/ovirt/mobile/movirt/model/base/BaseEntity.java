@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.model;
+package org.ovirt.mobile.movirt.model.base;
 
 import android.content.ContentValues;
 import android.database.Cursor;

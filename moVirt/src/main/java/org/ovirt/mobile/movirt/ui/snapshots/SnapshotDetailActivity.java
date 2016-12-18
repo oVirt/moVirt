@@ -211,7 +211,7 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
     private void initPagers() {
 
         VmDetailGeneralFragment vmDetailFragment = new VmDetailGeneralFragment_();
-        VmDisksFragment diskList = new VmDisksFragment_();
+        SnapshotDisksFragment diskList = new SnapshotDisksFragment_();
         VmNicsFragment nicList = new VmNicsFragment_();
 
         vmDetailFragment.setIsSnapshot(true);

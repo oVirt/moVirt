@@ -6,9 +6,9 @@ import android.os.RemoteException;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.facade.predicates.NotSnapshotEmbeddedPredicate;
 import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
-import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
@@ -31,6 +31,9 @@ public class VmFacade extends BaseEntityFacade<Vm> {
     @Bean
     VmTriggerResolver triggerResolver;
 
+    @Bean
+    AccountPropertiesManager propertiesManager;
+
     public VmFacade() {
         super(Vm.class);
     }
@@ -47,14 +50,15 @@ public class VmFacade extends BaseEntityFacade<Vm> {
     protected CompositeResponse<Vm> getSyncOneResponse(final Response<Vm> response, String... ids) {
         requireSignature(ids);
         CompositeResponse<Vm> res = super.getSyncOneResponse(response);
-        res.addResponse(new SimpleResponse<Vm>() {
-            @Override
-            public void onResponse(Vm entity) throws RemoteException {
-                String vmId = entity.getId();
-                syncAdapter.updateLocalEntities(entity.getDisks(), Disk.class, new VmIdPredicate<Disk>(vmId));
-                syncAdapter.updateLocalEntities(entity.getNics(), Nic.class, new VmIdPredicate<Nic>(vmId));
-            }
-        });
+        if (propertiesManager.getApiVersion().isV3Api()) {
+            res.addResponse(new SimpleResponse<Vm>() {
+                @Override
+                public void onResponse(Vm entity) throws RemoteException {
+                    String vmId = entity.getId();
+                    syncAdapter.updateLocalEntities(entity.getNics(), Nic.class, new VmIdPredicate<Nic>(vmId));
+                }
+            });
+        }
 
         return res;
     }
@@ -66,20 +70,18 @@ public class VmFacade extends BaseEntityFacade<Vm> {
                 syncAdapter.getUpdateEntitiesResponse(Vm.class, new NotSnapshotEmbeddedPredicate<Vm>()),
                 response);
 
-        res.addResponse(new SimpleResponse<List<Vm>>() {
-            @Override
-            public void onResponse(List<Vm> entities) throws RemoteException {
-                List<Disk> disks = new ArrayList<>();
-                List<Nic> nics = new ArrayList<>();
-                for (Vm vm : entities) {
-                    disks.addAll(vm.getDisks());
-                    nics.addAll(vm.getNics());
+        if (propertiesManager.getApiVersion().isV3Api()) {
+            res.addResponse(new SimpleResponse<List<Vm>>() {
+                @Override
+                public void onResponse(List<Vm> entities) throws RemoteException {
+                    List<Nic> nics = new ArrayList<>();
+                    for (Vm vm : entities) {
+                        nics.addAll(vm.getNics());
+                    }
+                    syncAdapter.updateLocalEntities(nics, Nic.class, new NotSnapshotEmbeddedPredicate<Nic>());
                 }
-
-                syncAdapter.updateLocalEntities(disks, Disk.class, new NotSnapshotEmbeddedPredicate<Disk>());
-                syncAdapter.updateLocalEntities(nics, Nic.class, new NotSnapshotEmbeddedPredicate<Nic>());
-            }
-        });
+            });
+        }
 
         return res;
     }

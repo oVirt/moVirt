@@ -14,8 +14,8 @@ import android.util.Log;
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
-import org.ovirt.mobile.movirt.model.BaseEntity;
-import org.ovirt.mobile.movirt.model.EntityMapper;
+import org.ovirt.mobile.movirt.model.base.BaseEntity;
+import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,6 +47,8 @@ public class ProviderFacade {
         StringBuilder sortOrder = new StringBuilder();
         String limitClause = "";
 
+        String[] projection;
+
         public QueryBuilder(Class<E> clazz) {
             this.clazz = clazz;
             try {
@@ -54,6 +56,11 @@ public class ProviderFacade {
             } catch (IllegalAccessException | NoSuchFieldException e) {
                 throw new RuntimeException("Assertion error: Class: " + clazz + " does not define static field " + URI_FIELD_NAME, e);
             }
+        }
+
+        public QueryBuilder<E> projection(String[] projection) {
+            this.projection = projection;
+            return this;
         }
 
         public QueryBuilder<E> id(String value) {
@@ -140,7 +147,7 @@ public class ProviderFacade {
         public Cursor asCursor() {
             try {
                 return contentClient.query(baseUri,
-                        null,
+                        projection,
                         selection.toString(),
                         selectionArgs.toArray(new String[selectionArgs.size()]),
                         sortOrderWithLimit());

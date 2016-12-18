@@ -1,6 +1,8 @@
-package org.ovirt.mobile.movirt.model;
+package org.ovirt.mobile.movirt.model.enums;
 
 import android.support.annotation.NonNull;
+
+import org.ovirt.mobile.movirt.model.Console;
 
 import java.util.List;
 import java.util.SortedSet;

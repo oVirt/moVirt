@@ -7,6 +7,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.model.base.SnapshotEmbeddableEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -113,8 +114,6 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
     @DatabaseField(columnName = OS_TYPE)
     private String osType;
 
-    private transient List<Disk> disks;
-
     private transient List<Nic> nics;
 
     public Status getStatus() {
@@ -187,14 +186,6 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
 
     public void setOsType(String osType) {
         this.osType = osType;
-    }
-
-    public List<Disk> getDisks() {
-        return disks;
-    }
-
-    public void setDisks(List<Disk> disks) {
-        this.disks = disks;
     }
 
     public List<Nic> getNics() {

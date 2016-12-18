@@ -30,7 +30,7 @@ import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.EntityFacade;
 import org.ovirt.mobile.movirt.facade.EntityFacadeLocator;
-import org.ovirt.mobile.movirt.model.OVirtEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtEntity;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.sync.SyncUtils;

@@ -7,6 +7,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.model.base.OVirtNamedEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -17,7 +18,7 @@ import java.util.List;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Host extends OVirtEntity implements OVirtContract.Host {
+public class Host extends OVirtNamedEntity implements OVirtContract.Host {
 
     @Override
     public Uri getBaseUri() {

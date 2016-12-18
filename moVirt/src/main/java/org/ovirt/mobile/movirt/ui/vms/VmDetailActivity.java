@@ -34,7 +34,7 @@ import org.ovirt.mobile.movirt.facade.ConsoleFacade;
 import org.ovirt.mobile.movirt.facade.SnapshotFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Console;
-import org.ovirt.mobile.movirt.model.ConsoleProtocol;
+import org.ovirt.mobile.movirt.model.enums.ConsoleProtocol;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;

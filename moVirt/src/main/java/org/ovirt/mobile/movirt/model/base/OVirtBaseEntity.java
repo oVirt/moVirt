@@ -1,30 +1,24 @@
-package org.ovirt.mobile.movirt.model;
+package org.ovirt.mobile.movirt.model.base;
 
 import android.content.ContentValues;
 
 import com.j256.ormlite.field.DatabaseField;
 
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
-public abstract class OVirtEntity extends BaseEntity<String> implements OVirtContract.NamedEntity {
+public abstract class OVirtBaseEntity extends OVirtEntity {
 
-    protected OVirtEntity() {
+    protected OVirtBaseEntity() {
         id = "";
-        name = "";
     }
 
-    protected OVirtEntity(String id, String name) {
+    protected OVirtBaseEntity(String id) {
         this.id = id;
-        this.name = name;
     }
 
     @DatabaseField(columnName = ID, id = true, uniqueCombo = true)
     private String id;
-
-    @DatabaseField(columnName = NAME, canBeNull = false)
-    private String name;
 
     @Override
     public String getId() {
@@ -36,45 +30,32 @@ public abstract class OVirtEntity extends BaseEntity<String> implements OVirtCon
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof OVirtEntity)) return false;
+        if (!(o instanceof OVirtBaseEntity)) return false;
 
-        OVirtEntity that = (OVirtEntity) o;
+        OVirtBaseEntity that = (OVirtBaseEntity) o;
 
         if (!ObjectUtils.equals(id, that.id)) return false;
-        if (!ObjectUtils.equals(name, that.name)) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = id.hashCode();
-        result = 31 * result + name.hashCode();
-        return result;
+        return id.hashCode();
     }
 
     @Override
     public ContentValues toValues() {
         ContentValues values = new ContentValues();
         values.put(ID, getId());
-        values.put(NAME, getName());
         return values;
     }
 
     @Override
     public void initFromCursorHelper(CursorHelper cursorHelper) {
-        id = cursorHelper.getString(ID);
-        setName(cursorHelper.getString(NAME));
+        setId(cursorHelper.getString(ID));
     }
 }
