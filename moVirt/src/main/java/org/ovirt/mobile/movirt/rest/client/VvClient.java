@@ -10,11 +10,11 @@ import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.property.Version;
-import org.ovirt.mobile.movirt.rest.OvirtSimpleClientHttpRequestFactory;
+import org.ovirt.mobile.movirt.rest.client.requestfactory.OvirtSimpleClientHttpRequestFactory;
 import org.ovirt.mobile.movirt.rest.Request;
 import org.ovirt.mobile.movirt.rest.RequestHandler;
 import org.ovirt.mobile.movirt.rest.Response;
-import org.ovirt.mobile.movirt.rest.VvFileHttpMessageConverter;
+import org.ovirt.mobile.movirt.rest.client.httpconverter.VvFileHttpMessageConverter;
 import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
 
 import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptEncodingHeaderAndFactory;

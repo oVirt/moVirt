@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.rest;
+package org.ovirt.mobile.movirt.rest.client.requestfactory;
 
 import android.util.Log;
 
@@ -9,6 +9,8 @@ import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.rest.client.requestfactory.verifier.ListHostnameVerifier;
+import org.ovirt.mobile.movirt.rest.client.requestfactory.verifier.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.util.CertHelper;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;

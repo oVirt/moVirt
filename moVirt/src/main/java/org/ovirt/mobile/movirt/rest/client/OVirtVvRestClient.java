@@ -11,7 +11,7 @@ import org.androidannotations.rest.spring.annotations.SetsCookie;
 import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
-import org.ovirt.mobile.movirt.rest.VvFileHttpMessageConverter;
+import org.ovirt.mobile.movirt.rest.client.httpconverter.VvFileHttpMessageConverter;
 import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
 
 import static org.ovirt.mobile.movirt.rest.RestHelper.ACCEPT;
@@ -21,7 +21,7 @@ import static org.ovirt.mobile.movirt.rest.RestHelper.JSESSIONID;
 import static org.ovirt.mobile.movirt.rest.RestHelper.PREFER;
 import static org.ovirt.mobile.movirt.rest.RestHelper.SESSION_TTL;
 import static org.ovirt.mobile.movirt.rest.RestHelper.VERSION;
-import static org.ovirt.mobile.movirt.rest.VvFileHttpMessageConverter.X_VIRT_VIEWER_MEDIA_TYPE;
+import static org.ovirt.mobile.movirt.rest.client.httpconverter.VvFileHttpMessageConverter.X_VIRT_VIEWER_MEDIA_TYPE;
 
 @Rest(converters = VvFileHttpMessageConverter.class)
 @Accept(X_VIRT_VIEWER_MEDIA_TYPE)

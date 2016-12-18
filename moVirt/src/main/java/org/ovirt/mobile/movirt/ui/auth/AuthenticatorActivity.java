@@ -37,7 +37,6 @@ import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
 import org.ovirt.mobile.movirt.auth.properties.manager.OnThread;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
@@ -70,8 +69,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
 
     public static final String SHOW_ADVANCED_AUTHENTICATOR = "SHOW_ADVANCED_AUTHENTICATOR";
 
-    @Bean
-    NullHostnameVerifier verifier;
     @Bean
     AccountPropertiesManager propertiesManager;
     @Bean

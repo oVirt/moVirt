@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.rest;
+package org.ovirt.mobile.movirt.rest.client.requestfactory.verifier;
 
 import android.util.Log;
 

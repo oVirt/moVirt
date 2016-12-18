@@ -1,10 +1,11 @@
-package org.ovirt.mobile.movirt.rest;
+package org.ovirt.mobile.movirt.rest.client.httpconverter;
 
 /**
  * Created by suomiy on 10/17/16.
  */
 
 import org.ovirt.mobile.movirt.model.enums.ConsoleProtocol;
+import org.ovirt.mobile.movirt.rest.ParseUtils;
 import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.springframework.http.HttpInputMessage;
