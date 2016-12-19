@@ -14,10 +14,18 @@ import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.facade.DiskAttachmentsFacade;
+import org.ovirt.mobile.movirt.facade.DiskFacade;
 import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.DiskAttachment;
+import org.ovirt.mobile.movirt.model.view.DiskAndAttachment;
+import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.provider.SQLHelper;
+import org.ovirt.mobile.movirt.rest.CompositeResponse;
+import org.ovirt.mobile.movirt.rest.Response;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.ResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.RestartLoaderResponse;
+import org.ovirt.mobile.movirt.ui.VmBoundResumeSyncableBaseEntityListFragment;
 import org.ovirt.mobile.movirt.util.MemorySize;
 
 import java.util.List;
@@ -27,7 +35,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.SIZE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> {
+public class VmDisksFragment extends VmBoundResumeSyncableBaseEntityListFragment<DiskAndAttachment> {
     private static final String TAG = VmDisksFragment.class.getSimpleName();
 
     @Bean
@@ -36,8 +44,11 @@ public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> 
     @Bean
     DiskAttachmentsFacade diskAttachmentsFacade;
 
+    @Bean
+    DiskFacade diskFacade;
+
     public VmDisksFragment() {
-        super(Disk.class);
+        super(DiskAndAttachment.class);
     }
 
     @Override
@@ -72,27 +83,39 @@ public class VmDisksFragment extends ResumeSyncableBaseEntityListFragment<Disk> 
     }
 
     @Override
-    public boolean isResumeSyncable() {
-        return !propertiesManager.getApiVersion().isV3Api(); // we emulate attachments in main loop in V3
+    protected void appendQuery(ProviderFacade.QueryBuilder<DiskAndAttachment> query) {
+        super.appendQuery(query);
+        query.projection(SQLHelper.getDisksAndAttachmentsProjection());
+    }
+
+    @Override
+    protected String getVmColumn() {
+        return String.format("%s.%s", OVirtContract.DiskAttachment.TABLE, OVirtContract.DiskAttachment.VM_ID);
     }
 
     @Background
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
         if (syncing) {
-            if (!propertiesManager.getApiVersion().isV3Api()) {
-                diskAttachmentsFacade.syncAll(filterVmId);
+            if (propertiesManager.getApiVersion().isV3Api()) {
+                diskFacade.syncAll(new RestartLoaderResponse<List<Disk>>(this), getVmId());
+            } else {
+                diskAttachmentsFacade.syncAll(new RestartLoaderResponse<List<DiskAttachment>>(this), getVmId());
             }
         }
     }
 
-    @Background
+    @Background()
     @Override
     public void onRefresh() {
         if (propertiesManager.getApiVersion().isV3Api()) {
-            entityFacade.syncAll(new ProgressBarResponse<List<Disk>>(this), filterVmId);
+            diskFacade.syncAll(this.<Disk>getCombinedResponse(), getVmId());
         } else {
-            diskAttachmentsFacade.syncAll(new ProgressBarResponse<List<DiskAttachment>>(this), filterVmId);
+            diskAttachmentsFacade.syncAll(this.<DiskAttachment>getCombinedResponse(), getVmId());
         }
+    }
+
+    public <T> Response<List<T>> getCombinedResponse() {
+        return new CompositeResponse<>(new RestartLoaderResponse<List<T>>(this), new ProgressBarResponse<List<T>>(this));
     }
 }

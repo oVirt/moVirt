@@ -54,9 +54,4 @@ public class StorageDomainFragment extends BaseEntityListFragment<StorageDomain>
 
         return storageDomainListAdapter;
     }
-
-    @Override
-    public void updateSelectedClusterId(String selectedClusterId) {
-        //empty
-    }
 }

@@ -79,16 +79,6 @@ public class DiskFacade extends BaseEntityFacade<Disk> {
 
                 break;
             case 0:
-                if (propertiesManager.getApiVersion().isV3Api()) {
-                    // emulate attachments in version 3
-                    responses.addResponse(new SimpleResponse<List<Disk>>() { // emulate first because we delete vmIds from Disks
-                        @Override
-                        public void onResponse(List<Disk> entities) throws RemoteException {
-                            List<DiskAttachment> attachments = convertAndClearVmIds(entities);
-                            syncAdapter.updateLocalEntities(attachments, DiskAttachment.class);
-                        }
-                    });
-                }
                 responses.addResponse(syncAdapter.getUpdateEntitiesResponse(Disk.class, new NormalDiskPredicate()));
                 break;
             default:

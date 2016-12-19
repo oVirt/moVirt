@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.HasCluster.CLUSTER_ID;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.HasVm.VM_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
@@ -49,7 +48,7 @@ import static org.springframework.util.StringUtils.isEmpty;
 
 @EFragment(R.layout.fragment_base_entity_list)
 public abstract class BaseEntityListFragment<E extends OVirtEntity> extends RefreshableLoaderFragment
-        implements SelectedClusterAware, HasLoader {
+        implements HasLoader {
 
     private static final int ITEMS_PER_PAGE = 20;
     private static final int FIRST_INDEX = 0, SECOND_INDEX = 1; // spinner indexes
@@ -58,19 +57,7 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     protected SyncUtils syncUtils;
 
     @InstanceState
-    protected String filterHostId;
-
-    @InstanceState
-    protected String filterVmId;
-
-    @InstanceState
-    protected String filterSnapshotId;
-
-    @InstanceState
     protected ArrayList<String> orderingList = new ArrayList<>();
-
-    @InstanceState
-    protected String selectedClusterId;
 
     @ViewById(android.R.id.list)
     protected ListView listView;
@@ -169,26 +156,6 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         }
     }
 
-    public void setFilterHostId(String filterHostId) {
-        this.filterHostId = filterHostId;
-    }
-
-    public void setFilterVmId(String filterVmId) {
-        this.filterVmId = filterVmId;
-    }
-
-    public String getFilterSnapshotId() {
-        return filterSnapshotId;
-    }
-
-    public void setFilterSnapshotId(String filterSnapshotId) {
-        this.filterSnapshotId = filterSnapshotId;
-    }
-
-    public boolean isSnapshotFragment() {
-        return !isEmpty(filterSnapshotId);
-    }
-
     /**
      * Adds ascending ordering of OVirtEntity
      *
@@ -196,13 +163,6 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
      */
     public void addOrdering(String ordering) {
         orderingList.add(ordering);
-    }
-
-    @Override
-    public void updateSelectedClusterId(String selectedClusterId) {
-        resetListViewPosition();
-        this.selectedClusterId = selectedClusterId;
-        restartLoader();
     }
 
     class RestartOrderItemSelectedListener implements AdapterView.OnItemSelectedListener {
@@ -257,25 +217,7 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
             public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 ProviderFacade.QueryBuilder<E> query = provider.query(entityClass);
 
-                if (selectedClusterId != null) {
-                    query.where(CLUSTER_ID, selectedClusterId);
-                }
-
-                if (filterHostId != null) {
-                    query.where(HOST_ID, filterHostId);
-                }
-
-                if (filterVmId != null) {
-                    query.where(VM_ID, filterVmId);
-                }
-
-                if (filterSnapshotId != null) {
-                    if ("".equals(filterSnapshotId)) {
-                        query.empty(SNAPSHOT_ID);
-                    } else {
-                        query.where(SNAPSHOT_ID, filterSnapshotId);
-                    }
-                }
+                appendQuery(query);
 
                 String searchNameString = searchText.getText().toString();
                 if (!StringUtils.isEmpty(searchNameString)) {
@@ -304,6 +246,10 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         };
 
         getLoaderManager().initLoader(0, null, cursorAdapterLoader);
+    }
+
+    protected void appendQuery(ProviderFacade.QueryBuilder<E> query) {
+        // left intentionally empty
     }
 
     protected void initListeners() {
@@ -346,6 +292,7 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         setSearchBoxVisibility(searchtoggle);
     }
 
+    @UiThread
     @Override
     public void restartLoader() {
         getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
@@ -371,17 +318,21 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
     @ItemClick(android.R.id.list)
     protected void itemClicked(Cursor cursor) {
-        E entity = entityFacade.mapFromCursor(cursor);
-        Intent intent = entityFacade.getDetailIntent(entity, getActivity());
-        if (intent != null) {
-            startActivity(intent);
+        if (entityFacade != null) {
+            E entity = entityFacade.mapFromCursor(cursor);
+            Intent intent = entityFacade.getDetailIntent(entity, getActivity());
+            if (intent != null) {
+                startActivity(intent);
+            }
         }
     }
 
     @Override
     @Background
     public void onRefresh() {
-        entityFacade.syncAll(new ProgressBarResponse<List<E>>(this));
+        if (entityFacade != null) {
+            entityFacade.syncAll(new ProgressBarResponse<List<E>>(this));
+        }
     }
 
     protected abstract CursorAdapter createCursorAdapter();

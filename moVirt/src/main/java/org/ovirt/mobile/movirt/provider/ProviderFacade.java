@@ -12,6 +12,7 @@ import android.support.v4.content.Loader;
 import android.util.Log;
 
 import org.androidannotations.annotations.AfterInject;
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.model.base.BaseEntity;
@@ -53,7 +54,7 @@ public class ProviderFacade {
             this.clazz = clazz;
             try {
                 this.baseUri = (Uri) clazz.getField(URI_FIELD_NAME).get(null);
-            } catch (IllegalAccessException | NoSuchFieldException e) {
+            } catch (Exception e) { // NoSuchFieldException | IllegalAccessException -  since SDK version 19
                 throw new RuntimeException("Assertion error: Class: " + clazz + " does not define static field " + URI_FIELD_NAME, e);
             }
         }
@@ -126,7 +127,7 @@ public class ProviderFacade {
         private String sortOrderWithLimit() {
             StringBuilder res = new StringBuilder();
             String sortOrderString = sortOrder.toString();
-            res.append(!"".equals(sortOrderString) ? sortOrderString : "ROWID");
+            res.append(!"".equals(sortOrderString) ? sortOrderString : OVirtContract.ROW_ID);
             res.append(limitClause);
 
             return res.toString();

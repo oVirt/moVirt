@@ -13,7 +13,7 @@ import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.ResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.VmBoundResumeSyncableBaseEntityListFragment;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.DateUtils;
 
@@ -28,7 +28,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.SNAPSHOT_S
  * Created by suomiy on 11/25/15.
  */
 @EFragment(R.layout.fragment_base_entity_list)
-public class VmSnapshotsFragment extends ResumeSyncableBaseEntityListFragment<Snapshot> {
+public class VmSnapshotsFragment extends VmBoundResumeSyncableBaseEntityListFragment<Snapshot> {
     private static final String TAG = VmSnapshotsFragment.class.getSimpleName();
 
     public VmSnapshotsFragment() {
@@ -76,14 +76,14 @@ public class VmSnapshotsFragment extends ResumeSyncableBaseEntityListFragment<Sn
     @Background
     @Override
     public void onRefresh() {
-        entityFacade.syncAll(new ProgressBarResponse<List<Snapshot>>(this), super.filterVmId);
+        entityFacade.syncAll(new ProgressBarResponse<List<Snapshot>>(this), getVmId());
     }
 
     @Background
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
         if (syncing) {
-            entityFacade.syncAll(super.filterVmId);
+            entityFacade.syncAll(getVmId());
         }
     }
 }

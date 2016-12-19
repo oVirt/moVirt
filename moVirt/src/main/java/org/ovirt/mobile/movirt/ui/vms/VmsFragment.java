@@ -8,22 +8,37 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.ui.BaseEntityListFragment;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.ui.ClusterBoundBaseEntityListFragment;
 
+import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.MEMORY_USAGE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class VmsFragment extends BaseEntityListFragment<Vm> {
+public class VmsFragment extends ClusterBoundBaseEntityListFragment<Vm> {
 
     private static final String TAG = VmsFragment.class.getSimpleName();
 
+    @InstanceState
+    protected String hostId;
+
     public VmsFragment() {
         super(Vm.class);
+    }
+
+    public String getHostId() {
+        return hostId;
+    }
+
+    public void setHostId(String hostId) {
+        this.hostId = hostId;
     }
 
     @Override
@@ -60,6 +75,17 @@ public class VmsFragment extends BaseEntityListFragment<Vm> {
         });
 
         return vmListAdapter;
+    }
+
+    @Override
+    protected void appendQuery(ProviderFacade.QueryBuilder<Vm> query) {
+        super.appendQuery(query);
+
+        if (hostId != null) {
+            query.where(HOST_ID, hostId);
+        }
+
+        query.empty(SNAPSHOT_ID);
     }
 
     @Override

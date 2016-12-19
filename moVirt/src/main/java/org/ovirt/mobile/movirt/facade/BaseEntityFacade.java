@@ -1,6 +1,7 @@
 package org.ovirt.mobile.movirt.facade;
 
 import android.database.Cursor;
+import android.util.Log;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
@@ -13,6 +14,7 @@ import org.ovirt.mobile.movirt.rest.RequestHandler;
 import org.ovirt.mobile.movirt.rest.Response;
 import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.sync.SyncAdapter;
+import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -20,6 +22,7 @@ import java.util.List;
 
 @EBean
 public abstract class BaseEntityFacade<E extends OVirtEntity> implements EntityFacade<E> {
+    public static final String TAG = BaseEntityFacade.class.getSimpleName();
 
     @Bean
     SyncAdapter syncAdapter;
@@ -60,6 +63,7 @@ public abstract class BaseEntityFacade<E extends OVirtEntity> implements EntityF
 
     @Override
     public void syncOne(Response<E> response, String id, String... ids) {
+        Log.d(TAG, String.format("Syncing one %s with %d ids specified", clazz.getSimpleName(), ids.length + 1));
         requestHandler.fireRestRequest(getSyncOneRestRequest(id, ids), getSyncOneResponse(response, ids));
     }
 
@@ -70,6 +74,7 @@ public abstract class BaseEntityFacade<E extends OVirtEntity> implements EntityF
 
     @Override
     public void syncAll(Response<List<E>> response, String... ids) {
+        Log.d(TAG, String.format("Syncing all %s's with %d ids specified", clazz.getSimpleName(), ids.length));
         requestHandler.fireRestRequest(getSyncAllRestRequest(ids), getSyncAllResponse(response, ids));
     }
 

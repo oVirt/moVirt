@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui.vms;
+package org.ovirt.mobile.movirt.ui.snapshots;
 
 import android.database.Cursor;
 import android.view.View;
@@ -28,13 +28,13 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.PLUGGED;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class VmNicsFragment extends SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment<Nic> {
-    private static final String TAG = VmNicsFragment.class.getSimpleName();
+public class SnapshotNicsFragment extends SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment<Nic> {
+    private static final String TAG = SnapshotNicsFragment.class.getSimpleName();
 
     @Bean
     AccountPropertiesManager propertiesManager;
 
-    public VmNicsFragment() {
+    public SnapshotNicsFragment() {
         super(Nic.class);
     }
 
@@ -80,22 +80,17 @@ public class VmNicsFragment extends SnapshotEmbeddableVmBoundResumeSyncableBaseE
         return getResources().getStringArray(R.array.nic_sort_entries);
     }
 
-    @Override
-    public boolean isResumeSyncable() {
-        return !propertiesManager.getApiVersion().isV3Api(); //we fetch nics with vm in v3 API
-    }
-
     @Background
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
-        if (syncing && isResumeSyncable()) {
-            entityFacade.syncAll(getVmId());
+        if (syncing) {
+            entityFacade.syncAll(getVmId(), getSnapshotId());
         }
     }
 
     @Background
     @Override
     public void onRefresh() {
-        entityFacade.syncAll(new ProgressBarResponse<List<Nic>>(this), getVmId());
+        entityFacade.syncAll(new ProgressBarResponse<List<Nic>>(this), getVmId(), getSnapshotId());
     }
 }

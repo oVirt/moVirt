@@ -153,11 +153,9 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         VmSnapshotsFragment snapshotList = new VmSnapshotsFragment_();
 
         eventList.setFilterVmId(vmId);
-        diskList.setFilterVmId(vmId);
-        diskList.setFilterSnapshotId("");
-        nicList.setFilterVmId(vmId);
-        nicList.setFilterSnapshotId("");
-        snapshotList.setFilterVmId(vmId);
+        diskList.setVmId(vmId);
+        nicList.setVmId(vmId);
+        snapshotList.setVmId(vmId);
         snapshotList.addOrdering(OVirtContract.Snapshot.SNAPSHOT_STATUS);
         snapshotList.addOrdering(OVirtContract.Snapshot.TYPE);
         snapshotList.addOrdering(OVirtContract.Snapshot.NAME);

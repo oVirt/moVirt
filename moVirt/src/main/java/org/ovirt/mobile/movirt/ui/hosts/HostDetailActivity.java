@@ -90,8 +90,7 @@ public class HostDetailActivity extends MovirtActivity
         VmsFragment vmsFragment = new VmsFragment_();
         EventsFragment eventsFragment = new EventsFragment_();
 
-        vmsFragment.setFilterHostId(hostId);
-        vmsFragment.setFilterSnapshotId("");
+        vmsFragment.setHostId(hostId);
         eventsFragment.setFilterHostId(hostId);
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(

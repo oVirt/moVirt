@@ -161,7 +161,6 @@ public class MainActivity extends MovirtActivity
 
     private void initPagers() {
         VmsFragment vmsFragment = new VmsFragment_();
-        vmsFragment.setFilterSnapshotId("");
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
                 getSupportFragmentManager(), PAGER_TITLES,

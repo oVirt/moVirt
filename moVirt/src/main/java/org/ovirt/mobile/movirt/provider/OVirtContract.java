@@ -38,12 +38,15 @@ public interface OVirtContract {
         String HOST_ID = "host_id";
     }
 
-    interface HasVm {
-        String VM_ID = "vm_id";
+    interface HasVmAbstract {
 
         String getVmId();
 
         void setVmId(String vmId);
+    }
+
+    interface HasVm extends HasVmAbstract {
+        String VM_ID = "vm_id";
     }
 
     interface HasDisk {
@@ -262,14 +265,11 @@ public interface OVirtContract {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISK_ATTACHMENTS).build();
 
         String TABLE = "disk_attachments";
-
-        String VM_ID = "vm_id";
-        String DISK_ID = "disk_id";
     }
 
     String PATH_DISKS_AND_ATTACHMENTS = "disks_and_attachments";
 
-    interface DiskAndAttachment extends BaseEntity {
+    interface DiskAndAttachment extends BaseEntity, HasVmAbstract {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISKS_AND_ATTACHMENTS).build();
     }
 }
