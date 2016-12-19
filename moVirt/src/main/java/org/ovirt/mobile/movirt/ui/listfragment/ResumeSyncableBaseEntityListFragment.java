@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.listfragment;
 
 import org.ovirt.mobile.movirt.model.base.OVirtEntity;
 

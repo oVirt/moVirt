@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.listfragment;
 
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;

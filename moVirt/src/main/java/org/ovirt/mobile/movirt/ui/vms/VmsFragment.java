@@ -12,7 +12,7 @@ import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.ui.ClusterBoundBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.ClusterBoundBaseEntityListFragment;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;

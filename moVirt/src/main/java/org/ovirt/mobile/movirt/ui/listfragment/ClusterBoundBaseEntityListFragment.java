@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.listfragment;
 
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
@@ -6,6 +6,7 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.base.OVirtEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.ui.SelectedClusterAware;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.HasCluster.CLUSTER_ID;
 

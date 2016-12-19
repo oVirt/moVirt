@@ -25,7 +25,7 @@ import org.ovirt.mobile.movirt.rest.CompositeResponse;
 import org.ovirt.mobile.movirt.rest.Response;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RestartLoaderResponse;
-import org.ovirt.mobile.movirt.ui.VmBoundResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.VmBoundResumeSyncableBaseEntityListFragment;
 import org.ovirt.mobile.movirt.util.MemorySize;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui;
+package org.ovirt.mobile.movirt.ui.listfragment;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -34,17 +34,17 @@ import org.ovirt.mobile.movirt.model.base.OVirtEntity;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
+import org.ovirt.mobile.movirt.ui.EndlessScrollListener;
+import org.ovirt.mobile.movirt.ui.HasLoader;
+import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
+import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.HasCluster.CLUSTER_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
-import static org.springframework.util.StringUtils.isEmpty;
 
 @EFragment(R.layout.fragment_base_entity_list)
 public abstract class BaseEntityListFragment<E extends OVirtEntity> extends RefreshableLoaderFragment
