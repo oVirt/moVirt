@@ -1,42 +1,36 @@
 package org.ovirt.mobile.movirt.model.view;
 
-import org.ovirt.mobile.movirt.model.base.OvirtViewEntity;
+import android.net.Uri;
+
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+
+import org.ovirt.mobile.movirt.model.base.OvirtNamedViewEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
-public class DiskAndAttachment extends OvirtViewEntity implements OVirtContract.DiskAndAttachment {
+import static org.ovirt.mobile.movirt.provider.OVirtContract.DiskAndAttachment.TABLE;
 
-    private String id;
+@DatabaseTable(tableName = TABLE)
+public class DiskAndAttachment extends OvirtNamedViewEntity implements OVirtContract.DiskAndAttachment {
 
-    private String name;
+    @Override
+    public Uri getBaseUri() {
+        return CONTENT_URI;
+    }
 
+    @DatabaseField(columnName = STATUS)
     private String status;
 
+    @DatabaseField(columnName = VM_ID)
     private String vmId;
 
+    @DatabaseField(columnName = SIZE)
     private long size;
 
+    @DatabaseField(columnName = USED_SIZE)
     private long usedSize;
-
-    public DiskAndAttachment() {
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getStatus() {
         return status;
@@ -74,11 +68,10 @@ public class DiskAndAttachment extends OvirtViewEntity implements OVirtContract.
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof DiskAndAttachment)) return false;
+        if (!super.equals(o)) return false;
 
         DiskAndAttachment diskAndAttachment = (DiskAndAttachment) o;
 
-        if (!ObjectUtils.equals(id, diskAndAttachment.id)) return false;
-        if (!ObjectUtils.equals(name, diskAndAttachment.name)) return false;
         if (!ObjectUtils.equals(status, diskAndAttachment.status)) return false;
         if (!ObjectUtils.equals(vmId, diskAndAttachment.vmId)) return false;
         if (size != diskAndAttachment.size) return false;
@@ -89,8 +82,7 @@ public class DiskAndAttachment extends OvirtViewEntity implements OVirtContract.
 
     @Override
     public int hashCode() {
-        int result = id.hashCode();
-        result = 31 * result + name.hashCode();
+        int result = super.hashCode();
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + (vmId != null ? vmId.hashCode() : 0);
         result = 31 * result + (int) (size ^ (size >>> 32));
@@ -101,8 +93,7 @@ public class DiskAndAttachment extends OvirtViewEntity implements OVirtContract.
 
     @Override
     public void initFromCursorHelper(CursorHelper cursorHelper) {
-        setId(cursorHelper.getString(OVirtContract.Disk.ID));
-        setName(cursorHelper.getString(OVirtContract.Disk.NAME));
+        super.initFromCursorHelper(cursorHelper);
         setStatus(cursorHelper.getString(OVirtContract.Disk.STATUS));
         setSize(cursorHelper.getLong(OVirtContract.Disk.SIZE));
         setUsedSize(cursorHelper.getLong(OVirtContract.Disk.USED_SIZE));

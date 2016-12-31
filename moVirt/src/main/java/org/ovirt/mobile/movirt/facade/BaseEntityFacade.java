@@ -14,7 +14,6 @@ import org.ovirt.mobile.movirt.rest.RequestHandler;
 import org.ovirt.mobile.movirt.rest.Response;
 import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.sync.SyncAdapter;
-import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.Collections;

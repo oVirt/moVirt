@@ -1,14 +1,8 @@
 package org.ovirt.mobile.movirt.model.base;
 
 import android.content.ContentValues;
-import android.net.Uri;
 
-public abstract class OvirtViewEntity extends OVirtEntity {
-
-    @Override
-    public Uri getBaseUri() {
-        throw new ModelViewException();
-    }
+public abstract class OvirtNamedViewEntity extends OVirtNamedEntity {
 
     @Override
     public ContentValues toValues() {

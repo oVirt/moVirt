@@ -25,8 +25,8 @@ import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.util.JsonUtils;
-import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class MovirtAuthenticator extends AbstractAccountAuthenticator {

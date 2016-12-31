@@ -4,10 +4,10 @@ import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.rest.spring.annotations.RestService;
-import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
-import org.ovirt.mobile.movirt.rest.client.requestfactory.OvirtTimeoutSimpleClientHttpRequestFactory;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.rest.client.errorhandler.LoginRedirectException;
+import org.ovirt.mobile.movirt.rest.client.requestfactory.OvirtTimeoutSimpleClientHttpRequestFactory;
 import org.ovirt.mobile.movirt.rest.dto.Api;
 import org.springframework.util.StringUtils;
 

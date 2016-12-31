@@ -3,14 +3,14 @@ package org.ovirt.mobile.movirt.ui.dashboard.box;
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
 
-import org.ovirt.mobile.movirt.model.base.BaseEntity;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.DataCenter;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
-import org.ovirt.mobile.movirt.model.base.SnapshotEmbeddableEntity;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.base.BaseEntity;
+import org.ovirt.mobile.movirt.model.base.SnapshotEmbeddableEntity;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 
 import java.util.ArrayList;

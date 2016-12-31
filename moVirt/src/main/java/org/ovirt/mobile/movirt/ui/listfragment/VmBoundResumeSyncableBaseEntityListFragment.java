@@ -30,14 +30,7 @@ public abstract class VmBoundResumeSyncableBaseEntityListFragment<E extends OVir
     @Override
     protected void appendQuery(ProviderFacade.QueryBuilder<E> query) {
         super.appendQuery(query);
-
-        if (vmId != null) {
-            query.where(getVmColumn(), vmId);
-        }
-    }
-
-    protected String getVmColumn() {
-        return VM_ID; // default
+        query.where(VM_ID, vmId);
     }
 }
 

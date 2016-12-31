@@ -47,8 +47,6 @@ import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.PreviewRestoreSnapshotDialogFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmDetailGeneralFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmDetailGeneralFragment_;
-import org.ovirt.mobile.movirt.ui.vms.VmNicsFragment;
-import org.ovirt.mobile.movirt.ui.vms.VmNicsFragment_;
 
 import java.util.Collection;
 

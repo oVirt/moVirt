@@ -12,7 +12,6 @@ import android.support.v4.content.Loader;
 import android.util.Log;
 
 import org.androidannotations.annotations.AfterInject;
-import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.model.base.BaseEntity;
@@ -161,7 +160,7 @@ public class ProviderFacade {
         public Loader<Cursor> asLoader() {
             return new CursorLoader(context,
                     baseUri,
-                    null,
+                    projection,
                     selection.toString(),
                     selectionArgs.toArray(new String[selectionArgs.size()]),
                     sortOrderWithLimit());

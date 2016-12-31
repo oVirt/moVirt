@@ -15,6 +15,7 @@ import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
+import org.ovirt.mobile.movirt.model.view.DiskAndAttachment;
 
 public class UriMatcher extends OrmLiteUriMatcher {
     public UriMatcher(String authority) {
@@ -62,6 +63,16 @@ public class UriMatcher extends OrmLiteUriMatcher {
         addClass(OVirtContract.PATH_DISK_ATTACHMENTS, DiskAttachment.class);
         addClass(OVirtContract.PATH_DISK_ATTACHMENT, DiskAttachment.class);
 
-        addTablesSQL(OVirtContract.PATH_DISKS_AND_ATTACHMENTS, SQLHelper.getDisksAndAttachmentsInnerJoinSQL());
+        addClass(OVirtContract.PATH_DISKS_AND_ATTACHMENTS, DiskAndAttachment.class);
+        addClass(OVirtContract.PATH_DISKS_AND_ATTACHMENT, DiskAndAttachment.class);
+    }
+
+    public static UriDependencies.UriDependency[] getUriDependencies() {
+        return new UriDependencies.UriDependency[]{
+                new UriDependencies.UriDependency(OVirtContract.DiskAttachment.CONTENT_URI,
+                        OVirtContract.DiskAndAttachment.CONTENT_URI),
+                new UriDependencies.UriDependency(OVirtContract.Disk.CONTENT_URI,
+                        OVirtContract.DiskAndAttachment.CONTENT_URI)
+        };
     }
 }

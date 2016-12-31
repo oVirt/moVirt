@@ -98,6 +98,14 @@ public interface OVirtContract {
         long getUsedSize();
     }
 
+    interface HasSize {
+        String SIZE = "size";
+
+        void setSize(long size);
+
+        long getSize();
+    }
+
     String PATH_VMS = "vms";
     String PATH_VM = "vms/*";
 
@@ -226,12 +234,10 @@ public interface OVirtContract {
     String PATH_DISKS = "disks";
     String PATH_DISK = "disks/*";
 
-    interface Disk extends HasVm, NamedEntity, HasStatus, SnapshotEmbeddableEntity, HasUsedSize {
+    interface Disk extends HasVm, NamedEntity, HasStatus, SnapshotEmbeddableEntity, HasSize, HasUsedSize {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISKS).build();
 
         String TABLE = "disks";
-
-        String SIZE = "size";
     }
 
     String PATH_NICS = "nics";
@@ -268,8 +274,11 @@ public interface OVirtContract {
     }
 
     String PATH_DISKS_AND_ATTACHMENTS = "disks_and_attachments";
+    String PATH_DISKS_AND_ATTACHMENT = "disks_and_attachments/*";
 
-    interface DiskAndAttachment extends BaseEntity, HasVmAbstract {
+    interface DiskAndAttachment extends NamedEntity, HasVm, HasStatus, HasSize, HasUsedSize {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISKS_AND_ATTACHMENTS).build();
+
+        String TABLE = "disks_and_attachments";
     }
 }

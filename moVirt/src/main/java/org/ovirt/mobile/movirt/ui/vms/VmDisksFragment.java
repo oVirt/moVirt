@@ -18,13 +18,7 @@ import org.ovirt.mobile.movirt.facade.DiskFacade;
 import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.DiskAttachment;
 import org.ovirt.mobile.movirt.model.view.DiskAndAttachment;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
-import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.provider.SQLHelper;
-import org.ovirt.mobile.movirt.rest.CompositeResponse;
-import org.ovirt.mobile.movirt.rest.Response;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.RestartLoaderResponse;
 import org.ovirt.mobile.movirt.ui.listfragment.VmBoundResumeSyncableBaseEntityListFragment;
 import org.ovirt.mobile.movirt.util.MemorySize;
 
@@ -82,40 +76,25 @@ public class VmDisksFragment extends VmBoundResumeSyncableBaseEntityListFragment
         return diskListAdapter;
     }
 
-    @Override
-    protected void appendQuery(ProviderFacade.QueryBuilder<DiskAndAttachment> query) {
-        super.appendQuery(query);
-        query.projection(SQLHelper.getDisksAndAttachmentsProjection());
-    }
-
-    @Override
-    protected String getVmColumn() {
-        return String.format("%s.%s", OVirtContract.DiskAttachment.TABLE, OVirtContract.DiskAttachment.VM_ID);
-    }
-
     @Background
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
         if (syncing) {
             if (propertiesManager.getApiVersion().isV3Api()) {
-                diskFacade.syncAll(new RestartLoaderResponse<List<Disk>>(this), getVmId());
+                diskFacade.syncAll(new ProgressBarResponse<List<Disk>>(this), getVmId());
             } else {
-                diskAttachmentsFacade.syncAll(new RestartLoaderResponse<List<DiskAttachment>>(this), getVmId());
+                diskAttachmentsFacade.syncAll(new ProgressBarResponse<List<DiskAttachment>>(this), getVmId());
             }
         }
     }
 
-    @Background()
+    @Background
     @Override
     public void onRefresh() {
         if (propertiesManager.getApiVersion().isV3Api()) {
-            diskFacade.syncAll(this.<Disk>getCombinedResponse(), getVmId());
+            diskFacade.syncAll(new ProgressBarResponse<List<Disk>>(this), getVmId());
         } else {
-            diskAttachmentsFacade.syncAll(this.<DiskAttachment>getCombinedResponse(), getVmId());
+            diskAttachmentsFacade.syncAll(new ProgressBarResponse<List<DiskAttachment>>(this), getVmId());
         }
-    }
-
-    public <T> Response<List<T>> getCombinedResponse() {
-        return new CompositeResponse<>(new RestartLoaderResponse<List<T>>(this), new ProgressBarResponse<List<T>>(this));
     }
 }

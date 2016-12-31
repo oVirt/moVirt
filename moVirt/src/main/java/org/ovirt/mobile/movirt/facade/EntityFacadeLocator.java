@@ -8,10 +8,10 @@ import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.DiskAttachment;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Nic;
-import org.ovirt.mobile.movirt.model.base.OVirtEntity;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.base.OVirtEntity;
 
 import java.util.HashMap;
 import java.util.Map;
