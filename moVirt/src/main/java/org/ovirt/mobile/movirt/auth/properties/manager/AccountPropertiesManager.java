@@ -56,6 +56,18 @@ public class AccountPropertiesManager extends AccountPropertiesManagerCore {
         return authenticator.getResource(AccountProperty.ACCOUNT_CONFIGURED, Boolean.class);
     }
 
+    public Boolean isFirstLogin() {
+        return authenticator.getResource(AccountProperty.FIRST_LOGIN, Boolean.class);
+    }
+
+    public boolean setFirstLogin(Boolean firstLogin) {
+        return setFirstLogin(firstLogin, OnThread.CURRENT);
+    }
+
+    public boolean setFirstLogin(Boolean firstLogin, OnThread runOnThread) {
+        return setAndNotify(AccountProperty.FIRST_LOGIN, firstLogin, runOnThread);
+    }
+
     public String getUsername() {
         return authenticator.getResource(AccountProperty.USERNAME, String.class);
     }

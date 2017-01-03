@@ -41,6 +41,8 @@ import static org.ovirt.mobile.movirt.util.preferences.SettingsKey.PERIODIC_SYNC
  */
 @EActivity
 public class SettingsActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener, CreateDialogBroadcastReceiver {
+
+    private static final int OBJECTS_SAVE_LEVEL_THRESHOLD = 5000;
     @App
     MoVirtApp app;
     @Bean
@@ -175,12 +177,19 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         @Override
         public boolean onPreferenceChange(Preference preference, Object newValue) {
             try {
-                Integer.parseInt((String) newValue);
+                int value = Integer.parseInt((String) newValue);
+                informAboutMaxValues(value);
             } catch (NumberFormatException e) {
                 messageHelper.showToast(e.getMessage());
                 return false;
             }
             return true;
+        }
+    }
+
+    private void informAboutMaxValues(int objectsLimit) {
+        if (objectsLimit > OBJECTS_SAVE_LEVEL_THRESHOLD) {
+            messageHelper.showToast(getString(R.string.objects_save_level_threshold_message));
         }
     }
 

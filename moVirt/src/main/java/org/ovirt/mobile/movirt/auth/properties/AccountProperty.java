@@ -33,6 +33,10 @@ public enum AccountProperty {
      */
     ACCOUNT_CONFIGURED(false),
     /**
+     * Should be used together {@link Boolean}.
+     */
+    FIRST_LOGIN,
+    /**
      * Should be used together with {@link String}.
      */
     PASSWORD,
@@ -155,6 +159,16 @@ public enum AccountProperty {
         @Override
         public AccountProperty getProperty() {
             return ACCOUNT_CONFIGURED;
+        }
+    }
+
+    public abstract static class FirstLoginListener implements PropertyChangedListener<Boolean> {
+        @Override
+        public abstract void onPropertyChange(Boolean firstLogin);
+
+        @Override
+        public AccountProperty getProperty() {
+            return FIRST_LOGIN;
         }
     }
 

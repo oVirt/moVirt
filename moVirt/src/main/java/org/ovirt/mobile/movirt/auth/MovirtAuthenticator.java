@@ -170,6 +170,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             case CERTIFICATE_CHAIN:
             case VALID_HOSTNAME_LIST:
             case CUSTOM_CERTIFICATE_LOCATION:
+            case FIRST_LOGIN:
                 accountManager.setUserData(account, property.getPackageKey(), PropertyUtils.convertToString(object));
                 break;
             default:
@@ -212,6 +213,8 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             case HAS_ADMIN_PERMISSIONS:
             case CUSTOM_CERTIFICATE_LOCATION:
                 return read(property, false);
+            case FIRST_LOGIN:
+                return read(property, true);
             case CERTIFICATE_CHAIN:
                 return getCertificateChain(property);
             case VALID_HOSTNAMES:

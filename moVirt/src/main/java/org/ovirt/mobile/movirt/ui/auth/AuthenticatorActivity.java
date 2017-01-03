@@ -260,9 +260,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         if (endpoint == null || username == null || password == null) {
             return;
         }
-        boolean usernameChanged = propertiesManager.propertyDiffers(AccountProperty.USERNAME, username);
-        boolean urlChanged = propertiesManager.propertyDiffers(AccountProperty.API_URL, endpoint);
-        boolean endpointChanged = urlChanged || usernameChanged;
 
         try {
             setLoginInProgress(true); // disables syncs because setUserData() may trigger sync
@@ -270,7 +267,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
             setUserData(endpoint, username, password, adminPriv);
 
             String token = loginClient.login(username, password);
-            onLoginResultReceived(token, endpointChanged);
+            onLoginResultReceived(token);
         } catch (HttpClientErrorException e) {
             setLoginInProgress(false);
             HttpStatus statusCode = e.getStatusCode();
@@ -307,7 +304,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         }
     }
 
-    void onLoginResultReceived(String token, boolean endpointChanged) {
+    void onLoginResultReceived(String token) {
         if (TextUtils.isEmpty(token)) {
             setLoginInProgress(false);
             messageHelper.showError(ErrorType.LOGIN,
@@ -315,10 +312,11 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
             return;
         }
 
-        if (endpointChanged) {
+        if (propertiesManager.isFirstLogin()) {
             // there is a different set of events and since we are counting only the increments,
             // this ones are not needed anymore
             eventsHandler.deleteEvents();
+            propertiesManager.setFirstLogin(false);
         }
 
         propertiesManager.setAuthToken(token);
@@ -382,6 +380,14 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     }
 
     private void setUserData(String apiUrl, String name, String password, Boolean hasAdminPermissions) {
+        // mark First Login
+        boolean usernameChanged = propertiesManager.propertyDiffers(AccountProperty.USERNAME, username);
+        boolean urlChanged = propertiesManager.propertyDiffers(AccountProperty.API_URL, endpoint);
+
+        if (urlChanged || usernameChanged) { // there can be more attempts to login so set it only the first time
+            propertiesManager.setFirstLogin(true);
+        }
+
         propertiesManager.setApiUrl(apiUrl);
         propertiesManager.setUsername(name);
         propertiesManager.setAdminPermissions(hasAdminPermissions);
