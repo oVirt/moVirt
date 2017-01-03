@@ -277,6 +277,8 @@
     <string name="login_server_send_redirect">Server has send a redirect to %1$s. Please login to the redirected url.</string>
 
     <string name="objects_save_level_threshold_message">Warning: high limit. The application may be slow or terminate because of insufficient memory.</string>
+    <string name="events_search_query_help">Event query parameters: <a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Virtualization/3.0/html/Administration_Guide/Search_Appendix.html#Administration_Guide-Syntax_Search-Search_Events">API 3.0 Documentation</a></string>
+    <string name="vms_search_query_help">Vms query parameters: <a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Virtualization/3.0/html/Administration_Guide/Search_Appendix.html#Administration_Guide-Syntax_Search-Search_VMs">API 3.0 Documentation</a></string>
 
 </resources>
 
