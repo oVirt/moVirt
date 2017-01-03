@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.ui.dialogs;
 
 import android.content.Context;
 import android.preference.EditTextPreference;
-import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.view.View;

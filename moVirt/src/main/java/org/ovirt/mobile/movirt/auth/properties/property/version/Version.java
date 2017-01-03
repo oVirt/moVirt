@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.auth.properties.property;
+package org.ovirt.mobile.movirt.auth.properties.property.version;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -9,6 +9,8 @@ public class Version implements Comparable<Version> {
 
     public static final Version V4 = new Version(4, 0, 0);
     public static final Version V3 = new Version();
+    public static final Version MAX_VALUE = new Version(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+    public static final Version MIN_VALUE = new Version(0, 0, 0);
 
     private int major;
     private int minor;
@@ -76,6 +78,10 @@ public class Version implements Comparable<Version> {
      */
     @Override
     public int compareTo(Version another) {
+        if (another == null) {
+            throw new NullPointerException();
+        }
+
         if (major == another.major) {
             if (minor == another.minor) {
                 return build - another.build;

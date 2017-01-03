@@ -163,6 +163,9 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/vms/{vmId}/disks")
     org.ovirt.mobile.movirt.rest.dto.v3.Disks getDisksV3(@Path String vmId);
 
+    @Get("/vms/{vmId}/disks")
+    org.ovirt.mobile.movirt.rest.dto.v4.Disks getDisksV4(@Path String vmId);
+
     @Get("/vms/{vmId}/snapshots/{snapshotId}/disks")
     org.ovirt.mobile.movirt.rest.dto.v3.Disks getDisksV3(@Path String vmId, @Path String snapshotId);
 

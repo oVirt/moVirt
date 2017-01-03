@@ -6,7 +6,7 @@ import android.os.Bundle;
 import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
-import org.ovirt.mobile.movirt.auth.properties.property.Version;
+import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 
 import java.util.Collections;
 import java.util.EnumSet;

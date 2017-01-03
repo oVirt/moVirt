@@ -11,7 +11,7 @@ import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
-import org.ovirt.mobile.movirt.auth.properties.property.Version;
+import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 import org.ovirt.mobile.movirt.rest.dto.Api;
 
 import java.util.Set;

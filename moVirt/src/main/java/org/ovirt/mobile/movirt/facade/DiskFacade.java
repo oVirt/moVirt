@@ -9,8 +9,7 @@ import com.android.internal.util.Predicate;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
-import org.ovirt.mobile.movirt.auth.properties.property.Version;
-import org.ovirt.mobile.movirt.auth.properties.property.exceptions.UnsupportedAfterException;
+import org.ovirt.mobile.movirt.auth.properties.property.version.support.VersionSupport;
 import org.ovirt.mobile.movirt.facade.predicates.NormalDiskPredicate;
 import org.ovirt.mobile.movirt.facade.predicates.SnapshotIdPredicate;
 import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
@@ -63,9 +62,7 @@ public class DiskFacade extends BaseEntityFacade<Disk> {
                 responses.addResponse(syncAdapter.getUpdateEntitiesResponse(Disk.class, snapshotPredicate));
                 break;
             case 1:// partial sync
-                if (propertiesManager.getApiVersion().isV4Api()) {
-                    throw new UnsupportedAfterException(Version.V4, "Vm Disks");
-                }
+                VersionSupport.VM_DISKS.throwIfNotSupported(propertiesManager.getApiVersion());
                 final String vmId = ids[0];
                 // emulate attachments in version 3
                 responses.addResponse(new SimpleResponse<List<Disk>>() { // emulate first because we delete vmIds from Disks

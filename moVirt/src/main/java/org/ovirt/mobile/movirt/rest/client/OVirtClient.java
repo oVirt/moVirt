@@ -15,9 +15,8 @@ import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
-import org.ovirt.mobile.movirt.auth.properties.property.Version;
-import org.ovirt.mobile.movirt.auth.properties.property.exceptions.UnsupportedAfterException;
-import org.ovirt.mobile.movirt.auth.properties.property.exceptions.UnsupportedUntilException;
+import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
+import org.ovirt.mobile.movirt.auth.properties.property.version.support.VersionSupport;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Console;
 import org.ovirt.mobile.movirt.model.DataCenter;
@@ -358,9 +357,7 @@ public class OVirtClient {
         return new RestClientRequest<List<DiskAttachment>>() {
             @Override
             public List<DiskAttachment> fire() {
-                if (version.isV3Api()) {
-                    throw new UnsupportedUntilException(Version.V4, "Disk Attachments");
-                }
+                VersionSupport.DISK_ATTACHMENTS.throwIfNotSupported(version);
 
                 return mapToEntities(restClient.getDisksAttachmentsV4(vmId));
             }
@@ -393,10 +390,15 @@ public class OVirtClient {
                     entities = mapToEntities(wrappers);
                     setVmId(entities, vmId);
                 } else {
-                    if (version.isV4Api()) {
-                        throw new UnsupportedAfterException(Version.V4, "Vm Disks");
+                    VersionSupport.VM_DISKS.throwIfNotSupported(version);
+
+                    if (version.isV3Api()) {
+                        wrappers = restClient.getDisksV3(vmId);
+                    } else {
+                        wrappers = restClient.getDisksV4(vmId);
                     }
-                    entities = mapToEntities(restClient.getDisksV3(vmId));
+
+                    entities = mapToEntities(wrappers);
                 }
 
                 return entities;

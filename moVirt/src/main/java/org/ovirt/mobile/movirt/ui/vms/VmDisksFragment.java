@@ -6,13 +6,17 @@ import android.widget.CursorAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
+import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
+import org.ovirt.mobile.movirt.auth.properties.property.version.support.VersionSupport;
 import org.ovirt.mobile.movirt.facade.DiskAttachmentsFacade;
 import org.ovirt.mobile.movirt.facade.DiskFacade;
 import org.ovirt.mobile.movirt.model.Disk;
@@ -40,6 +44,18 @@ public class VmDisksFragment extends VmBoundResumeSyncableBaseEntityListFragment
 
     @Bean
     DiskFacade diskFacade;
+
+    private Version version;
+
+    @AfterInject
+    void afterInject() {
+        propertiesManager.notifyAndRegisterListener(new AccountProperty.VersionListener() {
+            @Override
+            public void onPropertyChange(Version newVersion) {
+                version = newVersion;
+            }
+        });
+    }
 
     public VmDisksFragment() {
         super(DiskAndAttachment.class);
@@ -80,10 +96,10 @@ public class VmDisksFragment extends VmBoundResumeSyncableBaseEntityListFragment
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
         if (syncing) {
-            if (propertiesManager.getApiVersion().isV3Api()) {
-                diskFacade.syncAll(new ProgressBarResponse<List<Disk>>(this), getVmId());
-            } else {
-                diskAttachmentsFacade.syncAll(new ProgressBarResponse<List<DiskAttachment>>(this), getVmId());
+            if (VersionSupport.VM_DISKS.isSupported(version)) {
+                diskFacade.syncAll(getVmId());
+            } else if (VersionSupport.DISK_ATTACHMENTS.isSupported(version)) {
+                diskAttachmentsFacade.syncAll(getVmId());
             }
         }
     }
@@ -91,9 +107,9 @@ public class VmDisksFragment extends VmBoundResumeSyncableBaseEntityListFragment
     @Background
     @Override
     public void onRefresh() {
-        if (propertiesManager.getApiVersion().isV3Api()) {
+        if (VersionSupport.VM_DISKS.isSupported(version)) {
             diskFacade.syncAll(new ProgressBarResponse<List<Disk>>(this), getVmId());
-        } else {
+        } else if (VersionSupport.DISK_ATTACHMENTS.isSupported(version)) {
             diskAttachmentsFacade.syncAll(new ProgressBarResponse<List<DiskAttachment>>(this), getVmId());
         }
     }
