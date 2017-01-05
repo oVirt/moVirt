@@ -10,10 +10,8 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.facade.DiskFacade;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
-import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
@@ -25,6 +23,7 @@ import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView;
 import org.ovirt.mobile.movirt.util.MemorySize;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
@@ -37,16 +36,12 @@ public class DashboardPhysicalGeneralFragment extends DashboardGeneralFragment {
     private static final int HOST_LOADER = 1;
     private static final int STORAGE_DOMAIN_LOADER = 2;
     private static final int VM_LOADER = 3;
-    private static final int DISK_LOADER = 4;
 
     @ViewById
     TextView overCommitCpuPercentageCircle;
 
     @ViewById
     TextView overCommitMemoryPercentageCircle;
-
-    @ViewById
-    TextView overCommitStoragePercentageCircle;
 
     @Bean
     ProviderFacade provider;
@@ -57,15 +52,13 @@ public class DashboardPhysicalGeneralFragment extends DashboardGeneralFragment {
     @Bean
     VmFacade vmFacade;
 
-    @Bean
-    DiskFacade diskFacade;
-
     private UtilizationResource cpuResource;
     private UtilizationResource cpuVirtualResource;
+
     private UtilizationResource memoryResource;
     private UtilizationResource memoryVirtualResource;
+
     private UtilizationResource storageResource;
-    private UtilizationResource storageVirtualResource;
 
     @AfterViews
     void init() {
@@ -74,7 +67,7 @@ public class DashboardPhysicalGeneralFragment extends DashboardGeneralFragment {
 
     @Override
     protected int[] getLoaders() {
-        return new int[]{VM_LOADER, DISK_LOADER, HOST_LOADER, STORAGE_DOMAIN_LOADER};
+        return new int[]{VM_LOADER, HOST_LOADER, STORAGE_DOMAIN_LOADER};
     }
 
     @ViewById
@@ -116,13 +109,11 @@ public class DashboardPhysicalGeneralFragment extends DashboardGeneralFragment {
                 loader = provider.query(Host.class).asLoader();
                 break;
             case STORAGE_DOMAIN_LOADER:
-                loader = provider.query(StorageDomain.class).where(StorageDomain.TYPE, StorageDomain.Type.DATA.toString()).asLoader();
+                loader = provider.query(StorageDomain.class).where(StorageDomain.STATUS, StorageDomain.Status.ACTIVE.toString())
+                        .where(StorageDomain.TYPE, StorageDomain.Type.DATA.toString()).asLoader();
                 break;
             case VM_LOADER:
                 loader = provider.query(Vm.class).empty(SNAPSHOT_ID).where(STATUS, Vm.Status.UP.toString()).asLoader();
-                break;
-            case DISK_LOADER:
-                loader = provider.query(Disk.class).empty(SNAPSHOT_ID).asLoader();
                 break;
             default:
                 break;
@@ -152,11 +143,6 @@ public class DashboardPhysicalGeneralFragment extends DashboardGeneralFragment {
                 renderCpuPercentageCircle();
                 renderMemoryPercentageCircle();
                 break;
-            case DISK_LOADER:
-                List<Disk> diskList = diskFacade.mapAllFromCursor(data);
-                storageVirtualResource = getDisksUtilization(diskList);
-                renderStoragePercentageCircle();
-                break;
             default:
                 break;
         }
@@ -176,7 +162,7 @@ public class DashboardPhysicalGeneralFragment extends DashboardGeneralFragment {
 
     private void renderStoragePercentageCircle() {
         super.renderStoragePercentageCircle(storageResource, null);
-        renderOverCommit(overCommitStoragePercentageCircle, storageResource, storageVirtualResource);
+        // No feasible way to get meaningful data from REST api to render over commit
     }
 
     private void renderOverCommit(TextView textView, UtilizationResource resource, UtilizationResource virtualResource) {

@@ -39,7 +39,6 @@ public interface OVirtContract {
     }
 
     interface HasVmAbstract {
-
         String getVmId();
 
         void setVmId(String vmId);
@@ -47,6 +46,14 @@ public interface OVirtContract {
 
     interface HasVm extends HasVmAbstract {
         String VM_ID = "vm_id";
+    }
+
+    interface HasStorageDomain {
+        String STORAGE_DOMAIN_ID = "storage_domain_id";
+
+        String getStorageDomainId();
+
+        void setStorageDomainId(String storageDomain);
     }
 
     interface HasDisk {
@@ -191,7 +198,7 @@ public interface OVirtContract {
     String PATH_EVENTS = "events";
     String PATH_EVENT = "events/#";
 
-    interface Event extends BaseEntity, HasHost, HasCluster, HasDataCenter {
+    interface Event extends BaseEntity, HasHost, HasCluster, HasDataCenter, HasStorageDomain {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_EVENTS).build();
 
         String TABLE = "events";
@@ -200,7 +207,6 @@ public interface OVirtContract {
         String SEVERITY = "severity";
         String TIME = "time";
         String VM_ID = "vm_id";
-        String STORAGE_DOMAIN_ID = "storage_domain_id";
     }
 
     String PATH_CONNECTION_INFOS = "connectioninfos";
@@ -273,6 +279,7 @@ public interface OVirtContract {
         String TABLE = "disk_attachments";
     }
 
+    // Views
     String PATH_DISKS_AND_ATTACHMENTS = "disks_and_attachments";
     String PATH_DISKS_AND_ATTACHMENT = "disks_and_attachments/*";
 

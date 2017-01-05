@@ -94,11 +94,11 @@
 
         </LinearLayout>
 
-        <TextView style="@style/percentageCircleOverCommitTitle" />
+        <!-- hack for having the same height -->
+        <TextView style="@style/percentageCircleBase"/>
 
-        <TextView
-            android:id="@+id/over_commit_storage_percentage_circle"
-            style="@style/percentageCircleSummary" />
+        <!-- hack for having the same height -->
+        <TextView style="@style/percentageCircleSummary"/>
 
         <org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView
             android:id="@+id/storage_percentage_circle"

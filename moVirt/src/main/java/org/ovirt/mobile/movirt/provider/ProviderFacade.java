@@ -18,6 +18,7 @@ import org.ovirt.mobile.movirt.model.base.BaseEntity;
 import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -75,12 +76,35 @@ public class ProviderFacade {
             return where(columnName, value, Relation.IS_EQUAL);
         }
 
+        public QueryBuilder<E> whereIn(String columnName, String[] values) {
+            if (selection.length() > 0) {
+                selection.append("AND ");
+            }
+            selection.append(columnName);
+            if (values == null || values.length == 0) {
+                selection.append(" IS NULL ");
+            } else {
+                selection.append(Relation.IN.getVal()).append(" (");
+                for(int i = 0; i < values.length; i++){
+                    selection.append("? ");
+                    if(i == values.length - 1){
+                        selection.append(") ");
+                    }else{
+                        selection.append(", ");
+                    }
+                }
+                selectionArgs.addAll(Arrays.asList(values));
+            }
+
+            return this;
+        }
+
         public QueryBuilder<E> empty(String columnName) {
             if (selection.length() > 0) {
                 selection.append("AND ");
             }
             selection.append('(').append(columnName).append(" IS NULL OR ")
-                    .append(columnName).append(Relation.IS_EQUAL.getVal()).append("'')");
+                    .append(columnName).append(Relation.IS_EQUAL.getVal()).append("'') ");
 
             return this;
         }

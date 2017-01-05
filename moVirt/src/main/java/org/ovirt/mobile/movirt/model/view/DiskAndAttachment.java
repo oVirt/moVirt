@@ -95,8 +95,8 @@ public class DiskAndAttachment extends OvirtNamedViewEntity implements OVirtCont
     public void initFromCursorHelper(CursorHelper cursorHelper) {
         super.initFromCursorHelper(cursorHelper);
         setStatus(cursorHelper.getString(OVirtContract.Disk.STATUS));
+        setVmId(cursorHelper.getString(OVirtContract.DiskAttachment.VM_ID));
         setSize(cursorHelper.getLong(OVirtContract.Disk.SIZE));
         setUsedSize(cursorHelper.getLong(OVirtContract.Disk.USED_SIZE));
-        setVmId(cursorHelper.getString(OVirtContract.DiskAttachment.VM_ID));
     }
 }
