@@ -10,20 +10,12 @@ public class StorageDomain extends org.ovirt.mobile.movirt.rest.dto.StorageDomai
     public org.ovirt.mobile.movirt.model.StorageDomain toEntity() {
         org.ovirt.mobile.movirt.model.StorageDomain storageDomain = super.toEntity();
 
-        if (status != null && status.state != null) {
-            storageDomain.setStatus(mapStatus(status));
-        } else {
-            storageDomain.setStatus(org.ovirt.mobile.movirt.model.StorageDomain.Status.ACTIVE);
-        }
+        storageDomain.setStatus(mapStatus(status));
 
         return storageDomain;
     }
 
-    private static org.ovirt.mobile.movirt.model.StorageDomain.Status mapStatus(Status status) {
-        try {
-            return org.ovirt.mobile.movirt.model.StorageDomain.Status.valueOf(status.state.toUpperCase());
-        } catch (Exception e) {
-            return org.ovirt.mobile.movirt.model.StorageDomain.Status.UNKNOWN;
-        }
+    private org.ovirt.mobile.movirt.model.StorageDomain.Status mapStatus(Status status) {
+        return super.mapStatus(status == null ? null : status.state);
     }
 }

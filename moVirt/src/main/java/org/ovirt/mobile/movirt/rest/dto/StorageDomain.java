@@ -48,6 +48,18 @@ public abstract class StorageDomain implements RestEntityWrapper<org.ovirt.mobil
         return storageDomain;
     }
 
+    protected org.ovirt.mobile.movirt.model.StorageDomain.Status mapStatus(String status) {
+        try {
+            if (status == null) { // sometimes behaves as unknown when null
+                return org.ovirt.mobile.movirt.model.StorageDomain.Status.ACTIVE;
+            }
+
+            return org.ovirt.mobile.movirt.model.StorageDomain.Status.valueOf(status.toUpperCase());
+        } catch (Exception e) {
+            return org.ovirt.mobile.movirt.model.StorageDomain.Status.UNKNOWN;
+        }
+    }
+
     private static org.ovirt.mobile.movirt.model.StorageDomain.Type mapType(String type) {
         try {
             return org.ovirt.mobile.movirt.model.StorageDomain.Type.valueOf(type.toUpperCase());
