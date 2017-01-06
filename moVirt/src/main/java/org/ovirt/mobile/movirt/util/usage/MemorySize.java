@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.util;
+package org.ovirt.mobile.movirt.util.usage;
 
 import android.support.annotation.NonNull;
 
@@ -6,9 +6,6 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by suomiy on 5/6/16.
- */
 public class MemorySize implements UsageResource {
     private long value = 0;
 

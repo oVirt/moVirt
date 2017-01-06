@@ -1,8 +1,8 @@
-package org.ovirt.mobile.movirt.ui.dashboard.general;
+package org.ovirt.mobile.movirt.ui.dashboard.general.resources;
 
-import org.ovirt.mobile.movirt.util.UsageResource;
+import org.ovirt.mobile.movirt.util.usage.UsageResource;
 
-class OverCommitResource {
+public class OverCommitResource {
     private UsageResource physicalTotal;
     private UsageResource virtualUsed;
     private UsageResource virtualTotal;

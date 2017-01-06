@@ -35,7 +35,7 @@ import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
-import org.ovirt.mobile.movirt.util.MemorySize;
+import org.ovirt.mobile.movirt.util.usage.MemorySize;
 import org.springframework.util.StringUtils;
 
 import java.util.Iterator;

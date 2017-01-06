@@ -14,7 +14,7 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.listfragment.SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment;
-import org.ovirt.mobile.movirt.util.MemorySize;
+import org.ovirt.mobile.movirt.util.usage.MemorySize;
 
 import java.util.List;
 

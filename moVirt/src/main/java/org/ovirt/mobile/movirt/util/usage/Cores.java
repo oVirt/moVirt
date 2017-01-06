@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.util;
+package org.ovirt.mobile.movirt.util.usage;
 
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 

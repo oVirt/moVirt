@@ -85,11 +85,11 @@ public class ProviderFacade {
                 selection.append(" IS NULL ");
             } else {
                 selection.append(Relation.IN.getVal()).append(" (");
-                for(int i = 0; i < values.length; i++){
+                for (int i = 0; i < values.length; i++) {
                     selection.append("? ");
-                    if(i == values.length - 1){
+                    if (i == values.length - 1) {
                         selection.append(") ");
-                    }else{
+                    } else {
                         selection.append(", ");
                     }
                 }

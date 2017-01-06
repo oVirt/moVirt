@@ -1,8 +1,5 @@
-package org.ovirt.mobile.movirt.util;
+package org.ovirt.mobile.movirt.util.usage;
 
-/**
- * Created by suomiy on 5/6/16.
- */
 public class Percentage implements UsageResource {
     private static final String unit = "%";
     private long value = 0;

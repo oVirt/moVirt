@@ -19,7 +19,8 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView;
-import org.ovirt.mobile.movirt.util.MemorySize;
+import org.ovirt.mobile.movirt.ui.dashboard.general.resources.UtilizationResource;
+import org.ovirt.mobile.movirt.util.usage.MemorySize;
 
 import java.util.List;
 

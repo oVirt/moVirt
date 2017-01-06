@@ -12,9 +12,9 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.util.MemorySize;
-import org.ovirt.mobile.movirt.util.Percentage;
-import org.ovirt.mobile.movirt.util.UsageResource;
+import org.ovirt.mobile.movirt.util.usage.MemorySize;
+import org.ovirt.mobile.movirt.util.usage.Percentage;
+import org.ovirt.mobile.movirt.util.usage.UsageResource;
 
 public class PercentageCircleView extends View {
 
