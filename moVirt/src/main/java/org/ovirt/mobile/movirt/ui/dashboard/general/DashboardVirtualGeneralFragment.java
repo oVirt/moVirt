@@ -19,6 +19,7 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView;
+import org.ovirt.mobile.movirt.util.MemorySize;
 
 import java.util.List;
 
@@ -105,8 +106,7 @@ public class DashboardVirtualGeneralFragment extends DashboardGeneralFragment {
                 List<Vm> vmList = vmFacade.mapAllFromCursor(data);
                 StartActivityAction cpuAction = new StartActivityAction(MainActivityFragments.VMS, OVirtContract.Vm.CPU_USAGE, SortOrder.DESCENDING);
                 StartActivityAction memoryAction = new StartActivityAction(MainActivityFragments.VMS, OVirtContract.Vm.MEMORY_USAGE, SortOrder.DESCENDING);
-                renderCpuPercentageCircle(getCpuUtilization(vmList), cpuAction);
-
+                renderCpuPercentageCircle(getCpuUtilization(vmList).first, cpuAction);
                 renderMemoryPercentageCircle(getMemoryUtilization(vmList), memoryAction);
                 break;
             case DISK_LOADER:
@@ -116,5 +116,20 @@ public class DashboardVirtualGeneralFragment extends DashboardGeneralFragment {
             default:
                 break;
         }
+    }
+
+    protected UtilizationResource getDisksUtilization(List<Disk> diskList) {
+        MemorySize used = new MemorySize();
+        MemorySize total = new MemorySize();
+        MemorySize available;
+
+        for (Disk disk : diskList) {
+            total.addValue(disk.getSize());
+            used.addValue(disk.getUsedSize());
+        }
+
+        available = new MemorySize(total.getValue() - used.getValue());
+
+        return new UtilizationResource(used, total, available);
     }
 }

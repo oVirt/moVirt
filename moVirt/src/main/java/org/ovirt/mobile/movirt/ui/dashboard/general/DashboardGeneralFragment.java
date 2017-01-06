@@ -4,18 +4,19 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.util.Pair;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.ui.LoaderFragment;
 import org.ovirt.mobile.movirt.ui.MainActivity;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView;
+import org.ovirt.mobile.movirt.util.Cores;
 import org.ovirt.mobile.movirt.util.MemorySize;
 import org.ovirt.mobile.movirt.util.Percentage;
 import org.ovirt.mobile.movirt.util.UsageResource;
@@ -57,6 +58,41 @@ public abstract class DashboardGeneralFragment extends LoaderFragment implements
         for (int loader : getLoaders()) {
             getLoaderManager().destroyLoader(loader);
         }
+    }
+
+    protected <T extends OVirtContract.HasCoresPerSocket & OVirtContract.HasSockets & OVirtContract.HasCpuUsage>
+    Pair<UtilizationResource, Cores> getCpuUtilization(List<T> entities) {
+        Cores allCores = new Cores();
+        double usedPercentagesSum = 0;
+
+        for (T entity : entities) {
+            Cores entityCores = new Cores(entity);
+
+            usedPercentagesSum += entityCores.getValue() * entity.getCpuUsage();
+            allCores.addValue(entityCores);
+        }
+
+        // average of all host usages
+        Percentage used = new Percentage((long) usedPercentagesSum / (allCores.getValue() == 0 ? 1 : allCores.getValue()));
+        Percentage total = new Percentage(100);
+        Percentage available = new Percentage(total.getValue() - used.getValue());
+
+        return new Pair<>(new UtilizationResource(used, total, available), allCores);
+    }
+
+    protected <T extends OVirtContract.HasMemory> UtilizationResource getMemoryUtilization(List<T> entities) {
+        MemorySize total = new MemorySize();
+        MemorySize used = new MemorySize();
+        MemorySize available;
+
+        for (T entity : entities) {
+            total.addValue(entity.getMemorySize());
+            used.addValue(entity.getUsedMemorySize());
+        }
+
+        available = new MemorySize(total.getValue() - used.getValue());
+
+        return new UtilizationResource(used, total, available);
     }
 
     protected void renderCpuPercentageCircle(UtilizationResource resource, final StartActivityAction action) {
@@ -117,56 +153,6 @@ public abstract class DashboardGeneralFragment extends LoaderFragment implements
                 return nullAction;
             }
         });
-    }
-
-    protected <T extends OVirtContract.HasCpuUsage> UtilizationResource getCpuUtilization(List<T> entityList) {
-        Percentage total = new Percentage(100);
-        Percentage used = new Percentage();
-        Percentage available;
-        double usedTmp = 0;
-
-        for (T entity : entityList) {
-            usedTmp += entity.getCpuUsage();
-        }
-
-        if (entityList.size() > 0) {
-            used.setValue((long) (usedTmp / entityList.size()));
-        }
-
-        available = new Percentage(total.getValue() - used.getValue());
-
-        return new UtilizationResource(used, total, available);
-    }
-
-    protected <T extends OVirtContract.HasMemory> UtilizationResource getMemoryUtilization(List<T> entityList) {
-        MemorySize total = new MemorySize();
-        MemorySize used = new MemorySize();
-        MemorySize available;
-
-        for (T entity : entityList) {
-            long memSize = entity.getMemorySize();
-            total.addValue(memSize);
-            used.addValue((long) (memSize * entity.getMemoryUsage() / 100));
-        }
-
-        available = new MemorySize(total.getValue() - used.getValue());
-
-        return new UtilizationResource(used, total, available);
-    }
-
-    protected UtilizationResource getDisksUtilization(List<Disk> diskList) {
-        MemorySize used = new MemorySize();
-        MemorySize total = new MemorySize();
-        MemorySize available;
-
-        for (Disk disk : diskList) {
-            total.addValue(disk.getSize());
-            used.addValue(disk.getUsedSize());
-        }
-
-        available = new MemorySize(total.getValue() - used.getValue());
-
-        return new UtilizationResource(used, total, available);
     }
 
     private void renderPercentageCircleView(PercentageCircleView circleView, UtilizationResource resource) {

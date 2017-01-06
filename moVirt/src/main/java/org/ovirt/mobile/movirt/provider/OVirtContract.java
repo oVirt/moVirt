@@ -78,11 +78,16 @@ public interface OVirtContract {
 
     interface HasMemory {
         String MEMORY_USAGE = "mem_usage";
+        String USED_MEMORY_SIZE = "used_mem_size";
         String MEMORY_SIZE = "mem_size";
 
         double getMemoryUsage();
 
         void setMemoryUsage(double memoryUsage);
+
+        long getUsedMemorySize();
+
+        void setUsedMemorySize(long usedMemorySize);
 
         long getMemorySize();
 
@@ -113,29 +118,40 @@ public interface OVirtContract {
         long getSize();
     }
 
+    interface HasSockets {
+        String SOCKETS = "sockets";
+
+        void setSockets(int sockets);
+
+        int getSockets();
+    }
+
+    interface HasCoresPerSocket {
+        String CORES_PER_SOCKET = "cores_per_socket";
+
+        void setCoresPerSocket(int coresPerSocket);
+
+        int getCoresPerSocket();
+    }
+
     String PATH_VMS = "vms";
     String PATH_VM = "vms/*";
 
-    interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost, SnapshotEmbeddableEntity, HasCpuUsage, HasMemory {
+    interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost, SnapshotEmbeddableEntity, HasCpuUsage, HasMemory, HasSockets, HasCoresPerSocket {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_VMS).build();
 
         String TABLE = "vms";
-
-        String SOCKETS = "sockets";
-        String CORES_PER_SOCKET = "cores_per_socket";
         String OS_TYPE = "os_type";
     }
 
     String PATH_HOSTS = "hosts";
     String PATH_HOST = "hosts/*";
 
-    interface Host extends NamedEntity, HasStatus, HasCluster, HasCpuUsage, HasMemory {
+    interface Host extends NamedEntity, HasStatus, HasCluster, HasCpuUsage, HasMemory, HasSockets, HasCoresPerSocket {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_HOSTS).build();
 
         String TABLE = "hosts";
 
-        String SOCKETS = "sockets";
-        String CORES_PER_SOCKET = "cores_per_socket";
         String THREADS_PER_CORE = "threads_per_core";
         String OS_VERSION = "os_version";
         String ADDRESS = "address";

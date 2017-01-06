@@ -56,6 +56,8 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
             } else {
                 vm.setMemoryUsage(100 * usedMemory.divide(totalMemory, 3, RoundingMode.HALF_UP).doubleValue());
             }
+
+            vm.setUsedMemorySize(usedMemory.longValue());
         }
 
         vm.setMemorySize(ObjectUtils.parseLong(memory));
