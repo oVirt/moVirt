@@ -109,10 +109,10 @@
                     android:layout_alignTop="@id/txtPassword"
                     android:layout_centerVertical="true"
                     android:paddingBottom="3dp"
-                    android:paddingEnd="@dimen/activity_horizontal_margin"
-                    android:paddingLeft="@dimen/activity_horizontal_margin"
-                    android:paddingRight="@dimen/activity_horizontal_margin"
-                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="@dimen/activity_horizontal_margin_no_land"
+                    android:paddingLeft="@dimen/activity_horizontal_margin_no_land"
+                    android:paddingRight="@dimen/activity_horizontal_margin_no_land"
+                    android:paddingStart="@dimen/activity_horizontal_margin_no_land"
                     android:paddingTop="3dp"/>
 
             </RelativeLayout>

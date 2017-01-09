@@ -192,7 +192,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         });
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     public void setPasswordVisibility(Boolean visible) {
         passwordVisibility.setImageResource(visible ? R.drawable.ic_visibility_white_24dp :
                 R.drawable.ic_visibility_off_white_24dp);

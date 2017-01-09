@@ -292,7 +292,7 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         setSearchBoxVisibility(searchtoggle);
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     @Override
     public void restartLoader() {
         getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
