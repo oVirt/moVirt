@@ -7,6 +7,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.model.base.OVirtNamedEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -14,7 +15,7 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.StorageDomain.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class StorageDomain extends OVirtEntity implements OVirtContract.StorageDomain {
+public class StorageDomain extends OVirtNamedEntity implements OVirtContract.StorageDomain {
 
     @Override
     public Uri getBaseUri() {

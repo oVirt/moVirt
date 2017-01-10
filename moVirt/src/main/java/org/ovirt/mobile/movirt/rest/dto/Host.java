@@ -65,6 +65,8 @@ public abstract class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.
             } else {
                 host.setMemoryUsage(100 * usedMemory.divide(totalMemory, 3, RoundingMode.HALF_UP).doubleValue());
             }
+
+            host.setUsedMemorySize(usedMemory.longValue());
         }
 
         host.setMemorySize(ObjectUtils.parseLong(memory));

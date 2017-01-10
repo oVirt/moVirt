@@ -21,8 +21,8 @@ import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
-import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -107,7 +107,7 @@ public class EventsHandler {
     }
 
     private void updateEvents(List<Event> newEvents, int lastEventId) {
-        Log.i(TAG, "Fetched " + newEvents.size() + " new event(s)");
+        Log.d(TAG, "Fetched " + newEvents.size() + " new event(s)");
         if (deleteEventsBeforeInsert) {
             deleteEvents();
         }
@@ -135,7 +135,7 @@ public class EventsHandler {
 
         for (Event event : events) {
             final List<Trigger<Event>> triggers = eventTriggerResolver.getTriggers(event, allEventTriggers);
-            Log.i(TAG, "Processing triggers for Events: " + event.getId());
+            Log.d(TAG, "Processing triggers for Events: " + event.getId());
             for (Trigger<Event> trigger : triggers) {
                 if (trigger.getCondition().evaluate(event)) {
                     eventsAndTriggers.add(new Pair<>(event, trigger));
@@ -164,9 +164,9 @@ public class EventsHandler {
 
     private void applyBatch() {
         if (batch.isEmpty()) {
-            Log.i(TAG, "No updates necessary");
+            Log.d(TAG, "No updates necessary");
         } else {
-            Log.i(TAG, "Applying batch update");
+            Log.d(TAG, "Applying batch update");
             batch.apply();
         }
     }

@@ -7,6 +7,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.model.base.SnapshotEmbeddableEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -104,6 +105,9 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
     @DatabaseField(columnName = MEMORY_SIZE)
     private long memorySize;
 
+    @DatabaseField(columnName = USED_MEMORY_SIZE)
+    private long usedMemorySize;
+
     @DatabaseField(columnName = SOCKETS)
     private int sockets;
 
@@ -112,8 +116,6 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
 
     @DatabaseField(columnName = OS_TYPE)
     private String osType;
-
-    private transient List<Disk> disks;
 
     private transient List<Nic> nics;
 
@@ -165,6 +167,16 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
         this.memorySize = memorySize;
     }
 
+    @Override
+    public long getUsedMemorySize() {
+        return usedMemorySize;
+    }
+
+    @Override
+    public void setUsedMemorySize(long usedMemorySize) {
+        this.usedMemorySize = usedMemorySize;
+    }
+
     public int getSockets() {
         return sockets;
     }
@@ -189,14 +201,6 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
         this.osType = osType;
     }
 
-    public List<Disk> getDisks() {
-        return disks;
-    }
-
-    public void setDisks(List<Disk> disks) {
-        this.disks = disks;
-    }
-
     public List<Nic> getNics() {
         return nics;
     }
@@ -216,6 +220,7 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
         if (coresPerSocket != vm.coresPerSocket) return false;
         if (Double.compare(vm.cpuUsage, cpuUsage) != 0) return false;
         if (memorySize != vm.memorySize) return false;
+        if (usedMemorySize != vm.usedMemorySize) return false;
         if (Double.compare(vm.memoryUsage, memoryUsage) != 0) return false;
         if (sockets != vm.sockets) return false;
         if (!ObjectUtils.equals(hostId, vm.hostId)) return false;
@@ -237,6 +242,8 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(memoryUsage);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(usedMemorySize);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + (int) (memorySize ^ (memorySize >>> 32));
         result = 31 * result + sockets;
         result = 31 * result + coresPerSocket;
@@ -253,6 +260,7 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
         contentValues.put(CPU_USAGE, getCpuUsage());
         contentValues.put(MEMORY_USAGE, getMemoryUsage());
         contentValues.put(MEMORY_SIZE, getMemorySize());
+        contentValues.put(USED_MEMORY_SIZE, getUsedMemorySize());
         contentValues.put(SOCKETS, getSockets());
         contentValues.put(CORES_PER_SOCKET, getCoresPerSocket());
         contentValues.put(OS_TYPE, getOsType());
@@ -269,6 +277,7 @@ public class Vm extends SnapshotEmbeddableEntity implements OVirtContract.Vm {
         setCpuUsage(cursorHelper.getDouble(CPU_USAGE));
         setMemoryUsage(cursorHelper.getDouble(MEMORY_USAGE));
         setMemorySize(cursorHelper.getLong(MEMORY_SIZE));
+        setUsedMemorySize(cursorHelper.getLong(USED_MEMORY_SIZE));
         setSockets(cursorHelper.getInt(SOCKETS));
         setCoresPerSocket(cursorHelper.getInt(CORES_PER_SOCKET));
         setOsType(cursorHelper.getString(OS_TYPE));

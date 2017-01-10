@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.view.PagerTabStrip;
@@ -48,10 +47,6 @@ import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.PreviewRestoreSnapshotDialogFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmDetailGeneralFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmDetailGeneralFragment_;
-import org.ovirt.mobile.movirt.ui.vms.VmDisksFragment;
-import org.ovirt.mobile.movirt.ui.vms.VmDisksFragment_;
-import org.ovirt.mobile.movirt.ui.vms.VmNicsFragment;
-import org.ovirt.mobile.movirt.ui.vms.VmNicsFragment_;
 
 import java.util.Collection;
 
@@ -211,14 +206,14 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
     private void initPagers() {
 
         VmDetailGeneralFragment vmDetailFragment = new VmDetailGeneralFragment_();
-        VmDisksFragment diskList = new VmDisksFragment_();
-        VmNicsFragment nicList = new VmNicsFragment_();
+        SnapshotDisksFragment diskList = new SnapshotDisksFragment_();
+        SnapshotNicsFragment nicList = new SnapshotNicsFragment_();
 
         vmDetailFragment.setIsSnapshot(true);
-        diskList.setFilterVmId(vmId);
-        diskList.setFilterSnapshotId(snapshotId);
-        nicList.setFilterVmId(vmId);
-        nicList.setFilterSnapshotId(snapshotId);
+        diskList.setVmId(vmId);
+        diskList.setSnapshotId(snapshotId);
+        nicList.setVmId(vmId);
+        nicList.setSnapshotId(snapshotId);
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
                 getSupportFragmentManager(), PAGER_TITLES,

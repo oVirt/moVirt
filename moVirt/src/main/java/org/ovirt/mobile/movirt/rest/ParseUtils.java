@@ -2,9 +2,6 @@ package org.ovirt.mobile.movirt.rest;
 
 import org.ovirt.mobile.movirt.rest.dto.Version;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 public class ParseUtils {
 
     public static String parseVersion(Version version) {

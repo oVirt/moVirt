@@ -6,6 +6,7 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import org.ovirt.mobile.movirt.model.base.SnapshotEmbeddableEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -23,6 +24,7 @@ public class Disk extends SnapshotEmbeddableEntity implements OVirtContract.Disk
     @DatabaseField(columnName = STATUS)
     private String status;
 
+    // Should be used only in snapshots!, otherwise it is null
     @DatabaseField(columnName = VM_ID)
     private String vmId;
 

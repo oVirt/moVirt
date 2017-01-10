@@ -55,9 +55,14 @@
         <item>Events</item>
     </string-array>
 
-    <string-array name="dashboard_pager_titles">
-        <item>Overview</item>
-        <item>Status</item>
+    <string-array name="phone_dashboard_pager_titles">
+        <item>@string/physical_resources</item>
+        <item>@string/running_virtual_machines</item>
+    </string-array>
+
+    <string-array name="tablet_dashboard_pager_titles">
+        <item>Physical Overview</item>
+        <item>Virtual Overview</item>
     </string-array>
 
     <string-array name="vm_detail_pager_titles">

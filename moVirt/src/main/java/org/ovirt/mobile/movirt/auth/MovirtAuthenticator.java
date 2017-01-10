@@ -19,14 +19,14 @@ import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.PropertyUtils;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
-import org.ovirt.mobile.movirt.auth.properties.property.Version;
+import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.util.JsonUtils;
-import org.ovirt.mobile.movirt.util.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class MovirtAuthenticator extends AbstractAccountAuthenticator {
@@ -170,6 +170,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             case CERTIFICATE_CHAIN:
             case VALID_HOSTNAME_LIST:
             case CUSTOM_CERTIFICATE_LOCATION:
+            case FIRST_LOGIN:
                 accountManager.setUserData(account, property.getPackageKey(), PropertyUtils.convertToString(object));
                 break;
             default:
@@ -212,6 +213,8 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             case HAS_ADMIN_PERMISSIONS:
             case CUSTOM_CERTIFICATE_LOCATION:
                 return read(property, false);
+            case FIRST_LOGIN:
+                return read(property, true);
             case CERTIFICATE_CHAIN:
                 return getCertificateChain(property);
             case VALID_HOSTNAMES:

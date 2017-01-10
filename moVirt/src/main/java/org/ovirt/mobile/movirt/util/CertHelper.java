@@ -7,7 +7,8 @@ import android.util.Log;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.manager.OnThread;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.spongycastle.asn1.ASN1OctetString;
 import org.spongycastle.asn1.x500.RDN;
@@ -106,9 +107,9 @@ public class CertHelper {
         }
 
         try {
-            propertiesManager.setCertificateChain(certs.toArray(new Cert[certs.size()]), AccountPropertiesManager.OnThread.BACKGROUND);
+            propertiesManager.setCertificateChain(certs.toArray(new Cert[certs.size()]), OnThread.BACKGROUND);
             if (startNewChain) {
-                propertiesManager.setValidHostnameList(new String[]{validHostname.getHost()}, AccountPropertiesManager.OnThread.BACKGROUND);
+                propertiesManager.setValidHostnameList(new String[]{validHostname.getHost()}, OnThread.BACKGROUND);
             }
         } catch (Exception e) {
             deleteAllCertsInBackground(); // hostname and ca must be atomic

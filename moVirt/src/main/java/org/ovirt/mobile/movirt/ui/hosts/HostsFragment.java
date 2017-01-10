@@ -10,7 +10,7 @@ import android.widget.TextView;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Host;
-import org.ovirt.mobile.movirt.ui.BaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.ClusterBoundBaseEntityListFragment;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.CPU_USAGE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.MEMORY_USAGE;
@@ -18,7 +18,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class HostsFragment extends BaseEntityListFragment<Host> {
+public class HostsFragment extends ClusterBoundBaseEntityListFragment<Host> {
 
     public HostsFragment() {
         super(Host.class);

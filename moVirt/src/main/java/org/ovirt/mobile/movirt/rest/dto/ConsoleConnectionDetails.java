@@ -1,6 +1,6 @@
 package org.ovirt.mobile.movirt.rest.dto;
 
-import org.ovirt.mobile.movirt.model.ConsoleProtocol;
+import org.ovirt.mobile.movirt.model.enums.ConsoleProtocol;
 
 /**
  * Created by suomiy on 10/17/16.

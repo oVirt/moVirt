@@ -40,9 +40,9 @@ import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.model.Cluster;
-import org.ovirt.mobile.movirt.model.EntityMapper;
+import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.SortOrder;
@@ -53,6 +53,7 @@ import org.ovirt.mobile.movirt.ui.dialogs.AccountDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.hosts.HostsFragment_;
+import org.ovirt.mobile.movirt.ui.listfragment.BaseEntityListFragment;
 import org.ovirt.mobile.movirt.ui.storage.StorageDomainFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
@@ -161,7 +162,6 @@ public class MainActivity extends MovirtActivity
 
     private void initPagers() {
         VmsFragment vmsFragment = new VmsFragment_();
-        vmsFragment.setFilterSnapshotId("");
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
                 getSupportFragmentManager(), PAGER_TITLES,

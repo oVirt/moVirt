@@ -6,6 +6,8 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import org.ovirt.mobile.movirt.model.base.OVirtBaseEntity;
+import org.ovirt.mobile.movirt.model.enums.ConsoleProtocol;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -13,7 +15,7 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Console.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Console extends OVirtEntity implements OVirtContract.Console {
+public class Console extends OVirtBaseEntity implements OVirtContract.Console {
 
     @Override
     public Uri getBaseUri() {

@@ -19,7 +19,7 @@ import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.dto.Snapshot;

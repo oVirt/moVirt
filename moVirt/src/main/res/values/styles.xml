@@ -116,10 +116,6 @@
         <item name="android:layout_marginBottom">3dp</item>
     </style>
 
-    <style name="percentageCircleSummaryTitle" parent="@style/percentageCircleBase">
-        <item name="android:text">@string/allocated</item>
-    </style>
-
     <style name="percentageCircleSummary" parent="@style/percentageCircleBase">
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">bold</item>
@@ -164,4 +160,20 @@
     <style name="CertTreeNodeStyle">
         <item name="android:paddingLeft">18dp</item>
     </style>
+
+    <style name="dashboardOverviewFragmentHeader">
+        <item name="android:layout_gravity">center_horizontal</item>
+        <item name="android:ellipsize">middle</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="dashboardOverviewFragmentBorders">
+        <item name="android:paddingBottom">5dp</item>
+        <item name="android:paddingLeft">10dp</item>
+        <item name="android:paddingRight">10dp</item>
+        <item name="android:paddingTop">5dp</item>
+    </style>
+
 </resources>

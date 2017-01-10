@@ -7,6 +7,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.model.base.OVirtNamedEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -17,7 +18,7 @@ import java.util.List;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Host extends OVirtEntity implements OVirtContract.Host {
+public class Host extends OVirtNamedEntity implements OVirtContract.Host {
 
     @Override
     public Uri getBaseUri() {
@@ -89,6 +90,9 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
     @DatabaseField(columnName = MEMORY_SIZE)
     private long memorySize;
 
+    @DatabaseField(columnName = USED_MEMORY_SIZE)
+    private long usedMemorySize;
+
     @DatabaseField(columnName = SOCKETS)
     private int sockets;
 
@@ -154,6 +158,16 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
 
     public void setMemorySize(long memorySize) {
         this.memorySize = memorySize;
+    }
+
+    @Override
+    public long getUsedMemorySize() {
+        return usedMemorySize;
+    }
+
+    @Override
+    public void setUsedMemorySize(long usedMemorySize) {
+        this.usedMemorySize = usedMemorySize;
     }
 
     public int getSockets() {
@@ -241,6 +255,7 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
         if (Double.compare(host.cpuUsage, cpuUsage) != 0) return false;
         if (Double.compare(host.memoryUsage, memoryUsage) != 0) return false;
         if (memorySize != host.memorySize) return false;
+        if (usedMemorySize != host.usedMemorySize) return false;
         if (sockets != host.sockets) return false;
         if (coresPerSocket != host.coresPerSocket) return false;
         if (threadsPerCore != host.threadsPerCore) return false;
@@ -265,6 +280,8 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(memoryUsage);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(usedMemorySize);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + (int) (memorySize ^ (memorySize >>> 32));
         result = 31 * result + sockets;
         result = 31 * result + coresPerSocket;
@@ -287,6 +304,7 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
         values.put(CPU_USAGE, getCpuUsage());
         values.put(MEMORY_USAGE, getMemoryUsage());
         values.put(MEMORY_SIZE, getMemorySize());
+        values.put(USED_MEMORY_SIZE, getUsedMemorySize());
         values.put(SOCKETS, getSockets());
         values.put(CORES_PER_SOCKET, getCoresPerSocket());
         values.put(THREADS_PER_CORE, getThreadsPerCore());
@@ -308,6 +326,7 @@ public class Host extends OVirtEntity implements OVirtContract.Host {
         setCpuUsage(cursorHelper.getDouble(CPU_USAGE));
         setMemoryUsage(cursorHelper.getDouble(MEMORY_USAGE));
         setMemorySize(cursorHelper.getLong(MEMORY_SIZE));
+        setUsedMemorySize(cursorHelper.getLong(USED_MEMORY_SIZE));
         setSockets(cursorHelper.getInt(SOCKETS));
         setCoresPerSocket(cursorHelper.getInt(CORES_PER_SOCKET));
         setThreadsPerCore(cursorHelper.getInt(THREADS_PER_CORE));

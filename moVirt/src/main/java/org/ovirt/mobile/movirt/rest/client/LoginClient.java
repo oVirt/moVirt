@@ -4,11 +4,10 @@ import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.rest.spring.annotations.RestService;
-import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
-import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
-import org.ovirt.mobile.movirt.rest.OvirtTimeoutSimpleClientHttpRequestFactory;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.rest.client.errorhandler.LoginRedirectException;
+import org.ovirt.mobile.movirt.rest.client.requestfactory.OvirtTimeoutSimpleClientHttpRequestFactory;
 import org.ovirt.mobile.movirt.rest.dto.Api;
 import org.springframework.util.StringUtils;
 
@@ -44,16 +43,16 @@ public class LoginClient {
         setAcceptEncodingHeaderAndFactory(loginV3RestClient, timeoutRequestFactory);
         setAcceptEncodingHeaderAndFactory(loginV4RestClient, timeoutRequestFactory);
 
-        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.API_URL, new PropertyChangedListener<String>() {
+        accountPropertiesManager.notifyAndRegisterListener(new AccountProperty.ApiUrlListener() {
             @Override
-            public void onPropertyChange(String property) {
-                loginV3RestClient.setRootUrl(property);
+            public void onPropertyChange(String apiUrl) {
+                loginV3RestClient.setRootUrl(apiUrl);
             }
         });
-        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.API_BASE_URL, new PropertyChangedListener<String>() {
+        accountPropertiesManager.notifyAndRegisterListener(new AccountProperty.ApiBaseUrlListener() {
             @Override
-            public void onPropertyChange(String property) {
-                loginV4RestClient.setRootUrl(property);
+            public void onPropertyChange(String apiBaseUrl) {
+                loginV4RestClient.setRootUrl(apiBaseUrl);
             }
         });
     }

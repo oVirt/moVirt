@@ -13,10 +13,10 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.ResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 
 import java.util.List;
@@ -26,11 +26,8 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.MAC_ADDRESS;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.PLUGGED;
 
-/**
- * Created by suomiy on 2/2/16.
- */
 @EFragment(R.layout.fragment_base_entity_list)
-public class VmNicsFragment extends ResumeSyncableBaseEntityListFragment<Nic> {
+public class VmNicsFragment extends SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment<Nic> {
     private static final String TAG = VmNicsFragment.class.getSimpleName();
 
     @Bean
@@ -84,21 +81,20 @@ public class VmNicsFragment extends ResumeSyncableBaseEntityListFragment<Nic> {
 
     @Override
     public boolean isResumeSyncable() {
-        return propertiesManager.getApiVersion().isV4Api() || isSnapshotFragment(); //we fetch nics with vm in v3 API
+        return !propertiesManager.getApiVersion().isV3Api(); //we fetch nics with vm in v3 API
     }
 
     @Background
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
-        if (syncing && isSnapshotFragment()) {
-            entityFacade.syncAll(filterVmId, filterSnapshotId);
+        if (syncing && isResumeSyncable()) {
+            entityFacade.syncAll(getVmId());
         }
     }
 
     @Background
     @Override
     public void onRefresh() {
-        String[] params = isSnapshotFragment() ? new String[]{filterVmId, filterSnapshotId} : new String[]{filterVmId};
-        entityFacade.syncAll(new ProgressBarResponse<List<Nic>>(this), params);
+        entityFacade.syncAll(new ProgressBarResponse<List<Nic>>(this), getVmId());
     }
 }

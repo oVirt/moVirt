@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 
-import org.ovirt.mobile.movirt.model.OVirtEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtEntity;
 import org.ovirt.mobile.movirt.model.trigger.TriggerResolver;
 import org.ovirt.mobile.movirt.rest.Response;
 

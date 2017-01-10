@@ -10,7 +10,7 @@ import android.widget.TextView;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.StorageDomain;
-import org.ovirt.mobile.movirt.ui.BaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.BaseEntityListFragment;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.StorageDomain.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.StorageDomain.STATUS;
@@ -53,10 +53,5 @@ public class StorageDomainFragment extends BaseEntityListFragment<StorageDomain>
         });
 
         return storageDomainListAdapter;
-    }
-
-    @Override
-    public void updateSelectedClusterId(String selectedClusterId) {
-        //empty
     }
 }

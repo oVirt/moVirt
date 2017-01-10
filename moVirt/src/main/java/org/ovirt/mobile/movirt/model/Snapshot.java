@@ -6,6 +6,7 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import org.ovirt.mobile.movirt.model.base.OVirtNamedEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -18,7 +19,7 @@ import java.util.Set;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Snapshot extends OVirtEntity implements OVirtContract.Snapshot {
+public class Snapshot extends OVirtNamedEntity implements OVirtContract.Snapshot {
 
     public enum SnapshotType {
         REGULAR,

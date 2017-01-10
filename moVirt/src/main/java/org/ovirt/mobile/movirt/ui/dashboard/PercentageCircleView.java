@@ -12,9 +12,9 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.util.MemorySize;
-import org.ovirt.mobile.movirt.util.Percentage;
-import org.ovirt.mobile.movirt.util.UsageResource;
+import org.ovirt.mobile.movirt.util.usage.MemorySize;
+import org.ovirt.mobile.movirt.util.usage.Percentage;
+import org.ovirt.mobile.movirt.util.usage.UsageResource;
 
 public class PercentageCircleView extends View {
 
@@ -231,7 +231,7 @@ public class PercentageCircleView extends View {
     }
 
     private void drawForeground(Canvas canvas) {
-        double resourcePercentageRatio = usedResource.getValue() / (double) maxResource.getValue();
+        double resourcePercentageRatio = usedResource.getValue() / (double) (maxResource.getValue() == 0 ? 1 : maxResource.getValue());
         int startAngle = angleStep + this.startAngle;
         int sweepAngle = (int) (resourcePercentageRatio * MAX_ANGLE);
         if (Double.compare(resourcePercentageRatio, FOREGROUND_COLOR_A_MAX_PERCENTAGE) < 0) {

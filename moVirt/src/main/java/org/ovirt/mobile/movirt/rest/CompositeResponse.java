@@ -3,7 +3,6 @@ package org.ovirt.mobile.movirt.rest;
 import android.os.RemoteException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -11,50 +10,48 @@ import java.util.List;
  */
 public class CompositeResponse<T> implements Response<T> {
 
-    private List<Response<T>> responses;
+    private List<Response<T>> responses = new ArrayList<>();
 
     @SafeVarargs
     public CompositeResponse(Response<T>... responses) {
-        this.responses = new ArrayList<>(Arrays.asList(responses));
+        for (Response<T> response : responses) {
+            if (response != null) {
+                this.responses.add(response);
+            }
+        }
     }
 
     @Override
     public void before() {
         for (Response<T> response : responses) {
-            if (response != null) {
-                response.before();
-            }
+            response.before();
         }
     }
 
     @Override
     public void onResponse(T t) throws RemoteException {
         for (Response<T> response : responses) {
-            if (response != null) {
-                response.onResponse(t);
-            }
+            response.onResponse(t);
         }
     }
 
     @Override
     public void onError() {
         for (Response<T> response : responses) {
-            if (response != null) {
-                response.onError();
-            }
+            response.onError();
         }
     }
 
     @Override
     public void after() {
         for (Response<T> response : responses) {
-            if (response != null) {
-                response.after();
-            }
+            response.after();
         }
     }
 
     public void addResponse(Response<T> response) {
-        responses.add(response);
+        if (response != null) {
+            responses.add(response);
+        }
     }
 }

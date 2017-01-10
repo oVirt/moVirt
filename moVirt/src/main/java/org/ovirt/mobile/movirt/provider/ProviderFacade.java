@@ -14,10 +14,11 @@ import android.util.Log;
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
-import org.ovirt.mobile.movirt.model.BaseEntity;
-import org.ovirt.mobile.movirt.model.EntityMapper;
+import org.ovirt.mobile.movirt.model.base.BaseEntity;
+import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -47,13 +48,20 @@ public class ProviderFacade {
         StringBuilder sortOrder = new StringBuilder();
         String limitClause = "";
 
+        String[] projection;
+
         public QueryBuilder(Class<E> clazz) {
             this.clazz = clazz;
             try {
                 this.baseUri = (Uri) clazz.getField(URI_FIELD_NAME).get(null);
-            } catch (IllegalAccessException | NoSuchFieldException e) {
+            } catch (Exception e) { // NoSuchFieldException | IllegalAccessException -  since SDK version 19
                 throw new RuntimeException("Assertion error: Class: " + clazz + " does not define static field " + URI_FIELD_NAME, e);
             }
+        }
+
+        public QueryBuilder<E> projection(String[] projection) {
+            this.projection = projection;
+            return this;
         }
 
         public QueryBuilder<E> id(String value) {
@@ -68,12 +76,35 @@ public class ProviderFacade {
             return where(columnName, value, Relation.IS_EQUAL);
         }
 
+        public QueryBuilder<E> whereIn(String columnName, String[] values) {
+            if (selection.length() > 0) {
+                selection.append("AND ");
+            }
+            selection.append(columnName);
+            if (values == null || values.length == 0) {
+                selection.append(" IS NULL ");
+            } else {
+                selection.append(Relation.IN.getVal()).append(" (");
+                for (int i = 0; i < values.length; i++) {
+                    selection.append("? ");
+                    if (i == values.length - 1) {
+                        selection.append(") ");
+                    } else {
+                        selection.append(", ");
+                    }
+                }
+                selectionArgs.addAll(Arrays.asList(values));
+            }
+
+            return this;
+        }
+
         public QueryBuilder<E> empty(String columnName) {
             if (selection.length() > 0) {
                 selection.append("AND ");
             }
             selection.append('(').append(columnName).append(" IS NULL OR ")
-                    .append(columnName).append(Relation.IS_EQUAL.getVal()).append("'')");
+                    .append(columnName).append(Relation.IS_EQUAL.getVal()).append("'') ");
 
             return this;
         }
@@ -119,7 +150,7 @@ public class ProviderFacade {
         private String sortOrderWithLimit() {
             StringBuilder res = new StringBuilder();
             String sortOrderString = sortOrder.toString();
-            res.append(!"".equals(sortOrderString) ? sortOrderString : "ROWID");
+            res.append(!"".equals(sortOrderString) ? sortOrderString : OVirtContract.ROW_ID);
             res.append(limitClause);
 
             return res.toString();
@@ -140,7 +171,7 @@ public class ProviderFacade {
         public Cursor asCursor() {
             try {
                 return contentClient.query(baseUri,
-                        null,
+                        projection,
                         selection.toString(),
                         selectionArgs.toArray(new String[selectionArgs.size()]),
                         sortOrderWithLimit());
@@ -153,7 +184,7 @@ public class ProviderFacade {
         public Loader<Cursor> asLoader() {
             return new CursorLoader(context,
                     baseUri,
-                    null,
+                    projection,
                     selection.toString(),
                     selectionArgs.toArray(new String[selectionArgs.size()]),
                     sortOrderWithLimit());

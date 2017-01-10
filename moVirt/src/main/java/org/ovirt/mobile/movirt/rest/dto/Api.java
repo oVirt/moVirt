@@ -15,14 +15,14 @@ public class Api {
         }
     }
 
-    public org.ovirt.mobile.movirt.auth.properties.property.Version toVersion() {
+    public org.ovirt.mobile.movirt.auth.properties.property.version.Version toVersion() {
         try {
             Version version = product_info.getVersion();
-            return new org.ovirt.mobile.movirt.auth.properties.property.Version(Integer.parseInt(version.getMajor()),
+            return new org.ovirt.mobile.movirt.auth.properties.property.version.Version(Integer.parseInt(version.getMajor()),
                     Integer.parseInt(version.getMinor()),
                     Integer.parseInt(version.getBuild()));
         } catch (Exception x) {
-            return new org.ovirt.mobile.movirt.auth.properties.property.Version(); // fallback versions are used instead
+            return new org.ovirt.mobile.movirt.auth.properties.property.version.Version(); // fallback versions are used instead
         }
     }
 }

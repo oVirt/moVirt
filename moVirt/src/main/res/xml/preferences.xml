@@ -5,71 +5,71 @@
     <Preference
         android:key="connection_button"
         android:summary="@string/prefs_connection_settings_summary"
-        android:title="@string/prefs_connection_settings" />
+        android:title="@string/prefs_connection_settings"/>
 
     <CheckBoxPreference
-        android:defaultValue="true"
+        android:defaultValue="@bool/default_poll_events"
         android:key="poll_events"
         android:persistent="true"
         android:summary="@string/prefs_poll_events_summary"
-        android:title="@string/prefs_poll_events" />
+        android:title="@string/prefs_poll_events"/>
 
     <CheckBoxPreference
-        android:defaultValue="true"
+        android:defaultValue="@bool/default_connection_notification"
         android:key="connection_notification"
         android:persistent="true"
         android:summary="@string/prefs_connection_notification_summary"
-        android:title="@string/prefs_connection_notification" />
+        android:title="@string/prefs_connection_notification"/>
 
     <CheckBoxPreference
-        android:defaultValue="false"
+        android:defaultValue="@bool/default_periodic_sync"
         android:key="periodic_sync"
         android:persistent="true"
         android:summary="@string/prefs_periodic_sync_summary"
-        android:title="@string/prefs_periodic_sync" />
+        android:title="@string/prefs_periodic_sync"/>
 
     <EditTextPreference
-        android:defaultValue="60"
+        android:defaultValue="@integer/default_periodic_sync_interval"
         android:enabled="false"
         android:inputType="number"
         android:key="periodic_sync_interval"
         android:persistent="true"
         android:summary="@string/prefs_periodic_sync_interval_summary"
-        android:title="@string/prefs_periodic_sync_interval" />
+        android:title="@string/prefs_periodic_sync_interval"/>
 
     <EditTextPreference
-        android:defaultValue="500"
+        android:defaultValue="@integer/default_max_events"
         android:inputType="number"
         android:key="max_events_stored"
         android:persistent="true"
         android:summary="@string/prefs_max_events_locally_summary"
-        android:title="@string/prefs_max_events_locally" />
+        android:title="@string/prefs_max_events_locally"/>
 
-    <EditTextPreference
-        android:defaultValue=""
-        android:key="events_search_query"
+    <org.ovirt.mobile.movirt.ui.dialogs.WebMessageEditTextPreference
+        android:defaultValue="@string/default_events_search_query"
+        android:key="@string/events_search_query_pref_key"
         android:persistent="true"
         android:summary="@string/prefs_events_search_query_summary"
-        android:title="@string/prefs_events_search_query" />
+        android:title="@string/prefs_events_search_query"/>
 
     <EditTextPreference
-        android:defaultValue="500"
+        android:defaultValue="@integer/default_max_vms"
         android:inputType="number"
         android:key="max_vms_polled"
         android:persistent="true"
         android:summary="@string/prefs_max_vms_polled_summary"
-        android:title="@string/prefs_max_max_vms_polled" />
+        android:title="@string/prefs_max_max_vms_polled"/>
 
-    <EditTextPreference
-        android:defaultValue=""
-        android:key="vms_search_query"
+    <org.ovirt.mobile.movirt.ui.dialogs.WebMessageEditTextPreference
+        android:defaultValue="@string/default_vms_search_query"
+        android:key="@string/vms_search_query_pref_key"
         android:persistent="true"
         android:summary="@string/prefs_vm_search_query_summary"
-        android:title="@string/prefs_vm_search_query" />
+        android:title="@string/prefs_vm_search_query"/>
 
     <Preference
         android:key="about_button"
         android:summary="@string/prefs_about_moVirt_summary"
-        android:title="@string/prefs_about_moVirt" />
+        android:title="@string/prefs_about_moVirt"/>
 
 </PreferenceScreen>

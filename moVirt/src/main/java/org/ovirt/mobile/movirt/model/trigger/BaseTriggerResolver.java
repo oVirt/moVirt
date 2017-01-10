@@ -2,8 +2,8 @@ package org.ovirt.mobile.movirt.model.trigger;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.model.BaseEntity;
-import org.ovirt.mobile.movirt.model.EntityType;
+import org.ovirt.mobile.movirt.model.base.BaseEntity;
+import org.ovirt.mobile.movirt.model.mapping.EntityType;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 
 import java.util.ArrayList;

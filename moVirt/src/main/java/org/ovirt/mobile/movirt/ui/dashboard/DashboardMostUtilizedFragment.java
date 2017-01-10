@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +16,7 @@ import android.widget.TextView;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
@@ -57,6 +57,9 @@ public class DashboardMostUtilizedFragment extends LoaderFragment implements OVi
 
     private CursorAdapterLoader cursorAdapterLoader;
 
+    @InstanceState
+    DashboardType dashboardType = DashboardType.PHYSICAL;
+
     private int page = 1;
 
     @AfterViews
@@ -65,21 +68,25 @@ public class DashboardMostUtilizedFragment extends LoaderFragment implements OVi
         listView.setOnScrollListener(endlessScrollListener);
     }
 
-    private void switchLoader(boolean virtualView) {
+    public void setDashboardType(DashboardType dashboardType) {
+        this.dashboardType = dashboardType;
+    }
+
+    private void switchLoader() {
         CursorAdapter listAdapter = new MostUtilizedListAdapter(getActivity(), null, ACTIVE_LOADER);
 
-        if (virtualView) {
+        if (dashboardType == DashboardType.PHYSICAL) {
             cursorAdapterLoader = new CursorAdapterLoader(listAdapter) {
                 @Override
                 public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
-                    return provider.query(Vm.class).empty(SNAPSHOT_ID).orderByDescending(CPU_USAGE).limit(page * ITEMS_PER_PAGE).asLoader();
+                    return provider.query(Host.class).orderByDescending(CPU_USAGE).limit(page * ITEMS_PER_PAGE).asLoader();
                 }
             };
         } else {
             cursorAdapterLoader = new CursorAdapterLoader(listAdapter) {
                 @Override
                 public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
-                    return provider.query(Host.class).orderByDescending(CPU_USAGE).limit(page * ITEMS_PER_PAGE).asLoader();
+                    return provider.query(Vm.class).empty(SNAPSHOT_ID).orderByDescending(CPU_USAGE).limit(page * ITEMS_PER_PAGE).asLoader();
                 }
             };
         }
@@ -102,12 +109,12 @@ public class DashboardMostUtilizedFragment extends LoaderFragment implements OVi
     protected void itemClicked(Cursor cursor) {
         Intent intent;
 
-        if (getVirtualViewState()) {
-            Vm vm = vmFacade.mapFromCursor(cursor);
-            intent = vmFacade.getDetailIntent(vm, getActivity());
-        } else {
+        if (dashboardType == DashboardType.PHYSICAL) {
             Host host = hostFacade.mapFromCursor(cursor);
             intent = hostFacade.getDetailIntent(host, getActivity());
+        } else {
+            Vm vm = vmFacade.mapFromCursor(cursor);
+            intent = vmFacade.getDetailIntent(vm, getActivity());
         }
 
         startActivity(intent);
@@ -121,16 +128,10 @@ public class DashboardMostUtilizedFragment extends LoaderFragment implements OVi
         }
     };
 
-    public boolean getVirtualViewState() {
-        FragmentActivity activity = getActivity();
-        return activity != null && activity instanceof DashboardActivity && ((DashboardActivity) activity).getVirtualViewState();
-    }
-
     public void render() {
-        boolean virtualView = getVirtualViewState();
-        String utilizedText = getString(virtualView ? R.string.most_utilized_vms : R.string.most_utilized_hosts);
+        String utilizedText = getString(dashboardType == DashboardType.PHYSICAL ? R.string.most_utilized_hosts : R.string.most_utilized_vms);
         mostUtilizedText.setText(utilizedText);
-        switchLoader(virtualView);
+        switchLoader();
     }
 
     private static class MostUtilizedListAdapter extends CursorAdapter {

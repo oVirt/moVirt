@@ -31,12 +31,12 @@ import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
-import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.manager.OnThread;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
@@ -69,8 +69,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
 
     public static final String SHOW_ADVANCED_AUTHENTICATOR = "SHOW_ADVANCED_AUTHENTICATOR";
 
-    @Bean
-    NullHostnameVerifier verifier;
     @Bean
     AccountPropertiesManager propertiesManager;
     @Bean
@@ -146,14 +144,14 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     }
 
     private void initPropertyListeners() {
-        final PropertyChangedListener<Boolean> passVisibilityListener = new PropertyChangedListener<Boolean>() {
+        final AccountProperty.PasswordVisibilityListener passVisibilityListener = new AccountProperty.PasswordVisibilityListener() {
             @Override
-            public void onPropertyChange(Boolean property) {
-                setPasswordVisibility(property);
+            public void onPropertyChange(Boolean passwordVisibility) {
+                setPasswordVisibility(passwordVisibility);
             }
         };
         listeners = new PropertyChangedListener[]{passVisibilityListener};
-        propertiesManager.notifyAndRegisterListener(AccountProperty.PASSWORD_VISIBILITY, passVisibilityListener);
+        propertiesManager.notifyAndRegisterListener(passVisibilityListener);
     }
 
     @Override
@@ -165,8 +163,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     }
 
     @Click(R.id.passwordVisibility)
-    void togglePasswordVisibility(){
-        propertiesManager.setPasswordVisibility(!propertiesManager.getPasswordVisibility(), AccountPropertiesManager.OnThread.BACKGROUND);
+    void togglePasswordVisibility() {
+        propertiesManager.setPasswordVisibility(!propertiesManager.getPasswordVisibility(), OnThread.BACKGROUND);
     }
 
     private void initViewListeners() {
@@ -194,7 +192,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         });
     }
 
-    @UiThread
+    @UiThread(propagation = UiThread.Propagation.REUSE)
     public void setPasswordVisibility(Boolean visible) {
         passwordVisibility.setImageResource(visible ? R.drawable.ic_visibility_white_24dp :
                 R.drawable.ic_visibility_off_white_24dp);
@@ -262,9 +260,6 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         if (endpoint == null || username == null || password == null) {
             return;
         }
-        boolean usernameChanged = propertiesManager.propertyDiffers(AccountProperty.USERNAME, username);
-        boolean urlChanged = propertiesManager.propertyDiffers(AccountProperty.API_URL, endpoint);
-        boolean endpointChanged = urlChanged || usernameChanged;
 
         try {
             setLoginInProgress(true); // disables syncs because setUserData() may trigger sync
@@ -272,7 +267,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
             setUserData(endpoint, username, password, adminPriv);
 
             String token = loginClient.login(username, password);
-            onLoginResultReceived(token, endpointChanged);
+            onLoginResultReceived(token);
         } catch (HttpClientErrorException e) {
             setLoginInProgress(false);
             HttpStatus statusCode = e.getStatusCode();
@@ -309,7 +304,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         }
     }
 
-    void onLoginResultReceived(String token, boolean endpointChanged) {
+    void onLoginResultReceived(String token) {
         if (TextUtils.isEmpty(token)) {
             setLoginInProgress(false);
             messageHelper.showError(ErrorType.LOGIN,
@@ -317,10 +312,11 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
             return;
         }
 
-        if (endpointChanged) {
+        if (propertiesManager.isFirstLogin()) {
             // there is a different set of events and since we are counting only the increments,
             // this ones are not needed anymore
             eventsHandler.deleteEvents();
+            propertiesManager.setFirstLogin(false);
         }
 
         propertiesManager.setAuthToken(token);
@@ -384,6 +380,14 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     }
 
     private void setUserData(String apiUrl, String name, String password, Boolean hasAdminPermissions) {
+        // mark First Login
+        boolean usernameChanged = propertiesManager.propertyDiffers(AccountProperty.USERNAME, username);
+        boolean urlChanged = propertiesManager.propertyDiffers(AccountProperty.API_URL, endpoint);
+
+        if (urlChanged || usernameChanged) { // there can be more attempts to login so set it only the first time
+            propertiesManager.setFirstLogin(true);
+        }
+
         propertiesManager.setApiUrl(apiUrl);
         propertiesManager.setUsername(name);
         propertiesManager.setAdminPermissions(hasAdminPermissions);

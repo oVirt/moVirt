@@ -12,6 +12,8 @@ public interface OVirtContract {
 
     Uri BASE_CONTENT_URI = new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(CONTENT_AUTHORITY).build();
 
+    String ROW_ID = "rowid";
+
     interface BaseEntity extends BaseColumns {
         String ID = _ID;
     }
@@ -36,12 +38,30 @@ public interface OVirtContract {
         String HOST_ID = "host_id";
     }
 
-    interface HasVm {
-        String VM_ID = "vm_id";
-
+    interface HasVmAbstract {
         String getVmId();
 
         void setVmId(String vmId);
+    }
+
+    interface HasVm extends HasVmAbstract {
+        String VM_ID = "vm_id";
+    }
+
+    interface HasStorageDomain {
+        String STORAGE_DOMAIN_ID = "storage_domain_id";
+
+        String getStorageDomainId();
+
+        void setStorageDomainId(String storageDomain);
+    }
+
+    interface HasDisk {
+        String DISK_ID = "disk_id";
+
+        String getDiskId();
+
+        void setDiskId(String diskId);
     }
 
     interface HasDataCenter {
@@ -58,11 +78,16 @@ public interface OVirtContract {
 
     interface HasMemory {
         String MEMORY_USAGE = "mem_usage";
+        String USED_MEMORY_SIZE = "used_mem_size";
         String MEMORY_SIZE = "mem_size";
 
         double getMemoryUsage();
 
         void setMemoryUsage(double memoryUsage);
+
+        long getUsedMemorySize();
+
+        void setUsedMemorySize(long usedMemorySize);
 
         long getMemorySize();
 
@@ -85,29 +110,48 @@ public interface OVirtContract {
         long getUsedSize();
     }
 
+    interface HasSize {
+        String SIZE = "size";
+
+        void setSize(long size);
+
+        long getSize();
+    }
+
+    interface HasSockets {
+        String SOCKETS = "sockets";
+
+        void setSockets(int sockets);
+
+        int getSockets();
+    }
+
+    interface HasCoresPerSocket {
+        String CORES_PER_SOCKET = "cores_per_socket";
+
+        void setCoresPerSocket(int coresPerSocket);
+
+        int getCoresPerSocket();
+    }
+
     String PATH_VMS = "vms";
     String PATH_VM = "vms/*";
 
-    interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost, SnapshotEmbeddableEntity, HasCpuUsage, HasMemory {
+    interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost, SnapshotEmbeddableEntity, HasCpuUsage, HasMemory, HasSockets, HasCoresPerSocket {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_VMS).build();
 
         String TABLE = "vms";
-
-        String SOCKETS = "sockets";
-        String CORES_PER_SOCKET = "cores_per_socket";
         String OS_TYPE = "os_type";
     }
 
     String PATH_HOSTS = "hosts";
     String PATH_HOST = "hosts/*";
 
-    interface Host extends NamedEntity, HasStatus, HasCluster, HasCpuUsage, HasMemory {
+    interface Host extends NamedEntity, HasStatus, HasCluster, HasCpuUsage, HasMemory, HasSockets, HasCoresPerSocket {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_HOSTS).build();
 
         String TABLE = "hosts";
 
-        String SOCKETS = "sockets";
-        String CORES_PER_SOCKET = "cores_per_socket";
         String THREADS_PER_CORE = "threads_per_core";
         String OS_VERSION = "os_version";
         String ADDRESS = "address";
@@ -170,7 +214,7 @@ public interface OVirtContract {
     String PATH_EVENTS = "events";
     String PATH_EVENT = "events/#";
 
-    interface Event extends BaseEntity, HasHost, HasCluster, HasDataCenter {
+    interface Event extends BaseEntity, HasHost, HasCluster, HasDataCenter, HasStorageDomain {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_EVENTS).build();
 
         String TABLE = "events";
@@ -179,7 +223,6 @@ public interface OVirtContract {
         String SEVERITY = "severity";
         String TIME = "time";
         String VM_ID = "vm_id";
-        String STORAGE_DOMAIN_ID = "storage_domain_id";
     }
 
     String PATH_CONNECTION_INFOS = "connectioninfos";
@@ -213,12 +256,10 @@ public interface OVirtContract {
     String PATH_DISKS = "disks";
     String PATH_DISK = "disks/*";
 
-    interface Disk extends HasVm, NamedEntity, HasStatus, SnapshotEmbeddableEntity, HasUsedSize {
+    interface Disk extends HasVm, NamedEntity, HasStatus, SnapshotEmbeddableEntity, HasSize, HasUsedSize {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISKS).build();
 
         String TABLE = "disks";
-
-        String SIZE = "size";
     }
 
     String PATH_NICS = "nics";
@@ -243,5 +284,24 @@ public interface OVirtContract {
         String TABLE = "consoles";
 
         String PROTOCOL = "protocol";
+    }
+
+    String PATH_DISK_ATTACHMENTS = "disk_attachments";
+    String PATH_DISK_ATTACHMENT = "disk_attachments/*";
+
+    interface DiskAttachment extends BaseEntity, HasVm, HasDisk {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISK_ATTACHMENTS).build();
+
+        String TABLE = "disk_attachments";
+    }
+
+    // Views
+    String PATH_DISKS_AND_ATTACHMENTS = "disks_and_attachments";
+    String PATH_DISKS_AND_ATTACHMENT = "disks_and_attachments/*";
+
+    interface DiskAndAttachment extends NamedEntity, HasVm, HasStatus, HasSize, HasUsedSize {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISKS_AND_ATTACHMENTS).build();
+
+        String TABLE = "disks_and_attachments";
     }
 }

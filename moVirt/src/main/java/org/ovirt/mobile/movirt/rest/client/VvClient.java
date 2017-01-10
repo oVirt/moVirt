@@ -7,15 +7,14 @@ import org.androidannotations.rest.spring.annotations.RestService;
 import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
-import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
-import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
-import org.ovirt.mobile.movirt.auth.properties.property.Version;
-import org.ovirt.mobile.movirt.rest.OvirtSimpleClientHttpRequestFactory;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 import org.ovirt.mobile.movirt.rest.Request;
 import org.ovirt.mobile.movirt.rest.RequestHandler;
 import org.ovirt.mobile.movirt.rest.Response;
-import org.ovirt.mobile.movirt.rest.VvFileHttpMessageConverter;
+import org.ovirt.mobile.movirt.rest.client.httpconverter.VvFileHttpMessageConverter;
+import org.ovirt.mobile.movirt.rest.client.requestfactory.OvirtSimpleClientHttpRequestFactory;
 import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
 
 import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptEncodingHeaderAndFactory;
@@ -45,25 +44,25 @@ public class VvClient {
         setAcceptEncodingHeaderAndFactory(vvRestClient, requestFactory);
         setAcceptHeader(vvRestClient, VvFileHttpMessageConverter.X_VIRT_VIEWER_MEDIA_TYPE);
 
-        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.VERSION, new PropertyChangedListener<Version>() {
+        accountPropertiesManager.notifyAndRegisterListener(new AccountProperty.VersionListener() {
             @Override
-            public void onPropertyChange(Version property) {
-                setVersionHeader(vvRestClient, property);
-                setupAuth(vvRestClient, property);
+            public void onPropertyChange(Version version) {
+                setVersionHeader(vvRestClient, version);
+                setupAuth(vvRestClient, version);
             }
         });
 
-        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.API_URL, new PropertyChangedListener<String>() {
+        accountPropertiesManager.notifyAndRegisterListener(new AccountProperty.ApiUrlListener() {
             @Override
-            public void onPropertyChange(String property) {
-                vvRestClient.setRootUrl(property);
+            public void onPropertyChange(String apiUrl) {
+                vvRestClient.setRootUrl(apiUrl);
             }
         });
 
-        accountPropertiesManager.notifyAndRegisterListener(AccountProperty.HAS_ADMIN_PERMISSIONS, new PropertyChangedListener<Boolean>() {
+        accountPropertiesManager.notifyAndRegisterListener(new AccountProperty.HasAdminPermissionsListener() {
             @Override
-            public void onPropertyChange(Boolean property) {
-                setFilterHeader(vvRestClient, property);
+            public void onPropertyChange(Boolean hasAdminPermissions) {
+                setFilterHeader(vvRestClient, hasAdminPermissions);
             }
         });
     }

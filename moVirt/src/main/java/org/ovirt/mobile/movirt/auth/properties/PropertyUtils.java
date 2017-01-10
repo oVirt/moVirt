@@ -3,10 +3,8 @@ package org.ovirt.mobile.movirt.auth.properties;
 import android.text.TextUtils;
 
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
-import org.ovirt.mobile.movirt.rest.ParseUtils;
 import org.ovirt.mobile.movirt.util.JsonUtils;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

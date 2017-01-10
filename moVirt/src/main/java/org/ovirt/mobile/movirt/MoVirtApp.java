@@ -4,12 +4,18 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EApplication;
+import org.ovirt.mobile.movirt.provider.UriDependencies;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 
 @EApplication
 public class MoVirtApp extends Application {
     private static final String TAG = MoVirtApp.class.getSimpleName();
+
+    // notifies dependent URIs of joins or views
+    @Bean
+    UriDependencies uriDependencies;
 
     private static Context context;
 

@@ -1,8 +1,8 @@
 package org.ovirt.mobile.movirt.model.trigger;
 
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.model.EntityType;
 import org.ovirt.mobile.movirt.model.Event;
+import org.ovirt.mobile.movirt.model.mapping.EntityType;
 
 import java.util.Collection;
 import java.util.List;

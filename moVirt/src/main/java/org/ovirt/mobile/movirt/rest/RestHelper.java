@@ -2,7 +2,7 @@ package org.ovirt.mobile.movirt.rest;
 
 import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientSupport;
-import org.ovirt.mobile.movirt.auth.properties.property.Version;
+import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 import org.springframework.http.HttpAuthentication;
 import org.springframework.http.client.ClientHttpRequestFactory;
 

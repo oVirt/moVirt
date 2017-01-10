@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Settings -->
+    <bool name="default_connection_notification">true</bool>
+    <bool name="default_poll_events">true</bool>
+    <bool name="default_periodic_sync">false</bool>
+    <integer name="default_periodic_sync_interval">60</integer> <!-- minutes -->
+    <integer name="default_max_events">2000</integer>
+    <integer name="default_max_vms">500</integer>
+    <string name="default_events_search_query"/>
+    <string name="default_vms_search_query"/>
+
+    <!-- Keys -->
+    <string name="vms_search_query_pref_key">vms_search_query</string>
+    <string name="events_search_query_pref_key">events_search_query</string>
+
+
+</resources>

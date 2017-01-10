@@ -2,7 +2,7 @@ package org.ovirt.mobile.movirt.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import org.ovirt.mobile.movirt.model.ConsoleProtocol;
+import org.ovirt.mobile.movirt.model.enums.ConsoleProtocol;
 import org.ovirt.mobile.movirt.rest.RestEntityWrapper;
 
 @JsonIgnoreProperties(ignoreUnknown = true)

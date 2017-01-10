@@ -11,7 +11,7 @@
     <string name="prefs_connection_notification">Connection Notifications</string>
     <string name="prefs_connection_notification_summary">Show notifications on connection lost.</string>
     <string name="prefs_max_events_locally">Max events locally</string>
-    <string name="prefs_max_events_locally_summary">Maximal amount of events stored locally. For admin users also the max amount of events polled. Current: %s</string>
+    <string name="prefs_max_events_locally_summary">Maximal amount of events stored locally. For admin users also the max amount of events polled. Current: %d</string>
     <string name="prefs_about_moVirt">About moVirt</string>
     <string name="prefs_about_moVirt_summary">License, Version and Documentation.</string>
     <string name="prefs_connection_settings">Connection Settings</string>
@@ -134,7 +134,7 @@
     <string name="trigger_title_format">Triggers - %1$s</string>
     <string name="when">when</string>
     <string name="moVirt_license">Apache License, Version 2.0</string>
-    <string name="moVirt_version">App Version 1.6</string>
+    <string name="moVirt_version">App Version 1.7-a2</string>
     <string name="moVirt_docs">https://github.com/matobet/moVirt/blob/master/README.md"</string>
     <string name="downloadEvents">Load</string>
     <string name="clearEvents">Clear</string>
@@ -143,9 +143,9 @@
     <string name="prefs_periodic_sync">Periodic Sync</string>
     <string name="prefs_periodic_sync_summary">Enable periodic sync with custom interval instead of system\'s schedule. Enabling with short interval consumes battery!</string>
     <string name="prefs_periodic_sync_interval">Sync Interval</string>
-    <string name="prefs_periodic_sync_interval_summary">Periodic sync interval in minutes. Current: %s</string>
+    <string name="prefs_periodic_sync_interval_summary">Periodic sync interval in minutes. Current: %d</string>
     <string name="prefs_max_max_vms_polled">Max VMs polled</string>
-    <string name="prefs_max_vms_polled_summary">Maximum amount of VMs returned from oVirt. Current: %s</string>
+    <string name="prefs_max_vms_polled_summary">Maximum amount of VMs returned from oVirt. Current: %d</string>
     <string name="prefs_vm_search_query">VMs Search Query</string>
     <string name="prefs_vm_search_query_summary">Poll only VMs which satisfy given query. Has effect for admin users only. (e.g. name = production*)</string>
     <string name="prefs_events_search_query">Events Search Query</string>
@@ -205,11 +205,11 @@
     <string name="title_cpu_percentage_circle">CPU</string>
     <string name="title_memory_percentage_circle">Memory</string>
     <string name="title_storage_percentage_circle">Storage</string>
-    <string name="summary_available_of">%1$s Available of %2$s %3$s</string>
+    <string name="summary_mem_available_of">%1$s Available of %2$s %3$s</string>
+    <string name="summary_cpu_available_of">%1$s Available of %2$s%3$s</string>
     <string name="used">Used</string>
     <string name="unit_used">%1$s Used</string>
     <string name="over_commit">Over commit</string>
-    <string name="allocated">Allocated</string>
     <string name="over_commit_allocated">%1$d%% (Allocated %2$d%%)</string>
     <string name="most_utilized_vms">Most Utilized VMs</string>
     <string name="most_utilized_hosts">Most Utilized Hosts</string>
@@ -218,6 +218,8 @@
     <string name="hosts">Hosts</string>
     <string name="storage_domains">Storages</string>
     <string name="virtual_machines">VMs</string>
+    <string name="running_virtual_machines">Running VMs</string>
+    <string name="physical_resources">Physical Resources</string>
 
     <string name="title_activity_migrate_vm">Migrate VM</string>
     <string name="migrate_title">Choose host to migrate VM</string>
@@ -273,6 +275,10 @@
     <string name="deleted_cert_chain">Deleted Certificate Chain</string>
     <string name="api_url_not_valid">API URL must be valid!</string>
     <string name="login_server_send_redirect">Server has send a redirect to %1$s. Please login to the redirected url.</string>
+
+    <string name="objects_save_level_threshold_message">Warning: high limit. The application may be slow or terminate because of insufficient memory.</string>
+    <string name="events_search_query_help">Event query parameters: <a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Virtualization/3.0/html/Administration_Guide/Search_Appendix.html#Administration_Guide-Syntax_Search-Search_Events">API 3.0 Documentation</a></string>
+    <string name="vms_search_query_help">Vms query parameters: <a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Virtualization/3.0/html/Administration_Guide/Search_Appendix.html#Administration_Guide-Syntax_Search-Search_VMs">API 3.0 Documentation</a></string>
 
 </resources>
 
