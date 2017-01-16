@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.ui;
 
 import android.accounts.AccountManager;
 import android.app.DialogFragment;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
@@ -47,10 +46,8 @@ import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.rest.client.OVirtClient;
-import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.ui.dashboard.DashboardActivity_;
 import org.ovirt.mobile.movirt.ui.dialogs.AccountDialogFragment;
-import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.hosts.HostsFragment_;
 import org.ovirt.mobile.movirt.ui.listfragment.BaseEntityListFragment;
@@ -68,8 +65,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends MovirtActivity
-        implements ConfirmDialogFragment.ConfirmDialogListener {
+public class MainActivity extends MovirtActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -119,9 +115,6 @@ public class MainActivity extends MovirtActivity
 
     @InstanceState
     String selectedClusterName;
-
-    @Bean
-    EventsHandler eventsHandler;
 
     @StringRes(R.string.all_clusters)
     String allClusters;
@@ -252,20 +245,6 @@ public class MainActivity extends MovirtActivity
     void openCamera() {
         final Intent intent = new Intent(this, CameraActivity_.class);
         startActivity(intent);
-    }
-
-    @OptionsItem(R.id.action_clear_events)
-    void clearEvents() {
-        DialogFragment confirmDialog = ConfirmDialogFragment
-                .newInstance(0, getString(R.string.dialog_action_clear_events));
-        confirmDialog.show(getFragmentManager(), "confirmClearEvents");
-    }
-
-    @Override
-    public void onDialogResult(int dialogButton, int actionId) {
-        if (dialogButton == DialogInterface.BUTTON_POSITIVE) {
-            eventsHandler.deleteEvents();
-        }
     }
 
     @OptionsItem(R.id.action_edit_triggers)
