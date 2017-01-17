@@ -214,7 +214,8 @@ public class DashboardPhysicalGeneralFragment extends DashboardGeneralFragment {
     }
 
     private void renderStoragePercentageCircle() {
-        super.renderStoragePercentageCircle(storageResource, null);
+        super.renderStoragePercentageCircle(storageResource, new StartActivityAction(MainActivityFragments.STORAGE_DOMAIN,
+                OVirtContract.StorageDomain.STATUS, SortOrder.ASCENDING));
         // No feasible way to get meaningful data from REST api to render over commit
     }
 

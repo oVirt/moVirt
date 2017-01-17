@@ -80,6 +80,9 @@ public class MainActivity extends MovirtActivity {
     @StringRes(R.string.connection_not_correct)
     String accIncorrectMsg;
 
+    @StringRes(R.string.all_clusters)
+    String allClustersMsg;
+
     @App
     MoVirtApp app;
 
@@ -93,10 +96,7 @@ public class MainActivity extends MovirtActivity {
     PagerTabStrip pagerTabStrip;
 
     @ViewById
-    ListView clusterDrawer;
-
-    @StringRes(R.string.cluster_scope)
-    String CLUSTER_SCOPE;
+    ListView clusterDrawer;;
 
     @StringArrayRes(R.array.main_pager_titles)
     String[] PAGER_TITLES;
@@ -135,7 +135,7 @@ public class MainActivity extends MovirtActivity {
 
         initClusterDrawer();
 
-        setTitle(selectedClusterName == null ? getString(R.string.all_clusters) : selectedClusterName);
+        setTitle(selectedClusterName == null ? allClustersMsg : selectedClusterName);
 
         if (!propertiesManager.accountConfigured()) {
             showAccountDialog();
@@ -280,7 +280,7 @@ public class MainActivity extends MovirtActivity {
 
     private void selectCluster(Cluster cluster) {
         Log.d(TAG, "Updating selected cluster: id=" + cluster.getId() + ", name=" + cluster.getName());
-        setTitle(cluster.getId() == null ? getString(R.string.all_clusters) : String.format(CLUSTER_SCOPE, cluster.getName()));
+        setTitle(cluster.getId() == null ? allClustersMsg :  cluster.getName());
         selectedClusterId = cluster.getId();
         selectedClusterName = cluster.getName();
 
