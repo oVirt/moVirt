@@ -12,8 +12,12 @@ import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Disk;
+import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.listfragment.SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 import org.ovirt.mobile.movirt.util.usage.MemorySize;
 
 import java.util.List;
@@ -59,6 +63,14 @@ public class SnapshotDisksFragment extends SnapshotEmbeddableVmBoundResumeSyncab
         });
 
         return diskListAdapter;
+    }
+
+    @Override
+    public SortEntry[] getSortEntries() {
+        return new SortEntry[]{
+                new SortEntry(new ItemName(Disk.NAME), SortOrderType.A_TO_Z),
+                new SortEntry(new ItemName(Disk.STATUS), SortOrderType.A_TO_Z)
+        };
     }
 
     @Background

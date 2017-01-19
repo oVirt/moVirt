@@ -138,6 +138,7 @@
     <string name="downloadEvents">Load</string>
     <string name="clearEvents">Clear</string>
     <string name="searchInVms">Search</string>
+    <string name="sort_by">Sort by</string>
     <string name="vmsOrderBy">Order</string>
     <string name="prefs_periodic_sync">Periodic Sync</string>
     <string name="prefs_periodic_sync_summary">Enable periodic sync with custom interval instead of system\'s schedule. Enabling with short interval consumes battery!</string>

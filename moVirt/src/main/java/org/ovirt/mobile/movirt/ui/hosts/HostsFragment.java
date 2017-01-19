@@ -11,6 +11,9 @@ import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.ui.listfragment.ClusterBoundBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.CPU_USAGE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.MEMORY_USAGE;
@@ -62,8 +65,13 @@ public class HostsFragment extends ClusterBoundBaseEntityListFragment<Host> {
     }
 
     @Override
-    public String[] getSortEntries() {
-        return getResources().getStringArray(R.array.usage_stats_entity_sort_entries);
+    public SortEntry[] getSortEntries() {
+        return new SortEntry[]{
+                new SortEntry(new ItemName(Host.NAME), SortOrderType.A_TO_Z),
+                new SortEntry(new ItemName(Host.STATUS), SortOrderType.A_TO_Z),
+                new SortEntry(new ItemName(Host.CPU_USAGE), SortOrderType.LOW_TO_HIGH),
+                new SortEntry(new ItemName(Host.MEMORY_USAGE), SortOrderType.LOW_TO_HIGH)
+        };
     }
 }
 

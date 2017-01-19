@@ -38,10 +38,12 @@ import org.ovirt.mobile.movirt.ui.EndlessScrollListener;
 import org.ovirt.mobile.movirt.ui.HasLoader;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.CustomSort;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
@@ -51,13 +53,10 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         implements HasLoader {
 
     private static final int ITEMS_PER_PAGE = 20;
-    private static final int FIRST_INDEX = 0, SECOND_INDEX = 1; // spinner indexes
+    private static final int ASCENDING_INDEX = 0, DESCENDING_INDEX = 1; // order spinner indexes
 
     @Bean
     protected SyncUtils syncUtils;
-
-    @InstanceState
-    protected ArrayList<String> orderingList = new ArrayList<>();
 
     @ViewById(android.R.id.list)
     protected ListView listView;
@@ -94,6 +93,12 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
     @InstanceState
     public boolean searchtoggle;
+
+    @InstanceState
+    public int orderBySpinnerPosition;
+
+    @InstanceState
+    public int orderSpinnerPosition;
 
     protected EntityFacade<E> entityFacade;
 
@@ -141,36 +146,60 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     }
 
     public void setOrderingSpinners(String orderBy, SortOrder order) {
-        if (orderBy != null) {
-            ArrayAdapter<String> spinnerArrayAdapter = (ArrayAdapter<String>) orderBySpinner.getAdapter();
-            int position = spinnerArrayAdapter.getPosition(orderBy.replace('_', ' '));
-            if (position != -1) {
-                orderBySpinner.setSelection(position);
+        if (order == null || orderBy == null) {
+            return;
+        }
+
+        for (int i = 0; i < orderBySpinner.getCount(); i++) {
+            SortEntry sortEntry = (SortEntry) orderBySpinner.getItemAtPosition(i);
+            if (sortEntry.getItemName().getColumnName().equals(orderBy)) {
+                orderSpinnerPosition = (order == SortOrder.ASCENDING) ? ASCENDING_INDEX : DESCENDING_INDEX;
+                orderSpinner.setSelection(AdapterView.INVALID_POSITION); // gets reset by orderBySpinner
+
+                orderBySpinner.setSelection(i);
+                break;
             }
         }
-
-        if (order != null) {
-            String firstOrderItem = (String) orderSpinner.getAdapter().getItem(FIRST_INDEX); // order Spinner has only 2 values (ASC and DESC)
-            int orderSpinnerSelection = order.equalsOrder(firstOrderItem) ? FIRST_INDEX : SECOND_INDEX;
-            orderSpinner.setSelection(orderSpinnerSelection);
-        }
     }
 
-    /**
-     * Adds ascending ordering of OVirtEntity
-     *
-     * @param ordering name of column in db
-     */
-    public void addOrdering(String ordering) {
-        orderingList.add(ordering);
-    }
-
-    class RestartOrderItemSelectedListener implements AdapterView.OnItemSelectedListener {
+    class OrderItemSelectedListener implements AdapterView.OnItemSelectedListener {
 
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            orderSpinnerPosition = i;
             resetListViewPosition();
             restartLoader();
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
+
+        }
+    }
+
+    class OrderByItemSelectedListener implements AdapterView.OnItemSelectedListener {
+
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+            orderBySpinnerPosition = i;
+
+            int orderPosition = orderSpinner.getSelectedItemPosition();
+            if (orderPosition == AdapterView.INVALID_POSITION) {
+                orderPosition = orderSpinnerPosition;
+            }
+
+            final SortEntry orderBy = (SortEntry) adapterView.getSelectedItem();
+            final SortOrderType sortOrderType = orderBy.getSortOrder();
+
+            ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(getActivity(),
+                    android.R.layout.simple_spinner_item, new String[]{
+                    sortOrderType.getAscDisplayName(), // ASCENDING_INDEX
+                    sortOrderType.getDescDisplayName() // DESCENDING_INDEX
+            });
+            spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+            orderSpinner.setAdapter(spinnerArrayAdapter);
+            orderSpinner.setSelection(orderPosition); // refreshes loader
         }
 
         @Override
@@ -194,19 +223,19 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     }
 
     private void initSpinners() {
-        String[] spinnerValues = getSortEntries();
-
-        if (spinnerValues == null || spinnerValues.length == 0) {
-            orderingLayout.setVisibility(View.GONE);
-        } else {
-            ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(getActivity(),
-                    android.R.layout.simple_spinner_item, spinnerValues);
+        if (getCustomSort() == null) {
+            ArrayAdapter<SortEntry> spinnerArrayAdapter = new ArrayAdapter<>(getActivity(),
+                    android.R.layout.simple_spinner_item, getSortEntries());
+            spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             orderBySpinner.setAdapter(spinnerArrayAdapter);
+            orderBySpinner.setSelection(orderBySpinnerPosition); // initializes orderSpinner
+        } else {
+            orderingLayout.setVisibility(View.GONE);
         }
     }
 
     protected void initAdapters() {
-        CursorAdapter cursorAdapter = createCursorAdapter();
+        final CursorAdapter cursorAdapter = createCursorAdapter();
 
         listView.setAdapter(cursorAdapter);
         listView.setEmptyView(getActivity().findViewById(android.R.id.empty));
@@ -224,21 +253,16 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
                     query.whereLike(NAME, "%" + searchNameString + "%");
                 }
 
-                if (!orderingList.isEmpty()) { // fragment with customized ordering
-                    for (String ordering : orderingList) {
-                        query.orderByAscending(ordering);
-                    }
+                final CustomSort customSort = getCustomSort();
+
+                if (customSort == null) {
+                    final SortEntry orderBy = (SortEntry) orderBySpinner.getSelectedItem();
+                    final SortOrder order = SortOrderType.getSortOrder((String) orderSpinner.getSelectedItem());
+                    query.orderBy(orderBy.getItemName().getColumnName(), order);
                 } else {
-                    String orderBy = (String) orderBySpinner.getSelectedItem();
-
-                    if (StringUtils.isEmpty(orderBy)) {
-                        orderBy = NAME;
-                    } else {
-                        orderBy = orderBy.replace(' ', '_');
+                    for (CustomSort.CustomSortEntry entry : customSort.getSortEntries()) {
+                        query.orderBy(entry.getColumnName(), entry.getSortOrder());
                     }
-
-                    SortOrder order = SortOrder.from((String) orderSpinner.getSelectedItem());
-                    query.orderBy(orderBy, order);
                 }
 
                 return query.limit(page * ITEMS_PER_PAGE).asLoader();
@@ -258,10 +282,8 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         searchText.removeTextChangedListener(textWatcher);
         searchText.addTextChangedListener(textWatcher);
 
-        RestartOrderItemSelectedListener orderItemSelectedListener = new RestartOrderItemSelectedListener();
-
-        orderBySpinner.setOnItemSelectedListener(orderItemSelectedListener);
-        orderSpinner.setOnItemSelectedListener(orderItemSelectedListener);
+        orderBySpinner.setOnItemSelectedListener(new OrderByItemSelectedListener());
+        orderSpinner.setOnItemSelectedListener(new OrderItemSelectedListener());
 
         fab.setColorPressed(Color.parseColor("#80cbc4"));
         fab.setColorRipple(getResources().getColor(R.color.abc_search_url_text_selected));
@@ -273,9 +295,12 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         });
     }
 
-    // override for different behaviour
-    public String[] getSortEntries() {
-        return getResources().getStringArray(R.array.base_entity_sort_entries);
+    public CustomSort getCustomSort() {
+        return null;
+    }
+
+    public SortEntry[] getSortEntries() {
+        return new SortEntry[]{};
     }
 
     @UiThread(propagation = UiThread.Propagation.REUSE)

@@ -12,8 +12,10 @@ import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Snapshot;
+import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.listfragment.VmBoundResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.CustomSort;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.DateUtils;
 
@@ -69,8 +71,12 @@ public class VmSnapshotsFragment extends VmBoundResumeSyncableBaseEntityListFrag
     }
 
     @Override
-    public String[] getSortEntries() {
-        return null;
+    public CustomSort getCustomSort() {
+        return new CustomSort(new CustomSort.CustomSortEntry[]{
+                new CustomSort.CustomSortEntry(Snapshot.SNAPSHOT_STATUS, SortOrder.ASCENDING),
+                new CustomSort.CustomSortEntry(Snapshot.TYPE, SortOrder.ASCENDING),
+                new CustomSort.CustomSortEntry(Snapshot.NAME, SortOrder.ASCENDING)
+        });
     }
 
     @Background

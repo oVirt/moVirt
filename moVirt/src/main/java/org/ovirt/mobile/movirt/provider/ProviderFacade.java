@@ -78,7 +78,7 @@ public class ProviderFacade {
 
         public QueryBuilder<E> whereIn(String columnName, String[] values) {
             if (selection.length() > 0) {
-                selection.append("AND ");
+                selection.append(" AND ");
             }
             selection.append(columnName);
             if (values == null || values.length == 0) {
@@ -101,7 +101,7 @@ public class ProviderFacade {
 
         public QueryBuilder<E> empty(String columnName) {
             if (selection.length() > 0) {
-                selection.append("AND ");
+                selection.append(" AND ");
             }
             selection.append('(').append(columnName).append(" IS NULL OR ")
                     .append(columnName).append(Relation.IS_EQUAL.getVal()).append("'') ");
@@ -117,7 +117,7 @@ public class ProviderFacade {
             assert !columnName.equals("") : "columnName cannot be empty or null";
 
             if (selection.length() > 0) {
-                selection.append("AND ");
+                selection.append(" AND ");
             }
             selection.append(columnName);
             if (value == null) {
@@ -143,7 +143,7 @@ public class ProviderFacade {
         }
 
         public QueryBuilder<E> limit(int limit) {
-            limitClause = "LIMIT " + Integer.toString(limit);
+            limitClause = " LIMIT " + Integer.toString(limit);
             return this;
         }
 
