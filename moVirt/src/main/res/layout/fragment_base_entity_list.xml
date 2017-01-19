@@ -55,8 +55,8 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sort by:"
-        android:textSize="10dp"/>
+        android:text="@string/sort_by"
+        android:textSize="12sp"/>
         <Spinner
             android:id="@+id/orderBySpinner"
             android:layout_width="match_parent"
@@ -69,8 +69,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_gravity="bottom"
-            android:entries="@array/asc_desc" />
+            android:layout_gravity="bottom" />
 </LinearLayout>
     </LinearLayout>
 

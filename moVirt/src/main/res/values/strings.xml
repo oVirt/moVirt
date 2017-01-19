@@ -4,7 +4,6 @@
     <string name="app_name">moVirt</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="action_settings">Settings</string>
-    <string name="action_clear_events">Clear Local Events</string>
     <string name="action_camera">Scan Code</string>
     <string name="prefs_poll_events">Poll Events</string>
     <string name="prefs_poll_events_summary">If the events are part of regular poll or not.</string>
@@ -134,11 +133,12 @@
     <string name="trigger_title_format">Triggers - %1$s</string>
     <string name="when">when</string>
     <string name="moVirt_license">Apache License, Version 2.0</string>
-    <string name="moVirt_version">App Version 1.7-a2</string>
+    <string name="moVirt_version">App Version 1.7-b1</string>
     <string name="moVirt_docs">https://github.com/matobet/moVirt/blob/master/README.md"</string>
     <string name="downloadEvents">Load</string>
     <string name="clearEvents">Clear</string>
     <string name="searchInVms">Search</string>
+    <string name="sort_by">Sort by</string>
     <string name="vmsOrderBy">Order</string>
     <string name="prefs_periodic_sync">Periodic Sync</string>
     <string name="prefs_periodic_sync_summary">Enable periodic sync with custom interval instead of system\'s schedule. Enabling with short interval consumes battery!</string>
@@ -236,7 +236,6 @@
     <string name="dialog_action_deactivate_host">put the host to maintenance</string>
     <string name="dialog_certificate_missing_start">Missing or invalid certificate!\n</string>
     <string name="dialog_certificate_missing_end">\nDo you want to configure it now?</string>
-    <string name="dialog_action_clear_events">delete all the events stored locally</string>
     <string name="dialog_confirm_message">Are you sure you want to %1$s?</string>
     <string name="dialog_action_delete_snapshot">delete this snapshot</string>
     <string name="dialog_action_delete_trigger">delete this trigger</string>

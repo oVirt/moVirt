@@ -17,6 +17,9 @@ import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.listfragment.SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 
 import java.util.List;
@@ -75,8 +78,10 @@ public class SnapshotNicsFragment extends SnapshotEmbeddableVmBoundResumeSyncabl
     }
 
     @Override
-    public String[] getSortEntries() {
-        return getResources().getStringArray(R.array.nic_sort_entries);
+    public SortEntry[] getSortEntries() {
+        return new SortEntry[]{
+                new SortEntry(new ItemName(Nic.NAME), SortOrderType.A_TO_Z)
+        };
     }
 
     @Background

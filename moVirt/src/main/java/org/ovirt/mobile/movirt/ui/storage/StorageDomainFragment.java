@@ -10,7 +10,11 @@ import android.widget.TextView;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.StorageDomain;
+import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.ui.listfragment.BaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.StorageDomain.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.StorageDomain.STATUS;
@@ -53,5 +57,13 @@ public class StorageDomainFragment extends BaseEntityListFragment<StorageDomain>
         });
 
         return storageDomainListAdapter;
+    }
+
+    @Override
+    public SortEntry[] getSortEntries() {
+        return new SortEntry[]{
+            new SortEntry(new ItemName(StorageDomain.NAME), SortOrderType.A_TO_Z),
+            new SortEntry(new ItemName(StorageDomain.STATUS), SortOrderType.A_TO_Z)
+        };
     }
 }

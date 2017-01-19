@@ -21,8 +21,4 @@
         android:title="@string/action_settings"
         app:showAsAction="ifRoom|withText" />
 
-    <item
-        android:id="@+id/action_clear_events"
-        android:title="@string/action_clear_events"
-        app:showAsAction="never" />
 </menu>

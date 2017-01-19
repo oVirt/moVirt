@@ -10,9 +10,13 @@ import android.widget.TextView;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.listfragment.ClusterBoundBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
+import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;
@@ -89,7 +93,12 @@ public class VmsFragment extends ClusterBoundBaseEntityListFragment<Vm> {
     }
 
     @Override
-    public String[] getSortEntries() {
-        return getResources().getStringArray(R.array.usage_stats_entity_sort_entries);
+    public SortEntry[] getSortEntries() {
+        return new SortEntry[]{
+                new SortEntry(new ItemName(Vm.NAME), SortOrderType.A_TO_Z),
+                new SortEntry(new ItemName(Vm.STATUS), SortOrderType.A_TO_Z),
+                new SortEntry(new ItemName(Vm.CPU_USAGE), SortOrderType.LOW_TO_HIGH),
+                new SortEntry(new ItemName(Vm.MEMORY_USAGE), SortOrderType.LOW_TO_HIGH)
+        };
     }
 }
