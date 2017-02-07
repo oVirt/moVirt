@@ -1,6 +1,6 @@
 package org.ovirt.mobile.movirt.ui.listfragment.spinner;
 
-public class SortEntry  {
+public class SortEntry {
 
     private ItemName itemName;
     private SortOrderType sortOrder;

@@ -10,7 +10,6 @@ import android.widget.TextView;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.StorageDomain;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.ui.listfragment.BaseEntityListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
@@ -62,8 +61,8 @@ public class StorageDomainFragment extends BaseEntityListFragment<StorageDomain>
     @Override
     public SortEntry[] getSortEntries() {
         return new SortEntry[]{
-            new SortEntry(new ItemName(StorageDomain.NAME), SortOrderType.A_TO_Z),
-            new SortEntry(new ItemName(StorageDomain.STATUS), SortOrderType.A_TO_Z)
+                new SortEntry(new ItemName(StorageDomain.NAME), SortOrderType.A_TO_Z),
+                new SortEntry(new ItemName(StorageDomain.STATUS), SortOrderType.A_TO_Z)
         };
     }
 }

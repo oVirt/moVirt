@@ -96,7 +96,7 @@ public class MainActivity extends MovirtActivity {
     PagerTabStrip pagerTabStrip;
 
     @ViewById
-    ListView clusterDrawer;;
+    ListView clusterDrawer;
 
     @StringArrayRes(R.array.main_pager_titles)
     String[] PAGER_TITLES;
@@ -280,7 +280,7 @@ public class MainActivity extends MovirtActivity {
 
     private void selectCluster(Cluster cluster) {
         Log.d(TAG, "Updating selected cluster: id=" + cluster.getId() + ", name=" + cluster.getName());
-        setTitle(cluster.getId() == null ? allClustersMsg :  cluster.getName());
+        setTitle(cluster.getId() == null ? allClustersMsg : cluster.getName());
         selectedClusterId = cluster.getId();
         selectedClusterName = cluster.getName();
 
