@@ -48,18 +48,6 @@ public class VmDisksFragment extends VmBoundResumeSyncableBaseEntityListFragment
     @Bean
     DiskFacade diskFacade;
 
-    private Version version;
-
-    @AfterInject
-    void afterInject() {
-        propertiesManager.notifyAndRegisterListener(new AccountProperty.VersionListener() {
-            @Override
-            public void onPropertyChange(Version newVersion) {
-                version = newVersion;
-            }
-        });
-    }
-
     public VmDisksFragment() {
         super(DiskAndAttachment.class);
     }
@@ -107,6 +95,8 @@ public class VmDisksFragment extends VmBoundResumeSyncableBaseEntityListFragment
     @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
         if (syncing) {
+            Version version = propertiesManager.getApiVersion();
+
             if (VersionSupport.VM_DISKS.isSupported(version)) {
                 diskFacade.syncAll(getVmId());
             } else if (VersionSupport.DISK_ATTACHMENTS.isSupported(version)) {
@@ -118,6 +108,8 @@ public class VmDisksFragment extends VmBoundResumeSyncableBaseEntityListFragment
     @Background
     @Override
     public void onRefresh() {
+        Version version = propertiesManager.getApiVersion();
+
         if (VersionSupport.VM_DISKS.isSupported(version)) {
             diskFacade.syncAll(new ProgressBarResponse<List<Disk>>(this), getVmId());
         } else if (VersionSupport.DISK_ATTACHMENTS.isSupported(version)) {
