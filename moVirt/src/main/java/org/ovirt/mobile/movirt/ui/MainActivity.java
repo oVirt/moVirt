@@ -309,28 +309,44 @@ public class MainActivity extends MovirtActivity {
      */
     @Override
     public void onNewIntent(Intent intent) {
-
-        String action = intent.getAction();
-        if (action != null && !action.isEmpty()) {
-            viewPager.setCurrentItem(MainActivityFragments.valueOf(intent.getAction()).ordinal());
-        }
-
         Bundle extras = intent.getExtras();
 
         // sets ordering for BaseEntityListFragment
         if (extras != null) {
-            MainActivityFragments fragmentPosition = (MainActivityFragments) extras.getSerializable(Extras.FRAGMENT.name());
-            String orderBy = extras.getString(Extras.ORDER_BY.name());
-            SortOrder order = (SortOrder) extras.getSerializable(Extras.ORDER.name());
+            final MainActivityFragments fragmentPosition = (MainActivityFragments) extras.getSerializable(Extras.FRAGMENT.name());
+            final String orderBy = extras.getString(Extras.ORDER_BY.name());
+            final SortOrder order = (SortOrder) extras.getSerializable(Extras.ORDER.name());
 
             if (fragmentPosition != null && order != null && !StringUtils.isEmpty(orderBy)) {
-                Fragment fragment = getSupportFragmentManager().getFragments().get(fragmentPosition.ordinal());
+                viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                    @Override
+                    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                        if (position == fragmentPosition.ordinal()) {
+                            Fragment fragment = getSupportFragmentManager().getFragments().get(fragmentPosition.ordinal());
 
-                if (fragment != null && fragment instanceof BaseEntityListFragment && !fragment.isDetached()) {
-                    BaseEntityListFragment baseEntityListFragment = (BaseEntityListFragment) fragment;
-                    baseEntityListFragment.setOrderingSpinners(orderBy, order);
-                }
+                            if (fragment != null && fragment instanceof BaseEntityListFragment && !fragment.isDetached()) {
+                                BaseEntityListFragment baseEntityListFragment = (BaseEntityListFragment) fragment;
+                                baseEntityListFragment.setOrderingSpinners(orderBy, order);
+                            }
+                        }
+                        viewPager.setOnPageChangeListener(null);
+                    }
+
+                    @Override
+                    public void onPageSelected(int position) {
+
+                    }
+
+                    @Override
+                    public void onPageScrollStateChanged(int state) {
+                    }
+                });
             }
+        }
+
+        String action = intent.getAction();
+        if (action != null && !action.isEmpty()) {
+            viewPager.setCurrentItem(MainActivityFragments.valueOf(intent.getAction()).ordinal(), false);
         }
     }
 
