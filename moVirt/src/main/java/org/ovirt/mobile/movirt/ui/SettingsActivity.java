@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.text.method.LinkMovementMethod;
+import android.widget.TextView;
 
 import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
@@ -71,6 +73,8 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
                 final Dialog dialog = new Dialog(SettingsActivity.this);
                 dialog.setContentView(R.layout.about_dialog);
                 dialog.setTitle(getString(R.string.prefs_about_moVirt));
+                ((TextView)dialog.findViewById(R.id.app_users_guide)).setMovementMethod(LinkMovementMethod.getInstance());
+                ((TextView)dialog.findViewById(R.id.app_readme)).setMovementMethod(LinkMovementMethod.getInstance());
                 dialog.show();
                 return true;
             }

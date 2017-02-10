@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -12,26 +12,35 @@
 
         <TextView
             android:id="@+id/app_license"
-            android:text="@string/moVirt_license"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="@string/moVirt_license"
+            android:textSize="16sp"/>
 
         <TextView
             android:id="@+id/app_version"
-            android:text="@string/moVirt_version"
-            android:layout_below="@+id/app_license"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:id="@+id/app_documentation"
-            android:text="@string/moVirt_docs"
-            android:layout_below="@+id/app_version"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:autoLink="web"
-            android:linksClickable="true"/>
+            android:layout_below="@+id/app_license"
+            android:text="@string/moVirt_version"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/app_users_guide"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/app_version"
+            android:text="@string/moVirt_users_guide"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/app_readme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/app_users_guide"
+            android:text="@string/moVirt_readme"
+            android:textSize="16sp"/>
 
     </RelativeLayout>
-    
+
 </LinearLayout>
