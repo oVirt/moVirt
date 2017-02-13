@@ -3,9 +3,6 @@ package org.ovirt.mobile.movirt.ui.dashboard.maps;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by suomiy on 5/18/16.
- */
 public enum DashboardPosition {
     UNKNOWN(-1), FIRST(0), SECOND(1), THIRD(2);
 

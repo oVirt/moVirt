@@ -9,6 +9,8 @@ import org.ovirt.mobile.movirt.model.DiskAttachment;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.model.Snapshot;
+import org.ovirt.mobile.movirt.model.SnapshotDisk;
+import org.ovirt.mobile.movirt.model.SnapshotNic;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.base.OVirtEntity;
@@ -29,9 +31,6 @@ public class EntityFacadeLocator {
     StorageDomainFacade storageDomainFacade;
 
     @Bean
-    SnapshotFacade snapshotFacade;
-
-    @Bean
     DiskFacade diskFacade;
 
     @Bean
@@ -39,6 +38,15 @@ public class EntityFacadeLocator {
 
     @Bean
     NicFacade nicFacade;
+
+    @Bean
+    SnapshotFacade snapshotFacade;
+
+    @Bean
+    SnapshotDiskFacade snapshotDiskFacade;
+
+    @Bean
+    SnapshotNicFacade snapshotNicFacade;
 
     @Bean
     ConsoleFacade consoleFacade;
@@ -50,10 +58,12 @@ public class EntityFacadeLocator {
         addFacade(Vm.class, vmFacade);
         addFacade(Host.class, hostFacade);
         addFacade(StorageDomain.class, storageDomainFacade);
-        addFacade(Snapshot.class, snapshotFacade);
         addFacade(Disk.class, diskFacade);
         addFacade(DiskAttachment.class, diskAttachmentsFacade);
         addFacade(Nic.class, nicFacade);
+        addFacade(Snapshot.class, snapshotFacade);
+        addFacade(SnapshotDisk.class, snapshotDiskFacade);
+        addFacade(SnapshotNic.class, snapshotNicFacade);
         addFacade(Console.class, consoleFacade);
     }
 

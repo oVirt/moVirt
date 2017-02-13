@@ -10,13 +10,10 @@ import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.base.BaseEntity;
-import org.ovirt.mobile.movirt.model.base.SnapshotEmbeddableEntity;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 
 public class DashboardBoxDataLoader extends AsyncTaskLoader<List<DashboardBoxData>> {
 
@@ -55,13 +52,8 @@ public class DashboardBoxDataLoader extends AsyncTaskLoader<List<DashboardBoxDat
         for (BoxDataEntityClass entityClass : BoxDataEntityClass.values()) {
             final Class<? extends BaseEntity> clazz = entityClass.getEntityClass();
 
-            ProviderFacade.QueryBuilder query = provider.query(clazz);
-            if (SnapshotEmbeddableEntity.class.isAssignableFrom(clazz)) {
-                query.empty(SNAPSHOT_ID);
-            }
-
             DashboardBoxData boxData = new DashboardBoxData(entityClass);
-            boxData.setData(query.all());
+            boxData.setData(provider.query(clazz).all());
             boxDataList.add(boxData);
         }
 

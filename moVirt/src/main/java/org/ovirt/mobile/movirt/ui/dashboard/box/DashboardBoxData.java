@@ -8,6 +8,7 @@ import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.EventSeverity;
 import org.ovirt.mobile.movirt.ui.dashboard.DashboardEntityStatus;
 import org.ovirt.mobile.movirt.ui.dashboard.maps.DashboardPosition;
 import org.ovirt.mobile.movirt.ui.dashboard.maps.DcStatusMap;
@@ -163,9 +164,9 @@ public class DashboardBoxData {
     }
 
     private DashboardPosition getEventStatusPosition(Date today, Event event) {
-        Event.Severity severity = event.getSeverity();
+        EventSeverity severity = event.getSeverity();
 
-        if (severity == Event.Severity.NORMAL || (severity != Event.Severity.ERROR && event.getTime().before(today))) {
+        if (severity == EventSeverity.NORMAL || (severity != EventSeverity.ERROR && event.getTime().before(today))) {
             return DashboardPosition.UNKNOWN;
         }
 

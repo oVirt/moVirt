@@ -6,8 +6,9 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.base.OVirtNamedEntity;
+import org.ovirt.mobile.movirt.model.enums.StorageDomainStatus;
+import org.ovirt.mobile.movirt.model.enums.StorageDomainType;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -22,38 +23,8 @@ public class StorageDomain extends OVirtNamedEntity implements OVirtContract.Sto
         return CONTENT_URI;
     }
 
-    public enum Type {
-        DATA,
-        ISO,
-        IMAGE,
-        EXPORT
-    }
-
-    public enum Status {
-        ACTIVE(R.drawable.up),
-        INACTIVE(R.drawable.down),
-        LOCKED(R.drawable.lock),
-        MIXED(R.drawable.unconfigured),
-        UNATTACHED(R.drawable.torn_chain),
-        MAINTENANCE(R.drawable.maintenance),
-        PREPARING_FOR_MAINTENANCE(R.drawable.lock),
-        DETACHING(R.drawable.lock),
-        ACTIVATING(R.drawable.lock),
-        UNKNOWN(R.drawable.down);
-
-        Status(int resource) {
-            this.resource = resource;
-        }
-
-        private final int resource;
-
-        public int getResource() {
-            return resource;
-        }
-    }
-
     @DatabaseField(columnName = TYPE)
-    private Type type;
+    private StorageDomainType type;
 
     @DatabaseField(columnName = AVAILABLE_SIZE)
     private long availableSize;
@@ -62,7 +33,7 @@ public class StorageDomain extends OVirtNamedEntity implements OVirtContract.Sto
     private long usedSize;
 
     @DatabaseField(columnName = STATUS)
-    private Status status;
+    private StorageDomainStatus status;
 
     @DatabaseField(columnName = STORAGE_ADDRESS)
     private String storageAddress;
@@ -76,11 +47,11 @@ public class StorageDomain extends OVirtNamedEntity implements OVirtContract.Sto
     @DatabaseField(columnName = STORAGE_FORMAT)
     private String storageFormat;
 
-    public Type getType() {
+    public StorageDomainType getType() {
         return type;
     }
 
-    public void setType(Type type) {
+    public void setType(StorageDomainType type) {
         this.type = type;
     }
 
@@ -100,11 +71,11 @@ public class StorageDomain extends OVirtNamedEntity implements OVirtContract.Sto
         this.usedSize = usedSize;
     }
 
-    public Status getStatus() {
+    public StorageDomainStatus getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(StorageDomainStatus status) {
         this.status = status;
     }
 
@@ -194,11 +165,11 @@ public class StorageDomain extends OVirtNamedEntity implements OVirtContract.Sto
     public void initFromCursorHelper(CursorHelper cursorHelper) {
         super.initFromCursorHelper(cursorHelper);
 
-        setType(cursorHelper.getEnum(TYPE, StorageDomain.Type.class));
+        setType(cursorHelper.getEnum(TYPE, StorageDomainType.class));
         setAvailableSize(cursorHelper.getLong(AVAILABLE_SIZE));
         setUsedSize(cursorHelper.getLong(USED_SIZE));
         try {
-            setStatus(cursorHelper.getEnum(STATUS, StorageDomain.Status.class));
+            setStatus(cursorHelper.getEnum(STATUS, StorageDomainStatus.class));
         } catch (Exception e) {
             // ignore, at least we have tried
         }

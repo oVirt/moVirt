@@ -17,9 +17,6 @@ import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 
-/**
- * Created by suomiy on 11/13/15.
- */
 @EBean(scope = EBean.Scope.Singleton)
 public class SharedPreferencesHelper {
 

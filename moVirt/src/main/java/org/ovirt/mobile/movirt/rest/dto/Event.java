@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.ovirt.mobile.movirt.model.enums.EventSeverity;
 import org.ovirt.mobile.movirt.rest.RestEntityWrapper;
 
 import java.sql.Timestamp;
@@ -31,20 +32,24 @@ public class Event implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Ev
         event.setId(id);
         event.setCode(code);
         event.setDescription(description);
-
-        try {
-            event.setSeverity(org.ovirt.mobile.movirt.model.Event.Severity.valueOf(severity.toUpperCase()));
-        } catch (Exception e) {
-            // fallback...
-            event.setSeverity(org.ovirt.mobile.movirt.model.Event.Severity.NORMAL);
-        }
-
+        event.setSeverity(EventSeverity.fromString(severity));
         event.setTime(new Timestamp(time));
-        if (vm != null) event.setVmId(vm.id);
-        if (host != null) event.setHostId(host.id);
-        if (cluster != null) event.setClusterId(cluster.id);
-        if (storage_domain != null) event.setStorageDomainId(storage_domain.id);
-        if (data_center != null) event.setDataCenterId(data_center.id);
+
+        if (vm != null) {
+            event.setVmId(vm.id);
+        }
+        if (host != null) {
+            event.setHostId(host.id);
+        }
+        if (cluster != null) {
+            event.setClusterId(cluster.id);
+        }
+        if (storage_domain != null) {
+            event.setStorageDomainId(storage_domain.id);
+        }
+        if (data_center != null) {
+            event.setDataCenterId(data_center.id);
+        }
         return event;
     }
 }

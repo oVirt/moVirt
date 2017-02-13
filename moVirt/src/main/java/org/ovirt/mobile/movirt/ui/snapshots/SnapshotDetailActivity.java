@@ -34,6 +34,8 @@ import org.ovirt.mobile.movirt.facade.SnapshotFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.SnapshotStatus;
+import org.ovirt.mobile.movirt.model.enums.VmCommand;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.SimpleResponse;
@@ -45,8 +47,6 @@ import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.ovirt.mobile.movirt.ui.MovirtActivity;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.PreviewRestoreSnapshotDialogFragment;
-import org.ovirt.mobile.movirt.ui.vms.VmDetailGeneralFragment;
-import org.ovirt.mobile.movirt.ui.vms.VmDetailGeneralFragment_;
 
 import java.util.Collection;
 
@@ -124,10 +124,6 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
             Uri snapshotUri = intent.getData();
             snapshotId = snapshotUri.getLastPathSegment();
             vmId = intent.getExtras().getString(OVirtContract.HasVm.VM_ID);
-
-            // for vm fragment
-            Uri vmUri = OVirtContract.Vm.CONTENT_URI.buildUpon().appendPath(vmId + snapshotId).build();
-            intent.setData(vmUri);
         }
 
         initLoaders();
@@ -205,11 +201,12 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
 
     private void initPagers() {
 
-        VmDetailGeneralFragment vmDetailFragment = new VmDetailGeneralFragment_();
+        SnapshotVmDetailGeneralFragment snapshotVmDetailFragment = new SnapshotVmDetailGeneralFragment_();
         SnapshotDisksFragment diskList = new SnapshotDisksFragment_();
         SnapshotNicsFragment nicList = new SnapshotNicsFragment_();
 
-        vmDetailFragment.setIsSnapshot(true);
+        snapshotVmDetailFragment.setVmId(vmId);
+        snapshotVmDetailFragment.setSnapshotId(snapshotId);
         diskList.setVmId(vmId);
         diskList.setSnapshotId(snapshotId);
         nicList.setVmId(vmId);
@@ -217,7 +214,7 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
                 getSupportFragmentManager(), PAGER_TITLES,
-                vmDetailFragment,
+                snapshotVmDetailFragment,
                 diskList,
                 nicList
         );
@@ -229,10 +226,10 @@ public class SnapshotDetailActivity extends MovirtActivity implements HasProgres
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (currentSnapshot != null && snapshots != null) {
-            boolean allOk = !Snapshot.containsOneOfStatuses(snapshots, Snapshot.SnapshotStatus.LOCKED, Snapshot.SnapshotStatus.IN_PREVIEW);
+            boolean allOk = !Snapshot.containsOneOfStatuses(snapshots, SnapshotStatus.LOCKED, SnapshotStatus.IN_PREVIEW);
 
-            if (vm != null && Vm.Command.NOT_RUNNING.canExecute(vm.getStatus())) {
-                boolean commitUndoVisible = Snapshot.SnapshotStatus.IN_PREVIEW.equals(currentSnapshot.getSnapshotStatus());
+            if (vm != null && VmCommand.NOT_RUNNING.canExecute(vm.getStatus())) {
+                boolean commitUndoVisible = SnapshotStatus.IN_PREVIEW.equals(currentSnapshot.getSnapshotStatus());
 
                 menuPreview.setVisible(allOk);
                 menuRestore.setVisible(allOk);

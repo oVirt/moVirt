@@ -4,14 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
 
-import com.android.internal.util.Predicate;
-
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.property.version.support.VersionSupport;
-import org.ovirt.mobile.movirt.facade.predicates.NormalDiskPredicate;
-import org.ovirt.mobile.movirt.facade.predicates.SnapshotIdPredicate;
 import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
 import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.DiskAttachment;
@@ -45,10 +41,9 @@ public class DiskFacade extends BaseEntityFacade<Disk> {
 
     @Override
     protected Request<List<Disk>> getSyncAllRestRequest(String... ids) {
-        String vmId = ids.length > 0 ? ids[0] : null;
-        String snapshotId = ids.length > 1 ? ids[1] : null;
+        String vmId = ids.length > 0 ? ids[0] : null; // null == all disks
 
-        return oVirtClient.getDisksRequest(vmId, snapshotId);
+        return oVirtClient.getDisksRequest(vmId);
     }
 
     @Override
@@ -56,27 +51,22 @@ public class DiskFacade extends BaseEntityFacade<Disk> {
         CompositeResponse<List<Disk>> responses = new CompositeResponse<>();
 
         switch (ids.length) {
-            case 2:  // snapshots are special case and they have vmId
-                final String snapshotId = ids[1];
-                Predicate<Disk> snapshotPredicate = new SnapshotIdPredicate<>(snapshotId);
-                responses.addResponse(syncAdapter.getUpdateEntitiesResponse(Disk.class, snapshotPredicate));
-                break;
             case 1:// partial sync
                 VersionSupport.VM_DISKS.throwIfNotSupported(propertiesManager.getApiVersion());
                 final String vmId = ids[0];
                 // emulate attachments in version 3
-                responses.addResponse(new SimpleResponse<List<Disk>>() { // emulate first because we delete vmIds from Disks
+                responses.addResponse(new SimpleResponse<List<Disk>>() {
                     @Override
                     public void onResponse(List<Disk> entities) throws RemoteException {
                         List<DiskAttachment> attachments = convertAndClearVmIds(entities);
                         syncAdapter.updateLocalEntities(attachments, DiskAttachment.class, new VmIdPredicate<DiskAttachment>(vmId));
                     }
                 });
-                responses.addResponse(syncAdapter.getUpdateEntitiesResponse(Disk.class, new NormalDiskPredicate(), false)); // partial
+                responses.addResponse(syncAdapter.getUpdateEntitiesResponse(Disk.class, false)); // partial
 
                 break;
             case 0:
-                responses.addResponse(syncAdapter.getUpdateEntitiesResponse(Disk.class, new NormalDiskPredicate()));
+                responses.addResponse(syncAdapter.getUpdateEntitiesResponse(Disk.class));
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported number of Ids");
@@ -90,7 +80,7 @@ public class DiskFacade extends BaseEntityFacade<Disk> {
         List<DiskAttachment> attachments = new ArrayList<>();
         for (Disk disk : disks) {
             attachments.add(org.ovirt.mobile.movirt.rest.dto.v4.DiskAttachment.fromV3Disk(disk));
-            disk.setVmId(null); // important
+            disk.setVmId(null); // transient
         }
 
         return attachments;

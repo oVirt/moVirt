@@ -25,10 +25,8 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.DATE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.PERSIST_MEMORYSTATE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.SNAPSHOT_STATUS;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.TYPE;
 
-/**
- * Created by suomiy on 11/25/15.
- */
 @EFragment(R.layout.fragment_base_entity_list)
 public class VmSnapshotsFragment extends VmBoundResumeSyncableBaseEntityListFragment<Snapshot> {
     private static final String TAG = VmSnapshotsFragment.class.getSimpleName();
@@ -73,9 +71,9 @@ public class VmSnapshotsFragment extends VmBoundResumeSyncableBaseEntityListFrag
     @Override
     public CustomSort getCustomSort() {
         return new CustomSort(new CustomSort.CustomSortEntry[]{
-                new CustomSort.CustomSortEntry(Snapshot.SNAPSHOT_STATUS, SortOrder.ASCENDING),
-                new CustomSort.CustomSortEntry(Snapshot.TYPE, SortOrder.ASCENDING),
-                new CustomSort.CustomSortEntry(Snapshot.NAME, SortOrder.ASCENDING)
+                new CustomSort.CustomSortEntry(SNAPSHOT_STATUS, SortOrder.ASCENDING),
+                new CustomSort.CustomSortEntry(TYPE, SortOrder.ASCENDING),
+                new CustomSort.CustomSortEntry(NAME, SortOrder.ASCENDING)
         });
     }
 

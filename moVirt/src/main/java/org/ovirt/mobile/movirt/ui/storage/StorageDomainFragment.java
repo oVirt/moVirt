@@ -10,6 +10,7 @@ import android.widget.TextView;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.StorageDomain;
+import org.ovirt.mobile.movirt.model.enums.StorageDomainStatus;
 import org.ovirt.mobile.movirt.ui.listfragment.BaseEntityListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
@@ -43,12 +44,7 @@ public class StorageDomainFragment extends BaseEntityListFragment<StorageDomain>
                 } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
                     ImageView imageView = (ImageView) view;
                     String statusString = cursor.getString(cursor.getColumnIndex(STATUS));
-                    if (statusString != null) {
-                        StorageDomain.Status status = StorageDomain.Status.valueOf(statusString);
-                        imageView.setImageResource(status.getResource());
-                    } else {
-                        imageView.setImageResource(StorageDomain.Status.UNKNOWN.getResource());
-                    }
+                    imageView.setImageResource(StorageDomainStatus.fromString(statusString).getResource());
                 }
 
                 return true;

@@ -21,10 +21,10 @@ public class DiskAttachment extends OVirtBaseEntity implements OVirtContract.Dis
         return CONTENT_URI;
     }
 
-    @DatabaseField(columnName = DISK_ID)
+    @DatabaseField(columnName = DISK_ID, canBeNull = false)
     private String diskId;
 
-    @DatabaseField(columnName = VM_ID)
+    @DatabaseField(columnName = VM_ID, canBeNull = false)
     private String vmId;
 
     @Override

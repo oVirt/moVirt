@@ -11,9 +11,9 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.Disk;
+import org.ovirt.mobile.movirt.model.SnapshotDisk;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.listfragment.SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.SnapshotBoundResumeSyncableBaseEntityListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
@@ -21,16 +21,15 @@ import org.ovirt.mobile.movirt.util.usage.MemorySize;
 
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.NAME;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.SIZE;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.STATUS;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotDisk.NAME;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotDisk.SIZE;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotDisk.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class SnapshotDisksFragment extends SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment<Disk> {
-    private static final String TAG = SnapshotDisksFragment.class.getSimpleName();
+public class SnapshotDisksFragment extends SnapshotBoundResumeSyncableBaseEntityListFragment<SnapshotDisk> {
 
     public SnapshotDisksFragment() {
-        super(Disk.class);
+        super(SnapshotDisk.class);
     }
 
     @Override
@@ -67,8 +66,8 @@ public class SnapshotDisksFragment extends SnapshotEmbeddableVmBoundResumeSyncab
     @Override
     public SortEntry[] getSortEntries() {
         return new SortEntry[]{
-                new SortEntry(new ItemName(Disk.NAME), SortOrderType.A_TO_Z),
-                new SortEntry(new ItemName(Disk.STATUS), SortOrderType.A_TO_Z)
+                new SortEntry(new ItemName(NAME), SortOrderType.A_TO_Z),
+                new SortEntry(new ItemName(STATUS), SortOrderType.A_TO_Z)
         };
     }
 
@@ -83,6 +82,6 @@ public class SnapshotDisksFragment extends SnapshotEmbeddableVmBoundResumeSyncab
     @Background
     @Override
     public void onRefresh() {
-        entityFacade.syncAll(new ProgressBarResponse<List<Disk>>(this), getVmId(), getSnapshotId());
+        entityFacade.syncAll(new ProgressBarResponse<List<SnapshotDisk>>(this), getVmId(), getSnapshotId());
     }
 }

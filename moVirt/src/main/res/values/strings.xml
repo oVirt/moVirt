@@ -94,7 +94,7 @@
     <string name="delete">Delete</string>
     <string name="vm_status_message">Status of VM \'%1$s\' is %2$s</string>
     <string name="vm_cpu_message">CPU usage of VM \'%1$s\' is over %2$d%% (%3$s)</string>
-    <string name="vm_memory_message">Memory usage of VM \'%1$s\' is over %2$d%% (%3$s)</string>
+    <string name="vm_memory_message">Memory usage of VM \'%1$s\' is over %2$d%% (%3$f)</string>
     <string name="event_trigger_message">\'%1$s\' found in: %2$s</string>
     <string name="connected">Successfully connected to datacenter!</string>
     <string name="rest_request_failed">REST request failed!\n%1$s\n\nFor more details please see server error log.</string>
