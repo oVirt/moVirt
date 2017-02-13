@@ -31,9 +31,9 @@ import org.ovirt.mobile.movirt.util.usage.MemorySize;
 
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.NAME;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.SIZE;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.STATUS;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.DiskAndAttachment.NAME;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.DiskAndAttachment.SIZE;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.DiskAndAttachment.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
 public class VmDisksFragment extends VmBoundResumeSyncableBaseEntityListFragment<DiskAndAttachment> {
@@ -86,8 +86,8 @@ public class VmDisksFragment extends VmBoundResumeSyncableBaseEntityListFragment
     @Override
     public SortEntry[] getSortEntries() {
         return new SortEntry[]{
-                new SortEntry(new ItemName(Disk.NAME), SortOrderType.A_TO_Z),
-                new SortEntry(new ItemName(Disk.STATUS), SortOrderType.A_TO_Z)
+                new SortEntry(new ItemName(NAME), SortOrderType.A_TO_Z),
+                new SortEntry(new ItemName(STATUS), SortOrderType.A_TO_Z)
         };
     }
 

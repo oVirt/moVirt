@@ -4,20 +4,20 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.base.OVirtEntity;
+import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.OVirtContract.HasVmAbstract;
-import org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.HasSnapshot.SNAPSHOT_ID;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public abstract class SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment<E extends OVirtEntity & SnapshotEmbeddableEntity & HasVmAbstract>
+public abstract class SnapshotBoundResumeSyncableBaseEntityListFragment<E extends OVirtEntity & OVirtContract.HasSnapshot & HasVmAbstract>
         extends VmBoundResumeSyncableBaseEntityListFragment<E> {
 
     @InstanceState
     protected String snapshotId;
 
-    public SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment(Class<E> clazz) {
+    public SnapshotBoundResumeSyncableBaseEntityListFragment(Class<E> clazz) {
         super(clazz);
     }
 
@@ -32,12 +32,7 @@ public abstract class SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragm
     @Override
     protected void appendQuery(ProviderFacade.QueryBuilder<E> query) {
         super.appendQuery(query);
-
-        if (snapshotId == null) {
-            query.empty(SNAPSHOT_ID);
-        } else {
-            query.where(SNAPSHOT_ID, snapshotId);
-        }
+        query.where(SNAPSHOT_ID, snapshotId);
     }
 }
 

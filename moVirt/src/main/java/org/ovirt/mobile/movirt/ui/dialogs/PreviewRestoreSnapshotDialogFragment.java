@@ -15,10 +15,6 @@ import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.ui.BooleanListener;
 
-/**
- * Created by suomiy on 15/02/16.
- */
-
 @EFragment
 public class PreviewRestoreSnapshotDialogFragment extends DialogFragment {
 

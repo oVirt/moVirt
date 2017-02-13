@@ -2,9 +2,6 @@ package org.ovirt.mobile.movirt.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/**
- * Created by suomiy on 2/17/16.
- */
 @JsonIgnoreProperties(ignoreUnknown = true) // we don't use snapshot when POSTing restore
 public class SnapshotAction {
     public Snapshot snapshot;

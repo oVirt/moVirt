@@ -6,14 +6,11 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.base.OVirtNamedEntity;
+import org.ovirt.mobile.movirt.model.enums.HostStatus;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.TABLE;
 
@@ -25,58 +22,8 @@ public class Host extends OVirtNamedEntity implements OVirtContract.Host {
         return CONTENT_URI;
     }
 
-    public enum Status {
-        DOWN(R.drawable.down),
-        ERROR(R.drawable.error),
-        INITIALIZING(R.drawable.wait),
-        INSTALLING(R.drawable.host_installing),
-        INSTALL_FAILED(R.drawable.down),
-        MAINTENANCE(R.drawable.maintenance),
-        NON_OPERATIONAL(R.drawable.nonoperational),
-        NON_RESPONSIVE(R.drawable.down),
-        PENDING_APPROVAL(R.drawable.unconfigured),
-        PREPARING_FOR_MAINTENANCE(R.drawable.host_prepare_to_migrate),
-        CONNECTING(R.drawable.down),
-        REBOOT(R.drawable.wait),
-        UNASSIGNED(R.drawable.down),
-        UP(R.drawable.up),
-        INSTALLING_OS(R.drawable.unconfigured),
-        KDUMPING(R.drawable.wait);
-
-        Status(int resource) {
-            this.resource = resource;
-        }
-
-        private final int resource;
-
-        public int getResource() {
-            return resource;
-        }
-    }
-
-    public enum Command {
-        ACTIVATE(Status.MAINTENANCE, Status.ERROR, Status.PREPARING_FOR_MAINTENANCE,
-                Status.NON_OPERATIONAL, Status.INSTALL_FAILED),
-        DEACTIVATE(Status.UP, Status.ERROR, Status.NON_RESPONSIVE, Status.NON_OPERATIONAL,
-                Status.INSTALL_FAILED, Status.DOWN);
-
-        private final List<Status> validStates;
-
-        public List<Status> getValidStates() {
-            return validStates;
-        }
-
-        Command(Status... validStates) {
-            this.validStates = Arrays.asList(validStates);
-        }
-
-        public boolean canExecute(Status status) {
-            return validStates.contains(status);
-        }
-    }
-
     @DatabaseField(columnName = STATUS, canBeNull = false)
-    private Status status;
+    private HostStatus status;
 
     @DatabaseField(columnName = CLUSTER_ID, canBeNull = false)
     private String clusterId;
@@ -120,11 +67,11 @@ public class Host extends OVirtNamedEntity implements OVirtContract.Host {
     @DatabaseField(columnName = CPU_SPEED)
     private long cpuSpeed;
 
-    public Status getStatus() {
+    public HostStatus getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(HostStatus status) {
         this.status = status;
     }
 
@@ -321,7 +268,7 @@ public class Host extends OVirtNamedEntity implements OVirtContract.Host {
     public void initFromCursorHelper(CursorHelper cursorHelper) {
         super.initFromCursorHelper(cursorHelper);
 
-        setStatus(cursorHelper.getEnum(STATUS, Status.class));
+        setStatus(cursorHelper.getEnum(STATUS, HostStatus.class));
         setClusterId(cursorHelper.getString(CLUSTER_ID));
         setCpuUsage(cursorHelper.getDouble(CPU_USAGE));
         setMemoryUsage(cursorHelper.getDouble(MEMORY_USAGE));

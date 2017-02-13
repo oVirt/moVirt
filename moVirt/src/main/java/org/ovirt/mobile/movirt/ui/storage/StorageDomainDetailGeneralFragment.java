@@ -18,6 +18,7 @@ import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.StorageDomainFacade;
 import org.ovirt.mobile.movirt.model.StorageDomain;
+import org.ovirt.mobile.movirt.model.enums.StorageDomainStatus;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
@@ -105,8 +106,8 @@ public class StorageDomainDetailGeneralFragment extends RefreshableLoaderFragmen
 
     private void renderStorageDomain(StorageDomain storageDomain) {
         getActivity().setTitle(String.format(STORAGE_DOMAIN_DETAILS, storageDomain.getName()));
-        StorageDomain.Status status = storageDomain.getStatus();
-        statusView.setText(status != null ? status.toString().toLowerCase() : StorageDomain.Status.UNKNOWN.toString().toLowerCase());
+        StorageDomainStatus status = storageDomain.getStatus();
+        statusView.setText(status != null ? status.toString().toLowerCase() : StorageDomainStatus.UNKNOWN.toString().toLowerCase());
         if (storageDomain.getType() != null) {
             domainTypeView.setText(storageDomain.getType().toString());
         } else {

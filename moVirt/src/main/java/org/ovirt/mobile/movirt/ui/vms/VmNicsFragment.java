@@ -14,9 +14,10 @@ import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.property.version.support.VersionSupport;
 import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.listfragment.SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.VmBoundResumeSyncableBaseEntityListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
@@ -30,8 +31,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.PLUGGED;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class VmNicsFragment extends SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment<Nic> {
-    private static final String TAG = VmNicsFragment.class.getSimpleName();
+public class VmNicsFragment extends VmBoundResumeSyncableBaseEntityListFragment<Nic> {
 
     @Bean
     AccountPropertiesManager propertiesManager;
@@ -80,13 +80,13 @@ public class VmNicsFragment extends SnapshotEmbeddableVmBoundResumeSyncableBaseE
     @Override
     public SortEntry[] getSortEntries() {
         return new SortEntry[]{
-                new SortEntry(new ItemName(Nic.NAME), SortOrderType.A_TO_Z)
+                new SortEntry(new ItemName(NAME), SortOrderType.A_TO_Z)
         };
     }
 
     @Override
     public boolean isResumeSyncable() {
-        return !propertiesManager.getApiVersion().isV3Api(); //we fetch nics with vm in v3 API
+        return !VersionSupport.NICS_POLLED_WITH_VMS.isSupported(propertiesManager.getApiVersion());
     }
 
     @Background

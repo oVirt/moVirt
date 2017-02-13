@@ -29,7 +29,6 @@ import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.base.OVirtEntity;
-import org.ovirt.mobile.movirt.model.base.SnapshotEmbeddableEntity;
 import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -42,6 +41,7 @@ import org.ovirt.mobile.movirt.util.message.MessageHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -134,16 +134,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
         final ProviderFacade.BatchBuilder batch = provider.batch();
 
-        Collection<Trigger<E>> allTriggers = entityFacade.getAllTriggers();
+        Collection<Trigger<E>> allTriggers = entityFacade == null ? Collections.<Trigger<E>>emptyList() : entityFacade.getAllTriggers();
         updateLocalEntity(entity, clazz, allTriggers, batch);
         applyBatch(batch);
     }
 
     public <E extends OVirtEntity> SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz) {
+        return getUpdateEntitiesResponse(clazz, true);
+    }
+
+    public <E extends OVirtEntity> SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz, final boolean removeExpiredEntities) {
         return new SimpleResponse<List<E>>() {
             @Override
             public void onResponse(List<E> entities) throws RemoteException {
-                updateLocalEntities(entities, clazz);
+                updateLocalEntities(entities, clazz, removeExpiredEntities);
             }
         };
     }
@@ -172,12 +176,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     public <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz) throws RemoteException {
-        updateLocalEntities(remoteEntities, clazz, new Predicate<E>() {
-            @Override
-            public boolean apply(E entity) {
-                return true;
-            }
-        });
+        updateLocalEntities(remoteEntities, clazz, null, true);
+    }
+
+    public <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz, boolean removeExpiredEntities) throws RemoteException {
+        updateLocalEntities(remoteEntities, clazz, null, removeExpiredEntities);
     }
 
     public <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz, Predicate<E> scopePredicate)
@@ -191,6 +194,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final EntityMapper<E> mapper = EntityMapper.forEntity(clazz);
         final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
         Collection<Trigger<E>> allTriggers = new ArrayList<>();
+
         if (entityFacade != null) {
             allTriggers = entityFacade.getAllTriggers();
         }
@@ -205,7 +209,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         while (cursor.moveToNext()) {
             E localEntity = mapper.fromCursor(cursor);
-            if (scopePredicate.apply(localEntity)) {
+            if (scopePredicate == null || scopePredicate.apply(localEntity)) { // apply if there is no predicate
                 E remoteEntity = remoteEntityMap.get(localEntity.getId());
                 if (remoteEntity == null) { // local entity obsolete, schedule delete from db
                     if (removeExpiredEntities) { // except for partial updates
@@ -257,14 +261,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             E remoteEntity = pair.second;
 
             if (!localEntity.equals(remoteEntity)) {
-                boolean processTriggers = true;
-
-                if (remoteEntity instanceof SnapshotEmbeddableEntity) {
-                    SnapshotEmbeddableEntity snapshotEmbeddableEntity = (SnapshotEmbeddableEntity) localEntity;
-                    processTriggers = !snapshotEmbeddableEntity.isSnapshotEmbedded();
-                }
-
-                if (processTriggers && entityFacade != null) {
+                if (entityFacade != null) {
                     final List<Trigger<E>> triggers = entityFacade.getTriggers(localEntity, allTriggers);
                     Log.d(TAG, String.format("%s: processing triggers for id = %s", localEntity.getClass().getSimpleName(), remoteEntity.getId()));
 

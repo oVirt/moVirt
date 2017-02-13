@@ -29,6 +29,7 @@ import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Host;
+import org.ovirt.mobile.movirt.model.enums.HostCommand;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.SimpleResponse;
 import org.ovirt.mobile.movirt.rest.client.OVirtClient;
@@ -156,8 +157,8 @@ public class HostDetailActivity extends MovirtActivity
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (currentHost != null) {
             setTitle(String.format(HOST_DETAILS, currentHost.getName()));
-            menuActivate.setVisible(Host.Command.ACTIVATE.canExecute(currentHost.getStatus()));
-            menuDeactivate.setVisible(Host.Command.DEACTIVATE.canExecute(currentHost.getStatus()));
+            menuActivate.setVisible(HostCommand.ACTIVATE.canExecute(currentHost.getStatus()));
+            menuDeactivate.setVisible(HostCommand.DEACTIVATE.canExecute(currentHost.getStatus()));
         }
 
         return super.onPrepareOptionsMenu(menu);

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="org.ovirt.mobile.movirt.ui.SnapshotVmDetailGeneralFragment_">
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeGeneralContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/scrollView2">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp">
+
+                <TextView
+                    android:id="@+id/statusLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/statusLabel" />
+
+                <TextView
+                    android:id="@+id/statusView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/statusLabel" />
+
+                <TextView
+                    android:id="@+id/memoryLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/memorySize"
+                    android:layout_below="@id/statusLabel" />
+
+                <TextView
+                    android:id="@+id/memoryView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/memoryLabel" />
+
+                <TextView
+                    android:id="@+id/socketLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/sockets"
+                    android:layout_below="@id/memoryLabel" />
+
+                <TextView
+                    android:id="@+id/socketView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/socketLabel" />
+
+                <TextView
+                    android:id="@+id/coreLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/cores"
+                    android:layout_below="@id/socketLabel" />
+
+                <TextView
+                    android:id="@+id/coreView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/coreLabel" />
+
+                <TextView
+                    android:id="@+id/osLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/os"
+                    android:layout_below="@id/coreLabel" />
+
+                <TextView
+                    android:id="@+id/osView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/osLabel" />
+
+                <TextView
+                    android:id="@+id/clusterLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/cluster_and_version"
+                    android:layout_below="@id/osLabel" />
+
+                <TextView
+                    android:id="@+id/clusterView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/clusterLabel" />
+
+                <TextView
+                    android:id="@+id/dataCenterLabel"
+                    style="@style/VmStatsLabel"
+                    android:text="@string/data_center_and_version"
+                    android:layout_below="@id/clusterLabel" />
+
+                <TextView
+                    android:id="@+id/dataCenterView"
+                    style="@style/VmStat"
+                    android:layout_alignBaseline="@id/dataCenterLabel" />
+
+            </RelativeLayout>
+        </ScrollView>
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+</FrameLayout>

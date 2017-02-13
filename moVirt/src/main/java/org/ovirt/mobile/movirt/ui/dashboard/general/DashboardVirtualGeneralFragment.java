@@ -14,6 +14,7 @@ import org.ovirt.mobile.movirt.facade.DiskFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
@@ -24,7 +25,6 @@ import org.ovirt.mobile.movirt.util.usage.MemorySize;
 
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 
 @EFragment(R.layout.fragment_dashboard_virtual_general)
@@ -89,10 +89,10 @@ public class DashboardVirtualGeneralFragment extends DashboardGeneralFragment {
 
         switch (id) {
             case VM_LOADER:
-                loader = provider.query(Vm.class).empty(SNAPSHOT_ID).where(STATUS, Vm.Status.UP.toString()).asLoader();
+                loader = provider.query(Vm.class).where(STATUS, VmStatus.UP.toString()).asLoader();
                 break;
             case DISK_LOADER:
-                loader = provider.query(Disk.class).empty(SNAPSHOT_ID).asLoader();
+                loader = provider.query(Disk.class).asLoader();
                 break;
             default:
                 break;

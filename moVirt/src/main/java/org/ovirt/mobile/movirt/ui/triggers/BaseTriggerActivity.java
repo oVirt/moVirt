@@ -17,12 +17,12 @@ import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.EventCondition;
 import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
+import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.model.mapping.EntityType;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -132,7 +132,7 @@ public abstract class BaseTriggerActivity extends ActionBarActivity implements C
                 return new MemoryThresholdCondition(percentageLimit);
             }
             case R.id.radio_button_status: {
-                Vm.Status status = Vm.Status.valueOf(statusSpinner.getSelectedItem().toString().toUpperCase());
+                VmStatus status = VmStatus.fromString(statusSpinner.getSelectedItem().toString());
                 return new StatusCondition(status);
             }
             case R.id.radio_button_event: {

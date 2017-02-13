@@ -5,12 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.VmStatus;
 
 public class StatusCondition extends Condition<Vm> {
-    private final Vm.Status status;
+    private final VmStatus status;
 
     @JsonCreator
-    public StatusCondition(@JsonProperty("status") Vm.Status status) {
+    public StatusCondition(@JsonProperty("status") VmStatus status) {
         this.status = status;
     }
 
@@ -29,7 +30,7 @@ public class StatusCondition extends Condition<Vm> {
         return "Status is " + getStatus().toString();
     }
 
-    public Vm.Status getStatus() {
+    public VmStatus getStatus() {
         return status;
     }
 }

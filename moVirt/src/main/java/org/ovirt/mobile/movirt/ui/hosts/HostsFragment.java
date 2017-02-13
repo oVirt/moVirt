@@ -10,6 +10,7 @@ import android.widget.TextView;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Host;
+import org.ovirt.mobile.movirt.model.enums.HostStatus;
 import org.ovirt.mobile.movirt.ui.listfragment.ClusterBoundBaseEntityListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
@@ -46,7 +47,7 @@ public class HostsFragment extends ClusterBoundBaseEntityListFragment<Host> {
                     String status = cursor.getString(cursor.getColumnIndex(STATUS));
                     if (status != null) {
                         ImageView imageView = (ImageView) view;
-                        Host.Status hostStatus = Host.Status.valueOf(status);
+                        HostStatus hostStatus = HostStatus.fromString(status);
                         imageView.setImageResource(hostStatus.getResource());
                     }
                 } else if (columnIndex == cursor.getColumnIndex(CPU_USAGE)) {

@@ -1,8 +1,5 @@
 package org.ovirt.mobile.movirt.ui.dashboard;
 
-/**
- * Created by suomiy on 5/16/16.
- */
 public class DashboardEntityStatus {
     private int count = 0;
     private Integer iconResourceId = 0;

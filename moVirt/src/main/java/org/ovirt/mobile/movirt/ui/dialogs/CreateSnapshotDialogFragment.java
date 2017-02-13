@@ -21,13 +21,10 @@ import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.VmCommand;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.dto.Snapshot;
 import org.springframework.util.StringUtils;
-
-/**
- * Created by suomiy on 15/02/16.
- */
 
 @EFragment
 public class CreateSnapshotDialogFragment extends DialogFragment {
@@ -76,7 +73,7 @@ public class CreateSnapshotDialogFragment extends DialogFragment {
         persistMemory = (CheckBox) view.findViewById(R.id.persist_memory);
         descriptionEdit = (EditText) view.findViewById(R.id.description_edit);
 
-        if (Vm.Command.SAVE_MEMORY.canExecute(currentVm.getStatus())) {
+        if (VmCommand.SAVE_MEMORY.canExecute(currentVm.getStatus())) {
             saveMemoryLayout.setVisibility(View.VISIBLE);
             persistMemory.setChecked(true);
         }

@@ -26,9 +26,10 @@ import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.model.Snapshot;
+import org.ovirt.mobile.movirt.model.SnapshotDisk;
+import org.ovirt.mobile.movirt.model.SnapshotNic;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.rest.Request;
 import org.ovirt.mobile.movirt.rest.RequestHandler;
 import org.ovirt.mobile.movirt.rest.Response;
@@ -54,7 +55,6 @@ import static org.ovirt.mobile.movirt.rest.RestHelper.setupAuth;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class OVirtClient {
-    private static final String TAG = OVirtClient.class.getSimpleName();
 
     @RestService
     OVirtRestClient restClient;
@@ -294,10 +294,6 @@ public class OVirtClient {
         };
     }
 
-    public void getHost(final String hostId, Response<Host> response) {
-        requestHandler.fireRestRequest(getHostRequest(hostId), response);
-    }
-
     @NonNull
     public Request<StorageDomain> getStorageDomainRequest(final String storageDomainId) {
         return new RestClientRequest<StorageDomain>() {
@@ -307,47 +303,6 @@ public class OVirtClient {
                         restClient.getStorageDomainV3(storageDomainId) :
                         restClient.getStorageDomainV4(storageDomainId);
                 return wrapper.toEntity();
-            }
-        };
-    }
-
-    public void getStorageDomain(final String storageDomainId, Response<StorageDomain> response) {
-        requestHandler.fireRestRequest(getStorageDomainRequest(storageDomainId), response);
-    }
-
-    // currently not used
-    public Request<Disk> getDiskRequest(final String vmId, final String id) {
-        return getDiskRequest(vmId, null, id);
-    }
-
-    @NonNull
-    public Request<Disk> getDiskRequest(final String vmId, final String snapshotId, final String id) {
-        final boolean isSnapshotEmbedded = snapshotId != null;
-
-        return new RestClientRequest<Disk>() {
-            @Override
-            public Disk fire() {
-                org.ovirt.mobile.movirt.rest.dto.Disk wrapper;
-                Disk entity;
-
-                if (isSnapshotEmbedded) {
-                    if (version.isV3Api()) {
-                        wrapper = restClient.getDiskV3(vmId, snapshotId, id);
-                    } else {
-                        wrapper = restClient.getDiskV4(vmId, snapshotId, id);
-                    }
-                    entity = wrapper.toEntity();
-                    setVmId(entity, vmId);
-                } else {
-                    if (version.isV3Api()) {
-                        wrapper = restClient.getDiskV3(vmId, id);
-                    } else {
-                        wrapper = restClient.getDiskV4(id);
-                    }
-                    entity = wrapper.toEntity();
-                }
-
-                return entity;
             }
         };
     }
@@ -364,44 +319,53 @@ public class OVirtClient {
         };
     }
 
-    public Request<List<Disk>> getDisksRequest(final String vmId, final String snapshotId) {
+    public Request<List<SnapshotDisk>> getSnapshotDisksRequest(final String vmId, final String snapshotId) {
+        return new RestClientRequest<List<SnapshotDisk>>() {
+            @Override
+            public List<SnapshotDisk> fire() {
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.SnapshotDisk> snapshotDisks;
+
+                if (version.isV3Api()) {
+                    snapshotDisks = restClient.getSnapshotDisksV3(vmId, snapshotId);
+                } else {
+                    snapshotDisks = restClient.getSnapshotDisksV4(vmId, snapshotId);
+                }
+
+                for (org.ovirt.mobile.movirt.rest.dto.SnapshotDisk disk : snapshotDisks.getList()) {
+                    disk.vmId = vmId;
+                    disk.snapshotId = snapshotId;
+                }
+
+                return mapToEntities(snapshotDisks);
+            }
+        };
+    }
+
+    public Request<List<Disk>> getDisksRequest(final String vmId) {
         final boolean downloadAll = vmId == null;
-        final boolean isSnapshotEmbedded = snapshotId != null;
 
         return new RestClientRequest<List<Disk>>() {
             @Override
             public List<Disk> fire() {
-                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Disk> wrappers;
-                List<Disk> entities;
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Disk> disks;
 
                 if (downloadAll) {
                     if (version.isV3Api()) {
-                        wrappers = restClient.getDisksV3();
+                        disks = restClient.getDisksV3();
                     } else {
-                        wrappers = restClient.getDisksV4();
+                        disks = restClient.getDisksV4();
                     }
-                    entities = mapToEntities(wrappers);
-                } else if (isSnapshotEmbedded) {
-                    if (version.isV3Api()) {
-                        wrappers = restClient.getDisksV3(vmId, snapshotId);
-                    } else {
-                        wrappers = restClient.getDisksV4(vmId, snapshotId);
-                    }
-                    entities = mapToEntities(wrappers);
-                    setVmId(entities, vmId);
                 } else {
                     VersionSupport.VM_DISKS.throwIfNotSupported(version);
 
                     if (version.isV3Api()) {
-                        wrappers = restClient.getDisksV3(vmId);
+                        disks = restClient.getDisksV3(vmId);
                     } else {
-                        wrappers = restClient.getDisksV4(vmId);
+                        disks = restClient.getDisksV4(vmId);
                     }
-
-                    entities = mapToEntities(wrappers);
                 }
 
-                return entities;
+                return mapToEntities(disks);
             }
         };
     }
@@ -430,69 +394,41 @@ public class OVirtClient {
         }, response);
     }
 
-    public Request<Nic> getNicRequest(final String vmId, final String id) {
-        return getNicRequest(vmId, null, id);
-    }
-
-    @NonNull
-    public Request<Nic> getNicRequest(final String vmId, final String snapshotId, final String id) {
-        return new RestClientRequest<Nic>() {
+    public Request<List<SnapshotNic>> getSnapshotNicsRequest(final String vmId, final String snapshotId) {
+        return new RestClientRequest<List<SnapshotNic>>() {
             @Override
-            public Nic fire() {
-                org.ovirt.mobile.movirt.rest.dto.Nic wrapper;
-                Nic entity;
+            public List<SnapshotNic> fire() {
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.SnapshotNic> snapshotNics;
 
-                if (snapshotId == null) {
-                    if (version.isV3Api()) {
-                        wrapper = restClient.getNicV3(vmId, id);
-                    } else {
-                        wrapper = restClient.getNicV4(vmId, id);
-                    }
-                    entity = wrapper.toEntity();
-                    setVmId(entity, vmId);
+                if (version.isV3Api()) {
+                    snapshotNics = restClient.getSnapshotNicsV3(vmId, snapshotId);
                 } else {
-                    if (version.isV3Api()) {
-                        wrapper = restClient.getNicV3(vmId, snapshotId, id);
-                    } else {
-                        wrapper = restClient.getNicV4(vmId, snapshotId, id);
-                    }
-                    entity = wrapper.toEntity();
+                    snapshotNics = restClient.getSnapshotNicsV4(vmId, snapshotId);
                 }
 
-                return entity;
+                for (org.ovirt.mobile.movirt.rest.dto.SnapshotNic nic : snapshotNics.getList()) {
+                    nic.vmId = vmId;
+                    nic.snapshotId = snapshotId;
+                }
+
+                return mapToEntities(snapshotNics);
             }
         };
     }
 
     public Request<List<Nic>> getNicsRequest(final String vmId) {
-        return getNicsRequest(vmId, null);
-    }
-
-    public Request<List<Nic>> getNicsRequest(final String vmId, final String snapshotId) {
         return new RestClientRequest<List<Nic>>() {
             @Override
             public List<Nic> fire() {
-                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Nic> wrappers;
-                List<Nic> entities;
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Nic> nics;
 
-                if (snapshotId == null) {
-                    if (version.isV3Api()) {
-                        wrappers = restClient.getNicsV3(vmId);
-                    } else {
-                        wrappers = restClient.getNicsV4(vmId);
-                    }
-                    entities = mapToEntities(wrappers);
-                    setVmId(entities, vmId);
+                if (version.isV3Api()) {
+                    nics = restClient.getNicsV3(vmId);
                 } else {
-                    if (version.isV3Api()) {
-                        wrappers = restClient.getNicsV3(vmId, snapshotId);
-                    } else {
-                        wrappers = restClient.getNicsV4(vmId, snapshotId);
-                    }
-                    entities = mapToEntities(wrappers);
+                    nics = restClient.getNicsV4(vmId);
                 }
 
-                return entities;
+                return mapToEntities(nics);
             }
         };
     }
@@ -514,24 +450,24 @@ public class OVirtClient {
         return new RestClientRequest<List<Vm>>() {
             @Override
             public List<Vm> fire() {
-                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Vm> wrappers;
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Vm> vms;
 
                 if (propertiesManager.hasAdminPermissions()) {
                     int maxVms = sharedPreferencesHelper.getMaxVms();
                     String query = sharedPreferencesHelper.getStringPref(SettingsKey.VMS_SEARCH_QUERY);
                     if (StringUtils.isEmpty(query)) {
-                        wrappers = version.isV3Api() ? restClient.getVmsV3(maxVms) :
+                        vms = version.isV3Api() ? restClient.getVmsV3(maxVms) :
                                 restClient.getVmsV4(maxVms);
                     } else {
-                        wrappers = version.isV3Api() ? restClient.getVmsV3(query, maxVms) :
+                        vms = version.isV3Api() ? restClient.getVmsV3(query, maxVms) :
                                 restClient.getVmsV4(query, maxVms);
                     }
                 } else {
-                    wrappers = version.isV3Api() ? restClient.getVmsV3(-1) :
+                    vms = version.isV3Api() ? restClient.getVmsV3(-1) :
                             restClient.getVmsV4(-1);
                 }
 
-                return mapToEntities(wrappers);
+                return mapToEntities(vms);
             }
         };
     }
@@ -552,19 +488,19 @@ public class OVirtClient {
         return new RestClientRequest<List<Snapshot>>() {
             @Override
             public List<Snapshot> fire() {
-                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Snapshot> wrappers;
-                List<Snapshot> entities;
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Snapshot> snapshots;
 
                 if (version.isV3Api()) {
-                    wrappers = restClient.getSnapshotsV3(vmId);
+                    snapshots = restClient.getSnapshotsV3(vmId);
                 } else {
-                    wrappers = restClient.getSnapshotsV4(vmId);
+                    snapshots = restClient.getSnapshotsV4(vmId);
                 }
 
-                entities = mapToEntities(wrappers);
-                setVmId(entities, vmId); // Active VM Snapshot doesn't include this
+                for (org.ovirt.mobile.movirt.rest.dto.Snapshot snapshot : snapshots.getList()) {
+                    snapshot.vmId = vmId; // Active VM Snapshot doesn't include this
+                }
 
-                return entities;
+                return mapToEntities(snapshots);
             }
         };
     }
@@ -573,19 +509,17 @@ public class OVirtClient {
         return new RestClientRequest<Snapshot>() {
             @Override
             public Snapshot fire() {
-                org.ovirt.mobile.movirt.rest.dto.Snapshot wrapper;
-                Snapshot entity;
+                org.ovirt.mobile.movirt.rest.dto.Snapshot snapshot;
 
                 if (version.isV3Api()) {
-                    wrapper = restClient.getSnapshotV3(vmId, snapshotId);
+                    snapshot = restClient.getSnapshotV3(vmId, snapshotId);
                 } else {
-                    wrapper = restClient.getSnapshotV4(vmId, snapshotId);
+                    snapshot = restClient.getSnapshotV4(vmId, snapshotId);
                 }
 
-                entity = wrapper.toEntity();
-                setVmId(entity, vmId);
+                snapshot.vmId = vmId; // Active VM Snapshot doesn't include this
 
-                return entity;
+                return snapshot.toEntity();
             }
         };
     }
@@ -658,20 +592,6 @@ public class OVirtClient {
             }
         }
         return entities;
-    }
-
-    private <E extends OVirtContract.HasVm> void setVmId(E entity, String vmId) {
-        if (entity != null && !StringUtils.isEmpty(vmId)) {
-            entity.setVmId(vmId);
-        }
-    }
-
-    private <E extends OVirtContract.HasVm> void setVmId(List<E> entities, String vmId) {
-        if (entities != null && !StringUtils.isEmpty(vmId)) {
-            for (E entity : entities) {
-                entity.setVmId(vmId);
-            }
-        }
     }
 
     private interface WrapPredicate<E> {

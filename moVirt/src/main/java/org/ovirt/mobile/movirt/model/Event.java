@@ -6,8 +6,8 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.base.BaseEntity;
+import org.ovirt.mobile.movirt.model.enums.EventSeverity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 
@@ -29,23 +29,6 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
         public static final int USER_VDC_LOGOUT = 31;
     }
 
-    public enum Severity {
-        NORMAL(R.drawable.log_normal),
-        WARNING(R.drawable.log_warning),
-        ERROR(R.drawable.log_error),
-        ALERT(R.drawable.log_alert);
-
-        private final int resource;
-
-        Severity(int resource) {
-            this.resource = resource;
-        }
-
-        public int getResource() {
-            return resource;
-        }
-    }
-
     @DatabaseField(columnName = ID, id = true)
     private int id;
 
@@ -53,7 +36,7 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
     private String description;
 
     @DatabaseField(columnName = SEVERITY, canBeNull = false)
-    private Severity severity;
+    private EventSeverity severity;
 
     @DatabaseField(columnName = TIME, canBeNull = false)
     private Timestamp time;
@@ -91,11 +74,11 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
         this.description = description;
     }
 
-    public Severity getSeverity() {
+    public EventSeverity getSeverity() {
         return severity;
     }
 
-    public void setSeverity(Severity severity) {
+    public void setSeverity(EventSeverity severity) {
         this.severity = severity;
     }
 
@@ -174,7 +157,7 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
     protected void initFromCursorHelper(CursorHelper cursorHelper) {
         setId(cursorHelper.getInt(ID));
         setDescription(cursorHelper.getString(DESCRIPTION));
-        setSeverity(cursorHelper.getEnum(SEVERITY, Severity.class));
+        setSeverity(cursorHelper.getEnum(SEVERITY, EventSeverity.class));
         setTime(cursorHelper.getTimestamp(TIME));
         setVmId(cursorHelper.getString(VM_ID));
         setHostId(cursorHelper.getString(HOST_ID));

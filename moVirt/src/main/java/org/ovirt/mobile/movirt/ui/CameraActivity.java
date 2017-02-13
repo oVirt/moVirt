@@ -46,6 +46,8 @@ import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.HostStatus;
+import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsCursorAdapter;
@@ -54,7 +56,6 @@ import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 import java.io.IOException;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.BaseEntity.ID;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
@@ -163,7 +164,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
                     textView.setText(vmName);
                 } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
                     ImageView imageView = (ImageView) view;
-                    Vm.Status status = Vm.Status.valueOf(cursor.getString(cursor.getColumnIndex(STATUS)));
+                    VmStatus status = VmStatus.valueOf(cursor.getString(cursor.getColumnIndex(STATUS)));
                     imageView.setImageResource(status.getResource());
                 }
                 return true;
@@ -180,7 +181,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         cursorVmsAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
             @Override
             public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                final ProviderFacade.QueryBuilder<Vm> query = providerFacade.query(Vm.class).empty(SNAPSHOT_ID);
+                final ProviderFacade.QueryBuilder<Vm> query = providerFacade.query(Vm.class);
 
                 if (lastHost == null) {
                     return query.where(HOST_ID, "0").asLoader();
@@ -427,7 +428,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         textCpuUsage.setText(String.format("%.2f%%", host.getCpuUsage()));
         textMemoryUsage.setText(String.format("%.2f%%", host.getMemoryUsage()));
         //show status icon
-        Host.Status status = host.getStatus();
+        HostStatus status = host.getStatus();
         imageStatus.setImageResource(status.getResource());
 
         panelParent.setVisibility(View.VISIBLE);

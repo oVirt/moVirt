@@ -8,15 +8,13 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
-import org.ovirt.mobile.movirt.model.Nic;
+import org.ovirt.mobile.movirt.model.SnapshotNic;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.listfragment.SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.SnapshotBoundResumeSyncableBaseEntityListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
@@ -30,14 +28,10 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.PLUGGED;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class SnapshotNicsFragment extends SnapshotEmbeddableVmBoundResumeSyncableBaseEntityListFragment<Nic> {
-    private static final String TAG = SnapshotNicsFragment.class.getSimpleName();
-
-    @Bean
-    AccountPropertiesManager propertiesManager;
+public class SnapshotNicsFragment extends SnapshotBoundResumeSyncableBaseEntityListFragment<SnapshotNic> {
 
     public SnapshotNicsFragment() {
-        super(Nic.class);
+        super(SnapshotNic.class);
     }
 
     @Override
@@ -80,7 +74,7 @@ public class SnapshotNicsFragment extends SnapshotEmbeddableVmBoundResumeSyncabl
     @Override
     public SortEntry[] getSortEntries() {
         return new SortEntry[]{
-                new SortEntry(new ItemName(Nic.NAME), SortOrderType.A_TO_Z)
+                new SortEntry(new ItemName(NAME), SortOrderType.A_TO_Z)
         };
     }
 
@@ -95,6 +89,6 @@ public class SnapshotNicsFragment extends SnapshotEmbeddableVmBoundResumeSyncabl
     @Background
     @Override
     public void onRefresh() {
-        entityFacade.syncAll(new ProgressBarResponse<List<Nic>>(this), getVmId(), getSnapshotId());
+        entityFacade.syncAll(new ProgressBarResponse<List<SnapshotNic>>(this), getVmId(), getSnapshotId());
     }
 }
