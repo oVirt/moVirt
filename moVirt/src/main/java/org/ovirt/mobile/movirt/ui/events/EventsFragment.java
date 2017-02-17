@@ -132,6 +132,12 @@ public class EventsFragment extends RefreshableLoaderFragment {
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        lastSelectedTextView = null;
+    }
+
+    @Override
     public void restartLoader() {
         getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
     }

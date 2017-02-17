@@ -18,9 +18,6 @@ repositories {
         url 'https://oss.sonatype.org/content/repositories/snapshots/'
     }
 
-    maven {
-        url "https://repo.spring.io/milestone"
-    }
 }
 
 apply plugin: 'android-apt'
@@ -30,7 +27,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.j256.ormlite:ormlite-android:4.+'
     compile 'com.blandware.android.atleap:core:+@aar'
-    compile 'org.springframework.android:spring-android-rest-template:+'
+    compile 'org.springframework.android:spring-android-rest-template:2.0.0.M3'
     compile 'com.fasterxml.jackson.core:jackson-core:2.6.3'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.6.3'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.6.3'
