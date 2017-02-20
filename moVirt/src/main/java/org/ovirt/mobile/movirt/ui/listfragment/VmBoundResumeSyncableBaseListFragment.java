@@ -10,12 +10,12 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.HasVm.VM_ID;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public abstract class VmBoundResumeSyncableBaseEntityListFragment<E extends OVirtEntity & OVirtContract.HasVmAbstract> extends ResumeSyncableBaseEntityListFragment<E> {
+public abstract class VmBoundResumeSyncableBaseListFragment<E extends OVirtEntity & OVirtContract.HasVmAbstract> extends ResumeSyncableBaseListFragment<E> {
 
     @InstanceState
     protected String vmId;
 
-    public VmBoundResumeSyncableBaseEntityListFragment(Class<E> clazz) {
+    public VmBoundResumeSyncableBaseListFragment(Class<E> clazz) {
         super(clazz);
     }
 

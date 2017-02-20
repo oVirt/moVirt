@@ -4,7 +4,8 @@ import java.util.HashMap;
 
 public enum SortOrderType {
     A_TO_Z("A to Z", "Z to A"),
-    LOW_TO_HIGH("Low to High", "High to Low"),;
+    LOW_TO_HIGH("Low to High", "High to Low"),
+    OLDEST_TO_LATEST("Oldest", "Latest");
 
     private String ascDisplayName;
     private String descDisplayName;

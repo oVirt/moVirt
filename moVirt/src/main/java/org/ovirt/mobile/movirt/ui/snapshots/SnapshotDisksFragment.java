@@ -13,7 +13,7 @@ import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.SnapshotDisk;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.listfragment.SnapshotBoundResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.SnapshotBoundResumeSyncableBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
@@ -26,7 +26,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotDisk.SIZE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotDisk.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class SnapshotDisksFragment extends SnapshotBoundResumeSyncableBaseEntityListFragment<SnapshotDisk> {
+public class SnapshotDisksFragment extends SnapshotBoundResumeSyncableBaseListFragment<SnapshotDisk> {
 
     public SnapshotDisksFragment() {
         super(SnapshotDisk.class);

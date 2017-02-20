@@ -14,7 +14,7 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.listfragment.VmBoundResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.VmBoundResumeSyncableBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.CustomSort;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.DateUtils;
@@ -28,7 +28,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.SNAPSHOT_S
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.TYPE;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class VmSnapshotsFragment extends VmBoundResumeSyncableBaseEntityListFragment<Snapshot> {
+public class VmSnapshotsFragment extends VmBoundResumeSyncableBaseListFragment<Snapshot> {
     private static final String TAG = VmSnapshotsFragment.class.getSimpleName();
 
     public VmSnapshotsFragment() {

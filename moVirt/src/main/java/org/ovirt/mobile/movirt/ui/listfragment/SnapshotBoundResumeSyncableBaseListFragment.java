@@ -11,13 +11,13 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.HasSnapshot.SNAPSHOT_ID;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public abstract class SnapshotBoundResumeSyncableBaseEntityListFragment<E extends OVirtEntity & OVirtContract.HasSnapshot & HasVmAbstract>
-        extends VmBoundResumeSyncableBaseEntityListFragment<E> {
+public abstract class SnapshotBoundResumeSyncableBaseListFragment<E extends OVirtEntity & OVirtContract.HasSnapshot & HasVmAbstract>
+        extends VmBoundResumeSyncableBaseListFragment<E> {
 
     @InstanceState
     protected String snapshotId;
 
-    public SnapshotBoundResumeSyncableBaseEntityListFragment(Class<E> clazz) {
+    public SnapshotBoundResumeSyncableBaseListFragment(Class<E> clazz) {
         super(clazz);
     }
 

@@ -15,12 +15,12 @@ import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
-import org.ovirt.mobile.movirt.ui.MovirtActivity;
-import org.ovirt.mobile.movirt.ui.events.EventsFragment;
-import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
+import org.ovirt.mobile.movirt.ui.TempEventsMovirtActivity;
+import org.ovirt.mobile.movirt.ui.events.StorageDomainEventsFragment;
+import org.ovirt.mobile.movirt.ui.events.StorageDomainEventsFragment_;
 
 @EActivity(R.layout.activity_storage_domain_detail)
-public class StorageDomainDetailActivity extends MovirtActivity implements HasProgressBar {
+public class StorageDomainDetailActivity extends TempEventsMovirtActivity implements HasProgressBar {
 
     private static final String TAG = StorageDomainDetailActivity.class.getSimpleName();
 
@@ -50,8 +50,8 @@ public class StorageDomainDetailActivity extends MovirtActivity implements HasPr
         Uri storageDomainUri = getIntent().getData();
         String storageDomainId = storageDomainUri.getLastPathSegment();
 
-        EventsFragment eventsFragment = new EventsFragment_();
-        eventsFragment.setFilterStorageDomainId(storageDomainId);
+        StorageDomainEventsFragment eventsFragment = new StorageDomainEventsFragment_();
+        eventsFragment.setStorageDomainId(storageDomainId);
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
                 getSupportFragmentManager(), PAGER_TITLES,

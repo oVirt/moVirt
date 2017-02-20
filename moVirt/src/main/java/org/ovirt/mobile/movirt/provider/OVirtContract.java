@@ -239,7 +239,7 @@ public interface OVirtContract {
     String PATH_EVENTS = "events";
     String PATH_EVENT = "events/#";
 
-    interface Event extends BaseEntity, HasHost, HasCluster, HasDataCenter, HasStorageDomain {
+    interface Event extends BaseEntity, HasHost, HasVm, HasCluster, HasDataCenter, HasStorageDomain {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_EVENTS).build();
 
         String TABLE = "events";
@@ -247,7 +247,7 @@ public interface OVirtContract {
         String DESCRIPTION = "description";
         String SEVERITY = "severity";
         String TIME = "time";
-        String VM_ID = "vm_id";
+        String TEMPORARY = "temporary";
     }
 
     String PATH_CONNECTION_INFOS = "connectioninfos";

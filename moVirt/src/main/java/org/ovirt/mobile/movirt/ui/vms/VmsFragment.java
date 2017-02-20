@@ -13,7 +13,7 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.ui.listfragment.ClusterBoundBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.ClusterBoundBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
@@ -25,7 +25,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class VmsFragment extends ClusterBoundBaseEntityListFragment<Vm> {
+public class VmsFragment extends ClusterBoundBaseListFragment<Vm> {
 
     private static final String TAG = VmsFragment.class.getSimpleName();
 

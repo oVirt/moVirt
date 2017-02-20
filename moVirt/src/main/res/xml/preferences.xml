@@ -38,12 +38,20 @@
         android:title="@string/prefs_periodic_sync_interval"/>
 
     <EditTextPreference
-        android:defaultValue="@integer/default_max_events"
+        android:defaultValue="@integer/default_max_events_polled"
+        android:inputType="number"
+        android:key="max_events_polled"
+        android:persistent="true"
+        android:summary="@string/prefs_max_events_polled_summary"
+        android:title="@string/prefs_max_events_polled"/>
+
+    <EditTextPreference
+        android:defaultValue="@integer/default_max_events_stored"
         android:inputType="number"
         android:key="max_events_stored"
         android:persistent="true"
-        android:summary="@string/prefs_max_events_locally_summary"
-        android:title="@string/prefs_max_events_locally"/>
+        android:summary="@string/prefs_max_events_stored_summary"
+        android:title="@string/prefs_max_events_stored"/>
 
     <org.ovirt.mobile.movirt.ui.dialogs.WebMessageEditTextPreference
         android:defaultValue="@string/default_events_search_query"

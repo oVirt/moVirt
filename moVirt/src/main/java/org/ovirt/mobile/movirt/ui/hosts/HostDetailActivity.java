@@ -35,17 +35,17 @@ import org.ovirt.mobile.movirt.rest.SimpleResponse;
 import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
-import org.ovirt.mobile.movirt.ui.MovirtActivity;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
+import org.ovirt.mobile.movirt.ui.TempEventsMovirtActivity;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
-import org.ovirt.mobile.movirt.ui.events.EventsFragment;
-import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
+import org.ovirt.mobile.movirt.ui.events.HostEventsFragment;
+import org.ovirt.mobile.movirt.ui.events.HostEventsFragment_;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
 
 @EActivity(R.layout.activity_host_detail)
 @OptionsMenu(R.menu.host)
-public class HostDetailActivity extends MovirtActivity
+public class HostDetailActivity extends TempEventsMovirtActivity
         implements HasProgressBar, LoaderManager.LoaderCallbacks<Cursor>,
         ConfirmDialogFragment.ConfirmDialogListener {
 
@@ -89,10 +89,10 @@ public class HostDetailActivity extends MovirtActivity
 
     private void initPagers() {
         VmsFragment vmsFragment = new VmsFragment_();
-        EventsFragment eventsFragment = new EventsFragment_();
+        HostEventsFragment eventsFragment = new HostEventsFragment_();
 
         vmsFragment.setHostId(hostId);
-        eventsFragment.setFilterHostId(hostId);
+        eventsFragment.setHostId(hostId);
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
                 getSupportFragmentManager(), PAGER_TITLES,
