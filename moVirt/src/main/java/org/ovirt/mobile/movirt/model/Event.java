@@ -56,6 +56,9 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
     @DatabaseField(columnName = DATA_CENTER_ID)
     private String dataCenterId;
 
+    @DatabaseField(columnName = TEMPORARY)
+    private boolean temporary;
+
     private transient int code;
 
     public Integer getId() {
@@ -130,6 +133,18 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
         return dataCenterId;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public boolean isTemporary() {
+        return temporary;
+    }
+
+    public void setTemporary(boolean temporary) {
+        this.temporary = temporary;
+    }
+
     public int getCode() {
         return code;
     }
@@ -149,6 +164,7 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
         values.put(CLUSTER_ID, clusterId);
         values.put(STORAGE_DOMAIN_ID, storageDomainId);
         values.put(DATA_CENTER_ID, dataCenterId);
+        values.put(TEMPORARY, temporary);
 
         return values;
     }
@@ -164,5 +180,6 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
         setClusterId(cursorHelper.getString(CLUSTER_ID));
         setStorageDomainId(cursorHelper.getString(STORAGE_DOMAIN_ID));
         setDataCenterId(cursorHelper.getString(DATA_CENTER_ID));
+        setTemporary(cursorHelper.getBoolean(TEMPORARY));
     }
 }

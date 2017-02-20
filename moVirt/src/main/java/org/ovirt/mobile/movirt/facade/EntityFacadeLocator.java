@@ -72,7 +72,7 @@ public class EntityFacadeLocator {
     }
 
     @SuppressWarnings("unchecked")
-    public <E extends OVirtEntity> EntityFacade<E> getFacade(Class<E> clazz) {
+    public <E extends OVirtEntity> EntityFacade<E> getFacade(Class<?> clazz) {
         return (EntityFacade<E>) facades.get(clazz);
     }
 }

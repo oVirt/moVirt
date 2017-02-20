@@ -9,7 +9,8 @@ public enum SettingsKey {
     PERIODIC_SYNC("periodic_sync"),
 
     PERIODIC_SYNC_INTERVAL("periodic_sync_interval"),
-    MAX_EVENTS("max_events_stored"),
+    MAX_EVENTS_POLLED("max_events_polled"),
+    MAX_EVENTS_STORED("max_events_stored"),
     MAX_VMS("max_vms_polled"),
 
     EVENTS_SEARCH_QUERY("events_search_query"),

@@ -11,13 +11,13 @@ import org.ovirt.mobile.movirt.ui.SelectedClusterAware;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.HasCluster.CLUSTER_ID;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public abstract class ClusterBoundBaseEntityListFragment<E extends OVirtEntity & OVirtContract.HasCluster>
-        extends BaseEntityListFragment<E> implements SelectedClusterAware {
+public abstract class ClusterBoundBaseListFragment<E extends OVirtEntity & OVirtContract.HasCluster>
+        extends FacadeBaseListFragment<E> implements SelectedClusterAware {
 
     @InstanceState
     protected String clusterId;
 
-    public ClusterBoundBaseEntityListFragment(Class<E> clazz) {
+    public ClusterBoundBaseListFragment(Class<E> clazz) {
         super(clazz);
     }
 

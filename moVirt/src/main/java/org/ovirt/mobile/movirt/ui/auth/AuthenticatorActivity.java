@@ -35,6 +35,7 @@ import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.manager.OnThread;
+import org.ovirt.mobile.movirt.provider.EventProviderHelper;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
@@ -97,6 +98,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     EventsHandler eventsHandler;
     @Bean
     ProviderFacade providerFacade;
+    @Bean
+    EventProviderHelper eventProviderHelper;
     @InstanceState
     URL endpointUrl;
     @InstanceState
@@ -304,7 +307,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         }
     }
 
-    void onLoginResultReceived(String token) {
+    void onLoginResultReceived(String token) throws EventProviderHelper.EventProviderException {
         if (TextUtils.isEmpty(token)) {
             setLoginInProgress(false);
             messageHelper.showError(ErrorType.LOGIN,
@@ -315,7 +318,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         if (propertiesManager.isFirstLogin()) {
             // there is a different set of events and since we are counting only the increments,
             // this ones are not needed anymore
-            eventsHandler.deleteEvents();
+            eventProviderHelper.deleteEvents();
             propertiesManager.setFirstLogin(false);
         }
 

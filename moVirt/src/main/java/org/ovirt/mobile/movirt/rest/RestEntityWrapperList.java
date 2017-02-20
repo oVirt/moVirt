@@ -15,4 +15,8 @@ public abstract class RestEntityWrapperList<E extends RestEntityWrapper> {
     public List<E> getList() {
         return list;
     }
+
+    public void setList(List<E> list) {
+        this.list = list;
+    }
 }

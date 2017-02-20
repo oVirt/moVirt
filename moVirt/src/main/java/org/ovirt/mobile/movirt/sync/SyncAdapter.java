@@ -37,7 +37,9 @@ import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,20 +56,30 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @RootContext
     Context context;
+
     @Bean
     OVirtClient oVirtClient;
+
     @Bean
     ProviderFacade provider;
+
     @Bean
     EntityFacadeLocator entityFacadeLocator;
+
     @Bean
     EventsHandler eventsHandler;
+
     @Bean
     AccountPropertiesManager propertiesManager;
+
     @Bean
     NotificationHelper notificationHelper;
+
     @Bean
     MessageHelper messageHelper;
+
+    @Bean
+    SharedPreferencesHelper sharedPreferencesHelper;
 
     public SyncAdapter(Context context) {
         super(context, true);
@@ -98,7 +110,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 facadeSync(Host.class);
                 facadeSync(StorageDomain.class);
                 facadeSync(Disk.class);
-                eventsHandler.updateEvents(false);
+                if (sharedPreferencesHelper.isPollEventsEnabled()) {
+                    eventsHandler.syncAllEvents();
+                }
             } catch (Exception e) {
                 messageHelper.showError(e);
             } finally {
@@ -199,32 +213,35 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             allTriggers = entityFacade.getAllTriggers();
         }
 
+        ProviderFacade.BatchBuilder batch = provider.batch();
+        List<Pair<E, E>> entities = new ArrayList<>();
+
         final Cursor cursor = provider.query(clazz).asCursor();
+
         if (cursor == null) {
             return;
         }
 
-        ProviderFacade.BatchBuilder batch = provider.batch();
-        List<Pair<E, E>> entities = new ArrayList<>();
-
-        while (cursor.moveToNext()) {
-            E localEntity = mapper.fromCursor(cursor);
-            if (scopePredicate == null || scopePredicate.apply(localEntity)) { // apply if there is no predicate
-                E remoteEntity = remoteEntityMap.get(localEntity.getId());
-                if (remoteEntity == null) { // local entity obsolete, schedule delete from db
-                    if (removeExpiredEntities) { // except for partial updates
-                        Log.d(TAG, String.format("%s: scheduling delete for URI = %s", clazz.getSimpleName(), localEntity.getUri()));
-                        batch.delete(localEntity);
+        try {
+            while (cursor.moveToNext()) {
+                E localEntity = mapper.fromCursor(cursor);
+                if (scopePredicate == null || scopePredicate.apply(localEntity)) { // apply if there is no predicate
+                    E remoteEntity = remoteEntityMap.get(localEntity.getId());
+                    if (remoteEntity == null) { // local entity obsolete, schedule delete from db
+                        if (removeExpiredEntities) { // except for partial updates
+                            Log.d(TAG, String.format("%s: scheduling delete for URI = %s", clazz.getSimpleName(), localEntity.getUri()));
+                            batch.delete(localEntity);
+                        }
+                    } else { // existing entity, update stats if changed
+                        remoteEntityMap.remove(localEntity.getId());
+                        entities.add(new Pair<>(localEntity, remoteEntity));
                     }
-                } else { // existing entity, update stats if changed
-                    remoteEntityMap.remove(localEntity.getId());
-                    entities.add(new Pair<>(localEntity, remoteEntity));
                 }
             }
+            checkEntitiesChanged(entities, entityFacade, allTriggers, batch);
+        } finally {
+            ObjectUtils.closeSilently(cursor);
         }
-
-        checkEntitiesChanged(entities, entityFacade, allTriggers, batch);
-        cursor.close();
 
         for (E entity : remoteEntityMap.values()) {
             Log.d(TAG, String.format("%s: scheduling insert for id = %s", clazz.getSimpleName(), entity.getId()));

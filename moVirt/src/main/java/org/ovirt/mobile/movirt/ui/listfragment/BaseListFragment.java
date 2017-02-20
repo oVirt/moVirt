@@ -1,6 +1,5 @@
 package org.ovirt.mobile.movirt.ui.listfragment;
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -9,6 +8,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CursorAdapter;
@@ -20,37 +20,30 @@ import android.widget.Spinner;
 import com.melnykov.fab.FloatingActionButton;
 
 import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
-import org.androidannotations.annotations.ItemClick;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.facade.EntityFacade;
 import org.ovirt.mobile.movirt.facade.EntityFacadeLocator;
-import org.ovirt.mobile.movirt.model.base.OVirtEntity;
+import org.ovirt.mobile.movirt.model.base.BaseEntity;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.EndlessScrollListener;
 import org.ovirt.mobile.movirt.ui.HasLoader;
-import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.CustomSort;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
-import org.springframework.util.StringUtils;
-
-import java.util.List;
-
-import static org.ovirt.mobile.movirt.provider.OVirtContract.NamedEntity.NAME;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public abstract class BaseEntityListFragment<E extends OVirtEntity> extends RefreshableLoaderFragment
+public abstract class BaseListFragment<E extends BaseEntity<?>> extends RefreshableLoaderFragment
         implements HasLoader {
+
+    private static final int BASE_LOADER = 0;
 
     private static final int ITEMS_PER_PAGE = 20;
     private static final int ASCENDING_INDEX = 0, DESCENDING_INDEX = 1; // order spinner indexes
@@ -100,9 +93,7 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     @InstanceState
     public int orderSpinnerPosition;
 
-    protected EntityFacade<E> entityFacade;
-
-    private final Class<E> entityClass;
+    protected final Class<E> entityClass;
 
     private final TextWatcher textWatcher = new TextWatcher() {
         @Override
@@ -125,12 +116,17 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         public void onLoadMore(int page, int totalItemsCount) {
             loadMoreData(page);
         }
+
+        @Override
+        public void onScrollStateChanged(AbsListView view, int scrollState) {
+            BaseListFragment.this.onScrollStateChanged(view, scrollState);
+        }
     };
 
     protected int page = 1;
     protected CursorAdapterLoader cursorAdapterLoader;
 
-    protected BaseEntityListFragment(Class<E> clazz) {
+    protected BaseListFragment(Class<E> clazz) {
         this.entityClass = clazz;
     }
 
@@ -187,25 +183,30 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
             if (orderPosition == AdapterView.INVALID_POSITION) {
                 orderPosition = orderSpinnerPosition;
             }
-
             final SortEntry orderBy = (SortEntry) adapterView.getSelectedItem();
-            final SortOrderType sortOrderType = orderBy.getSortOrder();
 
-            ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(getActivity(),
-                    android.R.layout.simple_spinner_item, new String[]{
-                    sortOrderType.getAscDisplayName(), // ASCENDING_INDEX
-                    sortOrderType.getDescDisplayName() // DESCENDING_INDEX
-            });
-            spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-            orderSpinner.setAdapter(spinnerArrayAdapter);
-            orderSpinner.setSelection(orderPosition); // refreshes loader
+            setOrderSpinner(orderBy, orderPosition);
         }
 
         @Override
         public void onNothingSelected(AdapterView<?> adapterView) {
 
         }
+    }
+
+    public void setOrderSpinner(SortEntry orderBy, int orderPosition) {
+
+        final SortOrderType sortOrderType = orderBy.getSortOrder();
+
+        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_spinner_item, new String[]{
+                sortOrderType.getAscDisplayName(), // ASCENDING_INDEX
+                sortOrderType.getDescDisplayName() // DESCENDING_INDEX
+        });
+        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        orderSpinner.setAdapter(spinnerArrayAdapter);
+        orderSpinner.setSelection(orderPosition); // refreshes loader
     }
 
     @Override
@@ -215,8 +216,6 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
     @AfterViews
     protected void init() {
-        entityFacade = entityFacadeLocator.getFacade(entityClass);
-
         initSpinners();
         initAdapters();
         initListeners();
@@ -228,7 +227,12 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
                     android.R.layout.simple_spinner_item, getSortEntries());
             spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             orderBySpinner.setAdapter(spinnerArrayAdapter);
-            orderBySpinner.setSelection(orderBySpinnerPosition); // initializes orderSpinner
+
+            // initialize
+            orderBySpinner.setSelection(orderBySpinnerPosition);
+            final SortEntry orderBy = (SortEntry) orderBySpinner.getSelectedItem();
+            orderSpinnerPosition = (getDefaultOrder() == SortOrder.ASCENDING) ? ASCENDING_INDEX : DESCENDING_INDEX;
+            setOrderSpinner(orderBy, orderSpinnerPosition);
         } else {
             orderingLayout.setVisibility(View.GONE);
         }
@@ -248,11 +252,6 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
                 appendQuery(query);
 
-                String searchNameString = searchText.getText().toString();
-                if (!StringUtils.isEmpty(searchNameString)) {
-                    query.whereLike(NAME, "%" + searchNameString + "%");
-                }
-
                 final CustomSort customSort = getCustomSort();
 
                 if (customSort == null) {
@@ -269,7 +268,7 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
             }
         };
 
-        getLoaderManager().initLoader(0, null, cursorAdapterLoader);
+        getLoaderManager().initLoader(BASE_LOADER, null, cursorAdapterLoader);
     }
 
     protected void appendQuery(ProviderFacade.QueryBuilder<E> query) {
@@ -278,12 +277,15 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
 
     protected void initListeners() {
         listView.setOnScrollListener(endlessScrollListener);
+        listView.setOnItemLongClickListener(getOnItemLongClickListener());
 
         searchText.removeTextChangedListener(textWatcher);
         searchText.addTextChangedListener(textWatcher);
 
-        orderBySpinner.setOnItemSelectedListener(new OrderByItemSelectedListener());
-        orderSpinner.setOnItemSelectedListener(new OrderItemSelectedListener());
+        if (getCustomSort() == null) {
+            orderBySpinner.setOnItemSelectedListener(new OrderByItemSelectedListener());
+            orderSpinner.setOnItemSelectedListener(new OrderItemSelectedListener());
+        }
 
         fab.setColorPressed(Color.parseColor("#80cbc4"));
         fab.setColorRipple(getResources().getColor(R.color.abc_search_url_text_selected));
@@ -295,11 +297,23 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
         });
     }
 
-    public CustomSort getCustomSort() {
+    protected void onScrollStateChanged(AbsListView view, int scrollState) {
+        // left intentionally empty
+    }
+
+    protected AdapterView.OnItemLongClickListener getOnItemLongClickListener() {
         return null;
     }
 
-    public SortEntry[] getSortEntries() {
+    protected CustomSort getCustomSort() {
+        return null;
+    }
+
+    protected SortOrder getDefaultOrder() {
+        return SortOrder.ASCENDING;
+    }
+
+    protected SortEntry[] getSortEntries() {
         return new SortEntry[]{};
     }
 
@@ -320,12 +334,12 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     @UiThread(propagation = UiThread.Propagation.REUSE)
     @Override
     public void restartLoader() {
-        getLoaderManager().restartLoader(0, null, cursorAdapterLoader);
+        getLoaderManager().restartLoader(BASE_LOADER, null, cursorAdapterLoader);
     }
 
     @Override
     public void destroyLoader() {
-        getLoaderManager().destroyLoader(0);
+        getLoaderManager().destroyLoader(BASE_LOADER);
     }
 
     @Override
@@ -339,25 +353,6 @@ public abstract class BaseEntityListFragment<E extends OVirtEntity> extends Refr
     @Override
     public void onPause() {
         super.onPause();
-    }
-
-    @ItemClick(android.R.id.list)
-    protected void itemClicked(Cursor cursor) {
-        if (entityFacade != null) {
-            E entity = entityFacade.mapFromCursor(cursor);
-            Intent intent = entityFacade.getDetailIntent(entity, getActivity());
-            if (intent != null) {
-                startActivity(intent);
-            }
-        }
-    }
-
-    @Override
-    @Background
-    public void onRefresh() {
-        if (entityFacade != null) {
-            entityFacade.syncAll(new ProgressBarResponse<List<E>>(this));
-        }
     }
 
     protected abstract CursorAdapter createCursorAdapter();

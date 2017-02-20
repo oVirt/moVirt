@@ -47,6 +47,8 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptEncodingHeaderAndFactory;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setFilterHeader;
@@ -537,18 +539,29 @@ public class OVirtClient {
         requestHandler.fireRestRequest(new RestClientRequest<List<Event>>() {
             @Override
             public List<Event> fire() {
-                Events loadedEvents = null;
+                int maxEventsPolled = sharedPreferencesHelper.getMaxEventsPolled();
+                Events loadedEvents;
 
                 if (propertiesManager.hasAdminPermissions()) {
-                    int maxEventsStored = sharedPreferencesHelper.getMaxEvents();
+
                     String query = sharedPreferencesHelper.getStringPref(SettingsKey.EVENTS_SEARCH_QUERY);
                     if (!"".equals(query)) {
-                        loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), query, maxEventsStored);
+                        loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), query, maxEventsPolled);
                     } else {
-                        loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), maxEventsStored);
+                        loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), maxEventsPolled);
                     }
                 } else {
                     loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), -1);
+
+                    // user polls all events, so remove excessive events to emulate admin's behavior
+                    if (loadedEvents != null && maxEventsPolled < loadedEvents.getList().size()) {
+                        Map<Integer, org.ovirt.mobile.movirt.rest.dto.Event> sortedEvents = new TreeMap<>(Collections.<Integer>reverseOrder());
+                        for (org.ovirt.mobile.movirt.rest.dto.Event event : loadedEvents.getList()) {
+                            sortedEvents.put(event.id, event);
+                        }
+
+                        loadedEvents.setList(new ArrayList<>(sortedEvents.values()).subList(0, maxEventsPolled - 1));
+                    }
                 }
 
                 if (loadedEvents == null) {
@@ -561,6 +574,42 @@ public class OVirtClient {
                         return entity.id > lastEventId;
                     }
                 });
+            }
+        }, response);
+    }
+
+    public void getHostEvents(final String hostName, Response<List<Event>> response) {
+        requestHandler.fireRestRequest(new RestClientRequest<List<Event>>() {
+            @Override
+            public List<Event> fire() {
+                if (propertiesManager.hasAdminPermissions()) {
+                    return mapToEntities(restClient.getHostEvents(hostName));
+                }
+                return Collections.emptyList();
+            }
+        }, response);
+    }
+
+    public void getVmEvents(final String vmName, Response<List<Event>> response) {
+        requestHandler.fireRestRequest(new RestClientRequest<List<Event>>() {
+            @Override
+            public List<Event> fire() {
+                if (propertiesManager.hasAdminPermissions()) {
+                    return mapToEntities(restClient.getVmEvents(vmName));
+                }
+                return Collections.emptyList();
+            }
+        }, response);
+    }
+
+    public void getStorageDomainEvents(final String storageDomainName, Response<List<Event>> response) {
+        requestHandler.fireRestRequest(new RestClientRequest<List<Event>>() {
+            @Override
+            public List<Event> fire() {
+                if (propertiesManager.hasAdminPermissions()) {
+                    return mapToEntities(restClient.getStorageDomainEvents(storageDomainName));
+                }
+                return Collections.emptyList();
             }
         }, response);
     }

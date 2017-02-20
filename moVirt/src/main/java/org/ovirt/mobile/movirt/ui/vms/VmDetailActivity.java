@@ -50,14 +50,14 @@ import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
 import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
-import org.ovirt.mobile.movirt.ui.MovirtActivity;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
+import org.ovirt.mobile.movirt.ui.TempEventsMovirtActivity;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.CreateSnapshotDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.CreateSnapshotDialogFragment_;
 import org.ovirt.mobile.movirt.ui.dialogs.DialogListener;
-import org.ovirt.mobile.movirt.ui.events.EventsFragment;
-import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
+import org.ovirt.mobile.movirt.ui.events.VmEventsFragment;
+import org.ovirt.mobile.movirt.ui.events.VmEventsFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -73,7 +73,7 @@ import java.util.Map;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
-public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
+public class VmDetailActivity extends TempEventsMovirtActivity implements HasProgressBar,
         ConfirmDialogFragment.ConfirmDialogListener, DialogListener.NewSnapshotListener,
         LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -150,12 +150,12 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     }
 
     private void initPagers() {
-        EventsFragment eventList = new EventsFragment_();
+        VmEventsFragment eventList = new VmEventsFragment_();
         VmDisksFragment diskList = new VmDisksFragment_();
         VmNicsFragment nicList = new VmNicsFragment_();
         VmSnapshotsFragment snapshotList = new VmSnapshotsFragment_();
 
-        eventList.setFilterVmId(vmId);
+        eventList.setVmId(vmId);
         diskList.setVmId(vmId);
         nicList.setVmId(vmId);
         snapshotList.setVmId(vmId);
