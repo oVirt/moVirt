@@ -25,6 +25,7 @@ and check out the [User's guide](https://github.com/matobet/moVirt/wiki/User%27s
 | **3.5**         |  no  | yes | yes | no<sup>3</sup>  |
 | **3.6**         |  no  | no  | yes | yes |
 | **4.0**         |  no  | no  | no | yes |
+| **4.1**         |  no  | no  | no | yes |
 
 **[1]**: works on Android 4.0+ <br/>
 **[2]**: works on Android 4.1+ <br/>
