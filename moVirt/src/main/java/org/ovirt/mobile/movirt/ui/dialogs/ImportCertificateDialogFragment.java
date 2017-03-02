@@ -33,9 +33,6 @@ public class ImportCertificateDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         String additionalMessage = getArguments().getString("additionalMessage");
-        final int managementMode = getArguments().getInt("managementMode");
-        final long certHandlingStrategyId = getArguments().getLong("certHandlingStrategyId");
-        final String endpoint = getArguments().getString("endpoint");
         final boolean startActivity = getArguments().getBoolean("startActivity");
 
         StringBuilder message =

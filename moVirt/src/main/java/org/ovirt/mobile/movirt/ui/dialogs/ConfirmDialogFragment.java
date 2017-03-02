@@ -1,9 +1,7 @@
 package org.ovirt.mobile.movirt.ui.dialogs;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -15,9 +13,7 @@ import org.ovirt.mobile.movirt.R;
  * Use newInstance static method to create instance of this dialog
  * Created by Nika on 20.08.2015.
  */
-public class ConfirmDialogFragment extends DialogFragment {
-
-    ConfirmDialogListener listenerActivity;
+public class ConfirmDialogFragment extends ListenerDialogFragment<ConfirmDialogFragment.ConfirmDialogListener> {
 
     /**
      * @see ConfirmDialogFragment#newInstance(int, String, String)
@@ -47,17 +43,6 @@ public class ConfirmDialogFragment extends DialogFragment {
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            listenerActivity = (ConfirmDialogListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement ConfirmDialogListener");
-        }
-    }
-
-    @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final int actionId = getArguments().getInt("actionId");
         String actionString = getArguments().getString("actionString");
@@ -70,13 +55,13 @@ public class ConfirmDialogFragment extends DialogFragment {
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        listenerActivity.onDialogResult(DialogInterface.BUTTON_POSITIVE, actionId);
+                        getListener().onDialogResult(DialogInterface.BUTTON_POSITIVE, actionId);
                     }
                 })
                 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        listenerActivity.onDialogResult(DialogInterface.BUTTON_NEGATIVE, actionId);
+                        getListener().onDialogResult(DialogInterface.BUTTON_NEGATIVE, actionId);
                     }
                 });
         return builder.create();

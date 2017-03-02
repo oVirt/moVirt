@@ -1,6 +1,5 @@
 package org.ovirt.mobile.movirt.ui.triggers;
 
-import android.content.DialogInterface;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,8 +11,6 @@ import android.widget.ArrayAdapter;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.InstanceState;
-import org.androidannotations.annotations.OptionsItem;
-import org.androidannotations.annotations.OptionsMenu;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
@@ -23,18 +20,14 @@ import org.ovirt.mobile.movirt.model.condition.StatusCondition;
 import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.ui.HasLoader;
-import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 
 @EActivity(R.layout.activity_base_trigger)
-@OptionsMenu(R.menu.edit_trigger)
 public class EditTriggerActivity extends BaseTriggerActivity implements HasLoader,
-        LoaderManager.LoaderCallbacks<Cursor>, ConfirmDialogFragment.ConfirmDialogListener {
+        LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = EditTriggerActivity.class.getSimpleName();
 
     private static final int TRIGGER_LOADER = 0;
     private static final String TRIGGER_URI = "trigger_uri";
-
-    private static final int DELETE_ACTION = 0;
 
     @InstanceState
     boolean fieldsLoaded = false;
@@ -136,8 +129,8 @@ public class EditTriggerActivity extends BaseTriggerActivity implements HasLoade
         }
     }
 
-    @OptionsItem(R.id.action_save_trigger)
-    public void saveTrigger() {
+    @Override
+    public void onDone() {
         final Condition condition = getCondition();
         if (condition == null || trigger == null) {
             return;
@@ -148,27 +141,6 @@ public class EditTriggerActivity extends BaseTriggerActivity implements HasLoade
 
         provider.update(trigger);
         finish();
-    }
-
-    public void deleteTrigger() {
-        if (trigger != null) {
-            provider.delete(trigger);
-            finish();
-        }
-    }
-
-    @OptionsItem(R.id.action_delete_trigger)
-    void delete() {
-        ConfirmDialogFragment confirmDialog = ConfirmDialogFragment
-                .newInstance(DELETE_ACTION, getString(R.string.dialog_action_delete_trigger));
-        confirmDialog.show(getFragmentManager(), "confirmDeleteSnapshot");
-    }
-
-    @Override
-    public void onDialogResult(int dialogButton, int actionId) {
-        if (actionId == DELETE_ACTION && dialogButton == DialogInterface.BUTTON_POSITIVE) {
-            deleteTrigger();
-        }
     }
 
     @Override

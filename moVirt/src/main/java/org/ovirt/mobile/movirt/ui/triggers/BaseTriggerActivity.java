@@ -1,5 +1,7 @@
 package org.ovirt.mobile.movirt.ui.triggers;
 
+import android.content.res.ColorStateList;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.EditText;
@@ -65,6 +67,9 @@ public abstract class BaseTriggerActivity extends ActionBarActivity implements C
     @ViewById(R.id.regexEdit)
     EditText regexEdit;
 
+    @ViewById
+    FloatingActionButton fab;
+
     @Bean
     ProviderFacade provider;
 
@@ -77,7 +82,17 @@ public abstract class BaseTriggerActivity extends ActionBarActivity implements C
 
         targetEntityId = getIntent().getStringExtra(EXTRA_TARGET_ENTITY_ID);
         triggerScope = (Trigger.Scope) getIntent().getSerializableExtra(EXTRA_SCOPE);
+
+        fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.material_green_300)));
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onDone();
+            }
+        });
     }
+
+    protected abstract void onDone();
 
     public String getTargetEntityId() {
         return targetEntityId;

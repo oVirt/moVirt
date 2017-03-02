@@ -1,8 +1,9 @@
 package org.ovirt.mobile.movirt.ui.listfragment;
 
+import android.content.res.ColorStateList;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.Editable;
@@ -16,8 +17,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
-
-import com.melnykov.fab.FloatingActionButton;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
@@ -287,8 +286,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
             orderSpinner.setOnItemSelectedListener(new OrderItemSelectedListener());
         }
 
-        fab.setColorPressed(Color.parseColor("#80cbc4"));
-        fab.setColorRipple(getResources().getColor(R.color.abc_search_url_text_selected));
+        fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.light_blue)));
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

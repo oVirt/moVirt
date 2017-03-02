@@ -54,6 +54,7 @@
     <string name="certificate_management">Certificate Management</string>
     <string name="trigger_scope">Editing triggers for: </string>
     <string name="add_trigger">Add Trigger</string>
+    <string name="delete_trigger">Delete Trigger</string>
     <string name="ADD">ADD</string>
     <string name="DELETE">DELETE</string>
     <string name="SAVE">SAVE</string>
