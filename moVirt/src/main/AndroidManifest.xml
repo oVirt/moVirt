@@ -33,9 +33,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.MainSettingsActivity_"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".ui.MainActivity_"/>
+
         <activity
             android:name=".ui.SettingsActivity_"
-            android:label="@string/title_activity_settings" />
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".ui.account.EditAccountsActivity_"/>
+
 
         <activity
             android:name=".ui.auth.AdvancedAuthenticatorActivity_"
@@ -45,7 +53,8 @@
 
         <activity
             android:name=".ui.auth.AuthenticatorActivity_"
-            android:label="@string/title_activity_settings" />
+            android:label="@string/account_title"
+            android:parentActivityName=".ui.SettingsActivity_"/>
 
         <provider
             android:name=".provider.Provider"
@@ -78,8 +87,20 @@
         </service>
 
         <activity
+            android:name=".ui.account.EditAccountsActivity_"
+            android:label="@string/title_activity_edit_accounts"
+            android:parentActivityName=".ui.MainActivity_" >
+        </activity>
+
+        <activity
+            android:name=".ui.account.AddAccountActivity_"
+            android:label="@string/title_activity_add_account"
+            android:parentActivityName=".ui.account.EditAccountsActivity_" >
+        </activity>
+
+        <activity
             android:name=".ui.triggers.EditTriggersActivity_"
-            android:label="@string/title_activity_edit_filters"
+            android:label="@string/title_activity_edit_triggers"
             android:parentActivityName=".ui.MainActivity_" >
         </activity>
 

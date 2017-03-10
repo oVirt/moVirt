@@ -52,10 +52,6 @@ public class AccountPropertiesManager extends AccountPropertiesManagerCore {
         return setAndNotify(AccountProperty.AUTH_TOKEN, token, runOnThread);
     }
 
-    public Boolean accountConfigured() {
-        return authenticator.getResource(AccountProperty.ACCOUNT_CONFIGURED, Boolean.class);
-    }
-
     public Boolean isFirstLogin() {
         return authenticator.getResource(AccountProperty.FIRST_LOGIN, Boolean.class);
     }

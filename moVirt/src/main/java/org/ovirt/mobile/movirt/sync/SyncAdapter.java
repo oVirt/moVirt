@@ -95,10 +95,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient providerClient, SyncResult syncResult) {
-        if (!propertiesManager.accountConfigured()) {
-            Log.d(TAG, "Account not configured, not performing sync");
-            return;
-        }
+//        if (!propertiesManager.accountConfigured()) {
+//            Log.d(TAG, "Account not configured, not performing sync");
+//            return;
+//        }
 
         if (inSync.compareAndSet(false, true)) {
             try {

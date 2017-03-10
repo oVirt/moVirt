@@ -1,12 +1,11 @@
 package org.ovirt.mobile.movirt.ui.auth;
 
-import android.accounts.Account;
-import android.accounts.AccountAuthenticatorActivity;
-import android.accounts.AccountManager;
 import android.app.DialogFragment;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.support.design.widget.FloatingActionButton;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.MotionEvent;
@@ -25,6 +24,7 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.InstanceState;
+import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
@@ -41,12 +41,13 @@ import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.sync.EventsHandler;
 import org.ovirt.mobile.movirt.sync.SyncUtils;
+import org.ovirt.mobile.movirt.ui.BroadcastAwareAppCompatActivity;
 import org.ovirt.mobile.movirt.ui.UiUtils;
 import org.ovirt.mobile.movirt.ui.dialogs.ApiPathDialogFragment;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
-import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -60,7 +61,7 @@ import java.util.Arrays;
 import javax.net.ssl.SSLHandshakeException;
 
 @EActivity(R.layout.activity_authenticator)
-public class AuthenticatorActivity extends AccountAuthenticatorActivity implements CreateDialogBroadcastReceiver {
+public class AuthenticatorActivity extends BroadcastAwareAppCompatActivity implements CreateDialogBroadcastReceiver {
 
     private static final String TAG = AuthenticatorActivity.class.getSimpleName();
     private static final String[] URL_COMPLETE = {"http://", "https://", "ovirt-engine/api", "80",
@@ -87,7 +88,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     @ViewById
     ProgressBar authProgress;
     @ViewById
-    Button btnCreate;
+    FloatingActionButton btnCreate;
     @ViewById
     Button btnAdvanced;
     @Bean
@@ -100,6 +101,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
     ProviderFacade providerFacade;
     @Bean
     EventProviderHelper eventProviderHelper;
+    @Bean
+    SharedPreferencesHelper sharedPreferencesHelper;
     @InstanceState
     URL endpointUrl;
     @InstanceState
@@ -117,11 +120,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
 
     @AfterViews
     void init() {
-        if (!propertiesManager.accountConfigured()) {
-            if (authenticator.initAccount("")) {
-                messageHelper.showToast("Added new account.");
-            }
-        }
+        btnCreate.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.material_green_300)));
 
         txtEndpoint.setText(propertiesManager.getApiUrl());
         ArrayAdapter<String> urlAdapter = new ArrayAdapter<>(this,
@@ -327,24 +326,21 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         messageHelper.showToast(getString(R.string.login_success));
         syncUtils.triggerRefresh();
 
-        Account account = authenticator.getAccount();
-        final Intent intent = new Intent();
-        intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name);
-        intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, account.type);
-        intent.putExtra(AccountManager.KEY_AUTHTOKEN, token);
-
-//        setAccountAuthenticatorResult(intent.getExtras());
-        setResult(RESULT_OK, intent);
         finish();
     }
 
     void setLoginInProgress(boolean loginInProgress) {
         inProgress = loginInProgress;
-        ContentResolver.setIsSyncable(authenticator.getAccount(),
+        ContentResolver.setIsSyncable(authenticator.getActiveAccount(),
                 OVirtContract.CONTENT_AUTHORITY, loginInProgress ? 0 : 1);
         Intent intent = new Intent(Broadcasts.IN_USER_LOGIN);
         intent.putExtra(Broadcasts.Extras.MESSAGE, loginInProgress);
         getApplicationContext().sendBroadcast(intent);
+    }
+
+    @OptionsItem(android.R.id.home)
+    public void homeSelected() {
+        onBackPressed();
     }
 
     public static boolean isInUserLogin() {
@@ -395,20 +391,5 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity implemen
         propertiesManager.setUsername(name);
         propertiesManager.setAdminPermissions(hasAdminPermissions);
         propertiesManager.setPassword(password); // triggers sync in later APIs (Android 6)
-    }
-
-    @Receiver(actions = {Broadcasts.ERROR_MESSAGE},
-            registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    public void showErrorDialog(
-            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason,
-            @Receiver.Extra(Broadcasts.Extras.REPEATED_MINOR_ERROR) boolean repeatedMinorError) {
-        CreateDialogBroadcastReceiverHelper.showErrorDialog(getFragmentManager(), reason, repeatedMinorError);
-    }
-
-    @Receiver(actions = {Broadcasts.REST_CA_FAILURE},
-            registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    public void showCertificateDialog(
-            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason) {
-        CreateDialogBroadcastReceiverHelper.showCertificateDialog(getFragmentManager(), reason, false);
     }
 }

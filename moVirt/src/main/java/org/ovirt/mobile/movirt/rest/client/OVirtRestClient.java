@@ -15,12 +15,12 @@ import org.androidannotations.rest.spring.api.MediaType;
 import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
+import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.rest.dto.Action;
 import org.ovirt.mobile.movirt.rest.dto.Consoles;
 import org.ovirt.mobile.movirt.rest.dto.Events;
 import org.ovirt.mobile.movirt.rest.dto.Snapshot;
 import org.ovirt.mobile.movirt.rest.dto.SnapshotAction;
-import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 import static org.ovirt.mobile.movirt.rest.RestHelper.ACCEPT_ENCODING;
@@ -71,13 +71,13 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/events;max={maxToLoad}?from={lastEventId}&search={query}")
     Events getEventsSince(@Path String lastEventId, @Path String query, @Path int maxToLoad);
 
-    @Get("/events;max=" + SharedPreferencesHelper.MAX_EVENTS_PER_ENTITY + "?search=event_vm={vmName}")
+    @Get("/events;max=" + Constants.MAX_EVENTS_PER_ENTITY + "?search=event_vm={vmName}")
     Events getVmEvents(@Path String vmName);
 
-    @Get("/events;max=" + SharedPreferencesHelper.MAX_EVENTS_PER_ENTITY + "?search=event_host={hostName}")
+    @Get("/events;max=" + Constants.MAX_EVENTS_PER_ENTITY + "?search=event_host={hostName}")
     Events getHostEvents(@Path String hostName);
 
-    @Get("/events;max=" + SharedPreferencesHelper.MAX_EVENTS_PER_ENTITY + "?search=event_storage={storageDomainName}")
+    @Get("/events;max=" + Constants.MAX_EVENTS_PER_ENTITY + "?search=event_storage={storageDomainName}")
     Events getStorageDomainEvents(@Path String storageDomainName);
 
     @Get("/vms/{vmId}/graphicsconsoles")

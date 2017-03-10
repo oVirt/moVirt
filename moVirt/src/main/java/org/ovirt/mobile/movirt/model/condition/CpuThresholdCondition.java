@@ -1,5 +1,7 @@
 package org.ovirt.mobile.movirt.model.condition;
 
+import android.content.Context;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -20,8 +22,8 @@ public class CpuThresholdCondition extends Condition<Vm> {
     }
 
     @Override
-    public String getMessage(Vm vm) {
-        return getResources().getString(R.string.vm_cpu_message, vm.getName(), getPercentageLimit(), vm.getCpuUsage());
+    public String getMessage(Context context, Vm vm) {
+        return context.getResources().getString(R.string.vm_cpu_message, vm.getName(), getPercentageLimit(), vm.getCpuUsage());
     }
 
     @Override

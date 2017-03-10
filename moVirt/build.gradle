@@ -6,6 +6,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:2.2.3'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
+        classpath 'me.tatarka:gradle-retrolambda:3.6.0'
     }
 }
 apply plugin: 'com.android.application'
@@ -21,6 +22,7 @@ repositories {
 }
 
 apply plugin: 'android-apt'
+apply plugin: 'me.tatarka.retrolambda'
 ext.androidAnnottationVersion = '4.0.0'
 
 dependencies {
@@ -40,6 +42,8 @@ dependencies {
     apt "org.androidannotations:rest-spring:$androidAnnottationVersion"
     compile 'com.github.bmelnychuk:atv:1.2.9'
     compile 'com.madgag.spongycastle:pkix:1.54.0.0'
+
+    compile 'io.reactivex.rxjava2:rxjava:2.0.6'
 }
 
 android {
@@ -48,13 +52,11 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 25
+        multiDexEnabled true
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
-    }
-    dexOptions {
-        jumboMode true // allow more than 64K methods
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'

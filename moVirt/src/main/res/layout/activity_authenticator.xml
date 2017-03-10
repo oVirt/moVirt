@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingBottom="@dimen/activity_vertical_margin"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:paddingTop="@dimen/activity_vertical_margin"
                 tools:context=".ui.auth.AuthenticatorActivity">
 
     <ProgressBar
@@ -17,27 +14,20 @@
         android:layout_centerInParent="true"
         android:visibility="gone"/>
 
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="@string/account_title"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/textView3"
-        android:layout_marginBottom="96dp"
         android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin">
 
             <TextView
                 android:id="@+id/textView2"
@@ -50,12 +40,27 @@
                 android:id="@+id/txtEndpoint"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="10dp"
                 android:completionThreshold="1"
                 android:hint="@string/account_endpoint"
                 android:imeOptions="actionNext"
                 android:inputType="textUri"
                 android:nextFocusDown="@+id/txtUsername"/>
+
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/certificate_management"
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
+
+            <Button
+                android:id="@+id/btnAdvanced"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/setup"/>
 
             <TextView
                 android:id="@+id/textView4"
@@ -68,7 +73,7 @@
                 android:id="@+id/txtUsername"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="10dp"
                 android:completionThreshold="1"
                 android:hint="@string/account_username"
                 android:imeOptions="actionNext"
@@ -82,40 +87,44 @@
                 android:text="@string/account_password_label"
                 android:textAppearance="?android:attr/textAppearanceSmall"/>
 
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <EditText
-                    android:id="@+id/txtPassword"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"
-                    android:layout_toLeftOf="@+id/passwordVisibility"
-                    android:layout_toStartOf="@+id/passwordVisibility"
-                    android:hint="@string/account_password"
-                    android:inputType="textPassword"/>
 
                 <ImageView
                     android:id="@+id/passwordVisibility"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_alignBottom="@id/txtPassword"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
                     android:layout_alignTop="@id/txtPassword"
                     android:layout_centerVertical="true"
                     android:paddingBottom="3dp"
-                    android:paddingEnd="@dimen/activity_horizontal_margin_no_land"
-                    android:paddingLeft="@dimen/activity_horizontal_margin_no_land"
-                    android:paddingRight="@dimen/activity_horizontal_margin_no_land"
-                    android:paddingStart="@dimen/activity_horizontal_margin_no_land"
+                    android:paddingEnd="7dp"
+                    android:paddingLeft="7dp"
+                    android:paddingRight="7dp"
+                    android:paddingStart="7dp"
                     android:paddingTop="3dp"/>
 
+                <EditText
+                    android:id="@+id/txtPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_toEndOf="@+id/passwordVisibility"
+                    android:layout_toRightOf="@+id/passwordVisibility"
+                    android:hint="@string/account_password"
+                    android:inputType="textPassword"/>
+
+
             </RelativeLayout>
+
 
             <CheckBox
                 android:id="@+id/chkAdminPriv"
@@ -129,30 +138,20 @@
         </LinearLayout>
     </ScrollView>
 
-    <LinearLayout
-        android:id="@+id/linearLayout2"
-        style="?android:attr/buttonBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="96dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:gravity="end"
-        android:orientation="vertical">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/btnAdvanced"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/certificate_management"/>
-
-        <Button
+        <android.support.design.widget.FloatingActionButton
             android:id="@+id/btnCreate"
-            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/save_acc"/>
-    </LinearLayout>
+            android:layout_gravity="bottom|right"
+            android:layout_margin="@dimen/fab_margin"
+            android:src="@drawable/ic_done_black_24dp"
+            android:text="@string/connect"
+            app:borderWidth="0dp"
+            />
+    </FrameLayout>
 
 </RelativeLayout>

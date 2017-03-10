@@ -1,81 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
-
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/searchbox"
         style="@style/ButtonBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="@dimen/default_item_margin"
         android:orientation="vertical"
-        android:id="@+id/searchbox"
-        android:visibility="gone"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:paddingLeft="15dp"
-        android:paddingRight="15dp">
+        android:visibility="gone">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/searchTextLabel"
+                style="@style/searchText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:hint="@string/name"
+                android:text="@string/searchInVms"
+                android:textSize="@dimen/abc_text_size_caption_material"/>
+
+            <EditText
+                android:id="@+id/searchText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_weight="1"
+                android:inputType="text"
+                android:minWidth="80dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/orderingLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
-            >
+            android:paddingTop="5dp">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sort_by"
+                android:textSize="12sp"/>
 
-        <TextView
-            android:id="@+id/searchTextLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="@string/name"
-            style="@style/searchText"
-            android:layout_gravity="bottom"
-            android:text="@string/searchInVms"
-            android:textSize="@dimen/abc_text_size_caption_material"/>
+            <Spinner
+                android:id="@+id/orderBySpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_weight="1"/>
 
-        <EditText
-            android:id="@+id/searchText"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_weight="1"
-            android:inputType="text"
-            android:minWidth="80dp"/>
-            </LinearLayout>
-<LinearLayout
-    android:id="@+id/orderingLayout"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:paddingTop="5dp">
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/sort_by"
-        android:textSize="12sp"/>
-        <Spinner
-            android:id="@+id/orderBySpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="bottom"/>
-
-        <Spinner
-            android:id="@+id/orderSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="bottom" />
-</LinearLayout>
+            <Spinner
+                android:id="@+id/orderSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_weight="1"/>
+        </LinearLayout>
     </LinearLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <android.support.v4.widget.SwipeRefreshLayout
             android:id="@+id/swipeContainer"
             android:layout_width="match_parent"
@@ -84,18 +80,17 @@
             <ListView
                 android:id="@android:id/list"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                />
+                android:layout_height="wrap_content"/>
         </android.support.v4.widget.SwipeRefreshLayout>
+
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|right"
-            android:layout_margin="16dp"
-            app:borderWidth="0dp"
+            android:layout_margin="@dimen/fab_margin"
             android:src="@drawable/ic_action_search"
-            />
+            app:borderWidth="0dp"/>
 
     </FrameLayout>
 </LinearLayout>

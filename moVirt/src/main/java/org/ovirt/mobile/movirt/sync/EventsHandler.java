@@ -268,7 +268,7 @@ public class EventsHandler {
 
         for (Event event : events) {
             final List<Trigger<Event>> triggers = eventTriggerResolver.getTriggers(event, allEventTriggers);
-            Log.d(TAG, "Processing triggers for Events: " + event.getId());
+            Log.d(TAG, "Processing crud_list for Events: " + event.getId());
             for (Trigger<Event> trigger : triggers) {
                 if (trigger.getCondition().evaluate(event)) {
                     eventsAndTriggers.add(new Pair<>(event, trigger));

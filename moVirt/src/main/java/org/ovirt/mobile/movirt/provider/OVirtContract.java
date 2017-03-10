@@ -221,13 +221,13 @@ public interface OVirtContract {
         String STORAGE_FORMAT = "storage_format";
     }
 
-    String PATH_TRIGGERS = "triggers";
-    String PATH_TRIGGER = "triggers/#";
+    String PATH_TRIGGERS = "crud_list";
+    String PATH_TRIGGER = "crud_list/#";
 
     interface Trigger extends BaseEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_TRIGGERS).build();
 
-        String TABLE = "triggers";
+        String TABLE = "crud_list";
 
         String CONDITION = "condition";
         String NOTIFICATION = "notification";
