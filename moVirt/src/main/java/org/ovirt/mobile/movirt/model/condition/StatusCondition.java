@@ -1,5 +1,7 @@
 package org.ovirt.mobile.movirt.model.condition;
 
+import android.content.Context;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -21,8 +23,8 @@ public class StatusCondition extends Condition<Vm> {
     }
 
     @Override
-    public String getMessage(Vm vm) {
-        return getResources().getString(R.string.vm_status_message, vm.getName(), vm.getStatus().toString());
+    public String getMessage(Context context, Vm vm) {
+        return context.getResources().getString(R.string.vm_status_message, vm.getName(), vm.getStatus().toString());
     }
 
     @Override

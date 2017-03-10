@@ -53,4 +53,6 @@ public class WebMessageEditTextPreference extends EditTextPreference {
             message.setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
+
+
 }

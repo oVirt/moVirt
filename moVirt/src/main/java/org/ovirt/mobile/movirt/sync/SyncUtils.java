@@ -26,13 +26,13 @@ public class SyncUtils {
      * the OS additional freedom in scheduling your sync request.
      */
     public void triggerRefresh() {
-        Bundle b = new Bundle();
-        // Disable sync backoff and ignore sync preferences. In other words...perform sync NOW!
-        b.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        b.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-        ContentResolver.requestSync(
-                authenticator.getAccount(),      // Sync account
-                OVirtContract.CONTENT_AUTHORITY, // Content authority
-                b);                                      // Extras
+//        Bundle b = new Bundle();
+//        // Disable sync backoff and ignore sync preferences. In other words...perform sync NOW!
+//        b.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+//        b.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+//        ContentResolver.requestSync(
+//                authenticator.getActiveAccount(),      // Sync account
+//                OVirtContract.CONTENT_AUTHORITY, // Content authority
+//                b);                                      // Extras
     }
 }

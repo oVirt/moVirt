@@ -137,9 +137,9 @@ public class MainActivity extends MovirtActivity {
 
         setTitle(selectedClusterName == null ? allClustersMsg : selectedClusterName);
 
-        if (!propertiesManager.accountConfigured()) {
-            showAccountDialog();
-        }
+//        if (!propertiesManager.accountConfigured()) {
+//            showAccountDialog();
+//        }
 
         initPagers();
         setProgressBar(progress);
@@ -238,7 +238,7 @@ public class MainActivity extends MovirtActivity {
 
     @OptionsItem(R.id.action_settings)
     void showSettings() {
-        startActivity(new Intent(this, SettingsActivity_.class));
+        startActivity(new Intent(this, MainSettingsActivity_.class));
     }
 
     @OptionsItem(R.id.action_camera)

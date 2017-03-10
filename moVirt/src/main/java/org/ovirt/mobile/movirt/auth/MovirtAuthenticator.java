@@ -8,26 +8,34 @@ import android.accounts.NetworkErrorException;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.SystemService;
 import org.ovirt.mobile.movirt.Constants;
+import org.ovirt.mobile.movirt.auth.account.AccountRxStore;
+import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.PropertyUtils;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
+import org.ovirt.mobile.movirt.ui.account.AddAccountActivity_;
+import org.ovirt.mobile.movirt.ui.account.EditAccountsActivity_;
 import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity;
-import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.util.JsonUtils;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
+
+import java.util.concurrent.TimeUnit;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class MovirtAuthenticator extends AbstractAccountAuthenticator {
@@ -35,7 +43,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     private static final String ACCOUNT_TYPE = Constants.APP_PACKAGE_DOT + "authenticator";
 
-    private static final Account MOVIRT_ACCOUNT = new Account("oVirt", MovirtAuthenticator.ACCOUNT_TYPE);
+    private static final int REMOVE_ACCOUNT_CALLBACK_TIMEOUT = 3; // better safe than sorry, but shouldn't be needed
 
     @Bean
     LoginClient loginClient;
@@ -44,16 +52,31 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     AccountManager accountManager;
 
     @Bean
+    AccountPropertiesManager accountPropertiesManager;
+
+    @Bean
     MessageHelper messageHelper;
 
     @Bean
-    SharedPreferencesHelper sharedPreferencesHelper;
+    AccountRxStore accountRxStore;
+
+    @Bean
+    EnvironmentStore environmentStore;
 
     private Context context;
+
+    private Account activeAccount;
 
     public MovirtAuthenticator(Context context) {
         super(context);
         this.context = context;
+    }
+
+    @AfterInject
+    public void init() {
+        accountRxStore.ACTIVE_ACCOUNT.subscribe(newActive -> {
+            activeAccount = newActive.getAccount();
+        });
     }
 
     @Override
@@ -63,12 +86,11 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
 
     @Override
     public Bundle addAccount(AccountAuthenticatorResponse accountAuthenticatorResponse, String s, String s2, String[] strings, Bundle options) throws NetworkErrorException {
-        if (getResource(AccountProperty.ACCOUNT_CONFIGURED, Boolean.class)) {
-            messageHelper.showToast("Only one moVirt account is allowed per device");
-            return null;
-        } else {
-            return createAccountActivity(accountAuthenticatorResponse);
-        }
+        final Intent intent = new Intent(context, AddAccountActivity_.class);
+        intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, accountAuthenticatorResponse);
+        final Bundle bundle = new Bundle();
+        bundle.putParcelable(AccountManager.KEY_INTENT, intent);
+        return bundle;
     }
 
     @Override
@@ -103,11 +125,12 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             result.putString(AccountManager.KEY_AUTHTOKEN, authToken);
             return result;
         }
+
         return createAccountActivity(accountAuthenticatorResponse);
     }
 
     private Bundle createAccountActivity(AccountAuthenticatorResponse accountAuthenticatorResponse) {
-        final Intent intent = new Intent(context, AuthenticatorActivity_.class);
+        final Intent intent = new Intent(context, EditAccountsActivity_.class);
         intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, accountAuthenticatorResponse);
         final Bundle bundle = new Bundle();
         bundle.putParcelable(AccountManager.KEY_INTENT, intent);
@@ -129,25 +152,88 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
         return null;
     }
 
-    public boolean initAccount(String password) {
-        boolean initialized = accountManager.addAccountExplicitly(getAccount(), password, Bundle.EMPTY);
-        if (initialized) {
-            ContentResolver.setIsSyncable(getAccount(), OVirtContract.CONTENT_AUTHORITY, 1);
-            ContentResolver.setSyncAutomatically(getAccount(), OVirtContract.CONTENT_AUTHORITY, true);
-            sharedPreferencesHelper.updatePeriodicSync();
-        }
-        return initialized;
+    public Account getActiveAccount() {
+        return activeAccount;
     }
 
-    public Account getAccount() {
-        return MOVIRT_ACCOUNT;
+    /**
+     * @param name     name of the account
+     * @param password password of the account
+     * @return created account or null if creation failed
+     */
+    public Account addAccount(String name, String password) {
+        Account newAccount = new Account(name, MovirtAuthenticator.ACCOUNT_TYPE);
+        boolean success = accountManager.addAccountExplicitly(newAccount, password, Bundle.EMPTY);
+
+        if (success) {
+            ContentResolver.setIsSyncable(newAccount, OVirtContract.CONTENT_AUTHORITY, 1);
+            ContentResolver.setSyncAutomatically(newAccount, OVirtContract.CONTENT_AUTHORITY, false);
+            ContentResolver.removePeriodicSync(newAccount, OVirtContract.CONTENT_AUTHORITY, Bundle.EMPTY);
+        }
+
+        return success ? newAccount : null;
+    }
+
+    public void updatePeriodicSync(Account account) {
+        String authority = OVirtContract.CONTENT_AUTHORITY;
+        Bundle bundle = Bundle.EMPTY;
+        SharedPreferencesHelper preferencesHelper = environmentStore.getSharedPreferencesHelper(account);
+
+        boolean syncEnabled = preferencesHelper.isPeriodicSyncEnabled();
+        ContentResolver.setSyncAutomatically(account, OVirtContract.CONTENT_AUTHORITY, syncEnabled);
+
+        if (syncEnabled) {
+            long intervalInSeconds = (long) preferencesHelper.getPeriodicSyncInterval() * (long) Constants.SECONDS_IN_MINUTE;
+            ContentResolver.addPeriodicSync(account, authority, bundle, intervalInSeconds);
+        } else {
+            ContentResolver.removePeriodicSync(account, authority, bundle);
+        }
+    }
+
+    public Account[] getAllAccounts() {
+        try {
+            return accountManager.getAccountsByType(MovirtAuthenticator.ACCOUNT_TYPE);
+        } catch (SecurityException e) {
+            messageHelper.showError(ErrorType.NORMAL, e);
+            return new Account[]{};
+        }
+    }
+
+    public void removeAccount(Account account, AccountRemovedCallback callback) {
+        if (Build.VERSION.SDK_INT < 22) {
+            accountManager.removeAccount(account, future -> {
+                try {
+                    boolean result = future.getResult(REMOVE_ACCOUNT_CALLBACK_TIMEOUT, TimeUnit.SECONDS);
+                    callback.onRemoved(result);
+                } catch (Exception e) {
+                    callback.onRemoved(false);
+                }
+            }, null);
+        } else {
+            accountManager.removeAccount(account, null, future -> {
+                try {
+                    boolean result = future.getResult(REMOVE_ACCOUNT_CALLBACK_TIMEOUT, TimeUnit.SECONDS).getBoolean(AccountManager.KEY_BOOLEAN_RESULT);
+                    callback.onRemoved(result);
+                } catch (Exception e) {
+                    callback.onRemoved(false);
+                }
+            }, null);
+        }
+    }
+
+    public interface AccountRemovedCallback {
+        void onRemoved(boolean success);
     }
 
     /**
      * @throws IllegalArgumentException if property is not settable
      */
     public void setResource(AccountProperty property, Object object) {
-        Account account = getAccount();
+        Account account = activeAccount;
+
+        if (account == null) {
+            return;
+        }
 
         switch (property) {
             case AUTH_TOKEN:
@@ -189,23 +275,16 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
      * Should not throw Exceptions
      */
     public Object getResource(AccountProperty property) {
-        Account account = getAccount();
+        Account account = activeAccount;
 
         switch (property) {
             case AUTH_TOKEN: // fallback to non blocking peek, used exclusively by AccountPropertiesManager.setAndNotify
             case PEEK_AUTH_TOKEN:
-                return accountManager.peekAuthToken(account, AccountProperty.AUTH_TOKEN.getPackageKey());
+                return account == null ? null : accountManager.peekAuthToken(account, AccountProperty.AUTH_TOKEN.getPackageKey());
             case FUTURE_AUTH_TOKEN:
-                return accountManager.getAuthToken(account, AccountProperty.AUTH_TOKEN.getPackageKey(), null, false, null, null);
-            case ACCOUNT_CONFIGURED:
-                try {
-                    return accountManager.getAccountsByType(ACCOUNT_TYPE).length > 0;
-                } catch (SecurityException e) {
-                    messageHelper.showError(ErrorType.NORMAL, e);
-                    return false;
-                }
+                return account == null ? null : accountManager.getAuthToken(account, AccountProperty.AUTH_TOKEN.getPackageKey(), null, false, null, null);
             case PASSWORD:
-                return accountManager.getPassword(account);
+                return account == null ? null : accountManager.getPassword(account);
             case USERNAME:
             case API_URL:
                 return read(property);
@@ -273,7 +352,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     }
 
     private Boolean read(AccountProperty property, boolean defRes) {
-        String res = accountManager.getUserData(getAccount(), property.getPackageKey());
+        String res = activeAccount == null ? null : accountManager.getUserData(activeAccount, property.getPackageKey());
         if (TextUtils.isEmpty(res)) {
             return defRes;
         }
@@ -282,7 +361,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     }
 
     private String read(AccountProperty property, String defRes) {
-        String res = accountManager.getUserData(getAccount(), property.getPackageKey());
+        String res = activeAccount == null ? null : accountManager.getUserData(activeAccount, property.getPackageKey());
         if (TextUtils.isEmpty(res)) {
             return defRes;
         }
@@ -291,6 +370,6 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     }
 
     private String read(AccountProperty property) {
-        return accountManager.getUserData(getAccount(), property.getPackageKey());
+        return activeAccount == null ? null : accountManager.getUserData(activeAccount, property.getPackageKey());
     }
 }

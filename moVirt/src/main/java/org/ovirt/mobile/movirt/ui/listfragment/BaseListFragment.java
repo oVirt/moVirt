@@ -72,9 +72,6 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
     protected EntityFacadeLocator entityFacadeLocator;
 
     @ViewById
-    public ListView list;
-
-    @ViewById
     public FloatingActionButton fab;
 
     @ViewById
