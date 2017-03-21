@@ -1,5 +1,7 @@
 package org.ovirt.mobile.movirt.model.condition;
 
+import android.content.Context;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -29,8 +31,8 @@ public class EventCondition extends Condition<Event> {
     }
 
     @Override
-    public String getMessage(Event entity) {
-        return getResources().getString(
+    public String getMessage(Context context, Event entity) {
+        return context.getResources().getString(
                 R.string.event_trigger_message, this.getRegexString(), entity.getDescription()
         );
     }

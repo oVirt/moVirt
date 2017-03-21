@@ -6,14 +6,12 @@ import android.widget.CursorAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.Receiver;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 import org.ovirt.mobile.movirt.auth.properties.property.version.support.VersionSupport;
@@ -23,7 +21,7 @@ import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.DiskAttachment;
 import org.ovirt.mobile.movirt.model.view.DiskAndAttachment;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
-import org.ovirt.mobile.movirt.ui.listfragment.VmBoundResumeSyncableBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.VmBoundResumeSyncableBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
@@ -31,12 +29,12 @@ import org.ovirt.mobile.movirt.util.usage.MemorySize;
 
 import java.util.List;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.NAME;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.SIZE;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Disk.STATUS;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.DiskAndAttachment.NAME;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.DiskAndAttachment.SIZE;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.DiskAndAttachment.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class VmDisksFragment extends VmBoundResumeSyncableBaseEntityListFragment<DiskAndAttachment> {
+public class VmDisksFragment extends VmBoundResumeSyncableBaseListFragment<DiskAndAttachment> {
     private static final String TAG = VmDisksFragment.class.getSimpleName();
 
     @Bean
@@ -86,8 +84,8 @@ public class VmDisksFragment extends VmBoundResumeSyncableBaseEntityListFragment
     @Override
     public SortEntry[] getSortEntries() {
         return new SortEntry[]{
-                new SortEntry(new ItemName(Disk.NAME), SortOrderType.A_TO_Z),
-                new SortEntry(new ItemName(Disk.STATUS), SortOrderType.A_TO_Z)
+                new SortEntry(new ItemName(NAME), SortOrderType.A_TO_Z),
+                new SortEntry(new ItemName(STATUS), SortOrderType.A_TO_Z)
         };
     }
 

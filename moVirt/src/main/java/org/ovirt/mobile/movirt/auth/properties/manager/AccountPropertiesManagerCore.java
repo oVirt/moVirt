@@ -191,9 +191,18 @@ abstract class AccountPropertiesManagerCore {
         return propertyChanged;
     }
 
+    public void datasetAccountChanged(OnThread runOnThread) {
+        for (AccountProperty property : AccountProperty.values()) {
+            notifyListeners(property, authenticator.getResource(property), runOnThread);
+            notifyDependentProperties(property, runOnThread);
+        }
+    }
+
     private void notifyDependentProperties(AccountProperty property, OnThread runOnThread) {
         for (AccountProperty prop : property.getDependentProperties()) {
-            notifyListeners(prop, authenticator.getResource(prop), runOnThread);
+            if (property != prop) {
+                notifyListeners(prop, authenticator.getResource(prop), runOnThread);
+            }
         }
     }
 

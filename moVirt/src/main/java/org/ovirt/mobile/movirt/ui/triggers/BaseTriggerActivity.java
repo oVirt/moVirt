@@ -1,6 +1,7 @@
 package org.ovirt.mobile.movirt.ui.triggers;
 
-import android.support.v7.app.ActionBarActivity;
+import android.content.res.ColorStateList;
+import android.support.design.widget.FloatingActionButton;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -13,21 +14,19 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.OptionsItem;
-import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.ViewById;
-import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.EventCondition;
 import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.StatusCondition;
+import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.model.mapping.EntityType;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.ui.BroadcastAwareAppCompatActivity;
 import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
-import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -36,7 +35,7 @@ import static org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity.EXTRA_SCO
 import static org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity.EXTRA_TARGET_ENTITY_ID;
 
 @EActivity(R.layout.activity_base_trigger)
-public abstract class BaseTriggerActivity extends ActionBarActivity implements CreateDialogBroadcastReceiver {
+public abstract class BaseTriggerActivity extends BroadcastAwareAppCompatActivity  {
 
     @InstanceState
     protected int selectedCondition = R.id.radio_button_cpu;
@@ -65,6 +64,9 @@ public abstract class BaseTriggerActivity extends ActionBarActivity implements C
     @ViewById(R.id.regexEdit)
     EditText regexEdit;
 
+    @ViewById
+    FloatingActionButton fab;
+
     @Bean
     ProviderFacade provider;
 
@@ -77,7 +79,17 @@ public abstract class BaseTriggerActivity extends ActionBarActivity implements C
 
         targetEntityId = getIntent().getStringExtra(EXTRA_TARGET_ENTITY_ID);
         triggerScope = (Trigger.Scope) getIntent().getSerializableExtra(EXTRA_SCOPE);
+
+        fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.material_green_300)));
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onDone();
+            }
+        });
     }
+
+    protected abstract void onDone();
 
     public String getTargetEntityId() {
         return targetEntityId;
@@ -132,7 +144,7 @@ public abstract class BaseTriggerActivity extends ActionBarActivity implements C
                 return new MemoryThresholdCondition(percentageLimit);
             }
             case R.id.radio_button_status: {
-                Vm.Status status = Vm.Status.valueOf(statusSpinner.getSelectedItem().toString().toUpperCase());
+                VmStatus status = VmStatus.fromString(statusSpinner.getSelectedItem().toString());
                 return new StatusCondition(status);
             }
             case R.id.radio_button_event: {
@@ -180,20 +192,6 @@ public abstract class BaseTriggerActivity extends ActionBarActivity implements C
     @OptionsItem(android.R.id.home)
     public void homeSelected() {
         onBackPressed();
-    }
-
-    @Receiver(actions = {Broadcasts.ERROR_MESSAGE},
-            registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    public void showErrorDialog(
-            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason,
-            @Receiver.Extra(Broadcasts.Extras.REPEATED_MINOR_ERROR) boolean repeatedMinorError) {
-        CreateDialogBroadcastReceiverHelper.showErrorDialog(getFragmentManager(), reason, repeatedMinorError);
-    }
-
-    @Receiver(actions = {Broadcasts.REST_CA_FAILURE},
-            registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    public void showCertificateDialog(
-            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason) {
-        CreateDialogBroadcastReceiverHelper.showCertificateDialog(getFragmentManager(), reason, true);
+        onBackPressed();
     }
 }

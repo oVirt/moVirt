@@ -18,6 +18,7 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Host;
+import org.ovirt.mobile.movirt.model.enums.HostStatus;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.Relation;
@@ -84,7 +85,7 @@ public class VmMigrateActivity extends ActionBarLoaderActivity {
             @Override
             public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
                 return provider.query(Host.class)
-                        .where(Host.STATUS, Host.Status.UP.toString())
+                        .where(Host.STATUS, HostStatus.UP.toString())
                         .where(Host.CLUSTER_ID, filterClusterId)
                         .where(Host.ID, filterHostId, Relation.NOT_EQUAL).asLoader();
             }

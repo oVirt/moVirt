@@ -1,6 +1,6 @@
 package org.ovirt.mobile.movirt.ui.dashboard.maps;
 
-import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.VmStatus;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,37 +8,34 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by suomiy on 5/18/16.
- */
 public enum VmStatusMap {
     // dashboard position depends on the order
-    WARNING(Vm.Status.POWERING_UP, Vm.Status.PAUSED, Vm.Status.MIGRATING, Vm.Status.UNKNOWN,
-            Vm.Status.WAIT_FOR_LAUNCH, Vm.Status.SUSPENDED, Vm.Status.POWERING_DOWN, Vm.Status.UNASSIGNED),
-    UP(Vm.Status.UP, Vm.Status.SAVING_STATE, Vm.Status.RESTORING_STATE),
-    DOWN(Vm.Status.DOWN, Vm.Status.NOT_RESPONDING, Vm.Status.REBOOT_IN_PROGRESS,
-            Vm.Status.IMAGE_LOCKED);
+    WARNING(VmStatus.POWERING_UP, VmStatus.PAUSED, VmStatus.MIGRATING, VmStatus.UNKNOWN,
+            VmStatus.WAIT_FOR_LAUNCH, VmStatus.SUSPENDED, VmStatus.POWERING_DOWN, VmStatus.UNASSIGNED),
+    UP(VmStatus.UP, VmStatus.SAVING_STATE, VmStatus.RESTORING_STATE),
+    DOWN(VmStatus.DOWN, VmStatus.NOT_RESPONDING, VmStatus.REBOOT_IN_PROGRESS,
+            VmStatus.IMAGE_LOCKED);
 
-    private final List<Vm.Status> values;
-    private static Map<Vm.Status, VmStatusMap> map = new EnumMap<>(Vm.Status.class);
+    private final List<VmStatus> values;
+    private static Map<VmStatus, VmStatusMap> map = new EnumMap<>(VmStatus.class);
 
     static {
         for (VmStatusMap item : VmStatusMap.values()) {
-            for (Vm.Status status : item.getValues()) {
+            for (VmStatus status : item.getValues()) {
                 map.put(status, item);
             }
         }
     }
 
-    VmStatusMap(Vm.Status... values) {
+    VmStatusMap(VmStatus... values) {
         this.values = Collections.unmodifiableList(Arrays.asList(values));
     }
 
-    public List<Vm.Status> getValues() {
+    public List<VmStatus> getValues() {
         return values;
     }
 
-    public static DashboardPosition getDashboardPosition(Vm.Status status) {
+    public static DashboardPosition getDashboardPosition(VmStatus status) {
         VmStatusMap result = map.get(status);
         return result == null ? DashboardPosition.UNKNOWN : DashboardPosition.fromValue(result.ordinal());
     }

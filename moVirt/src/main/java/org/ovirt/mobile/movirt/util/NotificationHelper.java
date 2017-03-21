@@ -39,7 +39,7 @@ public class NotificationHelper {
     ) {
         String title = trigger.getNotificationType() == Trigger.NotificationType.CRITICAL ? ">>> oVirt event <<<" : "oVirt event";
         Notification notification = prepareNotification(context, resultPendingIntent, System.currentTimeMillis(), title)
-                .setContentText(trigger.getCondition().getMessage(entity))
+                .setContentText(trigger.getCondition().getMessage(context, entity))
                 .build();
         notificationManager.notify(notificationCount++, notification);
         if (trigger.getNotificationType() == Trigger.NotificationType.CRITICAL) {
@@ -68,7 +68,7 @@ public class NotificationHelper {
             }
 
             if (i < maxDisplayedNotifications) {
-                style.addLine(pair.second.getCondition().getMessage(pair.first));
+                style.addLine(pair.second.getCondition().getMessage(context, pair.first));
             }
         }
 

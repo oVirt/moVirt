@@ -22,8 +22,12 @@ public interface OVirtContract {
         String NAME = "name";
     }
 
-    interface SnapshotEmbeddableEntity extends NamedEntity {
+    interface HasSnapshot {
         String SNAPSHOT_ID = "snapshot_id";
+
+        String getSnapshotId();
+
+        void setSnapshotId(String snapshotId);
     }
 
     interface HasStatus {
@@ -64,6 +68,14 @@ public interface OVirtContract {
         void setDiskId(String diskId);
     }
 
+    interface HasNic {
+        String NIC_ID = "nic_id";
+
+        String getNicId();
+
+        void setNicId(String nicId);
+    }
+
     interface HasDataCenter {
         String DATA_CENTER_ID = "data_center_id";
     }
@@ -76,10 +88,17 @@ public interface OVirtContract {
         void setCpuUsage(double cpuUsage);
     }
 
-    interface HasMemory {
+    interface HasMemorySize {
+        String MEMORY_SIZE = "mem_size";
+
+        long getMemorySize();
+
+        void setMemorySize(long memorySize);
+    }
+
+    interface HasMemory extends HasMemorySize {
         String MEMORY_USAGE = "mem_usage";
         String USED_MEMORY_SIZE = "used_mem_size";
-        String MEMORY_SIZE = "mem_size";
 
         double getMemoryUsage();
 
@@ -88,10 +107,6 @@ public interface OVirtContract {
         long getUsedMemorySize();
 
         void setUsedMemorySize(long usedMemorySize);
-
-        long getMemorySize();
-
-        void setMemorySize(long memorySize);
     }
 
     interface HasAvailableSize {
@@ -137,10 +152,20 @@ public interface OVirtContract {
     String PATH_VMS = "vms";
     String PATH_VM = "vms/*";
 
-    interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost, SnapshotEmbeddableEntity, HasCpuUsage, HasMemory, HasSockets, HasCoresPerSocket {
+    interface Vm extends NamedEntity, HasStatus, HasCluster, HasHost, HasCpuUsage, HasMemory, HasSockets, HasCoresPerSocket {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_VMS).build();
 
         String TABLE = "vms";
+        String OS_TYPE = "os_type";
+    }
+
+    String PATH_SNAPSHOT_VMS = "snapshot_vms";
+    String PATH_SNAPSHOT_VM = "snapshot_vms/*";
+
+    interface SnapshotVm extends NamedEntity, HasStatus, HasCluster, HasVm, HasSnapshot, HasMemorySize, HasSockets, HasCoresPerSocket {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_SNAPSHOT_VMS).build();
+
+        String TABLE = "snapshot_vms";
         String OS_TYPE = "os_type";
     }
 
@@ -196,13 +221,13 @@ public interface OVirtContract {
         String STORAGE_FORMAT = "storage_format";
     }
 
-    String PATH_TRIGGERS = "triggers";
-    String PATH_TRIGGER = "triggers/#";
+    String PATH_TRIGGERS = "crud_list";
+    String PATH_TRIGGER = "crud_list/#";
 
     interface Trigger extends BaseEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_TRIGGERS).build();
 
-        String TABLE = "triggers";
+        String TABLE = "crud_list";
 
         String CONDITION = "condition";
         String NOTIFICATION = "notification";
@@ -214,7 +239,7 @@ public interface OVirtContract {
     String PATH_EVENTS = "events";
     String PATH_EVENT = "events/#";
 
-    interface Event extends BaseEntity, HasHost, HasCluster, HasDataCenter, HasStorageDomain {
+    interface Event extends BaseEntity, HasHost, HasVm, HasCluster, HasDataCenter, HasStorageDomain {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_EVENTS).build();
 
         String TABLE = "events";
@@ -222,7 +247,7 @@ public interface OVirtContract {
         String DESCRIPTION = "description";
         String SEVERITY = "severity";
         String TIME = "time";
-        String VM_ID = "vm_id";
+        String TEMPORARY = "temporary";
     }
 
     String PATH_CONNECTION_INFOS = "connectioninfos";
@@ -256,19 +281,41 @@ public interface OVirtContract {
     String PATH_DISKS = "disks";
     String PATH_DISK = "disks/*";
 
-    interface Disk extends HasVm, NamedEntity, HasStatus, SnapshotEmbeddableEntity, HasSize, HasUsedSize {
+    interface Disk extends NamedEntity, HasStatus, HasSize, HasUsedSize {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_DISKS).build();
 
         String TABLE = "disks";
     }
 
+    String PATH_SNAPSHOT_DISKS = "snapshot_disks";
+    String PATH_SNAPSHOT_DISK = "snapshot_disks/*";
+
+    interface SnapshotDisk extends HasVm, NamedEntity, HasStatus, HasSnapshot, HasSize, HasUsedSize, HasDisk {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_SNAPSHOT_DISKS).build();
+
+        String TABLE = "snapshot_disks";
+    }
+
     String PATH_NICS = "nics";
     String PATH_NIC = "nics/*";
 
-    interface Nic extends HasVm, NamedEntity, SnapshotEmbeddableEntity {
+    interface Nic extends NamedEntity, HasVm {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_NICS).build();
 
         String TABLE = "nics";
+
+        String LINKED = "linked";
+        String MAC_ADDRESS = "mac_address";
+        String PLUGGED = "plugged";
+    }
+
+    String PATH_SNAPSHOT_NICS = "snapshot_nics";
+    String PATH_SNAPSHOT_NIC = "snapshot_nics/*";
+
+    interface SnapshotNic extends NamedEntity, HasVm, HasSnapshot, HasNic {
+        Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_SNAPSHOT_NICS).build();
+
+        String TABLE = "snapshot_nics";
 
         String LINKED = "linked";
         String MAC_ADDRESS = "mac_address";

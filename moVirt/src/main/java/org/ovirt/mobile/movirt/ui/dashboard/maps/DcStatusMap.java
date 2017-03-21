@@ -1,6 +1,6 @@
 package org.ovirt.mobile.movirt.ui.dashboard.maps;
 
-import org.ovirt.mobile.movirt.model.DataCenter;
+import org.ovirt.mobile.movirt.model.enums.DataCenterStatus;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,35 +8,32 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by suomiy on 5/18/16.
- */
 public enum DcStatusMap {
     // dashboard position depends on the order
-    WARNING(DataCenter.Status.UNINITIALIZED, DataCenter.Status.MAINTENANCE, DataCenter.Status.CONTEND),
-    UP(DataCenter.Status.UP),
-    DOWN(DataCenter.Status.NOT_OPERATIONAL, DataCenter.Status.PROBLEMATIC);
+    WARNING(DataCenterStatus.UNINITIALIZED, DataCenterStatus.MAINTENANCE, DataCenterStatus.CONTEND),
+    UP(DataCenterStatus.UP),
+    DOWN(DataCenterStatus.NOT_OPERATIONAL, DataCenterStatus.PROBLEMATIC);
 
-    private final List<DataCenter.Status> values;
-    private static Map<DataCenter.Status, DcStatusMap> map = new EnumMap<>(DataCenter.Status.class);
+    private final List<DataCenterStatus> values;
+    private static Map<DataCenterStatus, DcStatusMap> map = new EnumMap<>(DataCenterStatus.class);
 
     static {
         for (DcStatusMap item : DcStatusMap.values()) {
-            for (DataCenter.Status status : item.getValues()) {
+            for (DataCenterStatus status : item.getValues()) {
                 map.put(status, item);
             }
         }
     }
 
-    DcStatusMap(DataCenter.Status... values) {
+    DcStatusMap(DataCenterStatus... values) {
         this.values = Collections.unmodifiableList(Arrays.asList(values));
     }
 
-    public List<DataCenter.Status> getValues() {
+    public List<DataCenterStatus> getValues() {
         return values;
     }
 
-    public static DashboardPosition getDashboardPosition(DataCenter.Status status) {
+    public static DashboardPosition getDashboardPosition(DataCenterStatus status) {
         DcStatusMap result = map.get(status);
         return result == null ? DashboardPosition.UNKNOWN : DashboardPosition.fromValue(result.ordinal());
     }

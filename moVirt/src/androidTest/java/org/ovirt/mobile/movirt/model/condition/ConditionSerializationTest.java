@@ -2,7 +2,7 @@ package org.ovirt.mobile.movirt.model.condition;
 
 import junit.framework.TestCase;
 
-import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.util.JsonUtils;
 
 public class ConditionSerializationTest extends TestCase {
@@ -22,7 +22,7 @@ public class ConditionSerializationTest extends TestCase {
     }
 
     public void testStatusCondition() {
-        StatusCondition condition = new StatusCondition(Vm.Status.DOWN);
+        StatusCondition condition = new StatusCondition(VmStatus.DOWN);
         StatusCondition condition2 = serializationTransform(condition);
 
         assertEquals(condition.getStatus(), condition2.getStatus());

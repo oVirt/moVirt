@@ -11,17 +11,12 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 public class Disk extends org.ovirt.mobile.movirt.rest.dto.Disk {
     public String status;
     public String provisioned_size;
-    public Vm vm;
-    public Snapshot snapshot;
+    public Vm vm; // used up to 4.1
 
     public org.ovirt.mobile.movirt.model.Disk toEntity() {
         org.ovirt.mobile.movirt.model.Disk disk = super.toEntity();
         disk.setStatus(status);
         disk.setSize(ObjectUtils.parseLong(provisioned_size));
-
-        if (snapshot != null) {
-            disk.setSnapshotId(snapshot.id);
-        }
 
         if (vm != null) {
             disk.setVmId(vm.id);

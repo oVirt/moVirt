@@ -1,11 +1,17 @@
 package org.ovirt.mobile.movirt.ui.triggers;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.Loader;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -13,9 +19,12 @@ import android.widget.TextView;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ItemClick;
+import org.androidannotations.annotations.ItemLongClick;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
+import org.androidannotations.annotations.OptionsMenuItem;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
@@ -29,14 +38,15 @@ import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.ActionBarLoaderActivity;
+import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.SCOPE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.TARGET_ID;
 
 @EActivity(R.layout.activity_edit_triggers)
-@OptionsMenu(R.menu.triggers)
-public class EditTriggersActivity extends ActionBarLoaderActivity {
+@OptionsMenu(R.menu.delete_item)
+public class EditTriggersActivity extends ActionBarLoaderActivity implements ConfirmDialogFragment.ConfirmDialogListener {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
     public static final String EXTRA_SCOPE = "scope";
@@ -45,6 +55,7 @@ public class EditTriggersActivity extends ActionBarLoaderActivity {
             OVirtContract.Trigger.CONDITION,
             OVirtContract.Trigger.NOTIFICATION,
     };
+    private static final int DELETE_ACTION = 0;
 
     private String targetEntityId;
     private String targetEntityName;
@@ -54,6 +65,9 @@ public class EditTriggersActivity extends ActionBarLoaderActivity {
 
     @Bean
     ProviderFacade provider;
+
+    @ViewById
+    FloatingActionButton fab;
 
     @StringRes(R.string.whole_datacenter)
     String GLOBAL_SCOPE;
@@ -67,12 +81,22 @@ public class EditTriggersActivity extends ActionBarLoaderActivity {
     @StringRes(R.string.trigger_title_format)
     String TITLE_FORMAT;
 
+    @OptionsMenuItem
+    MenuItem deleteItem;
+
+    @ViewById
+    ListView listView;
+
+    @InstanceState
+    Integer selectedListItem;
+
     @AfterViews
     void init() {
         targetEntityId = getIntent().getStringExtra(EXTRA_TARGET_ENTITY_ID);
         targetEntityName = getIntent().getStringExtra(EXTRA_TARGET_ENTITY_NAME);
         triggerScope = (Trigger.Scope) getIntent().getSerializableExtra(EXTRA_SCOPE);
 
+        listView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
         setTitle(String.format(TITLE_FORMAT, getScopeText()));
 
         SimpleCursorAdapter triggerAdapter = new SimpleCursorAdapter(this,
@@ -104,12 +128,66 @@ public class EditTriggersActivity extends ActionBarLoaderActivity {
                         .where(TARGET_ID, targetEntityId)
                         .asLoader();
             }
+
+            @Override
+            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+                super.onLoadFinished(loader, data);
+
+                if (selectedListItem != null) {
+                    listViewItemLongClicked(selectedListItem);
+                }
+            }
         };
 
-        triggersListView.setAdapter(triggerAdapter);
-        triggersListView.setEmptyView(findViewById(android.R.id.empty));
+        listView.setAdapter(triggerAdapter);
+        listView.setEmptyView(findViewById(android.R.id.empty));
 
         getSupportLoaderManager().initLoader(0, null, cursorAdapterLoader);
+
+        fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.material_green_300)));
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addTrigger();
+            }
+        });
+    }
+
+    @ItemLongClick(R.id.listView)
+    void listViewItemLongClicked(int position) {
+        selectedListItem = position;
+        listView.setItemChecked(position, true);
+        updateSelection();
+    }
+
+    @ItemClick(R.id.listView)
+    void listViewItemClicked(Cursor cursor) {
+        clearSelection();
+        Trigger trigger = (Trigger) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor);
+        Intent intent = getTriggerActivityIntent(EditTriggerActivity_.class, trigger.getUri());
+        startActivity(intent);
+    }
+
+    @OptionsItem(R.id.delete_item)
+    void delete() {
+        ConfirmDialogFragment confirmDialog = ConfirmDialogFragment
+                .newInstance(DELETE_ACTION, getString(R.string.dialog_action_delete_trigger));
+        confirmDialog.show(getFragmentManager(), "confirmDeleteTrigger");
+    }
+
+    @Override
+    public void onDialogResult(int dialogButton, int actionId) {
+        if (actionId == DELETE_ACTION && dialogButton == DialogInterface.BUTTON_POSITIVE) {
+            Trigger trigger = getSelectedListItem();
+            clearSelection();
+            provider.delete(trigger);
+        }
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        deleteItem.setVisible(isSelected());
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -120,6 +198,12 @@ public class EditTriggersActivity extends ActionBarLoaderActivity {
     @Override
     public void destroyLoader() {
         getSupportLoaderManager().destroyLoader(0);
+    }
+
+    private void addTrigger() {
+        clearSelection();
+        Intent intent = getTriggerActivityIntent(AddTriggerActivity_.class);
+        startActivity(intent);
     }
 
     private String getScopeText() {
@@ -152,22 +236,6 @@ public class EditTriggersActivity extends ActionBarLoaderActivity {
         return builder.toString();
     }
 
-    @ViewById
-    ListView triggersListView;
-
-    @OptionsItem(R.id.action_add_trigger)
-    void addTrigger() {
-        Intent intent = getTriggerActivityIntent(AddTriggerActivity_.class);
-        startActivity(intent);
-    }
-
-    @ItemClick
-    void triggersListViewItemClicked(Cursor cursor) {
-        Trigger trigger = (Trigger) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor);
-        Intent intent = getTriggerActivityIntent(EditTriggerActivity_.class, trigger.getUri());
-        startActivity(intent);
-    }
-
     private Intent getTriggerActivityIntent(Class<?> clazz) {
         return getTriggerActivityIntent(clazz, null);
     }
@@ -185,6 +253,47 @@ public class EditTriggersActivity extends ActionBarLoaderActivity {
 
     @OptionsItem(android.R.id.home)
     public void homeSelected() {
-        onBackPressed(); // home behaves like back button - we need to return to vm from triggers
+        if (isSelected()) {
+            clearSelection();
+        } else {
+            onBackPressed(); // home behaves like back button - we need to return to vm from triggers
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isSelected()) {
+            clearSelection();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    private void clearSelection() {
+        listView.setItemChecked(listView.getCheckedItemPosition(), false);
+        selectedListItem = null;
+        updateSelection();
+    }
+
+    private void updateSelection() {
+        Trigger trigger = getSelectedListItem();
+        setTitle(trigger != null ? getConditionString(trigger.getCondition()) : String.format(TITLE_FORMAT, getScopeText()));
+        invalidateOptionsMenu();
+    }
+
+    private boolean isSelected() {
+        return listView.getCheckedItemPosition() >= 0;
+    }
+
+    private Trigger getSelectedListItem() {
+        int position = listView.getCheckedItemPosition();
+        Trigger trigger = null;
+
+        if (position >= 0) {
+            Cursor cursor = (Cursor) listView.getItemAtPosition(position);
+            trigger = (Trigger) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor);
+        }
+
+        return trigger;
     }
 }

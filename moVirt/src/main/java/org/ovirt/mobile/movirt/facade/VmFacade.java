@@ -7,7 +7,7 @@ import android.os.RemoteException;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
-import org.ovirt.mobile.movirt.facade.predicates.NotSnapshotEmbeddedPredicate;
+import org.ovirt.mobile.movirt.auth.properties.property.version.support.VersionSupport;
 import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
 import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.model.Vm;
@@ -50,7 +50,7 @@ public class VmFacade extends BaseEntityFacade<Vm> {
     protected CompositeResponse<Vm> getSyncOneResponse(final Response<Vm> response, String... ids) {
         requireSignature(ids);
         CompositeResponse<Vm> res = super.getSyncOneResponse(response);
-        if (propertiesManager.getApiVersion().isV3Api()) {
+        if (VersionSupport.NICS_POLLED_WITH_VMS.isSupported(propertiesManager.getApiVersion())) {
             res.addResponse(new SimpleResponse<Vm>() {
                 @Override
                 public void onResponse(Vm entity) throws RemoteException {
@@ -67,18 +67,18 @@ public class VmFacade extends BaseEntityFacade<Vm> {
     protected CompositeResponse<List<Vm>> getSyncAllResponse(final Response<List<Vm>> response, String... ids) {
         requireSignature(ids);
         CompositeResponse<List<Vm>> res = new CompositeResponse<>(
-                syncAdapter.getUpdateEntitiesResponse(Vm.class, new NotSnapshotEmbeddedPredicate<Vm>()),
-                response);
+                syncAdapter.getUpdateEntitiesResponse(Vm.class), response);
 
-        if (propertiesManager.getApiVersion().isV3Api()) {
+        if (VersionSupport.NICS_POLLED_WITH_VMS.isSupported(propertiesManager.getApiVersion())) {
             res.addResponse(new SimpleResponse<List<Vm>>() {
                 @Override
                 public void onResponse(List<Vm> entities) throws RemoteException {
                     List<Nic> nics = new ArrayList<>();
                     for (Vm vm : entities) {
                         nics.addAll(vm.getNics());
+                        vm.setNics(null);
                     }
-                    syncAdapter.updateLocalEntities(nics, Nic.class, new NotSnapshotEmbeddedPredicate<Nic>());
+                    syncAdapter.updateLocalEntities(nics, Nic.class);
                 }
             });
         }

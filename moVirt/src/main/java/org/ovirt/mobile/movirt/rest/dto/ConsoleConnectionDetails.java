@@ -2,9 +2,6 @@ package org.ovirt.mobile.movirt.rest.dto;
 
 import org.ovirt.mobile.movirt.model.enums.ConsoleProtocol;
 
-/**
- * Created by suomiy on 10/17/16.
- */
 public class ConsoleConnectionDetails {
     private ConsoleProtocol protocol;
     private String address;

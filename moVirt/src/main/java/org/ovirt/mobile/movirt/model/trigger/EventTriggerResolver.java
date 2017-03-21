@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class to resolve event triggers.
+ * Class to resolve event crud_list.
  * Created by Nika on 15.03.2015.
  */
 @EBean

@@ -29,7 +29,6 @@ import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.base.OVirtEntity;
-import org.ovirt.mobile.movirt.model.base.SnapshotEmbeddableEntity;
 import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -38,10 +37,13 @@ import org.ovirt.mobile.movirt.rest.client.OVirtClient;
 import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,20 +56,30 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @RootContext
     Context context;
+
     @Bean
     OVirtClient oVirtClient;
+
     @Bean
     ProviderFacade provider;
+
     @Bean
     EntityFacadeLocator entityFacadeLocator;
+
     @Bean
     EventsHandler eventsHandler;
+
     @Bean
     AccountPropertiesManager propertiesManager;
+
     @Bean
     NotificationHelper notificationHelper;
+
     @Bean
     MessageHelper messageHelper;
+
+    @Bean
+    SharedPreferencesHelper sharedPreferencesHelper;
 
     public SyncAdapter(Context context) {
         super(context, true);
@@ -83,10 +95,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient providerClient, SyncResult syncResult) {
-        if (!propertiesManager.accountConfigured()) {
-            Log.d(TAG, "Account not configured, not performing sync");
-            return;
-        }
+//        if (!propertiesManager.accountConfigured()) {
+//            Log.d(TAG, "Account not configured, not performing sync");
+//            return;
+//        }
 
         if (inSync.compareAndSet(false, true)) {
             try {
@@ -98,7 +110,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 facadeSync(Host.class);
                 facadeSync(StorageDomain.class);
                 facadeSync(Disk.class);
-                eventsHandler.updateEvents(false);
+                if (sharedPreferencesHelper.isPollEventsEnabled()) {
+                    eventsHandler.syncAllEvents();
+                }
             } catch (Exception e) {
                 messageHelper.showError(e);
             } finally {
@@ -134,16 +148,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
         final ProviderFacade.BatchBuilder batch = provider.batch();
 
-        Collection<Trigger<E>> allTriggers = entityFacade.getAllTriggers();
+        Collection<Trigger<E>> allTriggers = entityFacade == null ? Collections.<Trigger<E>>emptyList() : entityFacade.getAllTriggers();
         updateLocalEntity(entity, clazz, allTriggers, batch);
         applyBatch(batch);
     }
 
     public <E extends OVirtEntity> SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz) {
+        return getUpdateEntitiesResponse(clazz, true);
+    }
+
+    public <E extends OVirtEntity> SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz, final boolean removeExpiredEntities) {
         return new SimpleResponse<List<E>>() {
             @Override
             public void onResponse(List<E> entities) throws RemoteException {
-                updateLocalEntities(entities, clazz);
+                updateLocalEntities(entities, clazz, removeExpiredEntities);
             }
         };
     }
@@ -172,12 +190,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     public <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz) throws RemoteException {
-        updateLocalEntities(remoteEntities, clazz, new Predicate<E>() {
-            @Override
-            public boolean apply(E entity) {
-                return true;
-            }
-        });
+        updateLocalEntities(remoteEntities, clazz, null, true);
+    }
+
+    public <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz, boolean removeExpiredEntities) throws RemoteException {
+        updateLocalEntities(remoteEntities, clazz, null, removeExpiredEntities);
     }
 
     public <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz, Predicate<E> scopePredicate)
@@ -191,36 +208,40 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         final EntityMapper<E> mapper = EntityMapper.forEntity(clazz);
         final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
         Collection<Trigger<E>> allTriggers = new ArrayList<>();
+
         if (entityFacade != null) {
             allTriggers = entityFacade.getAllTriggers();
-        }
-
-        final Cursor cursor = provider.query(clazz).asCursor();
-        if (cursor == null) {
-            return;
         }
 
         ProviderFacade.BatchBuilder batch = provider.batch();
         List<Pair<E, E>> entities = new ArrayList<>();
 
-        while (cursor.moveToNext()) {
-            E localEntity = mapper.fromCursor(cursor);
-            if (scopePredicate.apply(localEntity)) {
-                E remoteEntity = remoteEntityMap.get(localEntity.getId());
-                if (remoteEntity == null) { // local entity obsolete, schedule delete from db
-                    if (removeExpiredEntities) { // except for partial updates
-                        Log.d(TAG, String.format("%s: scheduling delete for URI = %s", clazz.getSimpleName(), localEntity.getUri()));
-                        batch.delete(localEntity);
-                    }
-                } else { // existing entity, update stats if changed
-                    remoteEntityMap.remove(localEntity.getId());
-                    entities.add(new Pair<>(localEntity, remoteEntity));
-                }
-            }
+        final Cursor cursor = provider.query(clazz).asCursor();
+
+        if (cursor == null) {
+            return;
         }
 
-        checkEntitiesChanged(entities, entityFacade, allTriggers, batch);
-        cursor.close();
+        try {
+            while (cursor.moveToNext()) {
+                E localEntity = mapper.fromCursor(cursor);
+                if (scopePredicate == null || scopePredicate.apply(localEntity)) { // apply if there is no predicate
+                    E remoteEntity = remoteEntityMap.get(localEntity.getId());
+                    if (remoteEntity == null) { // local entity obsolete, schedule delete from db
+                        if (removeExpiredEntities) { // except for partial updates
+                            Log.d(TAG, String.format("%s: scheduling delete for URI = %s", clazz.getSimpleName(), localEntity.getUri()));
+                            batch.delete(localEntity);
+                        }
+                    } else { // existing entity, update stats if changed
+                        remoteEntityMap.remove(localEntity.getId());
+                        entities.add(new Pair<>(localEntity, remoteEntity));
+                    }
+                }
+            }
+            checkEntitiesChanged(entities, entityFacade, allTriggers, batch);
+        } finally {
+            ObjectUtils.closeSilently(cursor);
+        }
 
         for (E entity : remoteEntityMap.values()) {
             Log.d(TAG, String.format("%s: scheduling insert for id = %s", clazz.getSimpleName(), entity.getId()));
@@ -257,14 +278,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             E remoteEntity = pair.second;
 
             if (!localEntity.equals(remoteEntity)) {
-                boolean processTriggers = true;
-
-                if (remoteEntity instanceof SnapshotEmbeddableEntity) {
-                    SnapshotEmbeddableEntity snapshotEmbeddableEntity = (SnapshotEmbeddableEntity) localEntity;
-                    processTriggers = !snapshotEmbeddableEntity.isSnapshotEmbedded();
-                }
-
-                if (processTriggers && entityFacade != null) {
+                if (entityFacade != null) {
                     final List<Trigger<E>> triggers = entityFacade.getTriggers(localEntity, allTriggers);
                     Log.d(TAG, String.format("%s: processing triggers for id = %s", localEntity.getClass().getSimpleName(), remoteEntity.getId()));
 

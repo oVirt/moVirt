@@ -29,10 +29,6 @@ public enum AccountProperty {
      */
     FUTURE_AUTH_TOKEN(false),
     /**
-     * Should be used together {@link Boolean}. This property is not settable.
-     */
-    ACCOUNT_CONFIGURED(false),
-    /**
      * Should be used together {@link Boolean}.
      */
     FIRST_LOGIN,
@@ -149,16 +145,6 @@ public enum AccountProperty {
         @Override
         public AccountProperty getProperty() {
             return FUTURE_AUTH_TOKEN;
-        }
-    }
-
-    public abstract static class AccountConfiguredListener implements PropertyChangedListener<Boolean> {
-        @Override
-        public abstract void onPropertyChange(Boolean accountConfigured);
-
-        @Override
-        public AccountProperty getProperty() {
-            return ACCOUNT_CONFIGURED;
         }
     }
 

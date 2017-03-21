@@ -1,24 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="horizontal"
+              android:id="@+id/trigger_item"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:gravity="center_vertical">
+              android:background="?android:activatedBackgroundIndicator"
+              android:gravity="center_vertical"
+              android:orientation="horizontal"
+              android:padding="@dimen/default_item_margin">
 
     <TextView
         android:id="@+id/trigger_notification"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_margin="10dp"/>
+        android:textStyle="bold"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/when"
-        android:layout_margin="10dp"/>
+        android:layout_marginLeft="@dimen/default_item_horizontal_margin"
+        android:layout_marginStart="@dimen/default_item_horizontal_margin"
+        android:layout_marginRight="@dimen/default_item_horizontal_margin"
+        android:layout_marginEnd="@dimen/default_item_horizontal_margin"
+        android:text="@string/when"/>
 
     <TextView
         android:id="@+id/trigger_condition"

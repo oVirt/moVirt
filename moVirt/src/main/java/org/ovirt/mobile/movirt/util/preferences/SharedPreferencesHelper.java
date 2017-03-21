@@ -1,37 +1,22 @@
 package org.ovirt.mobile.movirt.util.preferences;
 
 import android.accounts.Account;
-import android.content.ContentResolver;
+import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.preference.PreferenceManager;
 
-import org.androidannotations.annotations.AfterInject;
-import org.androidannotations.annotations.App;
-import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.res.BooleanRes;
 import org.androidannotations.annotations.res.IntegerRes;
 import org.androidannotations.annotations.res.StringRes;
-import org.ovirt.mobile.movirt.MoVirtApp;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.Constants;
 
-/**
- * Created by suomiy on 11/13/15.
- */
-@EBean(scope = EBean.Scope.Singleton)
+@EBean
 public class SharedPreferencesHelper {
 
-    private static final int SECONDS_IN_MINUTE = 60;
-
-    private SharedPreferences sharedPreferences;
-
-    @App
-    MoVirtApp app;
-
-    @Bean
-    MovirtAuthenticator authenticator;
+    @RootContext
+    Context context;
 
     @BooleanRes
     boolean defaultConnectionNotification;
@@ -46,7 +31,10 @@ public class SharedPreferencesHelper {
     int defaultPeriodicSyncInterval;
 
     @IntegerRes
-    int defaultMaxEvents;
+    int defaultMaxEventsPolled;
+
+    @IntegerRes
+    int defaultMaxEventsStored;
 
     @IntegerRes
     int defaultMaxVms;
@@ -57,9 +45,19 @@ public class SharedPreferencesHelper {
     @StringRes
     String defaultVmsSearchQuery;
 
-    @AfterInject
-    void initialize() {
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(app);
+
+    private SharedPreferences sharedPreferences;
+
+    public void initialize(Account account) {
+        if (account == null) {
+            throw new IllegalArgumentException("Account cannot be null");
+        }
+
+        sharedPreferences = context.getSharedPreferences(account.name + Constants.PREFERENCES_NAME_SUFFIX, Context.MODE_PRIVATE);
+    }
+
+    public void destroy() {
+        sharedPreferences.edit().clear().apply();
     }
 
     public Boolean getBooleanPref(SettingsKey key) {
@@ -78,7 +76,8 @@ public class SharedPreferencesHelper {
     public Integer getIntPref(SettingsKey key) {
         switch (key) {
             case PERIODIC_SYNC_INTERVAL:
-            case MAX_EVENTS:
+            case MAX_EVENTS_POLLED:
+            case MAX_EVENTS_STORED:
             case MAX_VMS:
                 return Integer.parseInt(getStringPref(key));
             default:
@@ -90,8 +89,10 @@ public class SharedPreferencesHelper {
         switch (key) {
             case PERIODIC_SYNC_INTERVAL:
                 return sharedPreferences.getString(key.getValue(), Integer.toString(defaultPeriodicSyncInterval));
-            case MAX_EVENTS:
-                return sharedPreferences.getString(key.getValue(), Integer.toString(defaultMaxEvents));
+            case MAX_EVENTS_POLLED:
+                return sharedPreferences.getString(key.getValue(), Integer.toString(defaultMaxEventsPolled));
+            case MAX_EVENTS_STORED:
+                return sharedPreferences.getString(key.getValue(), Integer.toString(defaultMaxEventsStored));
             case MAX_VMS:
                 return sharedPreferences.getString(key.getValue(), Integer.toString(defaultMaxVms));
             case EVENTS_SEARCH_QUERY:
@@ -103,12 +104,20 @@ public class SharedPreferencesHelper {
         }
     }
 
+    public boolean isPeriodicSyncEnabled() {
+        return getBooleanPref(SettingsKey.PERIODIC_SYNC);
+    }
+
     public int getPeriodicSyncInterval() {
         return getIntPref(SettingsKey.PERIODIC_SYNC_INTERVAL);
     }
 
-    public int getMaxEvents() {
-        return getIntPref(SettingsKey.MAX_EVENTS);
+    public int getMaxEventsPolled() {
+        return getIntPref(SettingsKey.MAX_EVENTS_POLLED);
+    }
+
+    public int getMaxEventsStored() {
+        return getIntPref(SettingsKey.MAX_EVENTS_STORED);
     }
 
     public int getMaxVms() {
@@ -121,18 +130,5 @@ public class SharedPreferencesHelper {
 
     public boolean isConnectionNotificationEnabled() {
         return getBooleanPref(SettingsKey.CONNECTION_NOTIFICATION);
-    }
-
-    public void updatePeriodicSync() {
-        Account account = authenticator.getAccount();
-        String authority = OVirtContract.CONTENT_AUTHORITY;
-        Bundle bundle = Bundle.EMPTY;
-
-        if (getBooleanPref(SettingsKey.PERIODIC_SYNC)) {
-            long intervalInSeconds = (long) getIntPref(SettingsKey.PERIODIC_SYNC_INTERVAL) * (long) SECONDS_IN_MINUTE;
-            ContentResolver.addPeriodicSync(account, authority, bundle, intervalInSeconds);
-        } else {
-            ContentResolver.removePeriodicSync(account, authority, bundle);
-        }
     }
 }

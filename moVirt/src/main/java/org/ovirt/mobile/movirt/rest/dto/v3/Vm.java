@@ -11,14 +11,9 @@ public class Vm extends org.ovirt.mobile.movirt.rest.dto.Vm {
     public Cluster cluster;
     public Nics nics;
 
-    @Override
-    public String toString() {
-        return String.format("%s, status=%s, clusterId=%s", super.toString(), status.state, cluster.id);
-    }
-
     public org.ovirt.mobile.movirt.model.Vm toEntity() {
         org.ovirt.mobile.movirt.model.Vm vm = super.toEntity();
-        vm.setStatus(mapStatus(status));
+        vm.setStatus(Status.asVmStatus(status));
         if (cluster != null) {
             vm.setClusterId(cluster.id);
         }
@@ -27,13 +22,5 @@ public class Vm extends org.ovirt.mobile.movirt.rest.dto.Vm {
         vm.setNics(RestMapper.mapToEntities(nics));
 
         return vm;
-    }
-
-    private static org.ovirt.mobile.movirt.model.Vm.Status mapStatus(Status status) {
-        try {
-            return org.ovirt.mobile.movirt.model.Vm.Status.valueOf(status.state.toUpperCase());
-        } catch (Exception e) {
-            return org.ovirt.mobile.movirt.model.Vm.Status.UNKNOWN;
-        }
     }
 }

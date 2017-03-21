@@ -9,12 +9,18 @@
     <string name="prefs_poll_events_summary">If the events are part of regular poll or not.</string>
     <string name="prefs_connection_notification">Connection Notifications</string>
     <string name="prefs_connection_notification_summary">Show notifications on connection lost.</string>
-    <string name="prefs_max_events_locally">Max events locally</string>
-    <string name="prefs_max_events_locally_summary">Maximal amount of events stored locally. For admin users also the max amount of events polled. Current: %d</string>
+    <string name="prefs_max_events_polled">Max events polled.</string>
+    <string name="prefs_max_events_stored">Max events stored.</string>
+    <string name="prefs_max_events_polled_summary">Maximal amount of events polled. Current: %d</string>
+    <string name="prefs_max_events_stored_summary">Maximal amount of events stored. Current: %d</string>
+    <string name="prefs_users_guide">User\'s Guide</string>
+    <string name="prefs_users_guide_summary">Direct link</string>
     <string name="prefs_about_moVirt">About moVirt</string>
-    <string name="prefs_about_moVirt_summary">License, Version and Documentation.</string>
+    <string name="prefs_about_moVirt_summary">License, Version and Readme</string>
     <string name="prefs_connection_settings">Connection Settings</string>
     <string name="prefs_connection_settings_summary">Setup connection details (url, user, pass etc)</string>
+    <string name="prefs_engines_settings">Engines\' Settings</string>
+    <string name="prefs_engines_settings_summary">Add/Remove Engines. Setup their connection details and customize settings</string>
     <string name="title_activity_select_cluster">SelectClusterActivity</string>
     <string name="action_select_cluster">Select Cluster</string>
     <string name="refresh">Refresh</string>
@@ -28,7 +34,9 @@
     <string name="default_api_path">/ovirt-engine/api</string>
     <string name="default_password">engine</string>
     <string name="action_refresh">Refresh</string>
-    <string name="title_activity_edit_filters">EditFiltersActivity</string>
+    <string name="title_activity_edit_triggers">EditTriggersActivity</string>
+    <string name="title_activity_edit_accounts">Accounts</string>
+    <string name="title_activity_add_account">Add Account</string>
     <string name="title_add_trigger">Add Trigger</string>
     <string name="title_section1">Section 1</string>
     <string name="title_section2">Section 2</string>
@@ -45,17 +53,21 @@
     <string name="snapshot">Snapshot</string>
     <string name="create">Create</string>
     <string name="save">Save</string>
-    <string name="save_acc">Save Account</string>
+    <string name="connect">Connect</string>
+    <string name="current">(Current)</string>
     <string name="done_advanced_settings">Done</string>
     <string name="delete_stored_cert">Delete</string>
     <string name="load_cert_from_addr">Download</string>
     <string name="certificate_management">Certificate Management</string>
+    <string name="setup">Setup</string>
     <string name="trigger_scope">Editing triggers for: </string>
     <string name="add_trigger">Add Trigger</string>
+    <string name="delete_trigger">Delete Trigger</string>
     <string name="ADD">ADD</string>
     <string name="DELETE">DELETE</string>
     <string name="SAVE">SAVE</string>
     <string name="whole_datacenter">Whole datacenter</string>
+    <string name="engines">Engines</string>
     <string name="cluster_scope">Cluster %1$s</string>
     <string name="details_for_vm">Vm %1$s</string>
     <string name="details_for_host">Host %1$s</string>
@@ -93,8 +105,8 @@
     <string name="regex_syntax_error">Regex syntax error!</string>
     <string name="delete">Delete</string>
     <string name="vm_status_message">Status of VM \'%1$s\' is %2$s</string>
-    <string name="vm_cpu_message">CPU usage of VM \'%1$s\' is over %2$d%% (%3$s)</string>
-    <string name="vm_memory_message">Memory usage of VM \'%1$s\' is over %2$d%% (%3$s)</string>
+    <string name="vm_cpu_message">CPU usage of VM \'%1$s\' is over %2$d%% (%3$.1f%%)</string>
+    <string name="vm_memory_message">Memory usage of VM \'%1$s\' is over %2$d%% (%3$.1f%%)</string>
     <string name="event_trigger_message">\'%1$s\' found in: %2$s</string>
     <string name="connected">Successfully connected to datacenter!</string>
     <string name="rest_request_failed">REST request failed!\n%1$s\n\nFor more details please see server error log.</string>
@@ -135,7 +147,7 @@
     <string name="moVirt_license">Apache License, Version 2.0</string>
     <string name="moVirt_version">App Version 1.7</string>
     <string name="moVirt_readme"><a href="https://github.com/matobet/moVirt/blob/master/README.md">About</a></string>
-    <string name="moVirt_users_guide"><a href="https://github.com/matobet/moVirt/wiki/User%27s-guide">User\'s Guide</a></string>
+    <string name="moVirt_users_guide_link">https://github.com/matobet/moVirt/wiki/User%27s-guide</string>
     <string name="downloadEvents">Load</string>
     <string name="clearEvents">Clear</string>
     <string name="searchInVms">Search</string>
@@ -143,14 +155,16 @@
     <string name="vmsOrderBy">Order</string>
     <string name="prefs_periodic_sync">Periodic Sync</string>
     <string name="prefs_periodic_sync_summary">Enable periodic sync with custom interval instead of system\'s schedule. Enabling with short interval consumes battery!</string>
+    <string name="prefs_global_sync">Global Sync</string>
+    <string name="prefs_global_sync_summary">Engines with enabled sync are synced or disables sync for all engines if unchecked. </string>
     <string name="prefs_periodic_sync_interval">Sync Interval</string>
     <string name="prefs_periodic_sync_interval_summary">Periodic sync interval in minutes. Current: %d</string>
     <string name="prefs_max_max_vms_polled">Max VMs polled</string>
     <string name="prefs_max_vms_polled_summary">Maximum amount of VMs returned from oVirt. Current: %d</string>
     <string name="prefs_vm_search_query">VMs Search Query</string>
-    <string name="prefs_vm_search_query_summary">Poll only VMs which satisfy given query. Has effect for admin users only. (e.g. name = production*)</string>
+    <string name="prefs_vm_search_query_summary">Poll only VMs which satisfy given query; e.g. name = production*</string>
     <string name="prefs_events_search_query">Events Search Query</string>
-    <string name="prefs_events_search_query_summary">Poll only Events which satisfy given query. Has effect for admin users only. (e.g. severity > warning)</string>
+    <string name="prefs_events_search_query_summary">Poll only Events which satisfy given query; e.g. severity > warning</string>
     <string name="spice_console">Spice Console</string>
     <string name="vnc_console">VNC Console</string>
 
@@ -240,6 +254,7 @@
     <string name="dialog_confirm_message">Are you sure you want to %1$s?</string>
     <string name="dialog_action_delete_snapshot">delete this snapshot</string>
     <string name="dialog_action_delete_trigger">delete this trigger</string>
+    <string name="dialog_action_delete_account">delete this account</string>
 
     <string name="domain_type">Domain Type:</string>
     <string name="storage_type">Storage Type:</string>

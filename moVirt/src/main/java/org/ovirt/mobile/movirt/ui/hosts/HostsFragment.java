@@ -10,7 +10,8 @@ import android.widget.TextView;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Host;
-import org.ovirt.mobile.movirt.ui.listfragment.ClusterBoundBaseEntityListFragment;
+import org.ovirt.mobile.movirt.model.enums.HostStatus;
+import org.ovirt.mobile.movirt.ui.listfragment.ClusterBoundBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
@@ -21,7 +22,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Host.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class HostsFragment extends ClusterBoundBaseEntityListFragment<Host> {
+public class HostsFragment extends ClusterBoundBaseListFragment<Host> {
 
     public HostsFragment() {
         super(Host.class);
@@ -40,13 +41,13 @@ public class HostsFragment extends ClusterBoundBaseEntityListFragment<Host> {
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
                 if (columnIndex == cursor.getColumnIndex(NAME)) {
                     TextView textView = (TextView) view;
-                    String vmName = cursor.getString(cursor.getColumnIndex(NAME));
-                    textView.setText(vmName);
+                    String hostName = cursor.getString(cursor.getColumnIndex(NAME));
+                    textView.setText(hostName);
                 } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
                     String status = cursor.getString(cursor.getColumnIndex(STATUS));
                     if (status != null) {
                         ImageView imageView = (ImageView) view;
-                        Host.Status hostStatus = Host.Status.valueOf(status);
+                        HostStatus hostStatus = HostStatus.fromString(status);
                         imageView.setImageResource(hostStatus.getResource());
                     }
                 } else if (columnIndex == cursor.getColumnIndex(CPU_USAGE)) {

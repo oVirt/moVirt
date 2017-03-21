@@ -4,7 +4,6 @@ import android.app.DialogFragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -40,12 +39,11 @@ import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.manager.OnThread;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.ui.BroadcastAwareAppCompatActivity;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.DialogListener;
 import org.ovirt.mobile.movirt.util.CertHelper;
 import org.ovirt.mobile.movirt.util.URIUtils;
-import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
-import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 
@@ -55,8 +53,8 @@ import java.security.cert.Certificate;
 import static org.ovirt.mobile.movirt.Constants.APP_PACKAGE_DOT;
 
 @EActivity(R.layout.activity_advanced_authenticator)
-public class AdvancedAuthenticatorActivity extends ActionBarActivity
-        implements ConfirmDialogFragment.ConfirmDialogListener, CreateDialogBroadcastReceiver, DialogListener.UrlListener {
+public class AdvancedAuthenticatorActivity extends BroadcastAwareAppCompatActivity
+        implements ConfirmDialogFragment.ConfirmDialogListener, DialogListener.UrlListener {
     private static final String TAG = AdvancedAuthenticatorActivity.class.getSimpleName();
 
     private static final String CUSTOM_DIALOG_TAG = "downloadCaIssuer";
@@ -558,21 +556,5 @@ public class AdvancedAuthenticatorActivity extends ActionBarActivity
         if (progress != null) {
             progress.setVisibility(inProgress ? View.VISIBLE : View.GONE);
         }
-    }
-
-    @Receiver(actions = {Broadcasts.ERROR_MESSAGE},
-            registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    public void showErrorDialog(
-            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason,
-            @Receiver.Extra(Broadcasts.Extras.REPEATED_MINOR_ERROR) boolean repeatedMinorError) {
-        CreateDialogBroadcastReceiverHelper.showErrorDialog(getFragmentManager(), reason, repeatedMinorError);
-    }
-
-    @Receiver(actions = {Broadcasts.REST_CA_FAILURE},
-            registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    public void showCertificateDialog(
-            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason) {
-        // Do not use CreateDialogBroadcastReceiverHelper implementation, coz we are already setting certificate in this Activity
-        messageHelper.showError(getString(R.string.dialog_certificate_missing_start));
     }
 }
