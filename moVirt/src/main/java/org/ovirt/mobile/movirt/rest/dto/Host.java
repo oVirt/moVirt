@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.ovirt.mobile.movirt.rest.ParseUtils;
 import org.ovirt.mobile.movirt.rest.RestEntityWrapper;
+import org.ovirt.mobile.movirt.rest.dto.common.Statistic;
+import org.ovirt.mobile.movirt.rest.dto.common.Statistics;
+import org.ovirt.mobile.movirt.rest.dto.common.Topology;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.math.BigDecimal;

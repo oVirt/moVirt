@@ -1,9 +1,7 @@
 package org.ovirt.mobile.movirt.ui.dialogs;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
@@ -21,16 +19,13 @@ import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.VmCommand;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.dto.Snapshot;
 import org.springframework.util.StringUtils;
 
-/**
- * Created by suomiy on 15/02/16.
- */
-
 @EFragment
-public class CreateSnapshotDialogFragment extends DialogFragment {
+public class CreateSnapshotDialogFragment extends ListenerDialogFragment<DialogListener.NewSnapshotListener> {
 
     @Bean
     ProviderFacade providerFacade;
@@ -38,23 +33,11 @@ public class CreateSnapshotDialogFragment extends DialogFragment {
     @Bean
     AccountPropertiesManager propertiesManager;
 
-    private DialogListener.NewSnapshotListener listenerActivity;
-
     private String vmId;
     private Vm currentVm;
 
     private CheckBox persistMemory;
     private EditText descriptionEdit;
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            listenerActivity = (DialogListener.NewSnapshotListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement NewSnapshotListener");
-        }
-    }
 
     public void setVmId(String vmId) {
         this.vmId = vmId;
@@ -76,7 +59,7 @@ public class CreateSnapshotDialogFragment extends DialogFragment {
         persistMemory = (CheckBox) view.findViewById(R.id.persist_memory);
         descriptionEdit = (EditText) view.findViewById(R.id.description_edit);
 
-        if (Vm.Command.SAVE_MEMORY.canExecute(currentVm.getStatus())) {
+        if (VmCommand.SAVE_MEMORY.canExecute(currentVm.getStatus())) {
             saveMemoryLayout.setVisibility(View.VISIBLE);
             persistMemory.setChecked(true);
         }
@@ -92,7 +75,7 @@ public class CreateSnapshotDialogFragment extends DialogFragment {
                 Snapshot snapshot = propertiesManager.getApiVersion().isV3Api() ?
                         new org.ovirt.mobile.movirt.rest.dto.v3.Snapshot(description, persistMem) :
                         new org.ovirt.mobile.movirt.rest.dto.v4.Snapshot(description, persistMem);
-                listenerActivity.onDialogResult(snapshot);
+                getListener().onDialogResult(snapshot);
             }
         });
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {

@@ -7,6 +7,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import org.ovirt.mobile.movirt.model.base.OVirtNamedEntity;
+import org.ovirt.mobile.movirt.model.enums.DataCenterStatus;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -21,32 +22,11 @@ public class DataCenter extends OVirtNamedEntity implements OVirtContract.DataCe
         return CONTENT_URI;
     }
 
-    public enum Status {
-        UNKNOWN(-1),
-        CONTEND(0),
-        MAINTENANCE(1),
-        NOT_OPERATIONAL(2),
-        PROBLEMATIC(3),
-        UNINITIALIZED(4),
-        UP(5);
-
-        Status(int resource) {
-            this.resource = resource;
-        }
-
-        private final int resource;
-
-        public int getResource() {
-            return resource;
-        }
-
-    }
-
     @DatabaseField(columnName = VERSION)
     private String version;
 
     @DatabaseField(columnName = STATUS)
-    private Status status;
+    private DataCenterStatus status;
 
     public String getVersion() {
         return version;
@@ -56,11 +36,11 @@ public class DataCenter extends OVirtNamedEntity implements OVirtContract.DataCe
         this.version = version;
     }
 
-    public Status getStatus() {
+    public DataCenterStatus getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(DataCenterStatus status) {
         this.status = status;
     }
 
@@ -100,6 +80,6 @@ public class DataCenter extends OVirtNamedEntity implements OVirtContract.DataCe
         super.initFromCursorHelper(cursorHelper);
 
         setVersion(cursorHelper.getString(VERSION));
-        setStatus(cursorHelper.getEnum(STATUS, DataCenter.Status.class));
+        setStatus(cursorHelper.getEnum(STATUS, DataCenterStatus.class));
     }
 }

@@ -25,7 +25,8 @@ import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.ovirt.mobile.movirt.util.preferences.SettingsKey;
 import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 
-import static org.ovirt.mobile.movirt.util.preferences.SettingsKey.MAX_EVENTS;
+import static org.ovirt.mobile.movirt.util.preferences.SettingsKey.MAX_EVENTS_POLLED;
+import static org.ovirt.mobile.movirt.util.preferences.SettingsKey.MAX_EVENTS_STORED;
 import static org.ovirt.mobile.movirt.util.preferences.SettingsKey.MAX_VMS;
 import static org.ovirt.mobile.movirt.util.preferences.SettingsKey.PERIODIC_SYNC;
 import static org.ovirt.mobile.movirt.util.preferences.SettingsKey.PERIODIC_SYNC_INTERVAL;
@@ -57,7 +58,8 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     MessageHelper messageHelper;
 
     private Preference periodicSyncIntervalPref;
-    private Preference maxEventsPref;
+    private Preference maxEventsPolledPref;
+    private Preference maxEventsStoredPref;
     private Preference maxVmsPref;
 
     @Override
@@ -73,8 +75,8 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
                 final Dialog dialog = new Dialog(SettingsActivity.this);
                 dialog.setContentView(R.layout.about_dialog);
                 dialog.setTitle(getString(R.string.prefs_about_moVirt));
-                ((TextView)dialog.findViewById(R.id.app_users_guide)).setMovementMethod(LinkMovementMethod.getInstance());
-                ((TextView)dialog.findViewById(R.id.app_readme)).setMovementMethod(LinkMovementMethod.getInstance());
+                ((TextView) dialog.findViewById(R.id.app_users_guide)).setMovementMethod(LinkMovementMethod.getInstance());
+                ((TextView) dialog.findViewById(R.id.app_readme)).setMovementMethod(LinkMovementMethod.getInstance());
                 dialog.show();
                 return true;
             }
@@ -111,10 +113,49 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
                 return true;
             }
         });
-        maxEventsPref = findPreference(MAX_EVENTS.getValue());
-        maxEventsPref.setOnPreferenceChangeListener(new IntegerValidator());
+        maxEventsPolledPref = findPreference(MAX_EVENTS_POLLED.getValue());
+        maxEventsPolledPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                try {
+                    int polled = Integer.parseInt((String) newValue);
+                    informAboutMaxValues(polled);
+                    return checkEvents(polled, sharedPreferencesHelper.getMaxEventsStored());
+                } catch (NumberFormatException e) {
+                    messageHelper.showToast(e.getMessage());
+                    return false;
+                }
+            }
+        });
+
+        maxEventsStoredPref = findPreference(MAX_EVENTS_STORED.getValue());
+        maxEventsStoredPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                try {
+                    int stored = Integer.parseInt((String) newValue);
+                    return checkEvents(sharedPreferencesHelper.getMaxEventsPolled(), stored);
+                } catch (NumberFormatException e) {
+                    messageHelper.showToast(e.getMessage());
+                    return false;
+                }
+            }
+        });
+
         maxVmsPref = findPreference(MAX_VMS.getValue());
-        maxVmsPref.setOnPreferenceChangeListener(new IntegerValidator());
+        maxVmsPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                try {
+                    int value = Integer.parseInt((String) newValue);
+                    informAboutMaxValues(value);
+                } catch (NumberFormatException e) {
+                    messageHelper.showToast(e.getMessage());
+                    return false;
+                }
+                return true;
+            }
+        });
     }
 
     @Override
@@ -127,7 +168,8 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
 
         setSyncIntervalPrefSummary();
         setMaxVmsSummary();
-        setMaxEventsSummary();
+        setMaxEventsPolledSummary();
+        setMaxEventsStoredSummary();
     }
 
     @Override
@@ -149,9 +191,13 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
                 sharedPreferencesHelper.updatePeriodicSync();
                 setSyncIntervalPrefSummary();
                 break;
-            case MAX_EVENTS:
-                setMaxEventsSummary();
-                eventsHandler.setMaxEventsStored(sharedPreferencesHelper.getIntPref(key));
+            case MAX_EVENTS_POLLED:
+                setMaxEventsPolledSummary();
+                break;
+            case MAX_EVENTS_STORED:
+                setMaxEventsStoredSummary();
+                eventsHandler.discardTemporaryEvents();
+                eventsHandler.discardOldEvents();
                 break;
             case MAX_VMS:
                 setMaxVmsSummary();
@@ -159,10 +205,16 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         }
     }
 
-    private void setMaxEventsSummary() {
-        int maxEvents = sharedPreferencesHelper.getMaxEvents();
-        maxEventsPref.setSummary(getString(
-                R.string.prefs_max_events_locally_summary, maxEvents));
+    private void setMaxEventsPolledSummary() {
+        int maxEvents = sharedPreferencesHelper.getMaxEventsPolled();
+        maxEventsPolledPref.setSummary(getString(
+                R.string.prefs_max_events_polled_summary, maxEvents));
+    }
+
+    private void setMaxEventsStoredSummary() {
+        int maxEvents = sharedPreferencesHelper.getMaxEventsStored();
+        maxEventsStoredPref.setSummary(getString(
+                R.string.prefs_max_events_stored_summary, maxEvents));
     }
 
     private void setMaxVmsSummary() {
@@ -195,6 +247,14 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         if (objectsLimit > OBJECTS_SAVE_LEVEL_THRESHOLD) {
             messageHelper.showToast(getString(R.string.objects_save_level_threshold_message));
         }
+    }
+
+    private boolean checkEvents(int eventsPolled, int eventsStored) {
+        if (eventsStored < eventsPolled) {
+            messageHelper.showToast("events polled shouldn't be larger than events stored");
+            return false;
+        }
+        return true;
     }
 
     @Receiver(actions = {Broadcasts.ERROR_MESSAGE},

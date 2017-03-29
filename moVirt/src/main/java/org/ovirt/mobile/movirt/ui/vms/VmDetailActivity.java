@@ -37,6 +37,9 @@ import org.ovirt.mobile.movirt.model.Console;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.enums.ConsoleProtocol;
+import org.ovirt.mobile.movirt.model.enums.SnapshotStatus;
+import org.ovirt.mobile.movirt.model.enums.VmCommand;
+import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -47,14 +50,14 @@ import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
 import org.ovirt.mobile.movirt.ui.Constants;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
-import org.ovirt.mobile.movirt.ui.MovirtActivity;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
+import org.ovirt.mobile.movirt.ui.TempEventsMovirtActivity;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.CreateSnapshotDialogFragment;
 import org.ovirt.mobile.movirt.ui.dialogs.CreateSnapshotDialogFragment_;
 import org.ovirt.mobile.movirt.ui.dialogs.DialogListener;
-import org.ovirt.mobile.movirt.ui.events.EventsFragment;
-import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
+import org.ovirt.mobile.movirt.ui.events.VmEventsFragment;
+import org.ovirt.mobile.movirt.ui.events.VmEventsFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -70,7 +73,7 @@ import java.util.Map;
 
 @EActivity(R.layout.activity_vm_detail)
 @OptionsMenu(R.menu.vm)
-public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
+public class VmDetailActivity extends TempEventsMovirtActivity implements HasProgressBar,
         ConfirmDialogFragment.ConfirmDialogListener, DialogListener.NewSnapshotListener,
         LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -147,12 +150,12 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     }
 
     private void initPagers() {
-        EventsFragment eventList = new EventsFragment_();
+        VmEventsFragment eventList = new VmEventsFragment_();
         VmDisksFragment diskList = new VmDisksFragment_();
         VmNicsFragment nicList = new VmNicsFragment_();
         VmSnapshotsFragment snapshotList = new VmSnapshotsFragment_();
 
-        eventList.setFilterVmId(vmId);
+        eventList.setVmId(vmId);
         diskList.setVmId(vmId);
         nicList.setVmId(vmId);
         snapshotList.setVmId(vmId);
@@ -221,7 +224,7 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
         switch (loader.getId()) {
             case SNAPSHOTS_LOADER:
                 List<Snapshot> snapshots = snapshotFacade.mapAllFromCursor(data);
-                menuCreateSnapshotVisibility = !Snapshot.containsOneOfStatuses(snapshots, Snapshot.SnapshotStatus.LOCKED, Snapshot.SnapshotStatus.IN_PREVIEW);
+                menuCreateSnapshotVisibility = !Snapshot.containsOneOfStatuses(snapshots, SnapshotStatus.LOCKED, SnapshotStatus.IN_PREVIEW);
                 break;
             case VMS_LOADER:
                 currentVm = vmFacade.mapFromCursor(data);
@@ -246,14 +249,14 @@ public class VmDetailActivity extends MovirtActivity implements HasProgressBar,
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (currentVm != null) {
             setTitle(String.format(VM_DETAILS, currentVm.getName()));
-            Vm.Status status = currentVm.getStatus();
-            menuRun.setVisible(Vm.Command.RUN.canExecute(status));
-            menuStop.setVisible(Vm.Command.STOP.canExecute(status));
-            menuReboot.setVisible(Vm.Command.REBOOT.canExecute(status));
-            menuStartMigration.setVisible(Vm.Command.START_MIGRATION.canExecute(status));
-            menuCancelMigration.setVisible(Vm.Command.CANCEL_MIGRATION.canExecute(status));
+            VmStatus status = currentVm.getStatus();
+            menuRun.setVisible(VmCommand.RUN.canExecute(status));
+            menuStop.setVisible(VmCommand.STOP.canExecute(status));
+            menuReboot.setVisible(VmCommand.REBOOT.canExecute(status));
+            menuStartMigration.setVisible(VmCommand.START_MIGRATION.canExecute(status));
+            menuCancelMigration.setVisible(VmCommand.CANCEL_MIGRATION.canExecute(status));
             menuCreateSnapshot.setVisible(menuCreateSnapshotVisibility);
-            boolean consoleExecutable = Vm.Command.CONSOLE.canExecute(status);
+            boolean consoleExecutable = VmCommand.CONSOLE.canExecute(status);
             menuSpiceConsole.setVisible(consoleExecutable && hasSpiceConsole);
             menuVncConsole.setVisible(consoleExecutable && hasVncConsole);
         }

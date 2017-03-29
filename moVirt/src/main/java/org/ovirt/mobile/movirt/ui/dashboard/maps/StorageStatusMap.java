@@ -1,6 +1,6 @@
 package org.ovirt.mobile.movirt.ui.dashboard.maps;
 
-import org.ovirt.mobile.movirt.model.StorageDomain;
+import org.ovirt.mobile.movirt.model.enums.StorageDomainStatus;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,37 +8,34 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by suomiy on 5/18/16.
- */
 public enum StorageStatusMap {
     // dashboard position depends on the order
-    WARNING(StorageDomain.Status.UNATTACHED, StorageDomain.Status.INACTIVE, StorageDomain.Status.MAINTENANCE,
-            StorageDomain.Status.PREPARING_FOR_MAINTENANCE, StorageDomain.Status.MIXED,
-            StorageDomain.Status.DETACHING, StorageDomain.Status.ACTIVATING),
-    UP(StorageDomain.Status.ACTIVE),
-    DOWN(StorageDomain.Status.UNKNOWN, StorageDomain.Status.LOCKED);
+    WARNING(StorageDomainStatus.UNATTACHED, StorageDomainStatus.INACTIVE, StorageDomainStatus.MAINTENANCE,
+            StorageDomainStatus.PREPARING_FOR_MAINTENANCE, StorageDomainStatus.MIXED,
+            StorageDomainStatus.DETACHING, StorageDomainStatus.ACTIVATING),
+    UP(StorageDomainStatus.ACTIVE),
+    DOWN(StorageDomainStatus.UNKNOWN, StorageDomainStatus.LOCKED);
 
-    private final List<StorageDomain.Status> values;
-    private static Map<StorageDomain.Status, StorageStatusMap> map = new EnumMap<>(StorageDomain.Status.class);
+    private final List<StorageDomainStatus> values;
+    private static Map<StorageDomainStatus, StorageStatusMap> map = new EnumMap<>(StorageDomainStatus.class);
 
     static {
         for (StorageStatusMap item : StorageStatusMap.values()) {
-            for (StorageDomain.Status status : item.getValues()) {
+            for (StorageDomainStatus status : item.getValues()) {
                 map.put(status, item);
             }
         }
     }
 
-    StorageStatusMap(StorageDomain.Status... values) {
+    StorageStatusMap(StorageDomainStatus... values) {
         this.values = Collections.unmodifiableList(Arrays.asList(values));
     }
 
-    public List<StorageDomain.Status> getValues() {
+    public List<StorageDomainStatus> getValues() {
         return values;
     }
 
-    public static DashboardPosition getDashboardPosition(StorageDomain.Status status) {
+    public static DashboardPosition getDashboardPosition(StorageDomainStatus status) {
         StorageStatusMap result = map.get(status);
         return result == null ? DashboardPosition.UNKNOWN : DashboardPosition.fromValue(result.ordinal());
     }

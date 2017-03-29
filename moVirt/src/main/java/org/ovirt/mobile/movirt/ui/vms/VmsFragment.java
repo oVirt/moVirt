@@ -11,13 +11,13 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.ui.listfragment.ClusterBoundBaseEntityListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.ClusterBoundBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.MEMORY_USAGE;
@@ -25,7 +25,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class VmsFragment extends ClusterBoundBaseEntityListFragment<Vm> {
+public class VmsFragment extends ClusterBoundBaseListFragment<Vm> {
 
     private static final String TAG = VmsFragment.class.getSimpleName();
 
@@ -62,7 +62,7 @@ public class VmsFragment extends ClusterBoundBaseEntityListFragment<Vm> {
                     String status = cursor.getString(cursor.getColumnIndex(STATUS));
                     if (status != null) {
                         ImageView imageView = (ImageView) view;
-                        Vm.Status vmStatus = Vm.Status.valueOf(status);
+                        VmStatus vmStatus = VmStatus.valueOf(status);
                         imageView.setImageResource(vmStatus.getResource());
                     }
                 } else if (columnIndex == cursor.getColumnIndex(CPU_USAGE)) {
@@ -87,17 +87,15 @@ public class VmsFragment extends ClusterBoundBaseEntityListFragment<Vm> {
         if (hostId != null) {
             query.where(HOST_ID, hostId);
         }
-
-        query.empty(SNAPSHOT_ID);
     }
 
     @Override
     public SortEntry[] getSortEntries() {
         return new SortEntry[]{
-                new SortEntry(new ItemName(Vm.NAME), SortOrderType.A_TO_Z),
-                new SortEntry(new ItemName(Vm.STATUS), SortOrderType.A_TO_Z),
-                new SortEntry(new ItemName(Vm.CPU_USAGE), SortOrderType.LOW_TO_HIGH),
-                new SortEntry(new ItemName(Vm.MEMORY_USAGE), SortOrderType.LOW_TO_HIGH)
+                new SortEntry(new ItemName(NAME), SortOrderType.A_TO_Z),
+                new SortEntry(new ItemName(STATUS), SortOrderType.A_TO_Z),
+                new SortEntry(new ItemName(CPU_USAGE), SortOrderType.LOW_TO_HIGH),
+                new SortEntry(new ItemName(MEMORY_USAGE), SortOrderType.LOW_TO_HIGH)
         };
     }
 }

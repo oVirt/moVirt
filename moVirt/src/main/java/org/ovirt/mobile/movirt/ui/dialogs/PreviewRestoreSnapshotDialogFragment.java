@@ -1,9 +1,7 @@
 package org.ovirt.mobile.movirt.ui.dialogs;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,14 +13,8 @@ import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.ui.BooleanListener;
 
-/**
- * Created by suomiy on 15/02/16.
- */
-
 @EFragment
-public class PreviewRestoreSnapshotDialogFragment extends DialogFragment {
-
-    private BooleanListener listenerActivity;
+public class PreviewRestoreSnapshotDialogFragment extends ListenerDialogFragment<BooleanListener> {
 
     public static PreviewRestoreSnapshotDialogFragment newInstance(int actionId, String actionString) {
         PreviewRestoreSnapshotDialogFragment fragment = new PreviewRestoreSnapshotDialogFragment_();
@@ -31,16 +23,6 @@ public class PreviewRestoreSnapshotDialogFragment extends DialogFragment {
         args.putString("actionString", actionString);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            listenerActivity = (BooleanListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement NewSnapshotListener");
-        }
     }
 
     @Override
@@ -60,7 +42,7 @@ public class PreviewRestoreSnapshotDialogFragment extends DialogFragment {
         builder.setPositiveButton(actionString, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                listenerActivity.onDialogResult(actionId, restoreMemory.isChecked());
+                getListener().onDialogResult(actionId, restoreMemory.isChecked());
             }
         });
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {

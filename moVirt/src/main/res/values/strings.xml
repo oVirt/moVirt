@@ -9,8 +9,10 @@
     <string name="prefs_poll_events_summary">If the events are part of regular poll or not.</string>
     <string name="prefs_connection_notification">Connection Notifications</string>
     <string name="prefs_connection_notification_summary">Show notifications on connection lost.</string>
-    <string name="prefs_max_events_locally">Max events locally</string>
-    <string name="prefs_max_events_locally_summary">Maximal amount of events stored locally. For admin users also the max amount of events polled. Current: %d</string>
+    <string name="prefs_max_events_polled">Max events polled.</string>
+    <string name="prefs_max_events_stored">Max events stored.</string>
+    <string name="prefs_max_events_polled_summary">Maximal amount of events polled. Current: %d</string>
+    <string name="prefs_max_events_stored_summary">Maximal amount of events stored. Current: %d</string>
     <string name="prefs_about_moVirt">About moVirt</string>
     <string name="prefs_about_moVirt_summary">License, Version and Documentation.</string>
     <string name="prefs_connection_settings">Connection Settings</string>
@@ -52,6 +54,7 @@
     <string name="certificate_management">Certificate Management</string>
     <string name="trigger_scope">Editing triggers for: </string>
     <string name="add_trigger">Add Trigger</string>
+    <string name="delete_trigger">Delete Trigger</string>
     <string name="ADD">ADD</string>
     <string name="DELETE">DELETE</string>
     <string name="SAVE">SAVE</string>
@@ -94,7 +97,7 @@
     <string name="delete">Delete</string>
     <string name="vm_status_message">Status of VM \'%1$s\' is %2$s</string>
     <string name="vm_cpu_message">CPU usage of VM \'%1$s\' is over %2$d%% (%3$s)</string>
-    <string name="vm_memory_message">Memory usage of VM \'%1$s\' is over %2$d%% (%3$s)</string>
+    <string name="vm_memory_message">Memory usage of VM \'%1$s\' is over %2$d%% (%3$f)</string>
     <string name="event_trigger_message">\'%1$s\' found in: %2$s</string>
     <string name="connected">Successfully connected to datacenter!</string>
     <string name="rest_request_failed">REST request failed!\n%1$s\n\nFor more details please see server error log.</string>
@@ -148,9 +151,9 @@
     <string name="prefs_max_max_vms_polled">Max VMs polled</string>
     <string name="prefs_max_vms_polled_summary">Maximum amount of VMs returned from oVirt. Current: %d</string>
     <string name="prefs_vm_search_query">VMs Search Query</string>
-    <string name="prefs_vm_search_query_summary">Poll only VMs which satisfy given query. Has effect for admin users only. (e.g. name = production*)</string>
+    <string name="prefs_vm_search_query_summary">Poll only VMs which satisfy given query; e.g. name = production*</string>
     <string name="prefs_events_search_query">Events Search Query</string>
-    <string name="prefs_events_search_query_summary">Poll only Events which satisfy given query. Has effect for admin users only. (e.g. severity > warning)</string>
+    <string name="prefs_events_search_query_summary">Poll only Events which satisfy given query; e.g. severity > warning</string>
     <string name="spice_console">Spice Console</string>
     <string name="vnc_console">VNC Console</string>
 

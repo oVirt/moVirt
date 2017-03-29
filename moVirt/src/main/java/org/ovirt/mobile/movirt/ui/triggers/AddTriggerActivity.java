@@ -1,18 +1,15 @@
 package org.ovirt.mobile.movirt.ui.triggers;
 
 import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.OptionsItem;
-import org.androidannotations.annotations.OptionsMenu;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 
 @EActivity(R.layout.activity_base_trigger)
-@OptionsMenu(R.menu.add_trigger)
 public class AddTriggerActivity extends BaseTriggerActivity {
 
-    @OptionsItem(R.id.action_add_trigger)
-    public void addTrigger() {
+    @Override
+    public void onDone() {
         Trigger trigger = new Trigger<>();
         final Condition condition = getCondition();
         if (condition == null) {

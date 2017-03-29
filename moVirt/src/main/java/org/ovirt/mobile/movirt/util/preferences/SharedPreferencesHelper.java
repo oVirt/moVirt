@@ -17,13 +17,12 @@ import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 
-/**
- * Created by suomiy on 11/13/15.
- */
 @EBean(scope = EBean.Scope.Singleton)
 public class SharedPreferencesHelper {
 
     private static final int SECONDS_IN_MINUTE = 60;
+
+    public static final int MAX_EVENTS_PER_ENTITY = 500;
 
     private SharedPreferences sharedPreferences;
 
@@ -46,7 +45,10 @@ public class SharedPreferencesHelper {
     int defaultPeriodicSyncInterval;
 
     @IntegerRes
-    int defaultMaxEvents;
+    int defaultMaxEventsPolled;
+
+    @IntegerRes
+    int defaultMaxEventsStored;
 
     @IntegerRes
     int defaultMaxVms;
@@ -78,7 +80,8 @@ public class SharedPreferencesHelper {
     public Integer getIntPref(SettingsKey key) {
         switch (key) {
             case PERIODIC_SYNC_INTERVAL:
-            case MAX_EVENTS:
+            case MAX_EVENTS_POLLED:
+            case MAX_EVENTS_STORED:
             case MAX_VMS:
                 return Integer.parseInt(getStringPref(key));
             default:
@@ -90,8 +93,10 @@ public class SharedPreferencesHelper {
         switch (key) {
             case PERIODIC_SYNC_INTERVAL:
                 return sharedPreferences.getString(key.getValue(), Integer.toString(defaultPeriodicSyncInterval));
-            case MAX_EVENTS:
-                return sharedPreferences.getString(key.getValue(), Integer.toString(defaultMaxEvents));
+            case MAX_EVENTS_POLLED:
+                return sharedPreferences.getString(key.getValue(), Integer.toString(defaultMaxEventsPolled));
+            case MAX_EVENTS_STORED:
+                return sharedPreferences.getString(key.getValue(), Integer.toString(defaultMaxEventsStored));
             case MAX_VMS:
                 return sharedPreferences.getString(key.getValue(), Integer.toString(defaultMaxVms));
             case EVENTS_SEARCH_QUERY:
@@ -107,8 +112,12 @@ public class SharedPreferencesHelper {
         return getIntPref(SettingsKey.PERIODIC_SYNC_INTERVAL);
     }
 
-    public int getMaxEvents() {
-        return getIntPref(SettingsKey.MAX_EVENTS);
+    public int getMaxEventsPolled() {
+        return getIntPref(SettingsKey.MAX_EVENTS_POLLED);
+    }
+
+    public int getMaxEventsStored() {
+        return getIntPref(SettingsKey.MAX_EVENTS_STORED);
     }
 
     public int getMaxVms() {

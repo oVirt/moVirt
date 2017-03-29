@@ -16,6 +16,9 @@ import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.StorageDomainStatus;
+import org.ovirt.mobile.movirt.model.enums.StorageDomainType;
+import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -28,8 +31,6 @@ import org.ovirt.mobile.movirt.util.usage.Cores;
 import org.ovirt.mobile.movirt.util.usage.MemorySize;
 
 import java.util.List;
-
-import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 
 @EFragment(R.layout.fragment_dashboard_physical_general)
 public class DashboardPhysicalGeneralFragment extends DashboardGeneralFragment {
@@ -111,11 +112,11 @@ public class DashboardPhysicalGeneralFragment extends DashboardGeneralFragment {
                 loader = provider.query(Host.class).asLoader();
                 break;
             case STORAGE_DOMAIN_LOADER:
-                loader = provider.query(StorageDomain.class).where(StorageDomain.STATUS, StorageDomain.Status.ACTIVE.toString())
-                        .where(StorageDomain.TYPE, StorageDomain.Type.DATA.toString()).asLoader();
+                loader = provider.query(StorageDomain.class).where(StorageDomain.STATUS, StorageDomainStatus.ACTIVE.toString())
+                        .where(StorageDomain.TYPE, StorageDomainType.DATA.toString()).asLoader();
                 break;
             case VM_LOADER:
-                loader = provider.query(Vm.class).empty(SNAPSHOT_ID).asLoader();
+                loader = provider.query(Vm.class).asLoader();
                 break;
             default:
                 break;
@@ -160,7 +161,7 @@ public class DashboardPhysicalGeneralFragment extends DashboardGeneralFragment {
         MemorySize upVmMemory = new MemorySize();
 
         for (Vm vm : vms) {
-            if (vm.getStatus() == Vm.Status.UP) {
+            if (vm.getStatus() == VmStatus.UP) {
                 upVmCores.addValue(vm);
                 upVmMemory.addValue(vm.getMemorySize());
             }

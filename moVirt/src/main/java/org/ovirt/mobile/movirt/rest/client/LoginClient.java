@@ -18,10 +18,6 @@ import static org.ovirt.mobile.movirt.rest.RestHelper.clearAuth;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptEncodingHeaderAndFactory;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setPersistentV3AuthHeaders;
 
-/**
- * Created by suomiy on 10/14/16.
- */
-
 @EBean(scope = EBean.Scope.Singleton)
 public class LoginClient {
     private static final String TAG = LoginClient.class.getSimpleName();

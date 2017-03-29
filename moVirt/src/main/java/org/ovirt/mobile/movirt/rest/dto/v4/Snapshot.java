@@ -2,12 +2,11 @@ package org.ovirt.mobile.movirt.rest.dto.v4;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/**
- * Created by suomiy on 11/25/15.
- */
+import org.ovirt.mobile.movirt.model.enums.SnapshotType;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Snapshot extends org.ovirt.mobile.movirt.rest.dto.Snapshot {
-    public Vm vm;
+    public SnapshotVm vm;
     public String snapshot_type;
 
     public Snapshot() {
@@ -19,9 +18,10 @@ public class Snapshot extends org.ovirt.mobile.movirt.rest.dto.Snapshot {
 
     public org.ovirt.mobile.movirt.model.Snapshot toEntity() {
         org.ovirt.mobile.movirt.model.Snapshot snapshot = super.toEntity();
-        snapshot.setType(super.getSnapshotType(snapshot_type));
+        snapshot.setType(SnapshotType.fromString(snapshot_type));
 
         if (vm != null) {
+            vm.snapshotId = id;
             snapshot.setVm(vm.toEntity());
         }
 

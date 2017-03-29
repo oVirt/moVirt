@@ -2,9 +2,6 @@ package org.ovirt.mobile.movirt.util;
 
 import android.content.Context;
 
-/**
- * Created by suomiy on 12/10/15.
- */
 public class DateUtils {
     private static final String STRING_UNKNOWN_TIME = "unknown";
     private static final int FORMAT_FLAGS = android.text.format.DateUtils.FORMAT_SHOW_TIME |

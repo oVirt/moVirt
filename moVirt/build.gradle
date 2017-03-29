@@ -24,9 +24,10 @@ apply plugin: 'android-apt'
 ext.androidAnnottationVersion = '4.0.0'
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:21.0.3'
-    compile 'com.j256.ormlite:ormlite-android:4.+'
-    compile 'com.blandware.android.atleap:core:+@aar'
+    compile 'com.android.support:appcompat-v7:22.2.1'
+    compile 'com.android.support:design:22.2.1'
+    compile 'com.j256.ormlite:ormlite-android:4.48'
+    compile 'com.blandware.android.atleap:core:0.4'
     compile 'org.springframework.android:spring-android-rest-template:2.0.0.M3'
     compile 'com.fasterxml.jackson.core:jackson-core:2.6.3'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.6.3'
@@ -37,7 +38,6 @@ dependencies {
     compile "org.androidannotations:androidannotations-api:$androidAnnottationVersion"
     compile "org.androidannotations:rest-spring-api:$androidAnnottationVersion"
     apt "org.androidannotations:rest-spring:$androidAnnottationVersion"
-    compile 'com.melnykov:floatingactionbutton:1.3.0'
     compile 'com.github.bmelnychuk:atv:1.2.9'
     compile 'com.madgag.spongycastle:pkix:1.54.0.0'
 }
@@ -52,6 +52,9 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
+    }
+    dexOptions {
+        jumboMode true // allow more than 64K methods
     }
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'

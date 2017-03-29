@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.RemoteException;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.androidannotations.annotations.AfterInject;
@@ -16,6 +17,7 @@ import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.model.base.BaseEntity;
 import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,6 +79,8 @@ public class ProviderFacade {
         }
 
         public QueryBuilder<E> whereIn(String columnName, String[] values) {
+            assertNotEmpty(columnName);
+
             if (selection.length() > 0) {
                 selection.append(" AND ");
             }
@@ -100,6 +104,8 @@ public class ProviderFacade {
         }
 
         public QueryBuilder<E> empty(String columnName) {
+            assertNotEmpty(columnName);
+
             if (selection.length() > 0) {
                 selection.append(" AND ");
             }
@@ -114,7 +120,7 @@ public class ProviderFacade {
         }
 
         public QueryBuilder<E> where(String columnName, String value, Relation relation) {
-            assert !columnName.equals("") : "columnName cannot be empty or null";
+            assertNotEmpty(columnName);
 
             if (selection.length() > 0) {
                 selection.append(" AND ");
@@ -157,7 +163,7 @@ public class ProviderFacade {
         }
 
         public QueryBuilder<E> orderBy(String columnName, SortOrder order) {
-            assert !columnName.equals("") : "columnName cannot be empty or null";
+            assertNotEmpty(columnName);
 
             if (sortOrder.length() > 0) {
                 sortOrder.append(", ");
@@ -196,13 +202,15 @@ public class ProviderFacade {
                 return Collections.emptyList();
             }
 
-            List<E> result = new ArrayList<>();
-            while (cursor.moveToNext()) {
-                result.add(EntityMapper.forEntity(clazz).fromCursor(cursor));
+            try {
+                List<E> result = new ArrayList<>();
+                while (cursor.moveToNext()) {
+                    result.add(EntityMapper.forEntity(clazz).fromCursor(cursor));
+                }
+                return result;
+            } finally {
+                ObjectUtils.closeSilently(cursor);
             }
-
-            cursor.close();
-            return result;
         }
 
         public E first() {
@@ -210,11 +218,11 @@ public class ProviderFacade {
             if (cursor == null) {
                 return null;
             }
-
-            E entity = cursor.moveToNext() ? EntityMapper.forEntity(clazz).fromCursor(cursor) : null;
-            cursor.close();
-
-            return entity;
+            try {
+                return cursor.moveToNext() ? EntityMapper.forEntity(clazz).fromCursor(cursor) : null;
+            } finally {
+                ObjectUtils.closeSilently(cursor);
+            }
         }
     }
 
@@ -242,6 +250,10 @@ public class ProviderFacade {
             } catch (RemoteException | OperationApplicationException e) {
                 throw new RuntimeException("Batch apply failed", e);
             }
+        }
+
+        public int size() {
+            return batch.size();
         }
 
         public boolean isEmpty() {
@@ -283,61 +295,13 @@ public class ProviderFacade {
         return -1;
     }
 
-    public void deleteEventsAndLetOnly(int leave) {
-        int id = getSmallestFrom(leave);
-        if (id != 0) {
-            try {
-                contentClient.delete(OVirtContract.Event.CONTENT_URI,
-                        OVirtContract.Event.ID + " < ?",
-                        new String[]{Integer.toString(id)}
-                );
-            } catch (RemoteException e) {
-                Log.e(TAG, "Error deleting events", e);
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
     public BatchBuilder batch() {
         return new BatchBuilder();
     }
 
-    public int deleteEvents() {
-        return deleteAll(OVirtContract.Event.CONTENT_URI);
-    }
-
-    private int getSmallestFrom(int from) {
-        try {
-            Cursor cursor = contentClient.query(OVirtContract.Event.CONTENT_URI,
-                    new String[]{OVirtContract.Event.ID},
-                    null,
-                    null,
-                    OVirtContract.Event.ID + " DESC LIMIT " + from);
-
-            if (cursor.moveToLast()) {
-                return cursor.getInt(0);
-            }
-        } catch (RemoteException e) {
-            Log.e(TAG, "Error determining last event id", e);
-            throw new RuntimeException(e);
+    private void assertNotEmpty(String columnName) {
+        if (TextUtils.isEmpty(columnName)) {
+            throw new IllegalArgumentException("columnName cannot be empty or null");
         }
-        return 0;
-    }
-
-    public int getLastEventId() {
-        try {
-            Cursor cursor = contentClient.query(OVirtContract.Event.CONTENT_URI,
-                    new String[]{"MAX(" + OVirtContract.Event.ID + ")"},
-                    null,
-                    null,
-                    null);
-            if (cursor.moveToNext()) {
-                return cursor.getInt(0);
-            }
-        } catch (RemoteException e) {
-            Log.e(TAG, "Error determining last event id", e);
-            throw new RuntimeException(e);
-        }
-        return 0;
     }
 }

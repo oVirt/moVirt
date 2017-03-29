@@ -25,11 +25,13 @@ import org.ovirt.mobile.movirt.rest.client.LoginClient;
 import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity;
 import org.ovirt.mobile.movirt.ui.auth.AuthenticatorActivity_;
 import org.ovirt.mobile.movirt.util.JsonUtils;
+import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class MovirtAuthenticator extends AbstractAccountAuthenticator {
+    private static final String TAG = MovirtAuthenticator.class.getSimpleName();
 
     private static final String ACCOUNT_TYPE = Constants.APP_PACKAGE_DOT + "authenticator";
 
@@ -196,7 +198,12 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
             case FUTURE_AUTH_TOKEN:
                 return accountManager.getAuthToken(account, AccountProperty.AUTH_TOKEN.getPackageKey(), null, false, null, null);
             case ACCOUNT_CONFIGURED:
-                return accountManager.getAccountsByType(ACCOUNT_TYPE).length > 0;
+                try {
+                    return accountManager.getAccountsByType(ACCOUNT_TYPE).length > 0;
+                } catch (SecurityException e) {
+                    messageHelper.showError(ErrorType.NORMAL, e);
+                    return false;
+                }
             case PASSWORD:
                 return accountManager.getPassword(account);
             case USERNAME:
@@ -229,7 +236,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
     private Version getApiVersion(AccountProperty property) {
         Version result = readObject(property, Version.class);
         if (result == null) {
-            result = new Version();
+            result = Version.V3;
         }
         return result;
     }
