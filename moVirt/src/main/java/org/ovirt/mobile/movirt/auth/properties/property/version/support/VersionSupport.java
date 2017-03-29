@@ -5,8 +5,8 @@ import org.ovirt.mobile.movirt.auth.properties.property.version.exceptions.Suppo
 import org.ovirt.mobile.movirt.auth.properties.property.version.exceptions.UnsupportedUntilException;
 
 public enum VersionSupport {
-    DISK_ATTACHMENTS(new Version(4, 1, 0), Version.MAX_VALUE),
-    VM_DISKS(Version.MIN_VALUE, new Version(4, 1, 0));
+    DISK_ATTACHMENTS(new Version(4, 0, 1), Version.MAX_VALUE),
+    VM_DISKS(Version.MIN_VALUE, new Version(4, 0, 1));
 
     private Version supportedFrom;
     private Version supportedUntil;
