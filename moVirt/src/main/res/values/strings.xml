@@ -134,8 +134,8 @@
     <string name="when">when</string>
     <string name="moVirt_license">Apache License, Version 2.0</string>
     <string name="moVirt_version">App Version 1.7</string>
-    <string name="moVirt_readme"><a href="https://github.com/matobet/moVirt/blob/master/README.md">About</a></string>
-    <string name="moVirt_users_guide"><a href="https://github.com/matobet/moVirt/wiki/User%27s-guide">User\'s Guide</a></string>
+    <string name="moVirt_readme"><a href="https://github.com/oVirt/moVirt/blob/master/README.md">About</a></string>
+    <string name="moVirt_users_guide"><a href="https://github.com/oVirt/moVirt/wiki/User%27s-guide">User\'s Guide</a></string>
     <string name="downloadEvents">Load</string>
     <string name="clearEvents">Clear</string>
     <string name="searchInVms">Search</string>
