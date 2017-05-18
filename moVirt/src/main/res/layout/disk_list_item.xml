@@ -1,32 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:paddingBottom="3dp"
-    android:paddingTop="3dp">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:padding="@dimen/item_margin">
 
     <TextView
         android:id="@+id/disk_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingBottom="5dp"
-        android:textSize="15sp" />
+        android:textSize="15sp"/>
 
     <TextView
         android:id="@+id/disk_size"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/disk_name"
-        android:textSize="15sp" />
+        android:paddingTop="5dp"
+        android:textSize="15sp"/>
 
     <TextView
         android:id="@+id/disk_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:paddingBottom="5dp"
-        android:textSize="15sp" />
+        android:textSize="15sp"/>
 
 </RelativeLayout>

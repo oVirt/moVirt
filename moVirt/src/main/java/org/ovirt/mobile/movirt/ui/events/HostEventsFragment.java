@@ -6,6 +6,7 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -34,15 +35,19 @@ public class HostEventsFragment extends NamedEntityResumeSyncableEventsFragment 
         query.where(HOST_ID, hostId);
     }
 
-    public void setHostId(String hostId) {
+    public HostEventsFragment setHostId(String hostId) {
         this.hostId = hostId;
+        return this;
     }
 
     @Override
     protected void sync(Response<List<Event>> response) {
         String hostName = getEntityName(Host.class, hostId);
         if (!TextUtils.isEmpty(hostName)) {
-            eventsHandler.syncHostEvents(response, hostId, hostName);
+            try {
+                environmentStore.getEnvironment(account).getHostEventFacade().syncAll(response, hostId, hostName);
+            } catch (AccountDeletedException ignore) {
+            }
         }
     }
 }

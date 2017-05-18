@@ -6,20 +6,23 @@
               android:layout_height="match_parent"
               android:background="?android:activatedBackgroundIndicator"
               android:gravity="center_vertical"
-              android:orientation="horizontal">
+              android:orientation="horizontal"
+              android:padding="@dimen/item_margin">
 
     <TextView
         android:id="@+id/trigger_notification"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
         android:textSize="24sp"
         android:textStyle="bold"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_marginLeft="@dimen/item_horizontal_margin"
+        android:layout_marginStart="@dimen/item_horizontal_margin"
+        android:layout_marginRight="@dimen/item_horizontal_margin"
+        android:layout_marginEnd="@dimen/item_horizontal_margin"
         android:text="@string/when"/>
 
     <TextView

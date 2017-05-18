@@ -6,7 +6,7 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import org.ovirt.mobile.movirt.model.base.BaseEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtAccountEntity;
 import org.ovirt.mobile.movirt.model.enums.EventSeverity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
@@ -16,21 +16,12 @@ import java.sql.Timestamp;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
+public class Event extends OVirtAccountEntity implements OVirtContract.Event {
 
     @Override
     public Uri getBaseUri() {
         return CONTENT_URI;
     }
-
-    public static final class Codes {
-
-        public static final int USER_VDC_LOGIN = 30;
-        public static final int USER_VDC_LOGOUT = 31;
-    }
-
-    @DatabaseField(columnName = ID, id = true)
-    private int id;
 
     @DatabaseField(columnName = DESCRIPTION, canBeNull = false)
     private String description;
@@ -59,15 +50,13 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
     @DatabaseField(columnName = TEMPORARY)
     private boolean temporary;
 
+    public static final class Codes {
+
+        public static final int USER_VDC_LOGIN = 30;
+        public static final int USER_VDC_LOGOUT = 31;
+    }
+
     private transient int code;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
 
     public String getDescription() {
         return description;
@@ -133,10 +122,6 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
         return dataCenterId;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public boolean isTemporary() {
         return temporary;
     }
@@ -154,8 +139,7 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
     }
 
     public ContentValues toValues() {
-        ContentValues values = new ContentValues();
-        values.put(ID, id);
+        ContentValues values = super.toValues();
         values.put(DESCRIPTION, description);
         values.put(SEVERITY, severity.toString());
         values.put(TIME, time.toString());
@@ -170,8 +154,8 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
     }
 
     @Override
-    protected void initFromCursorHelper(CursorHelper cursorHelper) {
-        setId(cursorHelper.getInt(ID));
+    public void initFromCursorHelper(CursorHelper cursorHelper) {
+        super.initFromCursorHelper(cursorHelper);
         setDescription(cursorHelper.getString(DESCRIPTION));
         setSeverity(cursorHelper.getEnum(SEVERITY, EventSeverity.class));
         setTime(cursorHelper.getTimestamp(TIME));
@@ -181,5 +165,42 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
         setStorageDomainId(cursorHelper.getString(STORAGE_DOMAIN_ID));
         setDataCenterId(cursorHelper.getString(DATA_CENTER_ID));
         setTemporary(cursorHelper.getBoolean(TEMPORARY));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Event)) return false;
+        if (!super.equals(o)) return false;
+
+        Event event = (Event) o;
+
+        if (temporary != event.temporary) return false;
+        if (description != null ? !description.equals(event.description) : event.description != null)
+            return false;
+        if (severity != event.severity) return false;
+        if (time != null ? !time.equals(event.time) : event.time != null) return false;
+        if (vmId != null ? !vmId.equals(event.vmId) : event.vmId != null) return false;
+        if (hostId != null ? !hostId.equals(event.hostId) : event.hostId != null) return false;
+        if (clusterId != null ? !clusterId.equals(event.clusterId) : event.clusterId != null)
+            return false;
+        if (storageDomainId != null ? !storageDomainId.equals(event.storageDomainId) : event.storageDomainId != null)
+            return false;
+        return dataCenterId != null ? dataCenterId.equals(event.dataCenterId) : event.dataCenterId == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (severity != null ? severity.hashCode() : 0);
+        result = 31 * result + (time != null ? time.hashCode() : 0);
+        result = 31 * result + (vmId != null ? vmId.hashCode() : 0);
+        result = 31 * result + (hostId != null ? hostId.hashCode() : 0);
+        result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
+        result = 31 * result + (storageDomainId != null ? storageDomainId.hashCode() : 0);
+        result = 31 * result + (dataCenterId != null ? dataCenterId.hashCode() : 0);
+        result = 31 * result + (temporary ? 1 : 0);
+        return result;
     }
 }

@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.ui.triggers;
 
 import android.content.res.ColorStateList;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -15,9 +14,7 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.OptionsItem;
-import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.ViewById;
-import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.condition.Condition;
 import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
@@ -28,8 +25,7 @@ import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.model.mapping.EntityType;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiver;
-import org.ovirt.mobile.movirt.util.message.CreateDialogBroadcastReceiverHelper;
+import org.ovirt.mobile.movirt.ui.BroadcastAwareAppCompatActivity;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -38,7 +34,11 @@ import static org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity.EXTRA_SCO
 import static org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity.EXTRA_TARGET_ENTITY_ID;
 
 @EActivity(R.layout.activity_base_trigger)
-public abstract class BaseTriggerActivity extends ActionBarActivity implements CreateDialogBroadcastReceiver {
+public abstract class BaseTriggerActivity extends BroadcastAwareAppCompatActivity {
+
+    private String targetEntityId;
+
+    private Trigger.Scope triggerScope;
 
     @InstanceState
     protected int selectedCondition = R.id.radio_button_cpu;
@@ -72,9 +72,6 @@ public abstract class BaseTriggerActivity extends ActionBarActivity implements C
 
     @Bean
     ProviderFacade provider;
-
-    private String targetEntityId;
-    private Trigger.Scope triggerScope;
 
     @AfterViews
     void init() {
@@ -195,20 +192,5 @@ public abstract class BaseTriggerActivity extends ActionBarActivity implements C
     @OptionsItem(android.R.id.home)
     public void homeSelected() {
         onBackPressed();
-    }
-
-    @Receiver(actions = {Broadcasts.ERROR_MESSAGE},
-            registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    public void showErrorDialog(
-            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason,
-            @Receiver.Extra(Broadcasts.Extras.REPEATED_MINOR_ERROR) boolean repeatedMinorError) {
-        CreateDialogBroadcastReceiverHelper.showErrorDialog(getFragmentManager(), reason, repeatedMinorError);
-    }
-
-    @Receiver(actions = {Broadcasts.REST_CA_FAILURE},
-            registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    public void showCertificateDialog(
-            @Receiver.Extra(Broadcasts.Extras.ERROR_REASON) String reason) {
-        CreateDialogBroadcastReceiverHelper.showCertificateDialog(getFragmentManager(), reason, true);
     }
 }

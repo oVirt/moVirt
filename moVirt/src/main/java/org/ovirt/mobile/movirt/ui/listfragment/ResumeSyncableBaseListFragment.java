@@ -1,18 +1,38 @@
 package org.ovirt.mobile.movirt.ui.listfragment;
 
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.base.OVirtEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtAccountEntity;
+import org.ovirt.mobile.movirt.rest.ConnectivityHelper;
+import org.ovirt.mobile.movirt.util.Disposables;
+
+import io.reactivex.schedulers.Schedulers;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public abstract class ResumeSyncableBaseListFragment<E extends OVirtEntity> extends FacadeBaseListFragment<E> {
+public abstract class ResumeSyncableBaseListFragment<E extends OVirtAccountEntity> extends AccountFacadeBaseListFragment<E> {
 
     @InstanceState
     protected boolean synced = false;
 
+    @Bean
+    protected ConnectivityHelper connectivityHelper;
+
     public ResumeSyncableBaseListFragment(Class<E> clazz) {
         super(clazz);
+    }
+
+    @Override
+    protected void initRx(Disposables disposables) {
+        super.initRx(disposables);
+        if (isSingle()) {
+            disposables.add(rxStore.isSyncInProgressObservable(account)
+                    .skip(1) // do not refresh current state
+                    .filter(syncStatus -> !syncStatus.isInProgress())
+                    .subscribeOn(Schedulers.computation())
+                    .subscribe(syncStatus -> onRefresh()));
+        }
     }
 
     @Override
@@ -20,7 +40,9 @@ public abstract class ResumeSyncableBaseListFragment<E extends OVirtEntity> exte
         super.onResume();
         if (!synced && isResumeSyncable()) {
             synced = true;
-            onRefresh();
+            if (connectivityHelper.isNetworkAvailable()) {
+                onRefresh();
+            }
         }
     }
 

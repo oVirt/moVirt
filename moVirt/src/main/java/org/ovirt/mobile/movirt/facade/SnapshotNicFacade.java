@@ -1,16 +1,11 @@
 package org.ovirt.mobile.movirt.facade;
 
-import android.content.Context;
-import android.content.Intent;
-import android.os.RemoteException;
-
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.facade.predicates.VmIdSnapshotIdPredicate;
 import org.ovirt.mobile.movirt.model.SnapshotNic;
 import org.ovirt.mobile.movirt.rest.CompositeResponse;
 import org.ovirt.mobile.movirt.rest.Request;
 import org.ovirt.mobile.movirt.rest.Response;
-import org.ovirt.mobile.movirt.rest.SimpleResponse;
 
 import java.util.List;
 
@@ -21,16 +16,6 @@ public class SnapshotNicFacade extends BaseEntityFacade<SnapshotNic> {
 
     public SnapshotNicFacade() {
         super(SnapshotNic.class);
-    }
-
-    @Override
-    public Intent getDetailIntent(SnapshotNic entity, Context context) {
-        return null;
-    }
-
-    @Override
-    protected Request<SnapshotNic> getSyncOneRestRequest(String nicId, String... ids) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -47,12 +32,9 @@ public class SnapshotNicFacade extends BaseEntityFacade<SnapshotNic> {
         final String vmId = ids[0];
         final String snapshotId = ids[1];
 
-        return new CompositeResponse<>(new SimpleResponse<List<SnapshotNic>>() {
-            @Override
-            public void onResponse(List<SnapshotNic> nics) throws RemoteException {
-                syncAdapter.updateLocalEntities(nics, SnapshotNic.class,
-                        new VmIdSnapshotIdPredicate<SnapshotNic>(vmId, snapshotId));
-            }
-        }, response);
+        return respond()
+                .withScopePredicate(new VmIdSnapshotIdPredicate<>(vmId, snapshotId))
+                .asUpdateEntitiesResponse()
+                .addResponse(response);
     }
 }

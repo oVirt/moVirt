@@ -7,6 +7,7 @@ import org.ovirt.mobile.movirt.model.base.BaseEntity;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
@@ -29,9 +30,13 @@ public class EntityMapper<E extends BaseEntity> {
     }
 
     public List<E> listFromCursor(Cursor cursor) {
+        if (cursor.getCount() == 0) {
+            return Collections.emptyList();
+        }
+        cursor.moveToPosition(-1);
+
         List<E> result = new ArrayList<>();
 
-        cursor.moveToPosition(-1);
         while (cursor.moveToNext()) {
             result.add(fromCursor(cursor));
         }

@@ -1,8 +1,5 @@
 package org.ovirt.mobile.movirt.facade;
 
-import android.content.Context;
-import android.content.Intent;
-
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.model.Console;
 import org.ovirt.mobile.movirt.rest.Request;
@@ -16,11 +13,6 @@ public class ConsoleFacade extends BaseEntityFacade<Console> {
 
     public ConsoleFacade() {
         super(Console.class);
-    }
-
-    @Override
-    public Intent getDetailIntent(Console entity, Context context) {
-        return null;
     }
 
     @Override

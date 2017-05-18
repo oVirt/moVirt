@@ -21,6 +21,11 @@ import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.model.view.DiskAndAttachment;
 
 public class UriMatcher extends OrmLiteUriMatcher {
+
+    public static UriMatcher getInstance() {
+        return OrmLiteUriMatcher.getInstance(UriMatcher.class, OVirtContract.CONTENT_AUTHORITY);
+    }
+
     public UriMatcher(String authority) {
         super(authority);
     }

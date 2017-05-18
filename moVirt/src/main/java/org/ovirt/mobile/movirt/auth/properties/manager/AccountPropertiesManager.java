@@ -4,202 +4,171 @@ import android.accounts.AccountManagerFuture;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
-import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
+import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
+import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesRW;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.auth.properties.property.CertLocation;
 import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 import org.ovirt.mobile.movirt.rest.dto.Api;
 
-import java.util.Set;
-
-/**
- * {@inheritDoc}
- */
-@EBean(scope = EBean.Scope.Singleton)
 public class AccountPropertiesManager extends AccountPropertiesManagerCore {
     private static final String TAG = AccountPropertiesManager.class.getSimpleName();
 
-    @Bean
-    @Override
-    void setAuthenticator(MovirtAuthenticator authenticator) {
-        super.setAuthenticator(authenticator);
-    }
-
-    @Background
-    @Override
-    void notifyBackgroundListeners(Set<WrappedPropertyChangedListener> backgroundListeners, Object o) {
-        notifyListeners(backgroundListeners, o);
+    public AccountPropertiesManager(AccountPropertiesRW accountPropertiesRW) {
+        super(accountPropertiesRW);
     }
 
     @SuppressWarnings("unchecked")
-    public AccountManagerFuture<Bundle> getAuthToken() {
-        return authenticator.getResource(AccountProperty.FUTURE_AUTH_TOKEN, AccountManagerFuture.class);
+    public AccountManagerFuture<Bundle> getAuthToken() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.FUTURE_AUTH_TOKEN, AccountManagerFuture.class);
     }
 
-    public String peekAuthToken() {
-        return authenticator.getResource(AccountProperty.PEEK_AUTH_TOKEN, String.class);
+    public String peekAuthToken() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.PEEK_AUTH_TOKEN, String.class);
     }
 
-    public boolean setAuthToken(String token) {
+    public boolean setAuthToken(String token) throws AccountDeletedException {
         return setAuthToken(token, OnThread.CURRENT);
     }
 
-    public boolean setAuthToken(String token, OnThread runOnThread) {
+    public boolean setAuthToken(String token, OnThread runOnThread) throws AccountDeletedException {
         return setAndNotify(AccountProperty.AUTH_TOKEN, token, runOnThread);
     }
 
-    public Boolean accountConfigured() {
-        return authenticator.getResource(AccountProperty.ACCOUNT_CONFIGURED, Boolean.class);
+    public Boolean isFirstLogin() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.FIRST_LOGIN, Boolean.class);
     }
 
-    public Boolean isFirstLogin() {
-        return authenticator.getResource(AccountProperty.FIRST_LOGIN, Boolean.class);
-    }
-
-    public boolean setFirstLogin(Boolean firstLogin) {
+    public boolean setFirstLogin(Boolean firstLogin) throws AccountDeletedException {
         return setFirstLogin(firstLogin, OnThread.CURRENT);
     }
 
-    public boolean setFirstLogin(Boolean firstLogin, OnThread runOnThread) {
+    public boolean setFirstLogin(Boolean firstLogin, OnThread runOnThread) throws AccountDeletedException {
         return setAndNotify(AccountProperty.FIRST_LOGIN, firstLogin, runOnThread);
     }
 
-    public String getUsername() {
-        return authenticator.getResource(AccountProperty.USERNAME, String.class);
+    public String getUsername() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.USERNAME, String.class);
     }
 
-    public boolean setUsername(String username) {
+    public boolean setUsername(String username) throws AccountDeletedException {
         return setUsername(username, OnThread.CURRENT);
     }
 
-    public boolean setUsername(String username, OnThread runOnThread) {
+    public boolean setUsername(String username, OnThread runOnThread) throws AccountDeletedException {
         return setAndNotify(AccountProperty.USERNAME, username, runOnThread);
     }
 
-    public String getPassword() {
-        return authenticator.getResource(AccountProperty.PASSWORD, String.class);
+    public String getPassword() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.PASSWORD, String.class);
     }
 
-    public boolean setPassword(String password) {  // triggers sync in later APIs (Android 6)
+    public boolean setPassword(String password) throws AccountDeletedException {  // triggers sync in later APIs (Android 6)
         return setPassword(password, OnThread.CURRENT);
     }
 
-    public boolean setPassword(String password, OnThread runOnThread) {  // triggers sync in later APIs (Android 6)
+    public boolean setPassword(String password, OnThread runOnThread) throws AccountDeletedException {  // triggers sync in later APIs (Android 6)
         return setAndNotify(AccountProperty.PASSWORD, password, runOnThread);
     }
 
-    public Boolean getPasswordVisibility() {
-        return authenticator.getResource(AccountProperty.PASSWORD_VISIBILITY, Boolean.class);
+    public String getApiUrl() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.API_URL, String.class);
     }
 
-    public boolean setPasswordVisibility(Boolean passwordVisibility) {
-        return setAdminPermissions(passwordVisibility, OnThread.CURRENT);
-    }
-
-    public boolean setPasswordVisibility(Boolean passwordVisibility, OnThread runOnThread) {
-        return setAndNotify(AccountProperty.PASSWORD_VISIBILITY, passwordVisibility, runOnThread);
-    }
-
-    public String getApiUrl() {
-        return authenticator.getResource(AccountProperty.API_URL, String.class);
-    }
-
-    public boolean setApiUrl(String apiUrl) {
+    public boolean setApiUrl(String apiUrl) throws AccountDeletedException {
         return setApiUrl(apiUrl, OnThread.CURRENT);
     }
 
-    public boolean setApiUrl(String apiUrl, OnThread runOnThread) {
+    public boolean setApiUrl(String apiUrl, OnThread runOnThread) throws AccountDeletedException {
         return setAndNotify(AccountProperty.API_URL, apiUrl, runOnThread);
     }
 
-    public String getApiBaseUrl() {
-        return authenticator.getResource(AccountProperty.API_BASE_URL, String.class);
+    public String getApiBaseUrl() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.API_BASE_URL, String.class);
     }
 
     @NonNull
-    public Version getApiVersion() {
-        return authenticator.getResource(AccountProperty.VERSION, Version.class);
+    public Version getApiVersion() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.VERSION, Version.class);
     }
 
-    public boolean setApiVersion(Api newApi) {
+    public boolean setApiVersion(Api newApi) throws AccountDeletedException {
         return setApiVersion(newApi, OnThread.CURRENT);
     }
 
-    public boolean setApiVersion(Api newApi, OnThread runOnThread) {
+    public boolean setApiVersion(Api newApi, OnThread runOnThread) throws AccountDeletedException {
         Version newVersion = newApi == null ? null : newApi.toVersion();
         return setAndNotify(AccountProperty.VERSION, newVersion, runOnThread);
     }
 
     @NonNull
-    public CertHandlingStrategy getCertHandlingStrategy() {
-        return authenticator.getResource(AccountProperty.CERT_HANDLING_STRATEGY, CertHandlingStrategy.class);
+    public CertHandlingStrategy getCertHandlingStrategy() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.CERT_HANDLING_STRATEGY, CertHandlingStrategy.class);
     }
 
-    public boolean setCertHandlingStrategy(CertHandlingStrategy certHandlingStrategy) {
+    public boolean setCertHandlingStrategy(CertHandlingStrategy certHandlingStrategy) throws AccountDeletedException {
         return setCertHandlingStrategy(certHandlingStrategy, OnThread.CURRENT);
     }
 
-    public boolean setCertHandlingStrategy(CertHandlingStrategy certHandlingStrategy, OnThread runOnThread) {
+    public boolean setCertHandlingStrategy(CertHandlingStrategy certHandlingStrategy, OnThread runOnThread) throws AccountDeletedException {
         return setAndNotify(AccountProperty.CERT_HANDLING_STRATEGY, certHandlingStrategy, runOnThread);
     }
 
-    public Boolean hasAdminPermissions() {
-        return authenticator.getResource(AccountProperty.HAS_ADMIN_PERMISSIONS, Boolean.class);
+    public Boolean hasAdminPermissions() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.HAS_ADMIN_PERMISSIONS, Boolean.class);
     }
 
-    public boolean setAdminPermissions(Boolean hasAdminPermissions) {
+    public boolean setAdminPermissions(Boolean hasAdminPermissions) throws AccountDeletedException {
         return setAdminPermissions(hasAdminPermissions, OnThread.CURRENT);
     }
 
-    public boolean setAdminPermissions(Boolean hasAdminPermissions, OnThread runOnThread) {
+    public boolean setAdminPermissions(Boolean hasAdminPermissions, OnThread runOnThread) throws AccountDeletedException {
         return setAndNotify(AccountProperty.HAS_ADMIN_PERMISSIONS, hasAdminPermissions, runOnThread);
     }
 
     @NonNull
-    public Cert[] getCertificateChain() {
-        return authenticator.getResource(AccountProperty.CERTIFICATE_CHAIN, Cert[].class);
+    public Cert[] getCertificateChain() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.CERTIFICATE_CHAIN, Cert[].class);
     }
 
-    public boolean setCertificateChain(Cert[] certChain) {
+    public boolean setCertificateChain(Cert[] certChain) throws AccountDeletedException {
         return setCertificateChain(certChain, OnThread.CURRENT);
     }
 
-    public boolean setCertificateChain(Cert[] certChain, OnThread runOnThread) {
+    public boolean setCertificateChain(Cert[] certChain, OnThread runOnThread) throws AccountDeletedException {
         return setAndNotify(AccountProperty.CERTIFICATE_CHAIN, certChain, runOnThread);
     }
 
     @NonNull
-    public String getValidHostnames() {
-        return authenticator.getResource(AccountProperty.VALID_HOSTNAMES, String.class);
+    public String getValidHostnames() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.VALID_HOSTNAMES, String.class);
     }
 
     @NonNull
-    public String[] getValidHostnameList() {
-        return authenticator.getResource(AccountProperty.VALID_HOSTNAME_LIST, String[].class);
+    public String[] getValidHostnameList() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.VALID_HOSTNAME_LIST, String[].class);
     }
 
-    public boolean setValidHostnameList(String[] hostnameList) {
+    public boolean setValidHostnameList(String[] hostnameList) throws AccountDeletedException {
         return setValidHostnameList(hostnameList, OnThread.CURRENT);
     }
 
-    public boolean setValidHostnameList(String[] hostnameList, OnThread runOnThread) {
+    public boolean setValidHostnameList(String[] hostnameList, OnThread runOnThread) throws AccountDeletedException {
         return setAndNotify(AccountProperty.VALID_HOSTNAME_LIST, hostnameList, runOnThread);
     }
 
     @NonNull
-    public Boolean isCustomCertificateLocation() {
-        return authenticator.getResource(AccountProperty.CUSTOM_CERTIFICATE_LOCATION, Boolean.class);
+    public CertLocation getCertificateLocation() throws AccountDeletedException {
+        return accountPropertiesRW.getResource(AccountProperty.CERTIFICATE_LOCATION, CertLocation.class);
     }
 
-    public boolean setCustomCertificateLocation(Boolean customCertificateLocation) {
-        return setCustomCertificateLocation(customCertificateLocation, OnThread.CURRENT);
+    public boolean setCertificateLocation(CertLocation certificateLocation) throws AccountDeletedException {
+        return setCertificateLocation(certificateLocation, OnThread.CURRENT);
     }
 
-    public boolean setCustomCertificateLocation(Boolean customCertificateLocation, OnThread runOnThread) {
-        return setAndNotify(AccountProperty.CUSTOM_CERTIFICATE_LOCATION, customCertificateLocation, runOnThread);
+    public boolean setCertificateLocation(CertLocation certificateLocation, OnThread runOnThread) throws AccountDeletedException {
+        return setAndNotify(AccountProperty.CERTIFICATE_LOCATION, certificateLocation, runOnThread);
     }
 }

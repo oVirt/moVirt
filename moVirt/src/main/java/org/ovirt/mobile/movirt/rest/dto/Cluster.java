@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.ovirt.mobile.movirt.rest.ParseUtils;
 import org.ovirt.mobile.movirt.rest.RestEntityWrapper;
+import org.ovirt.mobile.movirt.rest.dto.common.HasId;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public abstract class Cluster implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Cluster> {
+public abstract class Cluster implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Cluster>, HasId {
     // public for json mapping
+
     public String id;
     public String name;
     public Version version;
@@ -21,9 +23,9 @@ public abstract class Cluster implements RestEntityWrapper<org.ovirt.mobile.movi
     }
 
     @Override
-    public org.ovirt.mobile.movirt.model.Cluster toEntity() {
+    public org.ovirt.mobile.movirt.model.Cluster toEntity(String accountId) {
         org.ovirt.mobile.movirt.model.Cluster cluster = new org.ovirt.mobile.movirt.model.Cluster();
-        cluster.setId(id);
+        cluster.setIds(accountId, id);
         cluster.setName(name);
         cluster.setVersion(ParseUtils.parseVersion(version));
 

@@ -15,6 +15,8 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
+import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.facade.SnapshotFacade;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.DataCenter;
@@ -35,11 +37,16 @@ public class SnapshotVmDetailGeneralFragment extends RefreshableLoaderFragment i
     private static final int CLUSTER_LOADER = 1;
     private static final int DATA_CENTER_LOADER = 2;
 
+    private SnapshotFacade snapshotFacade;
+
     @InstanceState
     protected String vmId;
 
     @InstanceState
     protected String snapshotId;
+
+    @InstanceState
+    protected MovirtAccount movirtAccount;
 
     @ViewById
     TextView statusView;
@@ -66,7 +73,7 @@ public class SnapshotVmDetailGeneralFragment extends RefreshableLoaderFragment i
     ProviderFacade provider;
 
     @Bean
-    SnapshotFacade snapshotFacade;
+    EnvironmentStore environmentStore;
 
     private SnapshotVm vm;
 
@@ -77,6 +84,7 @@ public class SnapshotVmDetailGeneralFragment extends RefreshableLoaderFragment i
 
     @AfterViews
     void initLoader() {
+        snapshotFacade = environmentStore.getEnvironment(movirtAccount).getFacade(Snapshot.class);
         hideProgressBar();
         getLoaderManager().initLoader(SNAPSHOT_VMS_LOADER, null, this);
     }
@@ -170,6 +178,10 @@ public class SnapshotVmDetailGeneralFragment extends RefreshableLoaderFragment i
         this.snapshotId = snapshotId;
     }
 
+    public void setMovirtAccount(MovirtAccount movirtAccount) {
+        this.movirtAccount = movirtAccount;
+    }
+
     public void renderVm(SnapshotVm vm) {
         statusView.setText(vm.getStatus().toString().toLowerCase());
         long memory = vm.getMemorySize();
@@ -191,7 +203,7 @@ public class SnapshotVmDetailGeneralFragment extends RefreshableLoaderFragment i
     @Background
     public void onRefresh() {
         if (vmId != null && snapshotId != null) {
-            snapshotFacade.syncOne(new ProgressBarResponse<Snapshot>(this), snapshotId, vmId);
+            snapshotFacade.syncOne(new ProgressBarResponse<>(this), snapshotId, vmId);
         }
     }
 }

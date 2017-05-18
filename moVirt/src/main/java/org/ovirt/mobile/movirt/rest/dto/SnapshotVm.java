@@ -3,12 +3,14 @@ package org.ovirt.mobile.movirt.rest.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.ovirt.mobile.movirt.rest.RestEntityWrapper;
+import org.ovirt.mobile.movirt.rest.dto.common.HasId;
 import org.ovirt.mobile.movirt.rest.dto.common.VmCpu;
 import org.ovirt.mobile.movirt.rest.dto.common.VmOs;
+import org.ovirt.mobile.movirt.util.IdHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SnapshotVm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.SnapshotVm> {
+public abstract class SnapshotVm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.SnapshotVm>, HasId {
 
     // public for json mapping
     public String id;
@@ -19,16 +21,17 @@ public class SnapshotVm implements RestEntityWrapper<org.ovirt.mobile.movirt.mod
 
     public transient String snapshotId;
 
-    public org.ovirt.mobile.movirt.model.SnapshotVm toEntity() {
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    public org.ovirt.mobile.movirt.model.SnapshotVm toEntity(String accountId) {
         org.ovirt.mobile.movirt.model.SnapshotVm vm = new org.ovirt.mobile.movirt.model.SnapshotVm();
 
-        if (id == null || snapshotId == null) {
-            throw new IllegalArgumentException("cannot create composite id");
-        }
-
-        vm.setId(id + snapshotId); // make unique id
         vm.setSnapshotId(snapshotId);
-        vm.setVmId(id);
+        vm.setVmId(IdHelper.combinedId(accountId, id));
+        vm.setIds(accountId, IdHelper.combinedId(vm.getSnapshotId(), vm.getVmId())); // make unique id
 
         vm.setName(name);
         vm.setMemorySize(ObjectUtils.parseLong(memory));

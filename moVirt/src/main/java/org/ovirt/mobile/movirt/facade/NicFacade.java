@@ -1,8 +1,5 @@
 package org.ovirt.mobile.movirt.facade;
 
-import android.content.Context;
-import android.content.Intent;
-
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.facade.predicates.VmIdPredicate;
 import org.ovirt.mobile.movirt.model.Nic;
@@ -22,16 +19,6 @@ public class NicFacade extends BaseEntityFacade<Nic> {
     }
 
     @Override
-    public Intent getDetailIntent(Nic entity, Context context) {
-        return null;
-    }
-
-    @Override
-    protected Request<Nic> getSyncOneRestRequest(String nicId, String... ids) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     protected Request<List<Nic>> getSyncAllRestRequest(String... ids) {
         requireSignature(ids, "vmId");
         String vmId = ids[0];
@@ -43,7 +30,9 @@ public class NicFacade extends BaseEntityFacade<Nic> {
         requireSignature(ids, "vmId");
         String vmId = ids[0];
 
-        return new CompositeResponse<>(
-                syncAdapter.getUpdateEntitiesResponse(Nic.class, new VmIdPredicate<Nic>(vmId)), response);
+        return respond()
+                .withScopePredicate(new VmIdPredicate<>(vmId))
+                .asUpdateEntitiesResponse()
+                .addResponse(response);
     }
 }

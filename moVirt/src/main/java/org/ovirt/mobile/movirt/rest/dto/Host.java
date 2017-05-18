@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.ovirt.mobile.movirt.rest.ParseUtils;
 import org.ovirt.mobile.movirt.rest.RestEntityWrapper;
+import org.ovirt.mobile.movirt.rest.dto.common.HasId;
 import org.ovirt.mobile.movirt.rest.dto.common.Statistic;
 import org.ovirt.mobile.movirt.rest.dto.common.Statistics;
 import org.ovirt.mobile.movirt.rest.dto.common.Topology;
@@ -14,7 +15,7 @@ import java.math.RoundingMode;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public abstract class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host> {
+public abstract class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Host>, HasId {
 
     private static final String USER_CPU_PERCENTAGE_STAT = "cpu.current.user";
     private static final String SYSTEM_CPU_PERCENTAGE_STAT = "cpu.current.system";
@@ -22,6 +23,7 @@ public abstract class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.
     private static final String USED_MEMORY_STAT = "memory.used";
 
     // public for json mapping
+
     public String id;
     public String name;
     public Statistics statistics;
@@ -51,9 +53,14 @@ public abstract class Host implements RestEntityWrapper<org.ovirt.mobile.movirt.
     }
 
     @Override
-    public org.ovirt.mobile.movirt.model.Host toEntity() {
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public org.ovirt.mobile.movirt.model.Host toEntity(String accountId) {
         org.ovirt.mobile.movirt.model.Host host = new org.ovirt.mobile.movirt.model.Host();
-        host.setId(id);
+        host.setIds(accountId, id);
         host.setName(name);
 
         if (statistics != null && statistics.statistic != null) {

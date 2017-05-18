@@ -1,12 +1,12 @@
 package org.ovirt.mobile.movirt.util;
 
+import android.content.Context;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EBean;
+import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.manager.OnThread;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
@@ -23,6 +23,7 @@ import org.spongycastle.cert.jcajce.JcaX509CertificateHolder;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -33,45 +34,50 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-@EBean(scope = EBean.Scope.Singleton)
 public class CertHelper {
     private static final String TAG = CertHelper.class.getSimpleName();
-
-    @Bean
-    AccountPropertiesManager propertiesManager;
 
     /**
      * Deletes certificate chain and valid hostnames
      */
-    public void deleteAllCerts() {
+    public static void deleteAllCerts(AccountPropertiesManager propertiesManager) throws AccountDeletedException {
         propertiesManager.setCertificateChain(new Cert[]{});
         propertiesManager.setValidHostnameList(new String[]{});
     }
 
-    /**
-     * Deletes certificate chain and valid hostnames
-     */
-    @Background
-    public void deleteAllCertsInBackground() {
-        deleteAllCerts();
+    public static void loadAndStoreCert(AccountPropertiesManager propertiesManager, Context context, Uri file, URL validHostname, boolean startNewChain) throws AccountDeletedException {
+        try {
+            loadAndStoreCert(propertiesManager, context.getContentResolver().openInputStream(file), file.toString(), validHostname, startNewChain);
+        } catch (FileNotFoundException e) {
+            throw new IllegalArgumentException("Could not open file");
+        }
+    }
+
+    public static void downloadAndStoreCert(AccountPropertiesManager propertiesManager, @NonNull URL url, @NonNull URL validHostname, boolean startNewChain) throws AccountDeletedException {
+        try {
+            loadAndStoreCert(propertiesManager, url.openStream(), url.toString(), validHostname, startNewChain);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Could not open url" + e.getMessage());
+        }
     }
 
     /**
-     * @param url           cert url
+     * @param inputStream   inputStream of file
      * @param startNewChain if true deletes old certificates before starting new chain, otherwise appends to the chain
      * @throws IllegalStateException if failed, can also delete all certificates if it gets to inconsistent state
      */
-    public void downloadAndStoreCert(@NonNull URL url, @NonNull URL validHostname, boolean startNewChain) {
-        CertificateFactory cf = CertHelper.getX509CertificateFactory();
+    private static void loadAndStoreCert(AccountPropertiesManager propertiesManager, InputStream inputStream, String inputName, URL validHostname, boolean startNewChain) throws AccountDeletedException {
+        CertificateFactory cf;
 
         InputStream caInput = null;
         ByteArrayOutputStream caOutput = null;
 
         try {
-            caInput = new BufferedInputStream(url.openStream());
+            cf = CertHelper.getX509CertificateFactory();
+
+            caInput = new BufferedInputStream(inputStream);
 
             caOutput = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
@@ -88,16 +94,17 @@ public class CertHelper {
         }
         List<Cert> certs;
         try {
-            certs = startNewChain ? new ArrayList<Cert>(1) : new ArrayList<>(Arrays.asList(propertiesManager.getCertificateChain()));
+            certs = startNewChain ? new ArrayList<>(1) : new ArrayList<>(Arrays.asList(propertiesManager.getCertificateChain()));
             Certificate issuer = cf.generateCertificate(caInput);
             if (!startNewChain) {
                 Certificate lastInChain = certs.get(certs.size() - 1).asCertificate();
                 lastInChain.verify(issuer.getPublicKey());
             }
             Cert cert = Cert.fromCertificate(issuer);
-            cert.setLocation(url.toString());
-            cert.setLocationType(Cert.LOCATION_TYPE.NETWORK);
+            cert.setLocation(inputName);
             certs.add(cert);
+        } catch (AccountDeletedException e) {
+            throw e;
         } catch (CertificateException e) {
             throw new IllegalStateException("Error parsing certificate: " + e.getMessage());
         } catch (Exception e) {
@@ -111,8 +118,10 @@ public class CertHelper {
             if (startNewChain) {
                 propertiesManager.setValidHostnameList(new String[]{validHostname.getHost()}, OnThread.BACKGROUND);
             }
+        } catch (AccountDeletedException e) {
+            throw e;
         } catch (Exception e) {
-            deleteAllCertsInBackground(); // hostname and ca must be atomic
+            deleteAllCerts(propertiesManager); // hostname and ca must be atomic
             throw new IllegalStateException("Error storing certificate: " + e.getMessage());
         } finally {
             ObjectUtils.closeSilently(caInput, caOutput);
@@ -145,32 +154,6 @@ public class CertHelper {
             return false;
         }
         return true;
-    }
-
-    @NonNull
-    public static List<Certificate> asCertificatesSafe(Cert[] certs) {
-        try {
-            return asCertificates(certs);
-        } catch (Exception ignored) {
-        }
-        return Collections.emptyList();
-    }
-
-    /**
-     * @throws IllegalStateException
-     * @throws IllegalArgumentException
-     */
-    @NonNull
-    public static List<Certificate> asCertificates(Cert[] certs) {
-        if (certs == null) {
-            throw new IllegalArgumentException("certs are null");
-        }
-
-        List<Certificate> certificates = new ArrayList<>(certs.length);
-        for (Cert cert : certs) {
-            certificates.add(cert.asCertificate());
-        }
-        return certificates;
     }
 
     @Nullable

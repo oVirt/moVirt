@@ -7,16 +7,12 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.Receiver;
-import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
+import org.ovirt.mobile.movirt.auth.account.AccountEnvironment;
 import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 import org.ovirt.mobile.movirt.auth.properties.property.version.support.VersionSupport;
-import org.ovirt.mobile.movirt.facade.DiskAttachmentsFacade;
-import org.ovirt.mobile.movirt.facade.DiskFacade;
 import org.ovirt.mobile.movirt.model.Disk;
 import org.ovirt.mobile.movirt.model.DiskAttachment;
 import org.ovirt.mobile.movirt.model.view.DiskAndAttachment;
@@ -27,24 +23,12 @@ import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 import org.ovirt.mobile.movirt.util.usage.MemorySize;
 
-import java.util.List;
-
 import static org.ovirt.mobile.movirt.provider.OVirtContract.DiskAndAttachment.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.DiskAndAttachment.SIZE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.DiskAndAttachment.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
 public class VmDisksFragment extends VmBoundResumeSyncableBaseListFragment<DiskAndAttachment> {
-    private static final String TAG = VmDisksFragment.class.getSimpleName();
-
-    @Bean
-    AccountPropertiesManager propertiesManager;
-
-    @Bean
-    DiskAttachmentsFacade diskAttachmentsFacade;
-
-    @Bean
-    DiskFacade diskFacade;
 
     public VmDisksFragment() {
         super(DiskAndAttachment.class);
@@ -90,28 +74,18 @@ public class VmDisksFragment extends VmBoundResumeSyncableBaseListFragment<DiskA
     }
 
     @Background
-    @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
-        if (syncing) {
-            Version version = propertiesManager.getApiVersion();
-
-            if (VersionSupport.VM_DISKS.isSupported(version)) {
-                diskFacade.syncAll(getVmId());
-            } else if (VersionSupport.DISK_ATTACHMENTS.isSupported(version)) {
-                diskAttachmentsFacade.syncAll(getVmId());
-            }
-        }
-    }
-
-    @Background
     @Override
     public void onRefresh() {
-        Version version = propertiesManager.getApiVersion();
+        try {
+            final AccountEnvironment environment = environmentStore.getEnvironment(account);
+            Version version = environment.getVersion();
 
-        if (VersionSupport.VM_DISKS.isSupported(version)) {
-            diskFacade.syncAll(new ProgressBarResponse<List<Disk>>(this), getVmId());
-        } else if (VersionSupport.DISK_ATTACHMENTS.isSupported(version)) {
-            diskAttachmentsFacade.syncAll(new ProgressBarResponse<List<DiskAttachment>>(this), getVmId());
+            if (VersionSupport.VM_DISKS.isSupported(version)) {
+                environment.getFacade(Disk.class).syncAll(new ProgressBarResponse<>(this), getVmId());
+            } else if (VersionSupport.DISK_ATTACHMENTS.isSupported(version)) {
+                environment.getFacade(DiskAttachment.class).syncAll(new ProgressBarResponse<>(this), getVmId());
+            }
+        } catch (AccountDeletedException ignore) {
         }
     }
 }

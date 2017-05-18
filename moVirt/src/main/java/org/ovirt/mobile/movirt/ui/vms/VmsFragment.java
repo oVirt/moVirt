@@ -84,7 +84,7 @@ public class VmsFragment extends ClusterBoundBaseListFragment<Vm> {
     protected void appendQuery(ProviderFacade.QueryBuilder<Vm> query) {
         super.appendQuery(query);
 
-        if (hostId != null) {
+        if (isSingle() && hostId != null) {
             query.where(HOST_ID, hostId);
         }
     }

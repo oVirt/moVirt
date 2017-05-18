@@ -3,27 +3,27 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <Preference
-        android:key="connection_button"
+        android:key="@string/connection_button_pref_key"
         android:summary="@string/prefs_connection_settings_summary"
         android:title="@string/prefs_connection_settings"/>
 
     <CheckBoxPreference
         android:defaultValue="@bool/default_poll_events"
-        android:key="poll_events"
+        android:key="@string/poll_events_pref_key"
         android:persistent="true"
         android:summary="@string/prefs_poll_events_summary"
         android:title="@string/prefs_poll_events"/>
 
     <CheckBoxPreference
         android:defaultValue="@bool/default_connection_notification"
-        android:key="connection_notification"
+        android:key="@string/connection_notification_pref_key"
         android:persistent="true"
         android:summary="@string/prefs_connection_notification_summary"
         android:title="@string/prefs_connection_notification"/>
 
     <CheckBoxPreference
         android:defaultValue="@bool/default_periodic_sync"
-        android:key="periodic_sync"
+        android:key="@string/periodic_sync_pref_key"
         android:persistent="true"
         android:summary="@string/prefs_periodic_sync_summary"
         android:title="@string/prefs_periodic_sync"/>
@@ -32,7 +32,7 @@
         android:defaultValue="@integer/default_periodic_sync_interval"
         android:enabled="false"
         android:inputType="number"
-        android:key="periodic_sync_interval"
+        android:key="@string/periodic_sync_interval_pref_key"
         android:persistent="true"
         android:summary="@string/prefs_periodic_sync_interval_summary"
         android:title="@string/prefs_periodic_sync_interval"/>
@@ -40,7 +40,7 @@
     <EditTextPreference
         android:defaultValue="@integer/default_max_events_polled"
         android:inputType="number"
-        android:key="max_events_polled"
+        android:key="@string/max_events_polled_pref_key"
         android:persistent="true"
         android:summary="@string/prefs_max_events_polled_summary"
         android:title="@string/prefs_max_events_polled"/>
@@ -48,7 +48,7 @@
     <EditTextPreference
         android:defaultValue="@integer/default_max_events_stored"
         android:inputType="number"
-        android:key="max_events_stored"
+        android:key="@string/max_events_stored_pref_key"
         android:persistent="true"
         android:summary="@string/prefs_max_events_stored_summary"
         android:title="@string/prefs_max_events_stored"/>
@@ -63,7 +63,7 @@
     <EditTextPreference
         android:defaultValue="@integer/default_max_vms"
         android:inputType="number"
-        android:key="max_vms_polled"
+        android:key="@string/max_vms_polled_pref_key"
         android:persistent="true"
         android:summary="@string/prefs_max_vms_polled_summary"
         android:title="@string/prefs_max_max_vms_polled"/>
@@ -74,10 +74,5 @@
         android:persistent="true"
         android:summary="@string/prefs_vm_search_query_summary"
         android:title="@string/prefs_vm_search_query"/>
-
-    <Preference
-        android:key="about_button"
-        android:summary="@string/prefs_about_moVirt_summary"
-        android:title="@string/prefs_about_moVirt"/>
 
 </PreferenceScreen>

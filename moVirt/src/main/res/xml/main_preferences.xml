@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference
+        android:key="@string/engines_settings_pref_key"
+        android:summary="@string/prefs_engines_settings_summary"
+        android:title="@string/prefs_engines_settings"/>
+
+    <CheckBoxPreference
+        android:defaultValue="@bool/default_global_sync"
+        android:key="@string/global_sync_pref_key"
+        android:persistent="true"
+        android:summary="@string/prefs_global_sync_summary"
+        android:title="@string/prefs_global_sync"/>
+
+    <Preference
+        android:key="@string/users_guide_pref_key"
+        android:title="@string/prefs_users_guide"/>
+
+    <Preference
+        android:key="@string/about_button_pref_key"
+        android:summary="@string/prefs_about_moVirt_summary"
+        android:title="@string/prefs_about_moVirt"/>
+
+</PreferenceScreen>

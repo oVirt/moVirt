@@ -2,7 +2,11 @@ package org.ovirt.mobile.movirt.auth.properties.manager;
 
 import android.support.annotation.NonNull;
 
-import org.ovirt.mobile.movirt.auth.MovirtAuthenticator;
+import org.androidannotations.api.BackgroundExecutor;
+import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
+import org.ovirt.mobile.movirt.auth.account.AccountEnvironment;
+import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
+import org.ovirt.mobile.movirt.auth.properties.AccountPropertiesRW;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
 import org.ovirt.mobile.movirt.auth.properties.PropertyUtils;
@@ -14,59 +18,37 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Only methods registerListener, notifyAndRegisterListener and notifyListener are safe to use from @AfterInject.
- * Other methods are NOT SAFE to call! Call isInitialized() for checking the state of this class.
- * It is not needed to check isInitialized() after all of the classes have been initialized.
- */
-abstract class AccountPropertiesManagerCore {
-    private static final String TAG = AccountPropertiesManagerCore.class.getSimpleName();
+abstract class AccountPropertiesManagerCore implements AccountEnvironment.EnvDisposable {
 
     private static final String PROPERTY = "property";
     private static final String LISTENER = "listener";
 
-    // this is not guaranteed to be set (circular injection) when this class has been already injected somewhere else
-    protected MovirtAuthenticator authenticator;
+    protected AccountPropertiesRW accountPropertiesRW;
 
-    private boolean initialized = false;
+    private final Map<AccountProperty, Set<WrappedPropertyChangedListener>> listeners = new EnumMap<>(AccountProperty.class);
 
-    private static final Map<AccountProperty, Set<WrappedPropertyChangedListener>> listeners;
-    private static Map<AccountProperty, Set<WrappedPropertyChangedListener>> initQueueListeners;
-
-    static {
-        listeners = new EnumMap<>(AccountProperty.class);
-        initQueueListeners = new EnumMap<>(AccountProperty.class);
+    public AccountPropertiesManagerCore(AccountPropertiesRW accountPropertiesRW) {
+        ObjectUtils.requireNotNull(accountPropertiesRW, "accountPropertiesRW");
+        this.accountPropertiesRW = accountPropertiesRW;
 
         for (AccountProperty property : AccountProperty.values()) {
-            listeners.put(property, Collections.synchronizedSet(new HashSet<WrappedPropertyChangedListener>()));
-            initQueueListeners.put(property, Collections.synchronizedSet(new HashSet<WrappedPropertyChangedListener>()));
+            listeners.put(property, Collections.synchronizedSet(new HashSet<>()));
         }
     }
 
-    synchronized void setAuthenticator(MovirtAuthenticator authenticator) { // in very improbable case of multiple instances, AccountPropertiesManager is singleton
-        if (this.authenticator != null) {
-            return;
-        }
 
-        this.authenticator = authenticator;
-        initialized = true;
-
-        for (AccountProperty property : AccountProperty.values()) {
-            notifyListeners(initQueueListeners.get(property), authenticator.getResource(property)); // should be run in current thread
+    @Override
+    public void dispose() {
+        for (Set<WrappedPropertyChangedListener> propertyListeners : listeners.values()) {
+            propertyListeners.clear();
         }
-        initQueueListeners = null; // free
+        listeners.clear();
+        accountPropertiesRW.destroy();
     }
 
-    /**
-     * Must be checked before any method (of this class) from @AfterInject of other classes, except for methods registerListener and
-     * notifyAndRegisterListener or notifyListener which will be invoked the first time this component is initialized.
-     * <p>
-     * Other methods are NOT SAFE to call from @AfterInject!
-     *
-     * @return true if this component is initialized
-     */
-    public boolean isInitialized() {
-        return initialized;
+
+    public MovirtAccount getManagedAccount() {
+        return accountPropertiesRW.getAccount();
     }
 
     /**
@@ -74,7 +56,7 @@ abstract class AccountPropertiesManagerCore {
      * {@link AccountPropertiesManagerCore#notifyListener(PropertyChangedListener)} and
      * {@link AccountPropertiesManagerCore#registerListener(PropertyChangedListener)}
      */
-    public <E> void notifyAndRegisterListener(final PropertyChangedListener<E> listener) {
+    public <E> void notifyAndRegisterListener(final PropertyChangedListener<E> listener) throws AccountDeletedException {
         notifyListener(listener);
         registerListener(listener);
     }
@@ -87,14 +69,10 @@ abstract class AccountPropertiesManagerCore {
      * @throws ClassCastException if {@code <E>} doesn't correspond to {@link PropertyChangedListener#getProperty() getProperty}.
      */
     @SuppressWarnings("unchecked")
-    public <E> void notifyListener(final PropertyChangedListener<E> listener) {
-        if (isInitialized()) {
-            ObjectUtils.requireNotNull(listener.getProperty(), PROPERTY);
-            ObjectUtils.requireNotNull(listener, LISTENER);
-            listener.onPropertyChange((E) authenticator.getResource(listener.getProperty()));
-        } else {
-            registerListenerImpl(initQueueListeners, listener);
-        }
+    public <E> void notifyListener(final PropertyChangedListener<E> listener) throws AccountDeletedException {
+        ObjectUtils.requireNotNull(listener.getProperty(), PROPERTY);
+        ObjectUtils.requireNotNull(listener, LISTENER);
+        listener.onPropertyChange((E) accountPropertiesRW.getResource(listener.getProperty()));
     }
 
     /**
@@ -106,7 +84,10 @@ abstract class AccountPropertiesManagerCore {
      * @throws ClassCastException if {@code <E>} doesn't correspond to {@link PropertyChangedListener#getProperty() getProperty}
      * @see OnThread
      */
-    public <E> void registerListener(final PropertyChangedListener<E> listener) {
+    public <E> void registerListener(final PropertyChangedListener<E> listener) throws AccountDeletedException {
+        if (accountPropertiesRW.isDestroyed()) {
+            throw new AccountDeletedException();
+        }
         registerListenerImpl(listeners, listener);
     }
 
@@ -164,10 +145,10 @@ abstract class AccountPropertiesManagerCore {
      * @param object   data to be checked against
      * @return true if property state is different than object
      */
-    public boolean propertyDiffers(AccountProperty property, Object object) {
+    public boolean propertyDiffers(AccountProperty property, Object object) throws AccountDeletedException {
         ObjectUtils.requireNotNull(property, PROPERTY);
 
-        Object old = authenticator.getResource(property);
+        Object old = accountPropertiesRW.getResource(property);
         return !PropertyUtils.propertyObjectEquals(old, object);
     }
 
@@ -177,12 +158,12 @@ abstract class AccountPropertiesManagerCore {
      * @param runOnThread thread to fire the listeners on
      * @return true if property state changed and listeners were notified
      */
-    public boolean setAndNotify(AccountProperty property, Object object, OnThread runOnThread) {
+    boolean setAndNotify(AccountProperty property, Object object, OnThread runOnThread) throws AccountDeletedException {
         boolean propertyChanged = propertyDiffers(property, object);
         if (propertyChanged) {
-            authenticator.setResource(property, object);
+            accountPropertiesRW.setResource(property, object);
             if (!propertyDiffers(property, object)) { // setter worked
-                notifyListeners(property, authenticator.getResource(property), runOnThread); // get set value
+                notifyListeners(property, accountPropertiesRW.getResource(property), runOnThread); // get set value
                 notifyDependentProperties(property, runOnThread);
             } else {
                 throw new IllegalStateException("Setter of account property " + property.name() + " doesn't set anything!");
@@ -191,9 +172,11 @@ abstract class AccountPropertiesManagerCore {
         return propertyChanged;
     }
 
-    private void notifyDependentProperties(AccountProperty property, OnThread runOnThread) {
+    private void notifyDependentProperties(AccountProperty property, OnThread runOnThread) throws AccountDeletedException {
         for (AccountProperty prop : property.getDependentProperties()) {
-            notifyListeners(prop, authenticator.getResource(prop), runOnThread);
+            if (property != prop) {
+                notifyListeners(prop, accountPropertiesRW.getResource(prop), runOnThread);
+            }
         }
     }
 
@@ -221,10 +204,18 @@ abstract class AccountPropertiesManagerCore {
         }
     }
 
-    /**
-     * This method should not be used outside of {@link AccountPropertiesManager}
-     */
-    abstract void notifyBackgroundListeners(Set<WrappedPropertyChangedListener> backgroundListeners, Object o);
+    private void notifyBackgroundListeners(Set<WrappedPropertyChangedListener> backgroundListeners, Object o) {
+        BackgroundExecutor.execute(new BackgroundExecutor.Task("", 0L, "") {
+            @Override
+            public void execute() {
+                try {
+                    notifyListeners(backgroundListeners, o);
+                } catch (final Throwable e) {
+                    Thread.getDefaultUncaughtExceptionHandler().uncaughtException(Thread.currentThread(), e);
+                }
+            }
+        });
+    }
 
     abstract class WrappedPropertyChangedListener {
         abstract void onPropertyChange(Object o);

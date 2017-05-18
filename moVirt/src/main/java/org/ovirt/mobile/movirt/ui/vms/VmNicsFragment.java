@@ -7,23 +7,16 @@ import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
-import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.Receiver;
-import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.properties.property.version.support.VersionSupport;
 import org.ovirt.mobile.movirt.model.Nic;
-import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.listfragment.VmBoundResumeSyncableBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 import org.ovirt.mobile.movirt.util.CursorHelper;
-
-import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.LINKED;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.MAC_ADDRESS;
@@ -32,9 +25,6 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.PLUGGED;
 
 @EFragment(R.layout.fragment_base_entity_list)
 public class VmNicsFragment extends VmBoundResumeSyncableBaseListFragment<Nic> {
-
-    @Bean
-    AccountPropertiesManager propertiesManager;
 
     public VmNicsFragment() {
         super(Nic.class);
@@ -50,7 +40,6 @@ public class VmNicsFragment extends VmBoundResumeSyncableBaseListFragment<Nic> {
         nicListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-
                 if (columnIndex == cursor.getColumnIndex(NAME)) {
                     TextView textView = (TextView) view;
                     String name = cursor.getString(columnIndex);
@@ -86,20 +75,10 @@ public class VmNicsFragment extends VmBoundResumeSyncableBaseListFragment<Nic> {
 
     @Override
     public boolean isResumeSyncable() {
-        return !VersionSupport.NICS_POLLED_WITH_VMS.isSupported(propertiesManager.getApiVersion());
-    }
-
-    @Background
-    @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
-        if (syncing && isResumeSyncable()) {
-            entityFacade.syncAll(getVmId());
+        try {
+            return !VersionSupport.NICS_POLLED_WITH_VMS.isSupported(environmentStore.getVersion(account));
+        } catch (AccountDeletedException ignore) {
+            return false;
         }
-    }
-
-    @Background
-    @Override
-    public void onRefresh() {
-        entityFacade.syncAll(new ProgressBarResponse<List<Nic>>(this), getVmId());
     }
 }

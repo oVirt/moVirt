@@ -40,6 +40,18 @@ public final class ObjectUtils {
     }
 
     /**
+     * @param objects objects to be checked against
+     * @throws IllegalArgumentException if o is null
+     */
+    public static void requireAllNotNull(Object... objects) {
+        for (int i = 0; i < objects.length; i++) {
+            if (objects[i] == null) {
+                throw new IllegalArgumentException(String.format(Locale.ENGLISH, "objects[ %d] cannot be null.", i));
+            }
+        }
+    }
+
+    /**
      * @param o    object to be checked against
      * @param name name of the object o
      * @throws IllegalArgumentException if o is null

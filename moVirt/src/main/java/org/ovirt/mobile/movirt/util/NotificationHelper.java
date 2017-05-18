@@ -11,8 +11,11 @@ import android.support.v4.app.NotificationCompat.InboxStyle;
 import android.util.Log;
 import android.util.Pair;
 
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.SystemService;
+import org.ovirt.mobile.movirt.auth.account.AccountRxStore;
+import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.model.ConnectionInfo;
 import org.ovirt.mobile.movirt.model.base.BaseEntity;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
@@ -30,8 +33,11 @@ public class NotificationHelper {
     NotificationManager notificationManager;
     @SystemService
     Vibrator vibrator;
+    @Bean
+    AccountRxStore rxStore;
+
     private int notificationCount = 0;
-    private static final int maxDisplayedNotifications = 7; //InboxStyle allows 7
+    private static final int maxDisplayedNotifications = 7; // InboxStyle allows 7
     private static final int vibrationDuration = 1000;
 
     private <E extends BaseEntity<?>> void showTriggerNotification(
@@ -39,7 +45,7 @@ public class NotificationHelper {
     ) {
         String title = trigger.getNotificationType() == Trigger.NotificationType.CRITICAL ? ">>> oVirt event <<<" : "oVirt event";
         Notification notification = prepareNotification(context, resultPendingIntent, System.currentTimeMillis(), title)
-                .setContentText(trigger.getCondition().getMessage(entity))
+                .setContentText(trigger.getCondition().getMessage(context, entity))
                 .build();
         notificationManager.notify(notificationCount++, notification);
         if (trigger.getNotificationType() == Trigger.NotificationType.CRITICAL) {
@@ -68,7 +74,7 @@ public class NotificationHelper {
             }
 
             if (i < maxDisplayedNotifications) {
-                style.addLine(pair.second.getCondition().getMessage(pair.first));
+                style.addLine(pair.second.getCondition().getMessage(context, pair.first));
             }
         }
 
@@ -89,12 +95,15 @@ public class NotificationHelper {
     public void showConnectionNotification(Context context,
                                            PendingIntent resultPendingIntent,
                                            ConnectionInfo connectionInfo) {
+        MovirtAccount account = rxStore.getAllAccountsWrapped().getAccountById(connectionInfo.getAccountId());
+        String location = account == null ? "" : " to " + account.getName();
+
         Log.d(TAG, "Displaying notification " + notificationCount);
         String shortMsg = "Check your settings/server";
         String bigMsg = shortMsg + "\nLast successful connection at: " +
                 connectionInfo.getLastSuccessfulWithTimeZone(context);
 
-        Notification notification = prepareNotification(context, resultPendingIntent, connectionInfo.getLastAttempt(), "Connection lost!")
+        Notification notification = prepareNotification(context, resultPendingIntent, connectionInfo.getLastAttempt(), "Connection lost" + location + "!")
                 .setContentText(shortMsg)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(bigMsg))
                 .build();

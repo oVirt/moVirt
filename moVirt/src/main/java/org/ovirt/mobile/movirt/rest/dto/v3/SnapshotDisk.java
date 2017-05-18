@@ -9,8 +9,8 @@ public class SnapshotDisk extends org.ovirt.mobile.movirt.rest.dto.SnapshotDisk 
     public Status status;
     public String size;
 
-    public org.ovirt.mobile.movirt.model.SnapshotDisk toEntity() {
-        org.ovirt.mobile.movirt.model.SnapshotDisk snapshotDisk = super.toEntity();
+    public org.ovirt.mobile.movirt.model.SnapshotDisk toEntity(String accountId) {
+        org.ovirt.mobile.movirt.model.SnapshotDisk snapshotDisk = super.toEntity(accountId);
         snapshotDisk.setSize(ObjectUtils.parseLong(size));
 
         if (status != null) {

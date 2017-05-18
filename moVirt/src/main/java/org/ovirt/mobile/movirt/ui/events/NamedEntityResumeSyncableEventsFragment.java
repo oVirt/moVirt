@@ -1,13 +1,13 @@
 package org.ovirt.mobile.movirt.ui.events;
 
 import org.androidannotations.annotations.Background;
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
-import org.androidannotations.annotations.Receiver;
-import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Event;
-import org.ovirt.mobile.movirt.model.base.OVirtNamedEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtAccountNamedEntity;
+import org.ovirt.mobile.movirt.rest.ConnectivityHelper;
 import org.ovirt.mobile.movirt.rest.Response;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 
@@ -19,7 +19,8 @@ public abstract class NamedEntityResumeSyncableEventsFragment extends EventsFrag
     @InstanceState
     protected boolean resumeSynced = false;
 
-    private boolean lastSyncBroadcast;
+    @Bean
+    protected ConnectivityHelper connectivityHelper;
 
     private String entityName;
 
@@ -28,11 +29,13 @@ public abstract class NamedEntityResumeSyncableEventsFragment extends EventsFrag
         super.onResume();
         if (!resumeSynced) {
             resumeSynced = true;
-            onRefresh();
+            if (connectivityHelper.isNetworkAvailable()) {
+                onRefresh();
+            }
         }
     }
 
-    protected <E extends OVirtNamedEntity> String getEntityName(Class<E> clazz, String id) {
+    protected <E extends OVirtAccountNamedEntity> String getEntityName(Class<E> clazz, String id) {
         if (entityName == null) {
             synchronized (this) {
                 if (entityName == null) {
@@ -48,18 +51,9 @@ public abstract class NamedEntityResumeSyncableEventsFragment extends EventsFrag
     }
 
     @Background
-    @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
-        if (lastSyncBroadcast && !syncing) { // sync fragment after main sync
-            sync(null);
-        }
-        lastSyncBroadcast = syncing;
-    }
-
-    @Background
     @Override
     public void onRefresh() {
-        sync(new ProgressBarResponse<List<Event>>(this));
+        sync(new ProgressBarResponse<>(this));
     }
 
     protected abstract void sync(Response<List<Event>> response);

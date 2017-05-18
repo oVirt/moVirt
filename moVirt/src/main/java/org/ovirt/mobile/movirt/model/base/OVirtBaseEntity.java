@@ -9,15 +9,7 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 public abstract class OVirtBaseEntity extends OVirtEntity {
 
-    protected OVirtBaseEntity() {
-        id = "";
-    }
-
-    protected OVirtBaseEntity(String id) {
-        this.id = id;
-    }
-
-    @DatabaseField(columnName = ID, id = true, uniqueCombo = true)
+    @DatabaseField(columnName = ID, id = true)
     private String id;
 
     @Override

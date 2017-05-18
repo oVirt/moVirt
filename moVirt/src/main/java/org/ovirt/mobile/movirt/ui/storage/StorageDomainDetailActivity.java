@@ -11,18 +11,17 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringArrayRes;
+import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
-import org.ovirt.mobile.movirt.ui.TempEventsMovirtActivity;
+import org.ovirt.mobile.movirt.ui.PresenterStatusSyncableActivity;
 import org.ovirt.mobile.movirt.ui.events.StorageDomainEventsFragment;
 import org.ovirt.mobile.movirt.ui.events.StorageDomainEventsFragment_;
 
 @EActivity(R.layout.activity_storage_domain_detail)
-public class StorageDomainDetailActivity extends TempEventsMovirtActivity implements HasProgressBar {
-
-    private static final String TAG = StorageDomainDetailActivity.class.getSimpleName();
+public class StorageDomainDetailActivity extends PresenterStatusSyncableActivity implements HasProgressBar, StorageDomainDetailContract.View {
 
     @ViewById
     ViewPager viewPager;
@@ -39,11 +38,26 @@ public class StorageDomainDetailActivity extends TempEventsMovirtActivity implem
     @App
     MoVirtApp app;
 
+    StorageDomainDetailContract.Presenter presenter;
+
     @AfterViews
     void init() {
-
+        presenter = StorageDomainDetailPresenter_.getInstance_(getApplicationContext())
+                .setView(this)
+                .setStorageDomainId(getIntent().getData().getLastPathSegment())
+                .setAccount(getIntent().getParcelableExtra(Constants.ACCOUNT_KEY))
+                .initialize();
         initPagers();
         setProgressBar(progress);
+    }
+
+    public StorageDomainDetailContract.Presenter getPresenter() {
+        return presenter;
+    }
+
+    @Override
+    public void displayTitle(String title) {
+        setTitle(title);
     }
 
     private void initPagers() {
@@ -52,6 +66,7 @@ public class StorageDomainDetailActivity extends TempEventsMovirtActivity implem
 
         StorageDomainEventsFragment eventsFragment = new StorageDomainEventsFragment_();
         eventsFragment.setStorageDomainId(storageDomainId);
+        eventsFragment.setAccount(getIntent().getParcelableExtra(Constants.ACCOUNT_KEY));
 
         FragmentListPagerAdapter pagerAdapter = new FragmentListPagerAdapter(
                 getSupportFragmentManager(), PAGER_TITLES,

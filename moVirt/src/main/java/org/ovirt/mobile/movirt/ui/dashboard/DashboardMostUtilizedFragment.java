@@ -24,16 +24,16 @@ import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.EndlessScrollListener;
 import org.ovirt.mobile.movirt.ui.LoaderFragment;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 
+import static org.ovirt.mobile.movirt.provider.OVirtContract.AccountNamedEntity.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;
 
 @EFragment(R.layout.fragment_dashboard_most_utilized)
-public class DashboardMostUtilizedFragment extends LoaderFragment implements OVirtContract.NamedEntity {
+public class DashboardMostUtilizedFragment extends LoaderFragment {
     private final static String TAG = DashboardMostUtilizedFragment.class.getSimpleName();
 
     private static final int ACTIVE_LOADER = 1;
@@ -110,10 +110,10 @@ public class DashboardMostUtilizedFragment extends LoaderFragment implements OVi
 
         if (dashboardType == DashboardType.PHYSICAL) {
             Host host = hostFacade.mapFromCursor(cursor);
-            intent = hostFacade.getDetailIntent(host, getActivity());
+            intent = hostFacade.getIntentResolver().getDetailIntent(host, getActivity());
         } else {
             Vm vm = vmFacade.mapFromCursor(cursor);
-            intent = vmFacade.getDetailIntent(vm, getActivity());
+            intent = vmFacade.getIntentResolver().getDetailIntent(vm, getActivity());
         }
 
         startActivity(intent);

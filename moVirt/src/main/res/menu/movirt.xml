@@ -6,7 +6,7 @@
         android:id="@+id/menu_connection"
         android:icon="@android:drawable/ic_dialog_alert"
         android:title=""
-        app:showAsAction="always" />
+        app:showAsAction="always|withText" />
 
     <item
         android:id="@+id/action_refresh"

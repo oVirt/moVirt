@@ -6,7 +6,7 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import org.ovirt.mobile.movirt.model.base.OVirtNamedEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtAccountNamedEntity;
 import org.ovirt.mobile.movirt.model.enums.SnapshotStatus;
 import org.ovirt.mobile.movirt.model.enums.SnapshotType;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
@@ -21,7 +21,7 @@ import java.util.Set;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Snapshot extends OVirtNamedEntity implements OVirtContract.Snapshot {
+public class Snapshot extends OVirtAccountNamedEntity implements OVirtContract.Snapshot {
 
     @Override
     public Uri getBaseUri() {
@@ -94,7 +94,7 @@ public class Snapshot extends OVirtNamedEntity implements OVirtContract.Snapshot
     }
 
     public static boolean containsOneOfStatuses(Collection<Snapshot> snapshots, SnapshotStatus... statuses) {
-        if (statuses.length == 0) {
+        if (snapshots == null || statuses.length == 0) {
             return false;
         }
         Set<SnapshotStatus> statusSet = new HashSet<>(Arrays.asList(statuses));

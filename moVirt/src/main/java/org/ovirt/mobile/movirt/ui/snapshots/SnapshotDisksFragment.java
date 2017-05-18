@@ -6,20 +6,14 @@ import android.widget.CursorAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
-import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.Receiver;
-import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.SnapshotDisk;
-import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.listfragment.SnapshotBoundResumeSyncableBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 import org.ovirt.mobile.movirt.util.usage.MemorySize;
-
-import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotDisk.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotDisk.SIZE;
@@ -69,19 +63,5 @@ public class SnapshotDisksFragment extends SnapshotBoundResumeSyncableBaseListFr
                 new SortEntry(new ItemName(NAME), SortOrderType.A_TO_Z),
                 new SortEntry(new ItemName(STATUS), SortOrderType.A_TO_Z)
         };
-    }
-
-    @Background
-    @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
-        if (syncing) {
-            entityFacade.syncAll(getVmId(), getSnapshotId());
-        }
-    }
-
-    @Background
-    @Override
-    public void onRefresh() {
-        entityFacade.syncAll(new ProgressBarResponse<List<SnapshotDisk>>(this), getVmId(), getSnapshotId());
     }
 }

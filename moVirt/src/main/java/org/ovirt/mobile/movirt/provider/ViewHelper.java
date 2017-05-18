@@ -53,10 +53,12 @@ public class ViewHelper {
     }
 
     public static class View {
-        private String table;
-        private String sql;
+        public final Class<?> clazz;
+        public final String table;
+        private final String sql;
 
-        public View(String table, String sql) {
+        public View(Class<?> clazz, String table, String sql) {
+            this.clazz = clazz;
             this.table = table;
             this.sql = sql;
         }

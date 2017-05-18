@@ -31,3 +31,8 @@ proguard/
 # Gradle files
 .gradle
 gradle/gradle*
+
+
+# Memory/UI dumps
+captures/
+

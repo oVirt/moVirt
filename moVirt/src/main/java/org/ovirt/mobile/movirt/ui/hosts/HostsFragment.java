@@ -41,8 +41,8 @@ public class HostsFragment extends ClusterBoundBaseListFragment<Host> {
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
                 if (columnIndex == cursor.getColumnIndex(NAME)) {
                     TextView textView = (TextView) view;
-                    String vmName = cursor.getString(cursor.getColumnIndex(NAME));
-                    textView.setText(vmName);
+                    String hostName = cursor.getString(cursor.getColumnIndex(NAME));
+                    textView.setText(hostName);
                 } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
                     String status = cursor.getString(cursor.getColumnIndex(STATUS));
                     if (status != null) {

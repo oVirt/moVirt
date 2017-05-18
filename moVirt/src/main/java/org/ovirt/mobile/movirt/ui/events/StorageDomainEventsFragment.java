@@ -6,6 +6,7 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -34,15 +35,19 @@ public class StorageDomainEventsFragment extends NamedEntityResumeSyncableEvents
         query.where(STORAGE_DOMAIN_ID, storageDomainId);
     }
 
-    public void setStorageDomainId(String storageDomainId) {
+    public StorageDomainEventsFragment setStorageDomainId(String storageDomainId) {
         this.storageDomainId = storageDomainId;
+        return this;
     }
 
     @Override
     protected void sync(Response<List<Event>> response) {
         String storageDomainName = getEntityName(StorageDomain.class, storageDomainId);
         if (!TextUtils.isEmpty(storageDomainName)) {
-            eventsHandler.syncStorageDomainEvents(response, storageDomainId, storageDomainName);
+            try {
+                environmentStore.getEnvironment(account).getStorageDomainEventFacade().syncAll(response, storageDomainId, storageDomainName);
+            } catch (AccountDeletedException ignore) {
+            }
         }
     }
 }

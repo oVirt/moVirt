@@ -7,7 +7,7 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import org.ovirt.mobile.movirt.model.base.BaseEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtAccountEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.DateUtils;
@@ -19,11 +19,9 @@ import static org.springframework.util.StringUtils.isEmpty;
  * Created by Nika on 23.06.2015.
  */
 @DatabaseTable(tableName = ConnectionInfo.TABLE)
-public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract.ConnectionInfo {
+public class ConnectionInfo extends OVirtAccountEntity implements OVirtContract.ConnectionInfo {
     private static final long UNKNOWN_TIME = DateUtils.UNKNOWN_TIME;
 
-    @DatabaseField(columnName = ID, id = true)
-    private int id;
     @DatabaseField(columnName = ConnectionInfo.STATE)
     private State state;
     @DatabaseField(columnName = ConnectionInfo.ATTEMPT)
@@ -34,10 +32,13 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
     private String description;
 
     public ConnectionInfo() {
-        this.id = 1;
         this.state = State.UNKNOWN;
         this.lastAttempt = UNKNOWN_TIME;
         this.lastSuccessful = UNKNOWN_TIME;
+    }
+
+    public void setIds(String accountId) {
+        super.setIds(accountId, "1"); // just one connection info per account
     }
 
     public void updateWithCurrentTime(State state) {
@@ -56,8 +57,7 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
 
     @Override
     public ContentValues toValues() {
-        ContentValues values = new ContentValues();
-        values.put(ID, id);
+        ContentValues values = super.toValues();
         values.put(STATE, state.toString());
         values.put(ATTEMPT, lastAttempt);
         values.put(SUCCESSFUL, lastSuccessful);
@@ -66,8 +66,9 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
     }
 
     @Override
-    protected void initFromCursorHelper(CursorHelper cursorHelper) {
-        setId(cursorHelper.getInt(ID));
+    public void initFromCursorHelper(CursorHelper cursorHelper) {
+        super.initFromCursorHelper(cursorHelper);
+
         try {
             setState(State.valueOf(cursorHelper.getString(STATE)));
         } catch (Exception e) {
@@ -116,16 +117,6 @@ public class ConnectionInfo extends BaseEntity<Integer> implements OVirtContract
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public Integer getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public String getMessage(Context context) {

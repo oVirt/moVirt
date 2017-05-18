@@ -1,5 +1,6 @@
 package org.ovirt.mobile.movirt.ui.vms;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,7 +17,10 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ViewById;
+import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
+import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.facade.ConsoleFacade;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
@@ -35,7 +39,6 @@ import org.ovirt.mobile.movirt.util.usage.MemorySize;
 import org.springframework.util.StringUtils;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.SortedSet;
 
 @EFragment(R.layout.fragment_vm_detail_general)
@@ -91,20 +94,15 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     ProviderFacade provider;
 
     @Bean
-    VmFacade vmFacade;
+    EnvironmentStore environmentStore;
 
-    @Bean
-    HostFacade hostFacade;
-
-    @Bean
-    ConsoleFacade consoleFacade;
+    private VmFacade vmFacade;
+    private HostFacade hostFacade;
+    private ConsoleFacade consoleFacade;
 
     private Vm vm;
-
     private Host host;
-
     private Cluster cluster;
-
     private DataCenter dataCenter;
 
     @ViewById
@@ -113,11 +111,18 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     @AfterViews
     void initLoader() {
         hideProgressBar();
-        Uri vmUri = getActivity().getIntent().getData();
+        Intent intent = getActivity().getIntent();
+        Uri vmUri = intent.getData();
 
         args = new Bundle();
         args.putParcelable(VM_URI, vmUri);
         vmId = vmUri.getLastPathSegment();
+
+        MovirtAccount movirtAccount = intent.getParcelableExtra(Constants.ACCOUNT_KEY);
+        vmFacade = environmentStore.getEnvironment(movirtAccount).getFacade(Vm.class);
+        hostFacade = environmentStore.getEnvironment(movirtAccount).getFacade(Host.class);
+        consoleFacade = environmentStore.getEnvironment(movirtAccount).getFacade(Console.class);
+
         getLoaderManager().initLoader(VMS_LOADER, args, this);
         renderDisplayView("");
         getLoaderManager().initLoader(CONSOLES_LOADER, args, this);
@@ -278,7 +283,7 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     @Click(R.id.hostButton)
     void btnHost() {
         if (host != null) {
-            startActivity(hostFacade.getDetailIntent(host, getActivity()));
+            startActivity(hostFacade.getIntentResolver().getDetailIntent(host, getActivity()));
         }
     }
 
@@ -286,8 +291,8 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
     @Background
     public void onRefresh() {
         if (vm != null) {
-            vmFacade.syncOne(new ProgressBarResponse<Vm>(this), vmId);
-            consoleFacade.syncAll(new ProgressBarResponse<List<Console>>(this), vmId);
+            vmFacade.syncOne(new ProgressBarResponse<>(this), vmId);
+            consoleFacade.syncAll(new ProgressBarResponse<>(this), vmId);
         }
     }
 }

@@ -15,10 +15,10 @@ import org.androidannotations.annotations.res.StringArrayRes;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
-import org.ovirt.mobile.movirt.ui.MovirtActivity;
+import org.ovirt.mobile.movirt.ui.SyncableActivity;
 
 @EActivity(R.layout.activity_dashboard)
-public class DashboardActivity extends MovirtActivity {
+public class DashboardActivity extends SyncableActivity {
     private static final String TAG = DashboardActivity.class.getSimpleName();
 
     @ViewById

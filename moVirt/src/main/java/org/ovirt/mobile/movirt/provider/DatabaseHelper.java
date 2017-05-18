@@ -11,12 +11,24 @@ public class DatabaseHelper extends OrmLiteDatabaseHelper<UriMatcher> {
 
     private static final String DB_NAME = "ovirt.db";
 
-    private static final int SCHEMA_VERSION = 43;
+    private static final int SCHEMA_VERSION = 44;
 
-    private static final String TAG = DatabaseHelper.class.getSimpleName();
+    private volatile static DatabaseHelper instance = null;
 
-    public DatabaseHelper(Context context) {
+    private DatabaseHelper(Context context) {
         super(context, DB_NAME, SCHEMA_VERSION);
+    }
+
+    public static DatabaseHelper getInstance(Context context) {
+        if (instance == null) {
+            synchronized (DatabaseHelper.class) {
+                if (instance == null) {
+                    instance = new DatabaseHelper(context.getApplicationContext());
+                }
+            }
+        }
+
+        return instance;
     }
 
     @Override

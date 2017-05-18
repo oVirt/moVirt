@@ -16,10 +16,24 @@ import org.ovirt.mobile.movirt.R;
 public class ConfirmDialogFragment extends ListenerDialogFragment<ConfirmDialogFragment.ConfirmDialogListener> {
 
     /**
-     * @see ConfirmDialogFragment#newInstance(int, String, String)
+     * @see ConfirmDialogFragment#newInstance(int, String, String, boolean)
      */
     public static ConfirmDialogFragment newInstance(int actionId, String actionString) {
-        return newInstance(actionId, actionString, null);
+        return newInstance(actionId, actionString, null, false);
+    }
+
+    /**
+     * @see ConfirmDialogFragment#newInstance(int, String, String, boolean)
+     */
+    public static ConfirmDialogFragment newInstance(int actionId, String actionString, boolean customQuestion) {
+        return newInstance(actionId, actionString, null, customQuestion);
+    }
+
+    /**
+     * @see ConfirmDialogFragment#newInstance(int, String, String, boolean)
+     */
+    public static ConfirmDialogFragment newInstance(int actionId, String actionString, String infoString) {
+        return newInstance(actionId, actionString, infoString, false);
     }
 
     /**
@@ -32,12 +46,13 @@ public class ConfirmDialogFragment extends ListenerDialogFragment<ConfirmDialogF
      * @return - instance of ConfirmDialogFragment.
      * Call .show() on returned value, to display this dialog.
      */
-    public static ConfirmDialogFragment newInstance(int actionId, String actionString, String infoString) {
+    public static ConfirmDialogFragment newInstance(int actionId, String actionString, String infoString, boolean customQuestion) {
         ConfirmDialogFragment fragment = new ConfirmDialogFragment();
         Bundle args = new Bundle();
         args.putInt("actionId", actionId);
         args.putString("actionString", actionString);
         args.putString("infoString", infoString);
+        args.putBoolean("customQuestion", customQuestion);
         fragment.setArguments(args);
         return fragment;
     }
@@ -47,23 +62,27 @@ public class ConfirmDialogFragment extends ListenerDialogFragment<ConfirmDialogF
         final int actionId = getArguments().getInt("actionId");
         String actionString = getArguments().getString("actionString");
         String infoString = getArguments().getString("infoString");
+        boolean customQuestion = getArguments().getBoolean("customQuestion");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        StringBuilder message = new StringBuilder();
+
+        if (!TextUtils.isEmpty(infoString)) {
+            message.append(infoString).append("\n\n");
+        }
+
+        if (customQuestion) {
+            message.append(actionString).append('?');
+        } else {
+            message.append(getString(R.string.dialog_confirm_message, actionString));
+        }
+
         builder.setTitle(android.R.string.dialog_alert_title)
-                .setMessage((TextUtils.isEmpty(infoString) ? "" : infoString + "\n\n")
-                        + getString(R.string.dialog_confirm_message, actionString))
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        getListener().onDialogResult(DialogInterface.BUTTON_POSITIVE, actionId);
-                    }
-                })
-                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        getListener().onDialogResult(DialogInterface.BUTTON_NEGATIVE, actionId);
-                    }
-                });
+                .setMessage(message)
+                .setPositiveButton(android.R.string.yes, (dialog, which) ->
+                        getListener().onDialogResult(DialogInterface.BUTTON_POSITIVE, actionId))
+                .setNegativeButton(android.R.string.no, (dialog, which) ->
+                        getListener().onDialogResult(DialogInterface.BUTTON_NEGATIVE, actionId));
         return builder.create();
     }
 

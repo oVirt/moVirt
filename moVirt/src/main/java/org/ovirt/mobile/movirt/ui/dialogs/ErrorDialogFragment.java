@@ -18,8 +18,13 @@ import org.ovirt.mobile.movirt.R;
 public class ErrorDialogFragment extends DialogFragment {
 
     public static ErrorDialogFragment newInstance(String errorMessage) {
+        return newInstance(null, errorMessage);
+    }
+
+    public static ErrorDialogFragment newInstance(String header, String errorMessage) {
         ErrorDialogFragment fragment = new ErrorDialogFragment();
         Bundle args = new Bundle();
+        args.putString("header", header);
         args.putString("message", errorMessage);
         fragment.setArguments(args);
         return fragment;
@@ -27,6 +32,7 @@ public class ErrorDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        String header = getArguments().getString("header");
         String message = getArguments().getString("message");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -35,9 +41,15 @@ public class ErrorDialogFragment extends DialogFragment {
         View view = inflater.inflate(R.layout.dialog_error, null);
         TextView textView = (TextView) view.findViewById(R.id.errorDialogText);
         textView.setText(message);
-        builder.setTitle(android.R.string.dialog_alert_title)
-                .setView(view)
-                .setPositiveButton(android.R.string.ok, null);
-        return builder.create();
+
+        if (header == null) {
+            builder.setTitle(android.R.string.dialog_alert_title);
+        } else {
+            builder.setTitle(header);
+        }
+
+        return builder.setView(view)
+                .setPositiveButton(android.R.string.ok, null)
+                .create();
     }
 }

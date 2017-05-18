@@ -6,7 +6,7 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import org.ovirt.mobile.movirt.model.base.OVirtNamedEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtAccountNamedEntity;
 import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
@@ -17,7 +17,7 @@ import java.util.List;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Vm extends OVirtNamedEntity implements OVirtContract.Vm {
+public class Vm extends OVirtAccountNamedEntity implements OVirtContract.Vm {
 
     @Override
     public Uri getBaseUri() {
@@ -27,7 +27,7 @@ public class Vm extends OVirtNamedEntity implements OVirtContract.Vm {
     @DatabaseField(columnName = STATUS, canBeNull = false)
     private VmStatus status;
 
-    @DatabaseField(columnName = HOST_ID, canBeNull = false)
+    @DatabaseField(columnName = HOST_ID)
     private String hostId;
 
     @DatabaseField(columnName = CLUSTER_ID, canBeNull = false)

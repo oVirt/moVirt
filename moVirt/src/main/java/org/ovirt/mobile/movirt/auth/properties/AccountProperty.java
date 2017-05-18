@@ -6,6 +6,7 @@ import android.os.Bundle;
 import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
+import org.ovirt.mobile.movirt.auth.properties.property.CertLocation;
 import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 
 import java.util.Collections;
@@ -16,6 +17,10 @@ import java.util.Set;
  * Types of Account Properties
  */
 public enum AccountProperty {
+    /**
+     * Should be used together with {@link String}.
+     */
+    ID,
     /**
      * Should be used together with {@link String}. Getter of this property uses PEEK_AUTH_TOKEN, which can be null.
      */
@@ -29,10 +34,6 @@ public enum AccountProperty {
      */
     FUTURE_AUTH_TOKEN(false),
     /**
-     * Should be used together {@link Boolean}. This property is not settable.
-     */
-    ACCOUNT_CONFIGURED(false),
-    /**
      * Should be used together {@link Boolean}.
      */
     FIRST_LOGIN,
@@ -40,10 +41,6 @@ public enum AccountProperty {
      * Should be used together with {@link String}.
      */
     PASSWORD,
-    /**
-     * Should be used together with {@link Boolean}.
-     */
-    PASSWORD_VISIBILITY,
     /**
      * Should be used together with {@link String}.
      */
@@ -81,9 +78,9 @@ public enum AccountProperty {
      */
     VALID_HOSTNAME_LIST,
     /**
-     * Should be used together with {@link Boolean }.
+     * Should be used together with {@link CertLocation }.
      */
-    CUSTOM_CERTIFICATE_LOCATION;
+    CERTIFICATE_LOCATION;
 
     private boolean settable = true;
 
@@ -152,16 +149,6 @@ public enum AccountProperty {
         }
     }
 
-    public abstract static class AccountConfiguredListener implements PropertyChangedListener<Boolean> {
-        @Override
-        public abstract void onPropertyChange(Boolean accountConfigured);
-
-        @Override
-        public AccountProperty getProperty() {
-            return ACCOUNT_CONFIGURED;
-        }
-    }
-
     public abstract static class FirstLoginListener implements PropertyChangedListener<Boolean> {
         @Override
         public abstract void onPropertyChange(Boolean firstLogin);
@@ -179,16 +166,6 @@ public enum AccountProperty {
         @Override
         public AccountProperty getProperty() {
             return PASSWORD;
-        }
-    }
-
-    public abstract static class PasswordVisibilityListener implements PropertyChangedListener<Boolean> {
-        @Override
-        public abstract void onPropertyChange(Boolean passwordVisibility);
-
-        @Override
-        public AccountProperty getProperty() {
-            return PASSWORD_VISIBILITY;
         }
     }
 
@@ -282,13 +259,13 @@ public enum AccountProperty {
         }
     }
 
-    public abstract static class CustomCertificateLocationListener implements PropertyChangedListener<Boolean> {
+    public abstract static class CustomCertificateLocationListener implements PropertyChangedListener<CertLocation> {
         @Override
-        public abstract void onPropertyChange(Boolean customCertificateLocation);
+        public abstract void onPropertyChange(CertLocation certificateLocation);
 
         @Override
         public AccountProperty getProperty() {
-            return CUSTOM_CERTIFICATE_LOCATION;
+            return CERTIFICATE_LOCATION;
         }
     }
 }

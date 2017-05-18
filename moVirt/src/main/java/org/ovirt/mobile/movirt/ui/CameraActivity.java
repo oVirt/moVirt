@@ -42,7 +42,7 @@ import org.ovirt.mobile.movirt.camera.CaptureActivityHandler;
 import org.ovirt.mobile.movirt.camera.InactivityTimer;
 import org.ovirt.mobile.movirt.camera.PreferencesActivity_;
 import org.ovirt.mobile.movirt.camera.ViewfinderView;
-import org.ovirt.mobile.movirt.facade.HostFacade;
+import org.ovirt.mobile.movirt.facade.intent.HostIntentResolver;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
@@ -62,7 +62,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 
 @EActivity(R.layout.activity_camera)
 @OptionsMenu(R.menu.camera)
-public class CameraActivity extends MovirtActivity implements SurfaceHolder.Callback {
+public class CameraActivity extends SyncableActivity implements SurfaceHolder.Callback {
 
     private static final String TAG = CameraActivity.class.getSimpleName();
     private static final long SCAN_DELAY_MS = 100L;
@@ -70,7 +70,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
     private static final int VMS_LOADER = FIRST_CHILD_LOADER + 1;
     private static final int HOSTS_LOADER = FIRST_CHILD_LOADER + 2;
     @Bean
-    HostFacade hostFacade;
+    HostIntentResolver hostIntentResolver;
     @ViewById
     TextView textHostName;
     @ViewById
@@ -405,7 +405,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
     @Click
     void buttonOpenHostDetails() {
         if (lastHost != null) {
-            startActivity(hostFacade.getDetailIntent(lastHost, this));
+            startActivity(hostIntentResolver.getDetailIntent(lastHost, this));
         }
     }
 

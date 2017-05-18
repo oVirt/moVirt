@@ -6,20 +6,14 @@ import android.widget.CursorAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
-import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.Receiver;
-import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.provider.SortOrder;
-import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.listfragment.VmBoundResumeSyncableBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.CustomSort;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.DateUtils;
-
-import java.util.List;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.DATE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.NAME;
@@ -29,7 +23,6 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Snapshot.TYPE;
 
 @EFragment(R.layout.fragment_base_entity_list)
 public class VmSnapshotsFragment extends VmBoundResumeSyncableBaseListFragment<Snapshot> {
-    private static final String TAG = VmSnapshotsFragment.class.getSimpleName();
 
     public VmSnapshotsFragment() {
         super(Snapshot.class);
@@ -75,20 +68,6 @@ public class VmSnapshotsFragment extends VmBoundResumeSyncableBaseListFragment<S
                 new CustomSort.CustomSortEntry(TYPE, SortOrder.ASCENDING),
                 new CustomSort.CustomSortEntry(NAME, SortOrder.ASCENDING)
         });
-    }
-
-    @Background
-    @Override
-    public void onRefresh() {
-        entityFacade.syncAll(new ProgressBarResponse<List<Snapshot>>(this), getVmId());
-    }
-
-    @Background
-    @Receiver(actions = Broadcasts.IN_SYNC, registerAt = Receiver.RegisterAt.OnResumeOnPause)
-    protected void syncingChanged(@Receiver.Extra(Broadcasts.Extras.SYNCING) boolean syncing) {
-        if (syncing) {
-            entityFacade.syncAll(getVmId());
-        }
     }
 }
 

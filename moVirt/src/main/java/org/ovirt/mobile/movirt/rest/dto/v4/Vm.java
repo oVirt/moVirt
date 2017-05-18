@@ -3,6 +3,7 @@ package org.ovirt.mobile.movirt.rest.dto.v4;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.ovirt.mobile.movirt.model.enums.VmStatus;
+import org.ovirt.mobile.movirt.util.IdHelper;
 import org.ovirt.mobile.movirt.util.RestMapper;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -12,15 +13,13 @@ public class Vm extends org.ovirt.mobile.movirt.rest.dto.Vm {
     public Cluster cluster;
     public Nics nics;
 
-    public org.ovirt.mobile.movirt.model.Vm toEntity() {
-        org.ovirt.mobile.movirt.model.Vm vm = super.toEntity();
+    public org.ovirt.mobile.movirt.model.Vm toEntity(String accountId) {
+        org.ovirt.mobile.movirt.model.Vm vm = super.toEntity(accountId);
         vm.setStatus(VmStatus.fromString(status));
-        if (cluster != null) {
-            vm.setClusterId(cluster.id);
-        }
-        vm.setHostId(host != null ? host.id : "");
+        vm.setClusterId(IdHelper.combinedIdSafe(accountId, cluster));
+        vm.setHostId(IdHelper.combinedIdSafe(accountId, host));
 
-        vm.setNics(RestMapper.mapToEntities(nics));
+        vm.setNics(RestMapper.mapToEntities(nics, accountId));
         return vm;
     }
 }

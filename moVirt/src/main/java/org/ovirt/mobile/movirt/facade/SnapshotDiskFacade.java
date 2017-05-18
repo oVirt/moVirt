@@ -1,8 +1,5 @@
 package org.ovirt.mobile.movirt.facade;
 
-import android.content.Context;
-import android.content.Intent;
-
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.facade.predicates.VmIdSnapshotIdPredicate;
 import org.ovirt.mobile.movirt.model.SnapshotDisk;
@@ -22,16 +19,6 @@ public class SnapshotDiskFacade extends BaseEntityFacade<SnapshotDisk> {
     }
 
     @Override
-    public Intent getDetailIntent(SnapshotDisk entity, Context context) {
-        return null;
-    }
-
-    @Override
-    protected Request<SnapshotDisk> getSyncOneRestRequest(String diskId, String... ids) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     protected Request<List<SnapshotDisk>> getSyncAllRestRequest(String... ids) {
         requireSignature(ids, "vmId", "snapshotId");
         String vmId = ids[0];
@@ -46,7 +33,9 @@ public class SnapshotDiskFacade extends BaseEntityFacade<SnapshotDisk> {
         final String vmId = ids[0];
         final String snapshotId = ids[1];
 
-        return new CompositeResponse<>(response, syncAdapter.getUpdateEntitiesResponse(SnapshotDisk.class,
-                new VmIdSnapshotIdPredicate<SnapshotDisk>(vmId, snapshotId)));
+        return respond()
+                .withScopePredicate(new VmIdSnapshotIdPredicate<>(vmId, snapshotId))
+                .asUpdateEntitiesResponse()
+                .addResponse(response);
     }
 }

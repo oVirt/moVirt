@@ -9,8 +9,8 @@ public class StorageDomain extends org.ovirt.mobile.movirt.rest.dto.StorageDomai
     public String status;
 
     @Override
-    public org.ovirt.mobile.movirt.model.StorageDomain toEntity() {
-        org.ovirt.mobile.movirt.model.StorageDomain storageDomain = super.toEntity();
+    public org.ovirt.mobile.movirt.model.StorageDomain toEntity(String accountId) {
+        org.ovirt.mobile.movirt.model.StorageDomain storageDomain = super.toEntity(accountId);
 
         storageDomain.setStatus(StorageDomainStatus.fromString(status));
 

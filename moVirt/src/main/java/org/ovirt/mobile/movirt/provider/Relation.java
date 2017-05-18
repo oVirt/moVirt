@@ -5,7 +5,9 @@ public enum Relation {
     IS_EQUAL(" = "),
     NOT_EQUAL(" <> "),
     IS_LIKE(" LIKE "),
-    IN(" IN ");
+    IN(" IN "),
+    LESS_THAN(" < "),
+    LARGER_THAN(" > ");
 
     private final String val;
 

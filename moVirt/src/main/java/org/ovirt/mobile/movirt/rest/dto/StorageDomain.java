@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.ovirt.mobile.movirt.model.enums.StorageDomainType;
 import org.ovirt.mobile.movirt.rest.RestEntityWrapper;
+import org.ovirt.mobile.movirt.rest.dto.common.HasId;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public abstract class StorageDomain implements RestEntityWrapper<org.ovirt.mobile.movirt.model.StorageDomain> {
+public abstract class StorageDomain implements RestEntityWrapper<org.ovirt.mobile.movirt.model.StorageDomain>, HasId {
     public String id;
     public String name;
     public String type;
@@ -24,9 +25,14 @@ public abstract class StorageDomain implements RestEntityWrapper<org.ovirt.mobil
     }
 
     @Override
-    public org.ovirt.mobile.movirt.model.StorageDomain toEntity() {
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public org.ovirt.mobile.movirt.model.StorageDomain toEntity(String accountId) {
         org.ovirt.mobile.movirt.model.StorageDomain storageDomain = new org.ovirt.mobile.movirt.model.StorageDomain();
-        storageDomain.setId(id);
+        storageDomain.setIds(accountId, id);
         storageDomain.setName(name);
         storageDomain.setStorageFormat(storage_format);
 

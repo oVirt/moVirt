@@ -16,13 +16,13 @@ public class Snapshot extends org.ovirt.mobile.movirt.rest.dto.Snapshot {
         super(description, persistMemoryState);
     }
 
-    public org.ovirt.mobile.movirt.model.Snapshot toEntity() {
-        org.ovirt.mobile.movirt.model.Snapshot snapshot = super.toEntity();
+    public org.ovirt.mobile.movirt.model.Snapshot toEntity(String accountId) {
+        org.ovirt.mobile.movirt.model.Snapshot snapshot = super.toEntity(accountId);
         snapshot.setType(SnapshotType.fromString(snapshot_type));
 
         if (vm != null) {
-            vm.snapshotId = id;
-            snapshot.setVm(vm.toEntity());
+            vm.snapshotId = snapshot.getId();
+            snapshot.setVm(vm.toEntity(accountId));
         }
 
         return snapshot;

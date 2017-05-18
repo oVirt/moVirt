@@ -49,9 +49,10 @@ public class CompositeResponse<T> implements Response<T> {
         }
     }
 
-    public void addResponse(Response<T> response) {
+    public CompositeResponse<T> addResponse(Response<T> response) {
         if (response != null) {
             responses.add(response);
         }
+        return this;
     }
 }

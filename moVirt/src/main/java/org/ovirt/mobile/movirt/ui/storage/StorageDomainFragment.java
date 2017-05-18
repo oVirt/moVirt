@@ -11,7 +11,7 @@ import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.enums.StorageDomainStatus;
-import org.ovirt.mobile.movirt.ui.listfragment.FacadeBaseListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.MultipleFacadeBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
@@ -20,7 +20,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.StorageDomain.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.StorageDomain.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class StorageDomainFragment extends FacadeBaseListFragment<StorageDomain> {
+public class StorageDomainFragment extends MultipleFacadeBaseListFragment<StorageDomain> {
 
     public StorageDomainFragment() {
         super(StorageDomain.class);

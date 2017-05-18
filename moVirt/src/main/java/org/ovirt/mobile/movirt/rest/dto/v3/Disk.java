@@ -2,28 +2,24 @@ package org.ovirt.mobile.movirt.rest.dto.v3;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.ovirt.mobile.movirt.util.IdHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
-/**
- * Created by sphoorti on 5/2/15.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Disk extends org.ovirt.mobile.movirt.rest.dto.Disk {
     public Status status;
     public String size;
     public Vm vm;
 
-    public org.ovirt.mobile.movirt.model.Disk toEntity() {
-        org.ovirt.mobile.movirt.model.Disk disk = super.toEntity();
+    public org.ovirt.mobile.movirt.model.Disk toEntity(String accountId) {
+        org.ovirt.mobile.movirt.model.Disk disk = super.toEntity(accountId);
         disk.setSize(ObjectUtils.parseLong(size));
 
         if (status != null) {
             disk.setStatus(status.state);
         }
 
-        if (vm != null) {
-            disk.setVmId(vm.id);
-        }
+        disk.setVmId(IdHelper.combinedIdSafe(accountId, vm));
 
         return disk;
     }

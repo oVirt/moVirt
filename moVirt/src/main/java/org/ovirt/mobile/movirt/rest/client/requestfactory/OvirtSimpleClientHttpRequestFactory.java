@@ -2,9 +2,10 @@ package org.ovirt.mobile.movirt.rest.client.requestfactory;
 
 import android.util.Log;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
+import org.ovirt.mobile.movirt.auth.account.AccountEnvironment;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
@@ -12,6 +13,8 @@ import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.rest.client.requestfactory.verifier.ListHostnameVerifier;
 import org.ovirt.mobile.movirt.rest.client.requestfactory.verifier.NullHostnameVerifier;
 import org.ovirt.mobile.movirt.util.CertHelper;
+import org.ovirt.mobile.movirt.util.DestroyableListeners;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -30,10 +33,20 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-@EBean(scope = EBean.Scope.Singleton)
-public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequestFactory {
+@EBean
+public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequestFactory implements AccountEnvironment.EnvDisposable {
 
     private static final String TAG = OvirtSimpleClientHttpRequestFactory.class.getSimpleName();
+
+    private MessageHelper messageHelper;
+
+    private AccountPropertiesManager propertiesManager;
+
+    private CertHandlingStrategy certificateHandlingMode = null;
+
+    private DestroyableListeners listeners;
+
+    private SSLSocketFactory sslSocketFactory;
 
     @Bean
     NullHostnameVerifier nullHostnameVerifier;
@@ -41,36 +54,41 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
     @Bean
     ListHostnameVerifier listHostnameVerifier;
 
-    @Bean
-    MessageHelper messageHelper;
+    public OvirtSimpleClientHttpRequestFactory setTimeout(int seconds) {
+        setConnectTimeout(1000 * seconds);
+        return this;
+    }
 
-    @Bean
-    AccountPropertiesManager propertiesManager;
+    public OvirtSimpleClientHttpRequestFactory init(AccountPropertiesManager propertiesManager, MessageHelper messageHelper) {
+        ObjectUtils.requireNotNull(propertiesManager, "propertiesManager");
+        ObjectUtils.requireNotNull(messageHelper, "messageHelper");
+        this.propertiesManager = propertiesManager;
+        this.messageHelper = messageHelper;
 
-    private CertHandlingStrategy certificateHandlingMode = null;
+        listeners = new DestroyableListeners(propertiesManager)
+                .notifyAndRegisterListener(new AccountProperty.CertHandlingStrategyListener() {
+                    @Override
+                    public void onPropertyChange(CertHandlingStrategy certHandlingStrategy) {
+                        onHandlingModeChange(certHandlingStrategy, null);
+                    }
+                }).registerListener(new AccountProperty.CertificateChainListener() {
+                    @Override
+                    public void onPropertyChange(Cert[] certificates) {
+                        onHandlingModeChange(certificateHandlingMode, certificates);
+                    }
+                }).notifyAndRegisterListener(new AccountProperty.ValidHostnameListListener() {
+                    @Override
+                    public void onPropertyChange(String[] validHostnameList) {
+                        listHostnameVerifier.setTrustedHosts(validHostnameList);
+                    }
+                });
 
-    @AfterInject
-    void initFactory() {
-        propertiesManager.notifyAndRegisterListener(new AccountProperty.CertHandlingStrategyListener() {
-            @Override
-            public void onPropertyChange(CertHandlingStrategy certHandlingStrategy) {
-                onHandlingModeChange(certHandlingStrategy, null);
-            }
-        });
+        return this;
+    }
 
-        propertiesManager.registerListener(new AccountProperty.CertificateChainListener() {
-            @Override
-            public void onPropertyChange(Cert[] certificates) {
-                onHandlingModeChange(certificateHandlingMode, certificates);
-            }
-        });
-
-        propertiesManager.notifyAndRegisterListener(new AccountProperty.ValidHostnameListListener() {
-            @Override
-            public void onPropertyChange(String[] validHostnameList) {
-                listHostnameVerifier.setTrustedHosts(validHostnameList);
-            }
-        });
+    @Override
+    public void dispose() {
+        listeners.destroy();
     }
 
     private void onHandlingModeChange(CertHandlingStrategy certificateHandlingMode, Cert[] certChain) {
@@ -96,19 +114,69 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
     protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
         Log.d(TAG, "Prepare Connection");
         if (connection instanceof HttpsURLConnection) {
+            HttpsURLConnection httpsConn = ((HttpsURLConnection) connection);
+
             if (certificateHandlingMode == CertHandlingStrategy.TRUST_ALL) {
                 Log.d(TAG, "trusting all certificates");
-                ((HttpsURLConnection) connection).setHostnameVerifier(nullHostnameVerifier);
+                httpsConn.setHostnameVerifier(nullHostnameVerifier);
             } else if (certificateHandlingMode == CertHandlingStrategy.TRUST_CUSTOM) {
-                ((HttpsURLConnection) connection).setHostnameVerifier(listHostnameVerifier);
+                httpsConn.setHostnameVerifier(listHostnameVerifier);
             }
+            if (sslSocketFactory == null) {
+                trustOnlyKnownCerts();
+            }
+            httpsConn.setSSLSocketFactory(sslSocketFactory);
         }
 
         super.prepareConnection(connection, httpMethod);
     }
 
+    private void trustImportedCert(Cert[] certChain) {
+        try {
+            String keyStoreType = KeyStore.getDefaultType();
+            KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+            keyStore.load(null, null);
+            // try to add certificate - if adding fails do not trust anything
+            Cert cert = (certChain.length == 0) ? null : certChain[certChain.length - 1];
+            if (cert != null) {
+                Certificate certificate = cert.asCertificate();
+                if (CertHelper.isCA(certificate)) {
+                    keyStore.setCertificateEntry("ca_" + propertiesManager.getManagedAccount().getId(), certificate);
+                }
+            }
+
+            // Create a TrustManager that trusts the CAs in our KeyStore
+            String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+            tmf.init(keyStore);
+
+            // Create an SSLContext that uses our TrustManager
+            SSLContext context = SSLContext.getInstance("TLS");
+            context.init(null, tmf.getTrustManagers(), new java.security.SecureRandom());
+            sslSocketFactory = context.getSocketFactory();
+        } catch (Exception e) {
+            messageHelper.showError(ErrorType.NORMAL, e,
+                    "Error installing custom certificates - trusting system certificates!");
+            try {
+                propertiesManager.setCertHandlingStrategy(CertHandlingStrategy.TRUST_SYSTEM);
+            } catch (AccountDeletedException ignored) {
+            }
+        }
+    }
+
     /**
-     * Trust every server - dont check for any certificate
+     * This method enables certificate checking.
+     */
+    private void trustOnlyKnownCerts() {
+        try {
+            sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        } catch (Exception e) {
+            messageHelper.showError(e);
+        }
+    }
+
+    /**
+     * Trust every server - don't check for any certificate
      */
     private void trustAllHosts() {
         // Create a trust manager that does not validate certificate chains
@@ -130,50 +198,7 @@ public class OvirtSimpleClientHttpRequestFactory extends SimpleClientHttpRequest
         try {
             SSLContext sc = SSLContext.getInstance("TLS");
             sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            HttpsURLConnection
-                    .setDefaultSSLSocketFactory(sc.getSocketFactory());
-        } catch (Exception e) {
-            messageHelper.showError(e);
-        }
-    }
-
-    private void trustImportedCert(Cert[] certChain) {
-        try {
-            String keyStoreType = KeyStore.getDefaultType();
-            KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-            keyStore.load(null, null);
-            // try to add certificate - if adding fails do not trust anything
-            Cert cert = (certChain.length == 0) ? null : certChain[certChain.length - 1];
-            if (cert != null) {
-                Certificate certificate = cert.asCertificate();
-                if (CertHelper.isCA(certificate)) {
-                    keyStore.setCertificateEntry("ca", certificate);
-                }
-            }
-
-            // Create a TrustManager that trusts the CAs in our KeyStore
-            String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
-            tmf.init(keyStore);
-
-            // Create an SSLContext that uses our TrustManager
-            SSLContext context = SSLContext.getInstance("TLS");
-            context.init(null, tmf.getTrustManagers(), new java.security.SecureRandom());
-            HttpsURLConnection
-                    .setDefaultSSLSocketFactory(context.getSocketFactory());
-        } catch (Exception e) {
-            messageHelper.showError(ErrorType.NORMAL, e,
-                    "Error installing custom certificates - trusting system certificates!");
-            propertiesManager.setCertHandlingStrategy(CertHandlingStrategy.TRUST_SYSTEM);
-        }
-    }
-
-    /**
-     * This method enables certificate checking.
-     */
-    private void trustOnlyKnownCerts() {
-        try {
-            HttpsURLConnection.setDefaultSSLSocketFactory((SSLSocketFactory) SSLSocketFactory.getDefault());
+            sslSocketFactory = sc.getSocketFactory();
         } catch (Exception e) {
             messageHelper.showError(e);
         }

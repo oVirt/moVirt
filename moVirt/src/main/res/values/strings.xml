@@ -13,14 +13,18 @@
     <string name="prefs_max_events_stored">Max events stored.</string>
     <string name="prefs_max_events_polled_summary">Maximal amount of events polled. Current: %d</string>
     <string name="prefs_max_events_stored_summary">Maximal amount of events stored. Current: %d</string>
+    <string name="prefs_users_guide">User\'s Guide</string>
     <string name="prefs_about_moVirt">About moVirt</string>
-    <string name="prefs_about_moVirt_summary">License, Version and Documentation.</string>
+    <string name="prefs_about_moVirt_summary">License, Version and Readme</string>
     <string name="prefs_connection_settings">Connection Settings</string>
     <string name="prefs_connection_settings_summary">Setup connection details (url, user, pass etc)</string>
+    <string name="prefs_engines_settings">Engines\' Settings</string>
+    <string name="prefs_engines_settings_summary">Add/Remove Engines. Setup their connection details and customize settings</string>
     <string name="title_activity_select_cluster">SelectClusterActivity</string>
     <string name="action_select_cluster">Select Cluster</string>
     <string name="refresh">Refresh</string>
     <string name="all_clusters">All clusters</string>
+    <string name="all">All</string>
     <string name="no_vms">No VMs</string>
     <string name="needs_configuration">To use the moVirt client, you first need to setup connection parameters for your data center.\n\nDo you want to configure now?</string>
     <string name="connection_not_correct">Connection seems to be not configured properly - configure it now?</string>
@@ -30,7 +34,9 @@
     <string name="default_api_path">/ovirt-engine/api</string>
     <string name="default_password">engine</string>
     <string name="action_refresh">Refresh</string>
-    <string name="title_activity_edit_filters">EditFiltersActivity</string>
+    <string name="title_activity_edit_triggers">EditTriggersActivity</string>
+    <string name="title_activity_edit_accounts">Accounts</string>
+    <string name="title_activity_add_account">Add Account</string>
     <string name="title_add_trigger">Add Trigger</string>
     <string name="title_section1">Section 1</string>
     <string name="title_section2">Section 2</string>
@@ -47,11 +53,17 @@
     <string name="snapshot">Snapshot</string>
     <string name="create">Create</string>
     <string name="save">Save</string>
-    <string name="save_acc">Save Account</string>
+    <string name="connect">Connect</string>
+    <string name="current">(Selected)</string>
+    <string name="version">(v%1$s)</string>
     <string name="done_advanced_settings">Done</string>
     <string name="delete_stored_cert">Delete</string>
     <string name="load_cert_from_addr">Download</string>
+    <string name="import_from_file">Import</string>
+    <string name="import_issuer_from_file">Import Issuer</string>
     <string name="certificate_management">Certificate Management</string>
+    <string name="account_certificate_management">%s Certificate Management</string>
+    <string name="configure">Configure</string>
     <string name="trigger_scope">Editing triggers for: </string>
     <string name="add_trigger">Add Trigger</string>
     <string name="delete_trigger">Delete Trigger</string>
@@ -59,10 +71,8 @@
     <string name="DELETE">DELETE</string>
     <string name="SAVE">SAVE</string>
     <string name="whole_datacenter">Whole datacenter</string>
+    <string name="engines">Engines</string>
     <string name="cluster_scope">Cluster %1$s</string>
-    <string name="details_for_vm">Vm %1$s</string>
-    <string name="details_for_host">Host %1$s</string>
-    <string name="details_for_snapshot">Snapshot %1$s</string>
     <string name="cancel">Cancel</string>
     <string name="trigger_condition_type">Condition</string>
     <string name="notification_type">Notification</string>
@@ -96,17 +106,20 @@
     <string name="regex_syntax_error">Regex syntax error!</string>
     <string name="delete">Delete</string>
     <string name="vm_status_message">Status of VM \'%1$s\' is %2$s</string>
-    <string name="vm_cpu_message">CPU usage of VM \'%1$s\' is over %2$d%% (%3$s)</string>
-    <string name="vm_memory_message">Memory usage of VM \'%1$s\' is over %2$d%% (%3$f)</string>
+    <string name="vm_cpu_message">CPU usage of VM \'%1$s\' is over %2$d%% (%3$.1f%%)</string>
+    <string name="vm_memory_message">Memory usage of VM \'%1$s\' is over %2$d%% (%3$.1f%%)</string>
     <string name="event_trigger_message">\'%1$s\' found in: %2$s</string>
     <string name="connected">Successfully connected to datacenter!</string>
     <string name="rest_request_failed">REST request failed!\n%1$s\n\nFor more details please see server error log.</string>
     <string name="rest_url_missing">%1$s: oVirt-engine is not found on %2$s.</string>
-    <string name="rest_token_missing">Empty auth token.</string>
+    <string name="rest_no_network">No network available.</string>
+    <string name="rest_error_token_missing">Empty auth token.</string>
+    <string name="rest_error_no_connection_specified">Connection details are incorrect.</string>
     <string name="rest_error_details">\nConnection details:\nAPI URL: %1$s\nUsername: %2$s\nToken: %3$s%4$s\n\nError details:\n</string>
     <string name="rest_error_detail_missing_url">url is missing!</string>
     <string name="rest_error_detail_malformed_url">url is malformed\n\t%1$s</string>
     <string name="rest_error_detail_token_missing">Token is missing!\n\tauthentication failed</string>
+    <string name="rest_error_auth_failed">Authentication failed</string>
     <string name="rest_error_detail_certificate_strategy">Certificate strategy: %1$s</string>
     <string name="rest_error_detail_certificate_stored">certificate is downloaded and stored</string>
     <string name="rest_error_detail_certificate_missing">certificate is missing!</string>
@@ -121,6 +134,8 @@
     <string name="login_error">Error logging in: %1$s</string>
     <string name="login_error_empty_token">Error: the returned token is empty. \nTry https protocol and add your certificate into %1$s.</string>
     <string name="login_error_bad_cert">Use proper certificate, or select %1$s.\nError details: %2$s</string>
+    <string name="login_error_empty_fields">Fields shouldn\'t be empty.</string>
+    <string name="login_error_no_account">Login failed. Account deleted.</string>
     <string name="login_success">Login successful</string>
 
     <string name="advanced_authenticator_error_max_visible_certs_reached">Maximum of %1$d visible certificates is supported. Showing only %1$d bottom certificates of the hierarchy.</string>
@@ -138,7 +153,7 @@
     <string name="moVirt_license">Apache License, Version 2.0</string>
     <string name="moVirt_version">App Version 1.7.1</string>
     <string name="moVirt_readme"><a href="https://github.com/oVirt/moVirt/blob/master/README.md">About</a></string>
-    <string name="moVirt_users_guide"><a href="https://github.com/oVirt/moVirt/wiki/User%27s-guide">User\'s Guide</a></string>
+    <string name="moVirt_users_guide_link">https://github.com/oVirt/moVirt/wiki/User%27s-guide</string>
     <string name="downloadEvents">Load</string>
     <string name="clearEvents">Clear</string>
     <string name="searchInVms">Search</string>
@@ -146,6 +161,8 @@
     <string name="vmsOrderBy">Order</string>
     <string name="prefs_periodic_sync">Periodic Sync</string>
     <string name="prefs_periodic_sync_summary">Enable periodic sync with custom interval instead of system\'s schedule. Enabling with short interval consumes battery!</string>
+    <string name="prefs_global_sync">Global Sync</string>
+    <string name="prefs_global_sync_summary">Engines with enabled sync are synced or disables sync for all engines if unchecked. </string>
     <string name="prefs_periodic_sync_interval">Sync Interval</string>
     <string name="prefs_periodic_sync_interval_summary">Periodic sync interval in minutes. Current: %d</string>
     <string name="prefs_max_max_vms_polled">Max VMs polled</string>
@@ -171,7 +188,6 @@
     <string name="account_disableHttpsChecking">Disable Https certificate checking</string>
     <string name="account_disableHttpsChecking_summary">This method is dangerous and should not be used in production setup.</string>
     <string name="name">Name</string>
-    <string name="account_title">Connection Settings</string>
     <string name="account_endpoint_label">API URL:</string>
     <string name="account_username_label">Username:</string>
     <string name="account_password_label">Password:</string>
@@ -225,6 +241,12 @@
     <string name="running_virtual_machines">Running VMs</string>
     <string name="physical_resources">Physical Resources</string>
 
+    <string name="cluster_path">Cluster</string>
+    <string name="host_path">Host</string>
+    <string name="storage_domain_path">Storage</string>
+    <string name="vm_path">VM</string>
+    <string name="snapshot_path">Snapshot</string>
+
     <string name="title_activity_migrate_vm">Migrate VM</string>
     <string name="migrate_title">Choose host to migrate VM</string>
     <string name="migrate_hint">only current cluster and working hosts shown</string>
@@ -243,13 +265,15 @@
     <string name="dialog_confirm_message">Are you sure you want to %1$s?</string>
     <string name="dialog_action_delete_snapshot">delete this snapshot</string>
     <string name="dialog_action_delete_trigger">delete this trigger</string>
+    <string name="dialog_action_delete_account">delete this account</string>
+    <string name="dialog_action_user_guide">Do you want to continue to the User\'s Guide website</string>
 
     <string name="domain_type">Domain Type:</string>
     <string name="storage_type">Storage Type:</string>
     <string name="format">Format:</string>
     <string name="free_space">Free Space:</string>
     <string name="total_space">Total Space:</string>
-    <string name="details_for_storage_domain">Storage %1$s</string>
+    <string name="details_for_storage_domain">%1$s Storage</string>
     <string name="title_activity_storage_domain_details">Storage Domain</string>
 
     <string name="description">Description</string>
@@ -269,6 +293,7 @@
     <string name="cert_tree_item_ca">CA:&#160;</string>
     <string name="cert_tree_item_self_signed">Self-signed:&#160;</string>
     <string name="cert_dialog_download_issuer">Download Issuer Certificate</string>
+    <string name="cert_dialog_import_issuer">Import Issuer Certificate</string>
     <string name="cert_dialog_download_custom">Download Custom Certificate</string>
     <string name="cert_dialog_url">URL</string>
     <string name="cert_dialog_issuer_reason">Last certificate in the chain isn\'t Certificate Authority. The issuer of this certificate is required.</string>
@@ -282,6 +307,16 @@
     <string name="objects_save_level_threshold_message">Warning: high limit. The application may be slow or terminate because of insufficient memory.</string>
     <string name="events_search_query_help">Event query parameters: <a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Virtualization/3.0/html/Administration_Guide/Search_Appendix.html#Administration_Guide-Syntax_Search-Search_Events">API 3.0 Documentation</a></string>
     <string name="vms_search_query_help">Vms query parameters: <a href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Virtualization/3.0/html/Administration_Guide/Search_Appendix.html#Administration_Guide-Syntax_Search-Search_VMs">API 3.0 Documentation</a></string>
+    <string name="first_connection_setup">Now, you can setup the connection and certificate for your engine.</string>
+
+    <string name="missing_accounts_permission_error">Missing GET ACCOUNTS permission. Application may be buggy.</string>
+    <string name="badly_formatted_certs_error">Certificates badly formatted</string>
+    <string name="not_self_signed_engine_error">Engine doesn\'t use self-signed CA, please report this issue.</string>
+    <string name="cert_management_ovirt_default_url">oVirt\'s default URL</string>
+    <string name="cert_management_custom_url">custom URL</string>
+    <string name="cert_management_import_from_file">from file</string>
+    <string name="valid_url_to_configure_certs_error">You must supply valid API URL to configure certificates</string>
+    <string name="no_file_selected">No file selected.</string>
 
 </resources>
 

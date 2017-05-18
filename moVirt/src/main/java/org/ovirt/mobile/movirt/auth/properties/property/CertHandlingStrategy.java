@@ -1,5 +1,9 @@
 package org.ovirt.mobile.movirt.auth.properties.property;
 
+import android.support.annotation.NonNull;
+
+import org.springframework.util.StringUtils;
+
 public enum CertHandlingStrategy {
     TRUST_SYSTEM(0),
     TRUST_CUSTOM(1),
@@ -27,6 +31,7 @@ public enum CertHandlingStrategy {
         return index == selected;
     }
 
+    @NonNull
     public static CertHandlingStrategy from(long index) {
         if (TRUST_SYSTEM.is(index)) {
             return TRUST_SYSTEM;
@@ -41,5 +46,16 @@ public enum CertHandlingStrategy {
         }
 
         return TRUST_SYSTEM;
+    }
+
+    @NonNull
+    public static CertHandlingStrategy fromString(String strategy) {
+        if (!StringUtils.isEmpty(strategy)) {
+            try {
+                return valueOf(strategy);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        return CertHandlingStrategy.TRUST_SYSTEM;
     }
 }

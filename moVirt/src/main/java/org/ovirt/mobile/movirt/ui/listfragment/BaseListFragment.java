@@ -25,11 +25,12 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.facade.EntityFacadeLocator;
+import org.ovirt.mobile.movirt.auth.account.AccountRxStore;
+import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
+import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
 import org.ovirt.mobile.movirt.model.base.BaseEntity;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
-import org.ovirt.mobile.movirt.sync.SyncUtils;
 import org.ovirt.mobile.movirt.ui.EndlessScrollListener;
 import org.ovirt.mobile.movirt.ui.HasLoader;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
@@ -37,6 +38,10 @@ import org.ovirt.mobile.movirt.ui.listfragment.spinner.CustomSort;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
+import org.ovirt.mobile.movirt.util.Disposables;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 @EFragment(R.layout.fragment_base_entity_list)
 public abstract class BaseListFragment<E extends BaseEntity<?>> extends RefreshableLoaderFragment
@@ -46,9 +51,6 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
 
     private static final int ITEMS_PER_PAGE = 20;
     private static final int ASCENDING_INDEX = 0, DESCENDING_INDEX = 1; // order spinner indexes
-
-    @Bean
-    protected SyncUtils syncUtils;
 
     @ViewById(android.R.id.list)
     protected ListView listView;
@@ -69,10 +71,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
     protected ProviderFacade provider;
 
     @Bean
-    protected EntityFacadeLocator entityFacadeLocator;
-
-    @ViewById
-    public ListView list;
+    protected EnvironmentStore environmentStore;
 
     @ViewById
     public FloatingActionButton fab;
@@ -82,6 +81,13 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
 
     @ViewById
     public LinearLayout orderingLayout;
+
+    @Bean
+    public AccountRxStore rxStore;
+
+    protected ActiveSelection activeSelection;
+
+    private Disposables disposables = new Disposables();
 
     @InstanceState
     public boolean searchtoggle;
@@ -216,6 +222,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
     @AfterViews
     protected void init() {
         initSpinners();
+        activeSelection = rxStore.getActiveSelection();
         initAdapters();
         initListeners();
     }
@@ -287,12 +294,20 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
         }
 
         fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.light_blue)));
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggleSearchBoxVisibility();
-            }
-        });
+        fab.setOnClickListener(view -> toggleSearchBoxVisibility());
+    }
+
+    protected void initRx(Disposables disposables) {
+        disposables.add(rxStore.ACTIVE_SELECTION
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(selection -> {
+                    if (!activeSelection.equals(selection)) {
+                        activeSelection = selection;
+                        resetListViewPosition();
+                        restartLoader();
+                    }
+                }));
     }
 
     protected void onScrollStateChanged(AbsListView view, int scrollState) {
@@ -337,15 +352,19 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
 
     @Override
     public void destroyLoader() {
+        disposables.destroy();
         getLoaderManager().destroyLoader(BASE_LOADER);
     }
 
     @Override
     public void onResume() {
-        super.onResume();
-
-        restartLoader();
         setSearchBoxVisibility(searchtoggle);
+        initRx(disposables);
+        super.onResume();
+    }
+
+    public Disposables getDisposables() {
+        return disposables;
     }
 
     @Override

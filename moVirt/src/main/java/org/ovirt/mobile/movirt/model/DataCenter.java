@@ -6,7 +6,7 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import org.ovirt.mobile.movirt.model.base.OVirtNamedEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtAccountNamedEntity;
 import org.ovirt.mobile.movirt.model.enums.DataCenterStatus;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
@@ -15,7 +15,7 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.DataCenter.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class DataCenter extends OVirtNamedEntity implements OVirtContract.DataCenter {
+public class DataCenter extends OVirtAccountNamedEntity implements OVirtContract.DataCenter {
 
     @Override
     public Uri getBaseUri() {

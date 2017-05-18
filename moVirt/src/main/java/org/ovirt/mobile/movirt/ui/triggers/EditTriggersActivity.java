@@ -45,7 +45,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.SCOPE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.TARGET_ID;
 
 @EActivity(R.layout.activity_edit_triggers)
-@OptionsMenu(R.menu.triggers)
+@OptionsMenu(R.menu.delete_item)
 public class EditTriggersActivity extends ActionBarLoaderActivity implements ConfirmDialogFragment.ConfirmDialogListener {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
@@ -82,7 +82,7 @@ public class EditTriggersActivity extends ActionBarLoaderActivity implements Con
     String TITLE_FORMAT;
 
     @OptionsMenuItem
-    MenuItem deleteTrigger;
+    MenuItem deleteItem;
 
     @ViewById
     ListView listView;
@@ -168,7 +168,7 @@ public class EditTriggersActivity extends ActionBarLoaderActivity implements Con
         startActivity(intent);
     }
 
-    @OptionsItem(R.id.delete_trigger)
+    @OptionsItem(R.id.delete_item)
     void delete() {
         ConfirmDialogFragment confirmDialog = ConfirmDialogFragment
                 .newInstance(DELETE_ACTION, getString(R.string.dialog_action_delete_trigger));
@@ -186,7 +186,7 @@ public class EditTriggersActivity extends ActionBarLoaderActivity implements Con
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        deleteTrigger.setVisible(isSelected());
+        deleteItem.setVisible(isSelected());
         return super.onPrepareOptionsMenu(menu);
     }
 
