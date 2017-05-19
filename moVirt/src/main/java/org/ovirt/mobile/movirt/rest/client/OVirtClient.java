@@ -61,7 +61,7 @@ import static org.ovirt.mobile.movirt.rest.RestHelper.setVersionHeader;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setupAuth;
 
 @EBean
-public class OVirtClient implements AccountEnvironment.EnvDisposable{
+public class OVirtClient implements AccountEnvironment.EnvDisposable {
 
     private AccountPropertiesManager propertiesManager;
 

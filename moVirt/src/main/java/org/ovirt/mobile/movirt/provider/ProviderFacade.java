@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import hu.akarnokd.rxjava.interop.RxJavaInterop;
 import io.reactivex.Observable;
@@ -37,6 +38,9 @@ import rx.schedulers.Schedulers;
 @EBean(scope = EBean.Scope.Singleton)
 public class ProviderFacade {
     public static final String TAG = ProviderFacade.class.getSimpleName();
+
+    // BriteContentResolver does not detect batch updates so we need to throttle notifications by 200 ms
+    private static final int THROTTLE_BATCH = 200; //ms
 
     @RootContext
     Context context;
@@ -247,15 +251,24 @@ public class ProviderFacade {
                     sortOrderWithLimit());
         }
 
+        @NonNull
         public Observable<List<E>> asObservable() {
-            rx.Observable<List<E>> o = briteResolver.createQuery(baseUri,
+            return RxJavaInterop.toV2Observable(asObservableInternal(THROTTLE_BATCH));
+        }
+
+        @NonNull
+        public Observable<List<E>> asObservable(int throttle) {
+            return RxJavaInterop.toV2Observable(asObservableInternal(throttle));
+        }
+
+        private rx.Observable<List<E>> asObservableInternal(int throttle) {
+            return briteResolver.createQuery(baseUri,
                     projection,
                     selection.toString(),
                     getSelectionArgs(),
                     sortOrderWithLimit(), true)
-                    .mapToList(cursor -> EntityMapper.forEntity(clazz).fromCursor(cursor));
-
-            return RxJavaInterop.toV2Observable(o);
+                    .mapToList(cursor -> EntityMapper.forEntity(clazz).fromCursor(cursor))
+                    .throttleFirst(throttle, TimeUnit.MILLISECONDS);
         }
 
         public Observable<E> singleAsObservable() {
@@ -264,7 +277,8 @@ public class ProviderFacade {
                     selection.toString(),
                     getSelectionArgs(),
                     sortOrderWithLimit(" LIMIT 1 "), true)
-                    .mapToOne(cursor -> EntityMapper.forEntity(clazz).fromCursor(cursor));
+                    .mapToOne(cursor -> EntityMapper.forEntity(clazz).fromCursor(cursor))
+                    .throttleFirst(THROTTLE_BATCH, TimeUnit.MILLISECONDS);
 
             return RxJavaInterop.toV2Observable(o);
         }

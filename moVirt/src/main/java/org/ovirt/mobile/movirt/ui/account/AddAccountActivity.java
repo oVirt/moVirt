@@ -33,7 +33,6 @@ import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.account.AccountRxStore;
-import org.ovirt.mobile.movirt.auth.account.data.LoginStatus;
 import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.ui.BroadcastAwareAppCompatActivity;
 import org.ovirt.mobile.movirt.ui.SettingsActivity_;

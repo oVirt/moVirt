@@ -9,8 +9,8 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.BooleanRes;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.ui.dashboard.general.DashboardPhysicalGeneralFragment_;
-import org.ovirt.mobile.movirt.ui.dashboard.general.DashboardVirtualGeneralFragment_;
+import org.ovirt.mobile.movirt.ui.dashboard.generalfragment.physical.DashboardPhysicalGeneralFragment_;
+import org.ovirt.mobile.movirt.ui.dashboard.generalfragment.virtual.DashboardVirtualGeneralFragment_;
 
 @EFragment(R.layout.fragment_dasboard_container)
 public class DashboardContainer extends Fragment {

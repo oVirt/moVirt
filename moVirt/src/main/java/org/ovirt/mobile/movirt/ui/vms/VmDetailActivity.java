@@ -97,7 +97,7 @@ public class VmDetailActivity extends PresenterStatusSyncableActivity implements
     }
 
     @Override
-    protected BasePresenter getPresenter() {
+    public BasePresenter getPresenter() {
         return presenter;
     }
 

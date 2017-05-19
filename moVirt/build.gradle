@@ -28,6 +28,8 @@ ext.androidAnnottationVersion = '4.0.0'
 dependencies {
     compile 'com.android.support:appcompat-v7:22.2.1'
     compile 'com.android.support:design:22.2.1'
+    compile 'com.android.support:multidex:1.0.1'
+
     compile 'com.j256.ormlite:ormlite-android:4.48'
     compile 'com.blandware.android.atleap:core:0.4'
     compile 'org.springframework.android:spring-android-rest-template:2.0.0.M3'
@@ -72,7 +74,8 @@ android {
         exclude 'META-INF/notice.txt'
         exclude 'META-INF/license.txt'
         exclude 'META-INF/LGPL2.1'
-        exclude 'META-INF/rxjava.properties' // TODO: remove this line after SqlBrite has been ported to rxjava2 + remove interop library
+        // TODO: remove next line after SqlBrite has been ported to rxjava2 + remove interop library
+        exclude 'META-INF/rxjava.properties'
     }
 
     productFlavors {

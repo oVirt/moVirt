@@ -85,7 +85,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
     @Bean
     public AccountRxStore rxStore;
 
-    protected ActiveSelection activeSelection;
+    protected ActiveSelection activeSelection = ActiveSelection.ALL_ACTIVE;
 
     private Disposables disposables = new Disposables();
 

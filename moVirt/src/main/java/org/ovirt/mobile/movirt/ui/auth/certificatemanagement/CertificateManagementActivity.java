@@ -34,7 +34,6 @@ import org.ovirt.mobile.movirt.auth.properties.PropertyUtils;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
 import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.auth.properties.property.CertLocation;
-import org.ovirt.mobile.movirt.ui.BroadcastAwareAppCompatActivity;
 import org.ovirt.mobile.movirt.ui.PresenterBroadcastAwareActivity;
 import org.ovirt.mobile.movirt.ui.auth.certificatemanagement.data.CertTreeHolder;
 import org.ovirt.mobile.movirt.ui.auth.certificatemanagement.data.CertTreeItem;
@@ -159,7 +158,7 @@ public class CertificateManagementActivity extends PresenterBroadcastAwareActivi
     }
 
     @Override
-    protected BasePresenter getPresenter() {
+    public BasePresenter getPresenter() {
         return presenter;
     }
 

@@ -24,7 +24,6 @@ import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
-import org.ovirt.mobile.movirt.ui.BroadcastAwareAppCompatActivity;
 import org.ovirt.mobile.movirt.ui.PresenterBroadcastAwareActivity;
 import org.ovirt.mobile.movirt.ui.UiUtils;
 import org.ovirt.mobile.movirt.ui.auth.certificatemanagement.CertificateManagementActivity;

@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui.dashboard.box;
+package org.ovirt.mobile.movirt.ui.dashboard.boxfragment;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -12,8 +12,6 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.ui.dashboard.DashboardEntityStatus;
 import org.ovirt.mobile.movirt.ui.dashboard.maps.DashboardPosition;
 
-import java.util.List;
-
 public class DashboardBoxListAdapter extends ArrayAdapter<DashboardBoxData> {
     private final LayoutInflater inflater;
 
@@ -22,10 +20,19 @@ public class DashboardBoxListAdapter extends ArrayAdapter<DashboardBoxData> {
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
-    public void setData(List<DashboardBoxData> data) {
-        clear();
+    public void putData(DashboardBoxData data) {
         if (data != null) {
-            addAll(data);
+            int oldPosition = getPosition(data);
+            if (oldPosition >= 0) {
+                remove(getItem(oldPosition));
+            }
+
+            int index = data.getEntityClass().ordinal();
+            if (index < getCount()) {
+                insert(data, index);
+            } else {
+                add(data);
+            }
         }
     }
 

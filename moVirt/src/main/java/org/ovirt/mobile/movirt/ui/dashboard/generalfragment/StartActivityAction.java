@@ -1,9 +1,9 @@
-package org.ovirt.mobile.movirt.ui.dashboard.general;
+package org.ovirt.mobile.movirt.ui.dashboard.generalfragment;
 
 import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 
-class StartActivityAction {
+public class StartActivityAction {
     private MainActivityFragments fragment;
     private String orderBy;
     private SortOrder order;

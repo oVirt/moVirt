@@ -73,7 +73,6 @@ import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper_;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -192,9 +191,9 @@ public class AccountEnvironment {
 
         // dispose all EnvDisposable classes
         for (Field field : AccountEnvironment.class.getDeclaredFields()) {
-            if(EnvDisposable.class.isAssignableFrom(field.getType())){
+            if (EnvDisposable.class.isAssignableFrom(field.getType())) {
                 try {
-                    ((EnvDisposable)field.get(this)).dispose();
+                    ((EnvDisposable) field.get(this)).dispose();
                 } catch (IllegalAccessException ignore) {
                 }
             }

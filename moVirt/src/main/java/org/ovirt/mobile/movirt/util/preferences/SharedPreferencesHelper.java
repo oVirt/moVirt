@@ -14,7 +14,7 @@ import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 @EBean
-public class SharedPreferencesHelper implements AccountEnvironment.EnvDisposable{
+public class SharedPreferencesHelper implements AccountEnvironment.EnvDisposable {
 
     @RootContext
     Context context;

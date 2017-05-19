@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui.dashboard.box;
+package org.ovirt.mobile.movirt.ui.dashboard.boxfragment;
 
 import android.content.Context;
 
@@ -25,12 +25,17 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public class DashboardBoxData {
-    private DashboardBoxDataLoader.BoxDataEntityClass entityClass;
+    private BoxDataEntity entityClass;
     private int entityCount = 0;
 
     private Map<DashboardPosition, DashboardEntityStatus> positionsStatusMap = new EnumMap<>(DashboardPosition.class);
 
-    public DashboardBoxData(DashboardBoxDataLoader.BoxDataEntityClass entityClass) {
+    public DashboardBoxData(BoxDataEntity entityClass, Collection data) {
+        this(entityClass);
+        setData(data);
+    }
+
+    public DashboardBoxData(BoxDataEntity entityClass) {
         this.entityClass = entityClass;
 
         DashboardEntityStatus first = new DashboardEntityStatus();
@@ -59,11 +64,11 @@ public class DashboardBoxData {
         }
     }
 
-    public DashboardBoxDataLoader.BoxDataEntityClass getEntityClass() {
+    public BoxDataEntity getEntityClass() {
         return entityClass;
     }
 
-    public void setEntityClass(DashboardBoxDataLoader.BoxDataEntityClass entityClass) {
+    public void setEntityClass(BoxDataEntity entityClass) {
         this.entityClass = entityClass;
     }
 
@@ -118,11 +123,11 @@ public class DashboardBoxData {
     }
 
     public void setData(Collection data) {
-        if (entityClass != DashboardBoxDataLoader.BoxDataEntityClass.EVENT) {
+        if (entityClass != BoxDataEntity.EVENT) {
             entityCount = data.size();
         }
 
-        if (entityClass == DashboardBoxDataLoader.BoxDataEntityClass.CLUSTER) {
+        if (entityClass == BoxDataEntity.CLUSTER) {
             return;
         }
         Date today = getToday();
@@ -191,5 +196,20 @@ public class DashboardBoxData {
         }
 
         return today;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DashboardBoxData)) return false;
+
+        DashboardBoxData that = (DashboardBoxData) o;
+
+        return entityClass == that.entityClass;
+    }
+
+    @Override
+    public int hashCode() {
+        return entityClass != null ? entityClass.hashCode() : 0;
     }
 }

@@ -36,7 +36,6 @@ abstract class AccountPropertiesManagerCore implements AccountEnvironment.EnvDis
         }
     }
 
-
     @Override
     public void dispose() {
         for (Set<WrappedPropertyChangedListener> propertyListeners : listeners.values()) {
@@ -45,7 +44,6 @@ abstract class AccountPropertiesManagerCore implements AccountEnvironment.EnvDis
         listeners.clear();
         accountPropertiesRW.destroy();
     }
-
 
     public MovirtAccount getManagedAccount() {
         return accountPropertiesRW.getAccount();

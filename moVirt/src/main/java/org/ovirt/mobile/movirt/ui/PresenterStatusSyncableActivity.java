@@ -5,15 +5,17 @@ import android.widget.TextView;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.ui.mvp.BasePresenter;
+import org.ovirt.mobile.movirt.ui.mvp.BaseView;
 import org.ovirt.mobile.movirt.ui.mvp.StatusView;
 
 @EActivity
-public abstract class PresenterStatusSyncableActivity extends SyncableActivity implements StatusView {
+public abstract class PresenterStatusSyncableActivity extends SyncableActivity implements StatusView, BaseView {
 
     @ViewById
     public TextView statusText;
 
-    protected abstract BasePresenter getPresenter();
+    @Override
+    public abstract BasePresenter getPresenter();
 
     public void displayTitle(String title) {
         setTitle(title);

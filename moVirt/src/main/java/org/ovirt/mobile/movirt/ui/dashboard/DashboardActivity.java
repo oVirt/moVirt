@@ -15,11 +15,11 @@ import org.androidannotations.annotations.res.StringArrayRes;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
-import org.ovirt.mobile.movirt.ui.SyncableActivity;
+import org.ovirt.mobile.movirt.ui.PresenterStatusSyncableActivity;
+import org.ovirt.mobile.movirt.ui.mvp.BasePresenter;
 
 @EActivity(R.layout.activity_dashboard)
-public class DashboardActivity extends SyncableActivity {
-    private static final String TAG = DashboardActivity.class.getSimpleName();
+public class DashboardActivity extends PresenterStatusSyncableActivity implements DashboardContract.View {
 
     @ViewById
     ViewPager viewPager;
@@ -42,12 +42,23 @@ public class DashboardActivity extends SyncableActivity {
     @BooleanRes
     boolean isTablet;
 
+    private DashboardContract.Presenter dashboardPresenter;
+
     @AfterViews
     void init() {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         initPagers();
         setProgressBar(progress);
+
+        dashboardPresenter = DashboardPresenter_.getInstance_(getApplicationContext())
+                .setView(this)
+                .initialize();
+    }
+
+    @Override
+    public BasePresenter getPresenter() {
+        return dashboardPresenter;
     }
 
     private void initPagers() {

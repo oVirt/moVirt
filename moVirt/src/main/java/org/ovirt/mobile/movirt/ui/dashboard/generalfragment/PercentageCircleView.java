@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui.dashboard;
+package org.ovirt.mobile.movirt.ui.dashboard.generalfragment;
 
 import android.content.Context;
 import android.content.res.TypedArray;

@@ -24,7 +24,7 @@ import org.springframework.web.client.ResourceAccessException;
 import static org.ovirt.mobile.movirt.rest.RestHelper.prepareAuthToken;
 
 @EBean
-public class RequestHandler implements AccountEnvironment.EnvDisposable{
+public class RequestHandler implements AccountEnvironment.EnvDisposable {
 
     private Version version;
 

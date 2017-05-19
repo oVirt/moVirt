@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui.dashboard.general.resources;
+package org.ovirt.mobile.movirt.ui.dashboard.generalfragment.resources;
 
 import org.ovirt.mobile.movirt.util.usage.UsageResource;
 
@@ -48,11 +48,11 @@ public class OverCommitResource {
      * @return A percentage indicating the running virtual resource compared to actual resources.
      */
     public long getOvercommit() {
-        if (virtualUsed == null || physicalTotal == null) {
+        if (virtualUsed == null || physicalTotal == null || physicalTotal.getValue() == 0) {
             return 0;
         }
 
-        return (long) (virtualUsed.getValue() / (double) (physicalTotal.getValue() == 0 ? 1 : physicalTotal.getValue()) * 100);
+        return (long) (virtualUsed.getValue() / (double) physicalTotal.getValue() * 100);
     }
 
     /**
@@ -63,10 +63,11 @@ public class OverCommitResource {
      * @return A percentage indicating the allocated virtual resource compared to actual resources.
      */
     public long getAllocated() {
-        if (virtualTotal == null || physicalTotal == null) {
+        if (virtualTotal == null || physicalTotal == null || physicalTotal.getValue() == 0) {
             return 0;
         }
-        return (long) (virtualTotal.getValue() / (double) (physicalTotal.getValue() == 0 ? 1 : physicalTotal.getValue()) * 100);
+
+        return (long) (virtualTotal.getValue() / (double) physicalTotal.getValue() * 100);
     }
 
     public boolean isInitialized() {

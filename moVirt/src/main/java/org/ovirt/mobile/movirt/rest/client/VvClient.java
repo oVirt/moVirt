@@ -26,7 +26,7 @@ import static org.ovirt.mobile.movirt.rest.RestHelper.setVersionHeader;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setupAuth;
 
 @EBean
-public class VvClient implements AccountEnvironment.EnvDisposable{
+public class VvClient implements AccountEnvironment.EnvDisposable {
     private RequestHandler requestHandler;
     private DestroyableListeners listeners;
 

@@ -87,7 +87,7 @@ public class SnapshotDetailActivity extends PresenterStatusSyncableActivity impl
     }
 
     @Override
-    protected BasePresenter getPresenter() {
+    public BasePresenter getPresenter() {
         return presenter;
     }
 

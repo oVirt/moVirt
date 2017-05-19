@@ -128,7 +128,7 @@ public class AccountManagerHelper {
     public MovirtAccount asMoAccount(Account account) throws AccountDeletedException {
         final String id = accountManager.getUserData(account, AccountProperty.ID.getPackageKey());
         if (StringUtils.isEmpty(id)) {
-            throw new AccountDeletedException();
+            throw new IllegalStateException("Incompatible account from old moVirt version.");
         }
         return new MovirtAccount(id, account);
     }
@@ -138,7 +138,11 @@ public class AccountManagerHelper {
             final Account[] accounts = accountManager.getAccountsByType(Constants.ACCOUNT_TYPE);
             Set<MovirtAccount> movirtAccounts = new HashSet<>(accounts.length);
             for (Account account : accounts) {
-                movirtAccounts.add(asMoAccount(account));
+                try {
+                    movirtAccounts.add(asMoAccount(account));
+                } catch (IllegalStateException incompatibleAccount) {
+                    removeAccount(new MovirtAccount("", account), null); // remove old account
+                }
             }
 
             return movirtAccounts;
@@ -178,18 +182,26 @@ public class AccountManagerHelper {
             accountManager.removeAccount(account.getAccount(), future -> {
                 try {
                     boolean result = future.getResult(Constants.REMOVE_ACCOUNT_CALLBACK_TIMEOUT, TimeUnit.SECONDS);
-                    callback.onRemoved(result);
+                    if (callback != null) {
+                        callback.onRemoved(result);
+                    }
                 } catch (Exception e) {
-                    callback.onRemoved(false);
+                    if (callback != null) {
+                        callback.onRemoved(false);
+                    }
                 }
             }, null);
         } else {
             accountManager.removeAccount(account.getAccount(), null, future -> {
                 try {
                     boolean result = future.getResult(Constants.REMOVE_ACCOUNT_CALLBACK_TIMEOUT, TimeUnit.SECONDS).getBoolean(AccountManager.KEY_BOOLEAN_RESULT);
-                    callback.onRemoved(result);
+                    if (callback != null) {
+                        callback.onRemoved(result);
+                    }
                 } catch (Exception e) {
-                    callback.onRemoved(false);
+                    if (callback != null) {
+                        callback.onRemoved(false);
+                    }
                 }
             }, null);
         }

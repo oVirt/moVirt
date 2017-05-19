@@ -1,4 +1,4 @@
-package org.ovirt.mobile.movirt.ui.dashboard.general.resources;
+package org.ovirt.mobile.movirt.ui.dashboard.generalfragment.resources;
 
 import org.ovirt.mobile.movirt.util.usage.UsageResource;
 

@@ -6,7 +6,8 @@
 
 
     <fragment
-        class="org.ovirt.mobile.movirt.ui.dashboard.box.DashboardBoxFragment_"
+        android:id="@+id/fragment_dashboard_box_utilized_container"
+        class="org.ovirt.mobile.movirt.ui.dashboard.boxfragment.DashboardBoxFragment_"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
