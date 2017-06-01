@@ -440,10 +440,17 @@ public class CameraActivity extends SyncableActivity implements SurfaceHolder.Ca
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            // SHORT_ID ignores other Hosts with same id on multiple engines
             if (lastResult == null) {
-                return providerFacade.query(Host.class).id("0").asLoader();
+                return providerFacade.query(Host.class)
+                        .where(Host.SHORT_ID, "0")
+                        .asLoader();
             } else {
-                return providerFacade.query(Host.class).id(lastResult).asLoader();
+                return providerFacade.query(Host.class)
+                        .where(Host.SHORT_ID, lastResult)
+                        .orderBy(Host.ACCOUNT_ID)
+                        .limit(1)
+                        .asLoader();
             }
         }
 
