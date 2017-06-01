@@ -9,11 +9,11 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.enums.VmStatus;
 
-public class StatusCondition extends Condition<Vm> {
+public class VmStatusCondition extends Condition<Vm> {
     private final VmStatus status;
 
     @JsonCreator
-    public StatusCondition(@JsonProperty("status") VmStatus status) {
+    public VmStatusCondition(@JsonProperty("status") VmStatus status) {
         this.status = status;
     }
 
@@ -29,7 +29,7 @@ public class StatusCondition extends Condition<Vm> {
 
     @Override
     public String toString() {
-        return "Status is " + getStatus().toString();
+        return "VM Status is " + getStatus().toString();
     }
 
     public VmStatus getStatus() {

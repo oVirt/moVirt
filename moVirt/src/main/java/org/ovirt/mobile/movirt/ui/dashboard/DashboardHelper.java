@@ -10,7 +10,7 @@ public class DashboardHelper {
         final ProviderFacade.QueryBuilder<E> queryBuilder = providerFacade.query(clazz);
 
         if (!selection.isAllAccounts()) {
-            queryBuilder.where(OVirtContract.AccountEntity.ACCOUNT_ID, selection.getAccount().getId());
+            queryBuilder.where(OVirtContract.AccountEntity.ACCOUNT_ID, selection.getAccountId());
         }
 
         if (OVirtContract.HasCluster.class.isAssignableFrom(clazz) && selection.isCluster()) {

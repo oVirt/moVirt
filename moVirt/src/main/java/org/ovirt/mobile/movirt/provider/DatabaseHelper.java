@@ -11,7 +11,7 @@ public class DatabaseHelper extends OrmLiteDatabaseHelper<UriMatcher> {
 
     private static final String DB_NAME = "ovirt.db";
 
-    private static final int SCHEMA_VERSION = 44;
+    private static final int SCHEMA_VERSION = 45;
 
     private volatile static DatabaseHelper instance = null;
 

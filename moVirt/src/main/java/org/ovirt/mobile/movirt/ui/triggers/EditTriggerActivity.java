@@ -13,10 +13,10 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.condition.Condition;
-import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.EventCondition;
-import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
-import org.ovirt.mobile.movirt.model.condition.StatusCondition;
+import org.ovirt.mobile.movirt.model.condition.VmCpuThresholdCondition;
+import org.ovirt.mobile.movirt.model.condition.VmMemoryThresholdCondition;
+import org.ovirt.mobile.movirt.model.condition.VmStatusCondition;
 import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.ui.HasLoader;
@@ -95,16 +95,16 @@ public class EditTriggerActivity extends BaseTriggerActivity implements HasLoade
         Condition triggerCondition = trigger.getCondition();
         int selectedConditionRadioButton = 0;
 
-        if (triggerCondition instanceof CpuThresholdCondition) {
-            CpuThresholdCondition condition = (CpuThresholdCondition) triggerCondition;
+        if (triggerCondition instanceof VmCpuThresholdCondition) {
+            VmCpuThresholdCondition condition = (VmCpuThresholdCondition) triggerCondition;
             selectedConditionRadioButton = R.id.radio_button_cpu;
             percentageEdit.setText(Integer.toString(condition.getPercentageLimit()));
-        } else if (triggerCondition instanceof MemoryThresholdCondition) {
-            MemoryThresholdCondition condition = (MemoryThresholdCondition) triggerCondition;
+        } else if (triggerCondition instanceof VmMemoryThresholdCondition) {
+            VmMemoryThresholdCondition condition = (VmMemoryThresholdCondition) triggerCondition;
             selectedConditionRadioButton = R.id.radio_button_memory;
             percentageEdit.setText(Integer.toString(condition.getPercentageLimit()));
-        } else if (triggerCondition instanceof StatusCondition) {
-            StatusCondition condition = (StatusCondition) triggerCondition;
+        } else if (triggerCondition instanceof VmStatusCondition) {
+            VmStatusCondition condition = (VmStatusCondition) triggerCondition;
             selectedConditionRadioButton = R.id.radio_button_status;
             int index = ((ArrayAdapter<String>) statusSpinner.getAdapter()).getPosition(condition.getStatus().toString().toUpperCase());
             statusSpinner.setSelection(index);

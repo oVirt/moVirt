@@ -34,7 +34,7 @@ public class VmFacade extends BaseEntityFacade<Vm> {
     protected CompositeResponse<Vm> getSyncOneResponse(final Response<Vm> response, String... ids) {
         requireSignature(ids);
         CompositeResponse<Vm> res = respond()
-                .withTriggerResolver(triggerResolver)
+                .withTriggerResolver(triggerResolver, account)
                 .triggeredActions(getIntentResolver(), MainActivityFragments.VMS)
                 .asUpdateEntityResponse()
                 .addResponse(response);
@@ -58,7 +58,7 @@ public class VmFacade extends BaseEntityFacade<Vm> {
     protected CompositeResponse<List<Vm>> getSyncAllResponse(final Response<List<Vm>> response, String... ids) {
         requireSignature(ids);
         CompositeResponse<List<Vm>> res = respond()
-                .withTriggerResolver(triggerResolver)
+                .withTriggerResolver(triggerResolver, account)
                 .triggeredActions(getIntentResolver(), MainActivityFragments.VMS)
                 .asUpdateEntitiesResponse()
                 .addResponse(response);

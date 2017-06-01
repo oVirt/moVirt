@@ -1,6 +1,7 @@
 package org.ovirt.mobile.movirt.model.trigger;
 
 import org.androidannotations.annotations.EBean;
+import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.mapping.EntityType;
 
@@ -19,7 +20,7 @@ public class EventTriggerResolver extends BaseTriggerResolver<Event> {
     }
 
     @Override
-    public List<Trigger<Event>> getTriggers(Event entity, Collection<Trigger<Event>> allTriggers) {
-        return getTriggers(entity.getVmId(), entity.getClusterId(), allTriggers);
+    public List<Trigger> getFilteredTriggers(MovirtAccount account, Event entity, Collection<Trigger> allTriggers) {
+        return getFilteredTriggers(account, entity.getClusterId(), entity.getVmId(), allTriggers);
     }
 }

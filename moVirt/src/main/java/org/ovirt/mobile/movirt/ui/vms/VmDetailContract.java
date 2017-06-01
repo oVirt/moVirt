@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.ui.vms;
 
 import android.net.Uri;
 
+import org.ovirt.mobile.movirt.auth.account.data.Selection;
 import org.ovirt.mobile.movirt.model.enums.ConsoleProtocol;
 import org.ovirt.mobile.movirt.ui.mvp.AccountPresenter;
 import org.ovirt.mobile.movirt.ui.mvp.FinishableProgressBarView;
@@ -14,6 +15,8 @@ public interface VmDetailContract {
         void displayMenu(MenuState menuState);
 
         void startMigrationActivity(String hostId, String clusterId);
+
+        void startEditTriggersActivity(Selection selection, String vmId);
 
         void startConsoleActivity(Uri uri);
     }
@@ -38,6 +41,8 @@ public interface VmDetailContract {
         void createSnapshot(org.ovirt.mobile.movirt.rest.dto.Snapshot snapshot);
 
         void beginMigration();
+
+        void editTriggers();
     }
 }
 

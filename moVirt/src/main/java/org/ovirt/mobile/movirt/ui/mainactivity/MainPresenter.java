@@ -89,6 +89,11 @@ public class MainPresenter extends DisposablesPresenter<MainPresenter, MainContr
         }
     }
 
+    @Override
+    public void editTriggers() {
+        getView().startEditTriggersActivity(rxStore.getActiveSelection());
+    }
+
     private class AccountsClusters {
         final AllAccounts allAccounts;
         final List<Cluster> clusters;

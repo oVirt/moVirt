@@ -8,27 +8,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
 
-public class MemoryThresholdCondition extends Condition<Vm> {
+public class VmCpuThresholdCondition extends Condition<Vm> {
     private final int percentageLimit;
 
     @JsonCreator
-    public MemoryThresholdCondition(@JsonProperty("percentageLimit") int percentageLimit) {
+    public VmCpuThresholdCondition(@JsonProperty("percentageLimit") int percentageLimit) {
         this.percentageLimit = percentageLimit;
     }
 
     @Override
     public boolean evaluate(Vm entity) {
-        return entity.getMemoryUsage() >= getPercentageLimit();
+        return entity.getCpuUsage() >= getPercentageLimit();
     }
 
     @Override
     public String getMessage(Context context, Vm vm) {
-        return context.getResources().getString(R.string.vm_memory_message, vm.getName(), getPercentageLimit(), vm.getMemoryUsage());
+        return context.getResources().getString(R.string.vm_cpu_message, vm.getName(), getPercentageLimit(), vm.getCpuUsage());
     }
 
     @Override
     public String toString() {
-        return "Memory usage over " + getPercentageLimit() + "%";
+        return "VM CPU above " + getPercentageLimit() + "%";
     }
 
     public int getPercentageLimit() {

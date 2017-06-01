@@ -22,6 +22,8 @@ public interface MainContract {
 
         void startEditAccountsActivity();
 
+        void startEditTriggersActivity(ActiveSelection selection);
+
         void startAccountSettingsActivity(MovirtAccount account);
 
         void hideDrawer();
@@ -32,6 +34,8 @@ public interface MainContract {
         void onActiveSelectionChanged(ActiveSelection activeSelection);
 
         void onLongClickListener(ActiveSelection possibleSelection);
+
+        void editTriggers();
     }
 }
 

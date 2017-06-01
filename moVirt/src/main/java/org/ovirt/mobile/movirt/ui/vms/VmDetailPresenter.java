@@ -1,5 +1,6 @@
 package org.ovirt.mobile.movirt.ui.vms;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.net.Uri;
 import android.os.RemoteException;
@@ -12,6 +13,7 @@ import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
 import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
 import org.ovirt.mobile.movirt.auth.account.data.ClusterAndEntity;
+import org.ovirt.mobile.movirt.auth.account.data.Selection;
 import org.ovirt.mobile.movirt.facade.ConsoleFacade;
 import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Cluster;
@@ -55,6 +57,7 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
 
     private String vmId;
     private Vm vm;
+    private Cluster cluster;
 
     @Bean
     ProviderFacade providerFacade;
@@ -93,7 +96,10 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
                 .switchMap(host -> providerFacade.query(Cluster.class)
                         .where(Cluster.ID, host.getClusterId())
                         .singleAsObservable()
-                        .map(cluster -> new ClusterAndEntity<>(host, cluster))
+                        .map(c -> {
+                            cluster = c;
+                            return new ClusterAndEntity<>(host, c);
+                        })
                         .startWith(new ClusterAndEntity<>(host, null)))
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -179,6 +185,15 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
         try {
             environmentStore.getEventProviderHelper(account).deleteTemporaryEvents();
         } catch (AccountDeletedException ignore) {
+        }
+    }
+
+    @Override
+    public void editTriggers() {
+        if (vm != null) {
+            final Selection selection = new Selection(account, vm.getClusterId(),
+                    cluster == null ? null : cluster.getName());
+            getView().startEditTriggersActivity(selection, vmId);
         }
     }
 

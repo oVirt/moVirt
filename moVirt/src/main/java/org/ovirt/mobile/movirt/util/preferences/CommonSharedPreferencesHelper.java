@@ -80,7 +80,7 @@ public class CommonSharedPreferencesHelper {
         }
 
         public StoredActiveSelection(ActiveSelection activeSelection) {
-            this.accountId = activeSelection.getAccount() == null ? null : activeSelection.getAccount().getId();
+            this.accountId = activeSelection.getAccountId();
             this.clusterId = activeSelection.getClusterId();
         }
     }

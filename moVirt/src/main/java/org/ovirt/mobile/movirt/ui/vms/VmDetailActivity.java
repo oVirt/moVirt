@@ -21,9 +21,9 @@ import org.androidannotations.annotations.res.StringArrayRes;
 import org.ovirt.mobile.movirt.MoVirtApp;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
+import org.ovirt.mobile.movirt.auth.account.data.Selection;
 import org.ovirt.mobile.movirt.model.enums.ConsoleProtocol;
 import org.ovirt.mobile.movirt.model.enums.VmCommand;
-import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.ui.FragmentListPagerAdapter;
 import org.ovirt.mobile.movirt.ui.HasProgressBar;
 import org.ovirt.mobile.movirt.ui.PresenterStatusSyncableActivity;
@@ -157,11 +157,7 @@ public class VmDetailActivity extends PresenterStatusSyncableActivity implements
 
     @OptionsItem(R.id.action_edit_triggers)
     void editTriggers() {
-        final Intent intent = new Intent(this, EditTriggersActivity_.class);
-        intent.putExtra(EditTriggersActivity.EXTRA_TARGET_ENTITY_ID, vmId);
-        intent.putExtra(EditTriggersActivity.EXTRA_TARGET_ENTITY_NAME, vmId);
-        intent.putExtra(EditTriggersActivity.EXTRA_SCOPE, Trigger.Scope.ITEM);
-        startActivity(intent);
+        presenter.editTriggers();
     }
 
     @OptionsItem(R.id.action_run)
@@ -261,6 +257,14 @@ public class VmDetailActivity extends PresenterStatusSyncableActivity implements
         Intent intent = new Intent(Intent.ACTION_VIEW)
                 .setType("application/vnd.vnc")
                 .setData(uri);
+        startActivity(intent);
+    }
+
+    @Override
+    public void startEditTriggersActivity(Selection selection, String vmId) {
+        final Intent intent = new Intent(this, EditTriggersActivity_.class);
+        intent.putExtra(EditTriggersActivity.EXTRA_SELECTION, selection);
+        intent.putExtra(EditTriggersActivity.EXTRA_TARGET_ENTITY_ID, vmId);
         startActivity(intent);
     }
 

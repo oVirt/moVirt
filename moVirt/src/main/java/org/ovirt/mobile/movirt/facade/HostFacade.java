@@ -37,7 +37,7 @@ public class HostFacade extends BaseEntityFacade<Host> {
     @Override
     protected CompositeResponse<Host> getSyncOneResponse(Response<Host> response, String... ids) {
         return respond()
-                .withTriggerResolver(triggerResolver)
+                .withTriggerResolver(triggerResolver, account)
                 .triggeredActions(getIntentResolver(), MainActivityFragments.HOSTS)
                 .asUpdateEntityResponse()
                 .addResponse(response);
@@ -46,7 +46,7 @@ public class HostFacade extends BaseEntityFacade<Host> {
     @Override
     protected Response<List<Host>> getSyncAllResponse(Response<List<Host>> response, String... ids) {
         return respond()
-                .withTriggerResolver(triggerResolver)
+                .withTriggerResolver(triggerResolver, account)
                 .triggeredActions(getIntentResolver(), MainActivityFragments.HOSTS)
                 .asUpdateEntitiesResponse()
                 .addResponse(response);

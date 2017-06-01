@@ -19,4 +19,6 @@
 
     <dimen name="fab_margin">16dp</dimen>
 
+    <dimen name="fab_and_footer_margin">52dp</dimen>
+
 </resources>

@@ -227,7 +227,7 @@ public interface OVirtContract {
     }
 
     String PATH_TRIGGERS = "triggers";
-    String PATH_TRIGGER = "triggers/#"; // TODO CHANGE TO *
+    String PATH_TRIGGER = "triggers/#";
 
     interface Trigger extends BaseEntity {
         Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_TRIGGERS).build();
@@ -236,9 +236,10 @@ public interface OVirtContract {
 
         String CONDITION = "condition";
         String NOTIFICATION = "notification";
-        String SCOPE = "scope";
-        String TARGET_ID = "target_id";
+        String ACCOUNT_ID = "account_id";
+        String CLUSTER_ID = "cluster_id";
         String ENTITY_TYPE = "entity_type";
+        String TARGET_ID = "target_id";
     }
 
     String PATH_EVENTS = "events";

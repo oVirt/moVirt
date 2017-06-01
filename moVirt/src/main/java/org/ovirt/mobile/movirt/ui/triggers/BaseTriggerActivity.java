@@ -7,6 +7,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
@@ -16,21 +17,24 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.account.data.Selection;
 import org.ovirt.mobile.movirt.model.condition.Condition;
-import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
 import org.ovirt.mobile.movirt.model.condition.EventCondition;
-import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
-import org.ovirt.mobile.movirt.model.condition.StatusCondition;
+import org.ovirt.mobile.movirt.model.condition.VmCpuThresholdCondition;
+import org.ovirt.mobile.movirt.model.condition.VmMemoryThresholdCondition;
+import org.ovirt.mobile.movirt.model.condition.VmStatusCondition;
 import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.model.mapping.EntityType;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.BroadcastAwareAppCompatActivity;
+import org.ovirt.mobile.movirt.util.resources.Resources;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import static org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity.EXTRA_SCOPE;
+import static org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity.EXTRA_SELECTION;
+import static org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity.EXTRA_SELECTION_PATH;
 import static org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity.EXTRA_TARGET_ENTITY_ID;
 
 @EActivity(R.layout.activity_base_trigger)
@@ -38,10 +42,11 @@ public abstract class BaseTriggerActivity extends BroadcastAwareAppCompatActivit
 
     private String targetEntityId;
 
-    private Trigger.Scope triggerScope;
-
     @InstanceState
     protected int selectedCondition = R.id.radio_button_cpu;
+
+    @InstanceState
+    protected Selection selection;
 
     @ViewById(R.id.rangePanel)
     LinearLayout rangePanel;
@@ -73,20 +78,33 @@ public abstract class BaseTriggerActivity extends BroadcastAwareAppCompatActivit
     @Bean
     ProviderFacade provider;
 
+    @Bean
+    Resources resources;
+
+    @ViewById
+    TextView statusText;
+
     @AfterViews
     void init() {
-        onRadioButtonClicked(selectedCondition); // for screen rotation
+        onRadioButtonClicked(selectedCondition); // for screen rotation//
 
         targetEntityId = getIntent().getStringExtra(EXTRA_TARGET_ENTITY_ID);
-        triggerScope = (Trigger.Scope) getIntent().getSerializableExtra(EXTRA_SCOPE);
+        selection = getIntent().getParcelableExtra(EXTRA_SELECTION);
+        String path = getIntent().getStringExtra(EXTRA_SELECTION_PATH);
+        String status;
+
+        if (path != null) {
+            status = path;
+        } else if (targetEntityId == null) {
+            status = selection.getDescription();
+        } else {
+            status = selection.getDescription(resources.getVm());
+        }
+
+        statusText.setText(status);
 
         fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.material_green_300)));
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onDone();
-            }
-        });
+        fab.setOnClickListener(view -> onDone());
     }
 
     protected abstract void onDone();
@@ -95,8 +113,8 @@ public abstract class BaseTriggerActivity extends BroadcastAwareAppCompatActivit
         return targetEntityId;
     }
 
-    public Trigger.Scope getTriggerScope() {
-        return triggerScope;
+    public Selection getSelection() {
+        return selection;
     }
 
     public void onRadioButtonClicked(View view) {
@@ -133,7 +151,7 @@ public abstract class BaseTriggerActivity extends BroadcastAwareAppCompatActivit
                     return null;
                 }
                 int percentageLimit = asIntWithDefault(percentageEdit.getText().toString(), "0");
-                return new CpuThresholdCondition(percentageLimit);
+                return new VmCpuThresholdCondition(percentageLimit);
             }
             case R.id.radio_button_memory: {
                 if (percentageEdit.getText().length() == 0) {
@@ -141,11 +159,11 @@ public abstract class BaseTriggerActivity extends BroadcastAwareAppCompatActivit
                     return null;
                 }
                 int percentageLimit = asIntWithDefault(percentageEdit.getText().toString(), "0");
-                return new MemoryThresholdCondition(percentageLimit);
+                return new VmMemoryThresholdCondition(percentageLimit);
             }
             case R.id.radio_button_status: {
                 VmStatus status = VmStatus.fromString(statusSpinner.getSelectedItem().toString());
-                return new StatusCondition(status);
+                return new VmStatusCondition(status);
             }
             case R.id.radio_button_event: {
                 //do not allow empty regex string

@@ -13,6 +13,7 @@ import com.android.internal.util.Predicate;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
+import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.facade.intent.EntityIntentResolver;
 import org.ovirt.mobile.movirt.model.base.OVirtEntity;
 import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
@@ -165,13 +166,16 @@ public class DbUpdater {
         }
     }
 
+    /**
+     * @param localEntity can be null when inserting (e.g. events)
+     */
     private <E extends OVirtEntity> void resolveTriggers(E localEntity, E remoteEntity,
                                                          UpdateLocalEntitiesBuilder<E> args) {
         if (args.hasTriggerResolver()) {
-            final List<Trigger<E>> triggers = args.triggerResolver.getTriggers(remoteEntity, args.getCachedTriggers(false));
+            final List<Trigger> triggers = args.triggerResolver.getFilteredTriggers(args.account, remoteEntity, args.getCachedTriggers(false));
             Log.d(TAG, String.format("%s: processing triggers for id = %s", remoteEntity.getClass().getSimpleName(), remoteEntity.getId()));
 
-            for (Trigger<E> trigger : triggers) {
+            for (Trigger trigger : triggers) {
                 if ((localEntity == null || !trigger.getCondition().evaluate(localEntity)) && trigger.getCondition().evaluate(remoteEntity)) {
                     args.triggerResponses.add(new Pair<>(remoteEntity, trigger));
                 }
@@ -197,8 +201,7 @@ public class DbUpdater {
         }
 
         notificationHelper.showTriggersNotification(
-                args.triggerResponses, context, PendingIntent.getActivity(context, 0, resultIntent, 0)
-        );
+                args.account, args.triggerResponses, context, PendingIntent.getActivity(context, 0, resultIntent, 0));
     }
 
     private static <E extends OVirtEntity> Map<String, E> groupEntitiesById(List<E> entities) {
@@ -222,13 +225,14 @@ public class DbUpdater {
         private MainActivityFragments multipleTriggerAction;
 
         private String accountId;
+        private MovirtAccount account;
 
         private BeforeUpdatabilityResolvedCallback<E> beforeUpdatabilityResolvedCallback;
         private BeforeInsertCallback<E> beforeInsertCallback;
 
         // used and settable only by DbUpdater
-        private Collection<Trigger<E>> cachedTriggers;
-        private List<Pair<E, Trigger<E>>> triggerResponses = new ArrayList<>();
+        private Collection<Trigger> cachedTriggers;
+        private List<Pair<E, Trigger>> triggerResponses = new ArrayList<>();
 
         public UpdateLocalEntitiesBuilder(Class<E> clazz) {
             this.clazz = clazz;
@@ -254,8 +258,9 @@ public class DbUpdater {
             return this;
         }
 
-        public UpdateLocalEntitiesBuilder<E> withTriggerResolver(TriggerResolver<E> triggerResolver) {
+        public UpdateLocalEntitiesBuilder<E> withTriggerResolver(TriggerResolver<E> triggerResolver, MovirtAccount account) {
             this.triggerResolver = triggerResolver;
+            this.account = account;
             return this;
         }
 
@@ -311,12 +316,12 @@ public class DbUpdater {
         }
 
         private boolean hasTriggerResolver() {
-            return triggerResolver != null;
+            return triggerResolver != null && account != null;
         }
 
-        private Collection<Trigger<E>> getCachedTriggers(boolean refreshCache) {
+        private Collection<Trigger> getCachedTriggers(boolean refreshCache) {
             if (cachedTriggers == null || refreshCache) {
-                cachedTriggers = (hasTriggerResolver()) ? Collections.emptyList() : triggerResolver.getAllTriggers();
+                cachedTriggers = (hasTriggerResolver()) ? triggerResolver.getAllTriggers() : Collections.emptyList();
             }
 
             return cachedTriggers;

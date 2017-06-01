@@ -46,7 +46,7 @@ public class EventFacade extends BaseEntityFacade<Event> {
     @Override
     protected Response<List<Event>> getSyncAllResponse(Response<List<Event>> response, String... ids) {
         return respond()
-                .withTriggerResolver(triggerResolver)
+                .withTriggerResolver(triggerResolver, account)
                 .triggeredActions(null, MainActivityFragments.EVENTS)
                 .doNotRemoveExpired()
                 .doNotUpdateChanged()

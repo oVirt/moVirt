@@ -42,6 +42,7 @@ import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.hosts.HostsFragment_;
 import org.ovirt.mobile.movirt.ui.listfragment.BaseListFragment;
 import org.ovirt.mobile.movirt.ui.storage.StorageDomainFragment_;
+import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment;
 import org.ovirt.mobile.movirt.ui.vms.VmsFragment_;
@@ -216,6 +217,13 @@ public class MainActivity extends PresenterStatusSyncableActivity implements Mai
     }
 
     @Override
+    public void startEditTriggersActivity(ActiveSelection selection) {
+        final Intent intent = new Intent(this, EditTriggersActivity_.class);
+        intent.putExtra(EditTriggersActivity.EXTRA_SELECTION, selection);
+        startActivity(intent);
+    }
+
+    @Override
     public void startAccountSettingsActivity(MovirtAccount account) {
         final Intent intent = new Intent(this, SettingsActivity_.class);
         intent.putExtra(Constants.ACCOUNT_KEY, account);
@@ -239,7 +247,7 @@ public class MainActivity extends PresenterStatusSyncableActivity implements Mai
 
     @OptionsItem(R.id.action_edit_triggers)
     void editTriggers() {
-        startActivity(new Intent(this, EditTriggersActivity_.class));
+        presenter.editTriggers();
     }
 
     @Override

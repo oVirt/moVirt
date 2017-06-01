@@ -34,7 +34,7 @@
     <string name="default_api_path">/ovirt-engine/api</string>
     <string name="default_password">engine</string>
     <string name="action_refresh">Refresh</string>
-    <string name="title_activity_edit_triggers">EditTriggersActivity</string>
+    <string name="title_activity_edit_triggers">Triggers</string>
     <string name="title_activity_edit_accounts">Accounts</string>
     <string name="title_activity_add_account">Add Account</string>
     <string name="title_add_trigger">Add Trigger</string>
@@ -245,6 +245,7 @@
     <string name="host_path">Host</string>
     <string name="storage_domain_path">Storage</string>
     <string name="vm_path">VM</string>
+    <string name="event_path">Event</string>
     <string name="snapshot_path">Snapshot</string>
 
     <string name="title_activity_migrate_vm">Migrate VM</string>
@@ -280,9 +281,9 @@
     <string name="save_memory">Save Memory</string>
     <string name="restore_memory">Restore Memory</string>
 
-    <string name="radio_button_cpu">CPU</string>
-    <string name="radio_button_memory">Memory</string>
-    <string name="radio_button_status">Status</string>
+    <string name="radio_button_cpu">CPU (VM)</string>
+    <string name="radio_button_memory">Memory (VM)</string>
+    <string name="radio_button_status">Status (VM)</string>
     <string name="radio_button_event">Event</string>
     <string name="radio_button_blink">Blink</string>
     <string name="radio_button_vibrate">Vibrate</string>

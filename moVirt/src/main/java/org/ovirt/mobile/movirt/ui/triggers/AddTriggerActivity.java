@@ -10,15 +10,16 @@ public class AddTriggerActivity extends BaseTriggerActivity {
 
     @Override
     public void onDone() {
-        Trigger trigger = new Trigger<>();
+        Trigger trigger = new Trigger();
         final Condition condition = getCondition();
         if (condition == null) {
             return;
         }
+        trigger.setAccountId(getSelection().getAccountId());
+        trigger.setClusterId(getSelection().getClusterId());
         trigger.setTargetId(getTargetEntityId());
         trigger.setEntityType(getEntityType(condition));
         trigger.setCondition(condition);
-        trigger.setScope(getTriggerScope());
         trigger.setNotificationType(getNotificationType());
 
         provider.insert(trigger);

@@ -1,19 +1,24 @@
 package org.ovirt.mobile.movirt.ui.triggers;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.database.Cursor;
+import android.graphics.Typeface;
 import android.net.Uri;
-import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.Loader;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.androidannotations.annotations.AfterViews;
@@ -28,40 +33,28 @@ import org.androidannotations.annotations.OptionsMenuItem;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.StringRes;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.condition.Condition;
-import org.ovirt.mobile.movirt.model.condition.CpuThresholdCondition;
-import org.ovirt.mobile.movirt.model.condition.EventCondition;
-import org.ovirt.mobile.movirt.model.condition.MemoryThresholdCondition;
-import org.ovirt.mobile.movirt.model.condition.StatusCondition;
-import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
+import org.ovirt.mobile.movirt.auth.account.data.Selection;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.ui.ActionBarLoaderActivity;
+import org.ovirt.mobile.movirt.ui.PresenterStatusSyncableActivity;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
-import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
+import org.ovirt.mobile.movirt.ui.mvp.BasePresenter;
 
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.SCOPE;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.TARGET_ID;
+import java.util.List;
 
 @EActivity(R.layout.activity_edit_triggers)
 @OptionsMenu(R.menu.delete_item)
-public class EditTriggersActivity extends ActionBarLoaderActivity implements ConfirmDialogFragment.ConfirmDialogListener {
+public class EditTriggersActivity extends PresenterStatusSyncableActivity implements EditTriggersContract.View, ConfirmDialogFragment.ConfirmDialogListener {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
-    public static final String EXTRA_TARGET_ENTITY_NAME = "target_name";
-    public static final String EXTRA_SCOPE = "scope";
+    public static final String EXTRA_SELECTION = "selection";
+    public static final String EXTRA_SELECTION_PATH = "selection_path";
 
     private static final String[] PROJECTION = new String[]{
             OVirtContract.Trigger.CONDITION,
             OVirtContract.Trigger.NOTIFICATION,
     };
     private static final int DELETE_ACTION = 0;
-
-    private String targetEntityId;
-    private String targetEntityName;
-
-    private Trigger.Scope triggerScope;
-    private CursorAdapterLoader cursorAdapterLoader;
 
     @Bean
     ProviderFacade provider;
@@ -90,67 +83,57 @@ public class EditTriggersActivity extends ActionBarLoaderActivity implements Con
     @InstanceState
     Integer selectedListItem;
 
+    @ViewById
+    ProgressBar progress;
+
+    private EditTriggersContract.Presenter presenter;
+
     @AfterViews
     void init() {
-        targetEntityId = getIntent().getStringExtra(EXTRA_TARGET_ENTITY_ID);
-        targetEntityName = getIntent().getStringExtra(EXTRA_TARGET_ENTITY_NAME);
-        triggerScope = (Trigger.Scope) getIntent().getSerializableExtra(EXTRA_SCOPE);
+        setProgressBar(progress);
+
+        presenter = EditTriggersPresenter_.getInstance_(getApplicationContext())
+                .setEntityId(getIntent().getStringExtra(EXTRA_TARGET_ENTITY_ID))
+                .setSelection(getIntent().getParcelableExtra(EXTRA_SELECTION))
+                .setView(this)
+                .initialize();
 
         listView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
-        setTitle(String.format(TITLE_FORMAT, getScopeText()));
-
-        SimpleCursorAdapter triggerAdapter = new SimpleCursorAdapter(this,
-                R.layout.trigger_item,
-                null,
-                PROJECTION,
-                new int[]{R.id.trigger_condition, R.id.trigger_notification}, 0);
-        triggerAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-            @Override
-            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-                TextView textView = (TextView) view;
-                Trigger trigger = (Trigger) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor);
-                if (columnIndex == cursor.getColumnIndex(OVirtContract.Trigger.NOTIFICATION)) {
-                    textView.setText(trigger.getNotificationType().getDisplayResourceId());
-                } else if (columnIndex == cursor.getColumnIndex(OVirtContract.Trigger.CONDITION)) {
-                    textView.setText(getConditionString(trigger.getCondition()));
-                }
-                return true;
-            }
-        });
-
-        cursorAdapterLoader = new CursorAdapterLoader(triggerAdapter) {
-            @Override
-            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                return provider
-                        .query(Trigger.class)
-                        //.where(ENTITY_TYPE, getEntityType().toString()) //do not filter trigger by entity type
-                        .where(SCOPE, triggerScope.toString())
-                        .where(TARGET_ID, targetEntityId)
-                        .asLoader();
-            }
-
-            @Override
-            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-                super.onLoadFinished(loader, data);
-
-                if (selectedListItem != null) {
-                    listViewItemLongClicked(selectedListItem);
-                }
-            }
-        };
-
-        listView.setAdapter(triggerAdapter);
         listView.setEmptyView(findViewById(android.R.id.empty));
 
-        getSupportLoaderManager().initLoader(0, null, cursorAdapterLoader);
-
         fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.material_green_300)));
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                addTrigger();
-            }
-        });
+        fab.setOnClickListener(view -> presenter.addTrigger());
+    }
+
+    @Override
+    public BasePresenter getPresenter() {
+        return presenter;
+    }
+
+    @Override
+    public void showTriggers(List<ViewTrigger> triggers) {
+        final TriggersAdapter adapter = new TriggersAdapter(getApplicationContext(), triggers.toArray(new ViewTrigger[triggers.size()]));
+
+        listView.setAdapter(adapter);
+
+        if (selectedListItem != null) {
+            listViewItemLongClicked(selectedListItem);
+        }
+    }
+
+    @Override
+    public void startEditTriggerActivity(ViewTrigger trigger) {
+        Intent intent = getTriggerActivityIntent(EditTriggerActivity_.class, trigger.trigger.getUri());
+        intent.putExtra(EXTRA_SELECTION_PATH, trigger.getPath());
+        startActivity(intent);
+    }
+
+    @Override
+    public void startAddTriggerActivity(Selection selection) {
+        clearSelection();
+        Intent intent = getTriggerActivityIntent(AddTriggerActivity_.class);
+        intent.putExtra(EXTRA_SELECTION, selection);
+        startActivity(intent);
     }
 
     @ItemLongClick(R.id.listView)
@@ -161,11 +144,9 @@ public class EditTriggersActivity extends ActionBarLoaderActivity implements Con
     }
 
     @ItemClick(R.id.listView)
-    void listViewItemClicked(Cursor cursor) {
+    void listViewItemClicked(ViewTrigger trigger) {
         clearSelection();
-        Trigger trigger = (Trigger) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor);
-        Intent intent = getTriggerActivityIntent(EditTriggerActivity_.class, trigger.getUri());
-        startActivity(intent);
+        presenter.triggerClicked(trigger);
     }
 
     @OptionsItem(R.id.delete_item)
@@ -178,9 +159,9 @@ public class EditTriggersActivity extends ActionBarLoaderActivity implements Con
     @Override
     public void onDialogResult(int dialogButton, int actionId) {
         if (actionId == DELETE_ACTION && dialogButton == DialogInterface.BUTTON_POSITIVE) {
-            Trigger trigger = getSelectedListItem();
+            ViewTrigger trigger = getSelectedListItem();
             clearSelection();
-            provider.delete(trigger);
+            presenter.deleteTrigger(trigger);
         }
     }
 
@@ -188,52 +169,6 @@ public class EditTriggersActivity extends ActionBarLoaderActivity implements Con
     public boolean onPrepareOptionsMenu(Menu menu) {
         deleteItem.setVisible(isSelected());
         return super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
-    public void restartLoader() {
-        getSupportLoaderManager().restartLoader(0, null, cursorAdapterLoader);
-    }
-
-    @Override
-    public void destroyLoader() {
-        getSupportLoaderManager().destroyLoader(0);
-    }
-
-    private void addTrigger() {
-        clearSelection();
-        Intent intent = getTriggerActivityIntent(AddTriggerActivity_.class);
-        startActivity(intent);
-    }
-
-    private String getScopeText() {
-        switch (triggerScope) {
-            case GLOBAL:
-                return GLOBAL_SCOPE;
-            case CLUSTER:
-                return String.format(CLUSTER_SCOPE, targetEntityName);
-            case ITEM:
-                return String.format(ITEM_SCOPE, targetEntityName);
-        }
-        return "unexpected scope";
-    }
-
-    private String getConditionString(Condition triggerCondition) {
-        StringBuilder builder = new StringBuilder();
-        if (triggerCondition instanceof CpuThresholdCondition) {
-            CpuThresholdCondition condition = (CpuThresholdCondition) triggerCondition;
-            builder.append("CPU above ").append(condition.getPercentageLimit()).append("%");
-        } else if (triggerCondition instanceof MemoryThresholdCondition) {
-            MemoryThresholdCondition condition = (MemoryThresholdCondition) triggerCondition;
-            builder.append("Memory above ").append(condition.getPercentageLimit()).append("%");
-        } else if (triggerCondition instanceof StatusCondition) {
-            StatusCondition condition = (StatusCondition) triggerCondition;
-            builder.append("Status is ").append(condition.getStatus().toString());
-        } else if (triggerCondition instanceof EventCondition) {
-            EventCondition condition = (EventCondition) triggerCondition;
-            builder.append("Event matches ").append(condition.getRegexString());
-        }
-        return builder.toString();
     }
 
     private Intent getTriggerActivityIntent(Class<?> clazz) {
@@ -276,24 +211,60 @@ public class EditTriggersActivity extends ActionBarLoaderActivity implements Con
     }
 
     private void updateSelection() {
-        Trigger trigger = getSelectedListItem();
-        setTitle(trigger != null ? getConditionString(trigger.getCondition()) : String.format(TITLE_FORMAT, getScopeText()));
-        invalidateOptionsMenu();
+        presenter.triggerSelected(getSelectedListItem());
+        invalidateOptionsMenu(); // delete button
     }
 
     private boolean isSelected() {
         return listView.getCheckedItemPosition() >= 0;
     }
 
-    private Trigger getSelectedListItem() {
+    private ViewTrigger getSelectedListItem() {
         int position = listView.getCheckedItemPosition();
-        Trigger trigger = null;
+        ViewTrigger trigger = null;
 
         if (position >= 0) {
-            Cursor cursor = (Cursor) listView.getItemAtPosition(position);
-            trigger = (Trigger) EntityMapper.TRIGGER_MAPPER.fromCursor(cursor);
+            trigger = (ViewTrigger) listView.getItemAtPosition(position);
         }
 
         return trigger;
+    }
+
+    private class TriggersAdapter extends ArrayAdapter<ViewTrigger> {
+
+        public TriggersAdapter(Context context, ViewTrigger[] objects) {
+            super(context, R.layout.trigger_item, objects);
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewTrigger triggerWrapper = getItem(position);
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.trigger_item, parent, false);
+            }
+
+            if (triggerWrapper != null && triggerWrapper.trigger != null) {
+                Trigger trigger = triggerWrapper.trigger;
+
+                TextView condition = (TextView) convertView.findViewById(R.id.trigger_condition);
+
+                condition.setText(trigger.toString());
+
+                TextView notification = (TextView) convertView.findViewById(R.id.trigger_notification);
+                notification.setText(trigger.getNotificationType().getDisplayResourceId());
+
+                TextView path = (TextView) convertView.findViewById(R.id.trigger_path);
+
+                final int dimmedColor = getResources().getColor(triggerWrapper.highlight ? R.color.abc_primary_text_material_dark : R.color.material_grey_400);
+                path.setTextColor(dimmedColor);
+
+                SpannableString spanString = new SpannableString(triggerWrapper.getPath());
+                spanString.setSpan(new StyleSpan(triggerWrapper.highlight ? Typeface.BOLD : Typeface.NORMAL), 0, spanString.length(), 0);
+                path.setText(spanString);
+            }
+
+            return convertView;
+        }
     }
 }

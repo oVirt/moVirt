@@ -26,7 +26,7 @@ public abstract class MultipleFacadeBaseListFragment<E extends OVirtAccountEntit
         super.appendQuery(query);
 
         if (isMultiple() && !activeSelection.isAllAccounts()) {
-            query.where(OVirtAccountEntity.ACCOUNT_ID, activeSelection.getAccount().getId());
+            query.where(OVirtAccountEntity.ACCOUNT_ID, activeSelection.getAccountId());
         }
     }
 

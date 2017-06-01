@@ -58,8 +58,11 @@ public class MovirtAccount implements Parcelable, Comparable<MovirtAccount> {
         return this.account.name.compareTo(account.account.name);
     }
 
-    public MovirtAccount(Parcel in) {
+    public MovirtAccount(Parcel in) throws IllegalArgumentException {
         this.id = in.readString();
+        if (id == null) {
+            throw new IllegalArgumentException("Cannot be serialized from this parcel");
+        }
         account = new Account(in);
     }
 

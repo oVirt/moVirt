@@ -39,7 +39,7 @@ public class EventCondition extends Condition<Event> {
 
     @Override
     public String toString() {
-        return "Event matches \"" + this.getRegexString() + "\" regex";
+        return "Event matches " + getRegexString();
     }
 
     public String getRegexString() {
