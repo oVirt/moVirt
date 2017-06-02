@@ -31,7 +31,7 @@ public abstract class SearchBaseListFragment<E extends OVirtEntity> extends Base
 
         String searchNameString = searchText.getText().toString();
         if (!StringUtils.isEmpty(searchNameString)) {
-            query.whereLike(NAME, "%" + searchNameString + "%");
+            query.whereLike(searchBy(), "%" + searchNameString + "%");
         }
     }
 
@@ -44,6 +44,10 @@ public abstract class SearchBaseListFragment<E extends OVirtEntity> extends Base
                 startActivity(resolver.getDetailIntent(entity, getActivity()));
             }
         }
+    }
+
+    protected String searchBy(){
+        return NAME;
     }
 }
 

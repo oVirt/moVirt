@@ -53,13 +53,8 @@ public class EventsFragment extends MultipleFacadeBaseListFragment<Event> {
     }
 
     @Override
-    protected void appendQuery(ProviderFacade.QueryBuilder<Event> query) {
-        super.appendQuery(query);
-
-        String searchNameString = searchText.getText().toString();
-        if (!StringUtils.isEmpty(searchNameString)) {
-            query.whereLike(DESCRIPTION, "%" + searchNameString + "%");
-        }
+    protected String searchBy() {
+        return DESCRIPTION;
     }
 
     @Override

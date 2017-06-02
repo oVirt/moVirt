@@ -130,6 +130,12 @@ public class AccountRxStore {
             throw new IllegalArgumentException("Name shouldn't be empty.");
         }
 
+        name = name.trim();
+
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("Name shouldn't consist of only whitespace characters.");
+        }
+
         if (name.length() > Constants.MAX_ACCOUNT_NAME_LENTH) {
             throw new IllegalArgumentException("Name shouldn't be longer than 20 characters.");
         }

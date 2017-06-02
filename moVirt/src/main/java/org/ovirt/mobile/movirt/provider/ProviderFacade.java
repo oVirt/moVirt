@@ -205,8 +205,10 @@ public class ProviderFacade {
             if (sortOrder.length() > 0) {
                 sortOrder.append(", ");
             }
-            sortOrder.append(columnName).append(" ");
-            sortOrder.append(order).append(" ");
+            sortOrder.append(columnName)
+                    .append(" COLLATE NOCASE ")
+                    .append(order)
+                    .append(" ");
 
             return this;
         }
