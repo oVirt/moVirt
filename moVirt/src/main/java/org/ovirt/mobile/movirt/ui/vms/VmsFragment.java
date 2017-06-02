@@ -18,6 +18,8 @@ import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 
+import static org.ovirt.mobile.movirt.provider.OVirtContract.HasCoresPerSocket.CORES_PER_SOCKET;
+import static org.ovirt.mobile.movirt.provider.OVirtContract.HasSockets.SOCKETS;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.MEMORY_USAGE;
@@ -70,7 +72,11 @@ public class VmsFragment extends ClusterBoundBaseListFragment<Vm> {
                     double cpuUsage = cursor.getDouble(cursor.getColumnIndex(CPU_USAGE));
                     double memUsage = cursor.getDouble(cursor.getColumnIndex(MEMORY_USAGE));
 
-                    textView.setText(getString(R.string.statistics, cpuUsage, memUsage));
+                    int coresPerSocket = cursor.getInt(cursor.getColumnIndex(CORES_PER_SOCKET));
+                    int sockets = cursor.getInt(cursor.getColumnIndex(SOCKETS));
+
+                    double averageCpuUsage = Vm.getAverageCpuUsage(sockets, coresPerSocket, cpuUsage);
+                    textView.setText(getString(R.string.statistics, averageCpuUsage, memUsage));
                 }
 
                 return true;

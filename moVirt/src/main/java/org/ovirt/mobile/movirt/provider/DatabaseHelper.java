@@ -13,7 +13,6 @@ import org.ovirt.mobile.movirt.model.trigger.Trigger;
 
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class DatabaseHelper extends OrmLiteDatabaseHelper<UriMatcher> {

@@ -14,7 +14,9 @@ import org.ovirt.mobile.movirt.ui.dashboard.generalfragment.DashboardGeneralFrag
 import org.ovirt.mobile.movirt.ui.dashboard.generalfragment.StartActivityAction;
 import org.ovirt.mobile.movirt.ui.dashboard.generalfragment.resources.UtilizationResource;
 import org.ovirt.mobile.movirt.ui.mvp.DisposablesPresenter;
+import org.ovirt.mobile.movirt.util.usage.Cores;
 import org.ovirt.mobile.movirt.util.usage.MemorySize;
+import org.ovirt.mobile.movirt.util.usage.Percentage;
 
 import java.util.List;
 
@@ -61,7 +63,7 @@ public class VirtualDashboardPresenter extends DisposablesPresenter<VirtualDashb
 
     private ResultWrapper process(Wrapper data) {
         return new ResultWrapper(
-                DashboardGeneralFragmentHelper.getCpuUtilization(data.vms).first,
+                getCpuUtilization(data.vms),
                 DashboardGeneralFragmentHelper.getMemoryUtilization(data.vms),
                 getDisksUtilization(data.disks));
     }
@@ -75,6 +77,22 @@ public class VirtualDashboardPresenter extends DisposablesPresenter<VirtualDashb
 
         getView().renderStoragePercentageCircle(data.storageResource,
                 new StartActivityAction(MainActivityFragments.STORAGE_DOMAIN, OVirtContract.StorageDomain.STATUS, SortOrder.ASCENDING));
+    }
+
+    public static UtilizationResource getCpuUtilization(List<Vm> entities) {
+        Cores allCores = new Cores();
+        double usedPercentagesSum = 0;
+
+        for (Vm entity : entities) {
+            usedPercentagesSum += entity.getCpuUsage();
+            allCores.addValue(entity);
+        }
+
+        Percentage used = new Percentage((long) usedPercentagesSum / (allCores.getValue() == 0 ? 1 : allCores.getValue()));
+        Percentage total = new Percentage(100);
+        Percentage available = new Percentage(total.getValue() - used.getValue());
+
+        return new UtilizationResource(used, total, available);
     }
 
     private UtilizationResource getDisksUtilization(List<Disk> diskList) {

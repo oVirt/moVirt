@@ -18,12 +18,12 @@ public class VmCpuThresholdCondition extends Condition<Vm> {
 
     @Override
     public boolean evaluate(Vm entity) {
-        return entity.getCpuUsage() >= getPercentageLimit();
+        return entity.getAverageCpuUsage() >= getPercentageLimit();
     }
 
     @Override
     public String getMessage(Context context, Vm vm) {
-        return context.getResources().getString(R.string.vm_cpu_message, vm.getName(), getPercentageLimit(), vm.getCpuUsage());
+        return context.getResources().getString(R.string.vm_cpu_message, vm.getName(), getPercentageLimit(), vm.getAverageCpuUsage());
     }
 
     @Override

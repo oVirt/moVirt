@@ -252,7 +252,7 @@ public class VmDetailGeneralFragment extends RefreshableLoaderFragment implement
 
     public void renderVm(Vm vm) {
         statusView.setText(vm.getStatus().toString().toLowerCase());
-        cpuView.setText(getString(R.string.percentage, vm.getCpuUsage()));
+        cpuView.setText(getString(R.string.percentage, vm.getAverageCpuUsage()));
         memView.setText(getString(R.string.percentage, vm.getMemoryUsage()));
         long memory = vm.getMemorySize();
         memoryView.setText((memory == -1) ? getString(R.string.NA) : new MemorySize(memory).toString());

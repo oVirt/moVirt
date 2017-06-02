@@ -46,7 +46,7 @@ public abstract class SearchBaseListFragment<E extends OVirtEntity> extends Base
         }
     }
 
-    protected String searchBy(){
+    protected String searchBy() {
         return NAME;
     }
 }

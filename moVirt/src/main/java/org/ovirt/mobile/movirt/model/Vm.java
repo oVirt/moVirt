@@ -85,6 +85,15 @@ public class Vm extends OVirtAccountNamedEntity implements OVirtContract.Vm {
         return cpuUsage;
     }
 
+    public double getAverageCpuUsage() {
+        return getAverageCpuUsage(sockets, coresPerSocket, cpuUsage);
+    }
+
+    public static double getAverageCpuUsage(int sockets, int coresPerSocket, double cpuUsage) {
+        int cores = sockets * coresPerSocket;
+        return cores == 0 ? 0 : cpuUsage / cores;
+    }
+
     @Override
     public void setCpuUsage(double cpuUsage) {
         this.cpuUsage = cpuUsage;

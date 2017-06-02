@@ -1,6 +1,5 @@
 package org.ovirt.mobile.movirt.ui.vms;
 
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.net.Uri;
 import android.os.RemoteException;

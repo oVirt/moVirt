@@ -9,13 +9,11 @@ import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
-import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.ui.listfragment.MultipleFacadeBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
-import org.springframework.util.StringUtils;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.DESCRIPTION;
 

@@ -6,6 +6,7 @@ import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.auth.AccountManagerHelper;
 import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
+import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
 import org.ovirt.mobile.movirt.auth.account.data.LoginStatus;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
@@ -192,6 +193,7 @@ public class ConnectionSettingsPresenter extends AccountDisposablesPresenter<Con
             } // otherwise periodic sync will trigger immediate refresh
         }
 
+        rxStore.ACTIVE_SELECTION.onNext(new ActiveSelection(account));
         messageHelper.showToast(resources.getLoginSuccess());
         finishSafe();
     }

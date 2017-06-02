@@ -22,6 +22,7 @@ import org.ovirt.mobile.movirt.ui.dashboard.generalfragment.resources.Utilizatio
 import org.ovirt.mobile.movirt.ui.mvp.DisposablesPresenter;
 import org.ovirt.mobile.movirt.util.usage.Cores;
 import org.ovirt.mobile.movirt.util.usage.MemorySize;
+import org.ovirt.mobile.movirt.util.usage.Percentage;
 
 import java.util.List;
 
@@ -67,7 +68,7 @@ public class PhysicalDashboardPresenter extends DisposablesPresenter<PhysicalDas
 
     private ResultWrapper process(Wrapper data) {
         OverCommitResource cpuOverCommit = new OverCommitResource();
-        Pair<UtilizationResource, Cores> cpuUtilization = DashboardGeneralFragmentHelper.getCpuUtilization(data.hosts);
+        Pair<UtilizationResource, Cores> cpuUtilization = getCpuUtilization(data.hosts);
         UtilizationResource cpuResource = cpuUtilization.first;
         cpuOverCommit.setPhysicalTotal(cpuUtilization.second);
 
@@ -119,6 +120,25 @@ public class PhysicalDashboardPresenter extends DisposablesPresenter<PhysicalDas
 
         memoryOverCommit.setVirtualTotal(allVmMemory);
         memoryOverCommit.setVirtualUsed(upVmMemory);
+    }
+
+    private static Pair<UtilizationResource, Cores> getCpuUtilization(List<Host> entities) {
+        Cores allCores = new Cores();
+        double usedPercentagesSum = 0;
+
+        for (Host entity : entities) {
+            Cores entityCores = new Cores(entity);
+
+            usedPercentagesSum += entityCores.getValue() * entity.getCpuUsage();
+            allCores.addValue(entityCores);
+        }
+
+        // average of all host usages
+        Percentage used = new Percentage((long) usedPercentagesSum / (allCores.getValue() == 0 ? 1 : allCores.getValue()));
+        Percentage total = new Percentage(100);
+        Percentage available = new Percentage(total.getValue() - used.getValue());
+
+        return new Pair<>(new UtilizationResource(used, total, available), allCores);
     }
 
     private UtilizationResource getStorageDomainUtilization(List<StorageDomain> domainList) {
