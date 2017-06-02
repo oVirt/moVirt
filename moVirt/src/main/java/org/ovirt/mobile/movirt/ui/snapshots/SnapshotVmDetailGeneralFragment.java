@@ -123,7 +123,7 @@ public class SnapshotVmDetailGeneralFragment extends RefreshableLoaderFragment i
                 }
                 break;
             case DATA_CENTER_LOADER:
-                if (cluster != null) {
+                if (cluster != null && cluster.getDataCenterId() != null) {
                     loader = provider.query(DataCenter.class).id(cluster.getDataCenterId()).asLoader();
                 }
                 break;
@@ -152,7 +152,9 @@ public class SnapshotVmDetailGeneralFragment extends RefreshableLoaderFragment i
             case CLUSTER_LOADER:
                 cluster = EntityMapper.forEntity(Cluster.class).fromCursor(data);
                 renderCluster(cluster);
-                if (getLoaderManager().getLoader(DATA_CENTER_LOADER) == null) {
+                if (cluster.getDataCenterId() == null) {
+                    renderDataCenter(null);
+                } else if (getLoaderManager().getLoader(DATA_CENTER_LOADER) == null) {
                     getLoaderManager().initLoader(DATA_CENTER_LOADER, null, this);
                 }
                 break;
@@ -196,7 +198,8 @@ public class SnapshotVmDetailGeneralFragment extends RefreshableLoaderFragment i
     }
 
     public void renderDataCenter(DataCenter dataCenter) {
-        dataCenterView.setText(getString(R.string.two_separated_strings, dataCenter.getName(), dataCenter.getVersion()));
+        dataCenterView.setText(dataCenter == null ? getString(R.string.NA) :
+                getString(R.string.two_separated_strings, dataCenter.getName(), dataCenter.getVersion()));
     }
 
     @Override

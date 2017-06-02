@@ -11,7 +11,7 @@ public class Cluster extends org.ovirt.mobile.movirt.rest.dto.Cluster {
     @Override
     public org.ovirt.mobile.movirt.model.Cluster toEntity(String accountId) {
         org.ovirt.mobile.movirt.model.Cluster cluster = super.toEntity(accountId);
-        cluster.setDataCenterId(IdHelper.combinedId(accountId, data_center));
+        cluster.setDataCenterId(IdHelper.combinedIdSafe(accountId, data_center));
 
         return cluster;
     }
