@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.ui.snapshots;
 
 import android.content.Context;
 import android.os.RemoteException;
+import android.support.v4.util.Pair;
 
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
@@ -9,8 +10,8 @@ import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
-import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
 import org.ovirt.mobile.movirt.auth.account.data.ClusterAndEntity;
+import org.ovirt.mobile.movirt.auth.account.data.Selection;
 import org.ovirt.mobile.movirt.facade.SnapshotFacade;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Snapshot;
@@ -23,7 +24,6 @@ import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.mvp.AccountDisposablesProgressBarPresenter;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.message.CommonMessageHelper;
-import org.ovirt.mobile.movirt.util.resources.Resources;
 
 import java.util.List;
 
@@ -56,9 +56,6 @@ public class SnapshotDetailPresenter extends AccountDisposablesProgressBarPresen
     @Bean
     CommonMessageHelper commonMessageHelper;
 
-    @Bean
-    Resources resources;
-
     @Override
     public SnapshotDetailPresenter setIds(String snapshotId, String vmId) {
         this.snapshotId = snapshotId;
@@ -79,17 +76,17 @@ public class SnapshotDetailPresenter extends AccountDisposablesProgressBarPresen
                 .id(snapshotId)
                 .singleAsObservable();
 
-        getDisposables().add(vmObservable
-                .switchMap(host -> providerFacade.query(Cluster.class)
-                        .where(Cluster.ID, host.getClusterId())
+        getDisposables().add(Observable.combineLatest(vmObservable, snapshotObservable, Pair::new)
+                .switchMap(pair -> providerFacade.query(Cluster.class)
+                        .where(Cluster.ID, pair.first.getClusterId())
                         .singleAsObservable()
-                        .map(cluster -> new ClusterAndEntity<>(host, cluster))
-                        .startWith(new ClusterAndEntity<>(host, null)))
+                        .map(cluster -> new ClusterWrapper(pair.first, cluster, pair.second))
+                        .startWith(new ClusterWrapper(pair.first, null, pair.second)))
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(wrapper -> {
-                    getView().displayStatus(ActiveSelection.getDescription(account,
-                            wrapper.getClusterOrDefault(), wrapper.entity.getName(), resources.getSnapshot()));
+                    getView().displayStatus(new Selection(account, wrapper.getClusterName(),
+                            wrapper.entity.getName(), wrapper.currentSnapshot.getName()));
                 }));
 
         getDisposables().add(snapshotObservable
@@ -204,6 +201,15 @@ public class SnapshotDetailPresenter extends AccountDisposablesProgressBarPresen
         @Override
         public void onResponse(Void aVoid) throws RemoteException {
             syncSnapshots();
+        }
+    }
+
+    private static class ClusterWrapper extends ClusterAndEntity<Vm> {
+        final Snapshot currentSnapshot;
+
+        public ClusterWrapper(Vm entity, Cluster cluster, Snapshot currentSnapshot) {
+            super(entity, cluster);
+            this.currentSnapshot = currentSnapshot;
         }
     }
 

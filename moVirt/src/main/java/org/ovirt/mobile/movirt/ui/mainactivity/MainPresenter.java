@@ -25,7 +25,7 @@ import io.reactivex.schedulers.Schedulers;
 public class MainPresenter extends DisposablesPresenter<MainPresenter, MainContract.View>
         implements MainContract.Presenter {
 
-    private static final int CLOSE_DRAWER_DELAY = 400; // ms
+    private static final int CLOSE_DRAWER_DELAY = 300; // ms
 
     @Bean
     CommonSharedPreferencesHelper commonSharedPreferencesHelper;
@@ -57,7 +57,7 @@ public class MainPresenter extends DisposablesPresenter<MainPresenter, MainContr
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(selection -> {
                     getView().selectActiveSelection(selection);
-                    getView().displayStatus(selection.getDescription());
+                    getView().displayStatus(selection);
                 }));
 
         if (!commonSharedPreferencesHelper.isFirstAccountConfigured()) {

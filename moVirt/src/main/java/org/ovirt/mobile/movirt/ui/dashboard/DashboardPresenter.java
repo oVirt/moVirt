@@ -24,7 +24,7 @@ public class DashboardPresenter extends DisposablesPresenter<DashboardPresenter,
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(selection -> {
-                    getView().displayStatus(selection.getDescription());
+                    getView().displayStatus(selection);
                 }));
 
         return this;

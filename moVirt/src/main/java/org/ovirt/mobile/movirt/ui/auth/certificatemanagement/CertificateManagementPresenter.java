@@ -125,6 +125,15 @@ public class CertificateManagementPresenter extends AccountListenersDisposablesP
         return this;
     }
 
+    @Override
+    public void destroy() {
+        super.destroy();
+        certHandlingStrategySubject.onComplete();
+        certChainSubject.onComplete();
+        validHostnamesSubject.onComplete();
+        customCertificateLocationSubject.onComplete();
+    }
+
     private void backgroundOperationStatus(boolean inProgress) {
         rxStore.CERTIFICATE_DOWNLOAD_STATUS.onNext(new CertificateDownloadStatus(account, inProgress));
     }

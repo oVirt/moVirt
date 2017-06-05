@@ -164,7 +164,11 @@ public class AccountManagerHelper {
                 Set<MovirtAccount> filtered = new HashSet<>();
                 for (Account account : accounts) {
                     if (Constants.ACCOUNT_TYPE.equals(account.type)) {
-                        filtered.add(asMoAccount(account));
+                        try {
+                            filtered.add(asMoAccount(account));
+                        } catch (IllegalStateException incompatibleAccount) {
+                            removeAccount(new MovirtAccount("", account), null); // remove old account
+                        }
                     }
                 }
                 callback.onAccountsUpdated(filtered);

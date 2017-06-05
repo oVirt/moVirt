@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.ui.mainactivity;
 
 import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
 import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
+import org.ovirt.mobile.movirt.auth.account.data.Selection;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.ui.mvp.BasePresenter;
 import org.ovirt.mobile.movirt.ui.mvp.BaseView;
@@ -22,7 +23,7 @@ public interface MainContract {
 
         void startEditAccountsActivity();
 
-        void startEditTriggersActivity(ActiveSelection selection);
+        void startEditTriggersActivity(Selection selection);
 
         void startAccountSettingsActivity(MovirtAccount account);
 

@@ -10,7 +10,6 @@ import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
-import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
 import org.ovirt.mobile.movirt.auth.account.data.ClusterAndEntity;
 import org.ovirt.mobile.movirt.auth.account.data.Selection;
 import org.ovirt.mobile.movirt.facade.ConsoleFacade;
@@ -31,7 +30,6 @@ import org.ovirt.mobile.movirt.ui.mvp.AccountDisposablesProgressBarPresenter;
 import org.ovirt.mobile.movirt.util.ConsoleHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.message.CommonMessageHelper;
-import org.ovirt.mobile.movirt.util.resources.Resources;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -56,7 +54,8 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
 
     private String vmId;
     private Vm vm;
-    private Cluster cluster;
+
+    private Selection selection;
 
     @Bean
     ProviderFacade providerFacade;
@@ -69,9 +68,6 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
 
     @Bean
     CommonMessageHelper commonMessageHelper;
-
-    @Bean
-    Resources resources;
 
     @Bean
     ConnectivityHelper connectivityHelper;
@@ -92,19 +88,21 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
                 .singleAsObservable();
 
         getDisposables().add(vmObservable
-                .switchMap(host -> providerFacade.query(Cluster.class)
-                        .where(Cluster.ID, host.getClusterId())
+                .switchMap(vm -> providerFacade.query(Cluster.class)
+                        .where(Cluster.ID, vm.getClusterId())
                         .singleAsObservable()
-                        .map(c -> {
-                            cluster = c;
-                            return new ClusterAndEntity<>(host, c);
-                        })
-                        .startWith(new ClusterAndEntity<>(host, null)))
+                        .map(c -> new ClusterAndEntity<>(vm, c))
+                        .startWith(new ClusterAndEntity<>(vm, null)))
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(wrapper -> {
                     getView().displayTitle(wrapper.entity.getName());
-                    getView().displayStatus(ActiveSelection.getDescription(account, wrapper.getClusterOrDefault(), resources.getVm()));
+
+                    vm = wrapper.entity;
+                    selection = new Selection(account, new Selection.SelectedCluster(wrapper.cluster),
+                            wrapper.getClusterName(), wrapper.entity.getName());
+
+                    getView().displayStatus(selection);
                 }));
 
         getDisposables().add(Observable.combineLatest(
@@ -121,7 +119,6 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
                         allConsoles.put(console.getProtocol(), console);
                     }
 
-                    vm = wrapper.vm;
                     consoles.onNext(allConsoles);
                     menuState.onNext(new MenuState(wrapper.vm.getStatus(),
                             menuCreateSnapshotVisibility,
@@ -142,6 +139,9 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
 
         if (connectivityHelper.isNetworkAvailable()) {
             syncConsoles();
+            if (!environmentStore.isInSync(account)) {
+                syncVm();
+            }
         }
 
         return this;
@@ -149,7 +149,13 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
 
     @Override
     public void beginMigration() {
-        getView().startMigrationActivity(vm.getHostId(), vm.getClusterId());
+        getView().startMigrationActivity(selection, vm.getHostId(), vm.getClusterId());
+    }
+
+    @Background
+    protected void syncVm() {
+        VmFacade facade = environmentStore.getEnvironment(account).getFacade(Vm.class);
+        facade.syncOne(new ProgressBarResponse<>(VmDetailPresenter.this), vmId);
     }
 
     @Background
@@ -189,11 +195,7 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
 
     @Override
     public void editTriggers() {
-        if (vm != null) {
-            final Selection selection = new Selection(account, vm.getClusterId(),
-                    cluster == null ? null : cluster.getName());
-            getView().startEditTriggersActivity(selection, vmId);
-        }
+        getView().startEditTriggersActivity(selection, vmId);
     }
 
     @Override
@@ -279,8 +281,7 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
         @Override
         public void onResponse(Void aVoid) throws RemoteException {
             try {
-                VmFacade facade = environmentStore.getEnvironment(account).getFacade(Vm.class);
-                facade.syncOne(new ProgressBarResponse<>(VmDetailPresenter.this), vmId);
+                syncVm();
                 syncConsoles();
             } catch (AccountDeletedException ignore) {
             }

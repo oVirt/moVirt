@@ -11,15 +11,25 @@ import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.ui.TreeHolder;
 
 public class AccountsTreeItem implements TreeHolder.HolderNode {
-    private MovirtAccount account;
-    private Cluster cluster;
+    private final MovirtAccount account;
+    private final Cluster cluster;
+    private final ActiveSelection activeSelection;
 
-    private ActiveSelectionChangedListener changedListener;
-    private LongClickListener longClickListener;
+    private final ActiveSelectionChangedListener changedListener;
+    private final LongClickListener longClickListener;
 
     public AccountsTreeItem(MovirtAccount account, Cluster cluster, ActiveSelectionChangedListener changedListener, LongClickListener longClickListener) {
         this.account = account;
         this.cluster = cluster;
+
+        if (account == null) {
+            activeSelection = ActiveSelection.ALL_ACTIVE;
+        } else if (cluster == null) {
+            activeSelection = new ActiveSelection(account);
+        } else {
+            activeSelection = new ActiveSelection(account, cluster.getId(), cluster.getName());
+        }
+
         this.changedListener = changedListener;
         this.longClickListener = longClickListener;
     }
@@ -27,25 +37,19 @@ public class AccountsTreeItem implements TreeHolder.HolderNode {
     @Override
     public void onSelect() {
         if (changedListener != null) {
-            changedListener.onSelect(asActiveSelection());
+            changedListener.onSelect(activeSelection);
         }
     }
 
     @Override
     public void onLongClick() {
         if (longClickListener != null) {
-            longClickListener.onLongClick(asActiveSelection());
+            longClickListener.onLongClick(activeSelection);
         }
     }
 
     public ActiveSelection asActiveSelection() {
-        if (account == null) {
-            return ActiveSelection.ALL_ACTIVE;
-        } else if (cluster == null) {
-            return new ActiveSelection(account);
-        } else {
-            return new ActiveSelection(account, cluster.getId(), cluster.getName());
-        }
+        return activeSelection;
     }
 
     @Override

@@ -27,6 +27,7 @@ import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
 import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
+import org.ovirt.mobile.movirt.auth.account.data.Selection;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.ui.CameraActivity_;
@@ -217,7 +218,7 @@ public class MainActivity extends PresenterStatusSyncableActivity implements Mai
     }
 
     @Override
-    public void startEditTriggersActivity(ActiveSelection selection) {
+    public void startEditTriggersActivity(Selection selection) {
         final Intent intent = new Intent(this, EditTriggersActivity_.class);
         intent.putExtra(EditTriggersActivity.EXTRA_SELECTION, selection);
         startActivity(intent);

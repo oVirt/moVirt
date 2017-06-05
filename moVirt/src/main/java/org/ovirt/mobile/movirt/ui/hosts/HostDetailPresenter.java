@@ -7,8 +7,8 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
-import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
 import org.ovirt.mobile.movirt.auth.account.data.ClusterAndEntity;
+import org.ovirt.mobile.movirt.auth.account.data.Selection;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Host;
@@ -18,7 +18,6 @@ import org.ovirt.mobile.movirt.rest.SimpleResponse;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.mvp.AccountDisposablesProgressBarPresenter;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
-import org.ovirt.mobile.movirt.util.resources.Resources;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -31,9 +30,6 @@ public class HostDetailPresenter extends AccountDisposablesProgressBarPresenter<
 
     @Bean
     ProviderFacade providerFacade;
-
-    @Bean
-    Resources resources;
 
     @Bean
     EnvironmentStore environmentStore;
@@ -62,7 +58,7 @@ public class HostDetailPresenter extends AccountDisposablesProgressBarPresenter<
                 .subscribe(wrapper -> {
                     getView().displayTitle(wrapper.entity.getName());
                     getView().displayHostStatus(wrapper.entity.getStatus());
-                    getView().displayStatus(ActiveSelection.getDescription(account, wrapper.getClusterOrDefault(), resources.getHost()));
+                    getView().displayStatus(new Selection(account, wrapper.getClusterName(), wrapper.entity.getName()));
                 }));
 
         return this;

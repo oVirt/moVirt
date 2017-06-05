@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import static org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity.EXTRA_SELECTION;
-import static org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity.EXTRA_SELECTION_PATH;
 import static org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity.EXTRA_TARGET_ENTITY_ID;
 
 @EActivity(R.layout.activity_base_trigger)
@@ -90,18 +89,8 @@ public abstract class BaseTriggerActivity extends BroadcastAwareAppCompatActivit
 
         targetEntityId = getIntent().getStringExtra(EXTRA_TARGET_ENTITY_ID);
         selection = getIntent().getParcelableExtra(EXTRA_SELECTION);
-        String path = getIntent().getStringExtra(EXTRA_SELECTION_PATH);
-        String status;
 
-        if (path != null) {
-            status = path;
-        } else if (targetEntityId == null) {
-            status = selection.getDescription();
-        } else {
-            status = selection.getDescription(resources.getVm());
-        }
-
-        statusText.setText(status);
+        statusText.setText(selection.getDescription());
 
         fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.material_green_300)));
         fab.setOnClickListener(view -> onDone());

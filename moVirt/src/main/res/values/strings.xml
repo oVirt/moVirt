@@ -241,13 +241,6 @@
     <string name="running_virtual_machines">Running VMs</string>
     <string name="physical_resources">Physical Resources</string>
 
-    <string name="cluster_path">Cluster</string>
-    <string name="host_path">Host</string>
-    <string name="storage_domain_path">Storage</string>
-    <string name="vm_path">VM</string>
-    <string name="event_path">Event</string>
-    <string name="snapshot_path">Snapshot</string>
-
     <string name="title_activity_migrate_vm">Migrate VM</string>
     <string name="migrate_title">Choose host to migrate VM</string>
     <string name="migrate_hint">only current cluster and working hosts shown</string>

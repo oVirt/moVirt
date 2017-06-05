@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -17,6 +16,7 @@ import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.account.data.Selection;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.enums.HostStatus;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
@@ -30,12 +30,13 @@ import static org.ovirt.mobile.movirt.Constants.APP_PACKAGE_DOT;
 @EActivity(R.layout.activity_migrate_vm)
 public class VmMigrateActivity extends ActionBarLoaderActivity {
 
-    public static final String CLUSTER_ID_EXTRA = APP_PACKAGE_DOT + "CLUSTER_ID_EXTRA";
-    public static final String HOST_ID_EXTRA = APP_PACKAGE_DOT + "HOST_ID_EXTRA";
+    public static final String EXTRA_CLUSTER_ID = APP_PACKAGE_DOT + "EXTRA_CLUSTER_ID";
+    public static final String EXTRA_HOST_ID = APP_PACKAGE_DOT + "EXTRA_HOST_ID";
+    public static final String EXTRA_SELECTION = APP_PACKAGE_DOT + "EXTRA_SELECTION";
     public static final int RESULT_DEFAULT = RESULT_FIRST_USER;
     public static final int RESULT_SELECT = RESULT_FIRST_USER + 1;
     public static final
-    String RESULT_HOST_ID_EXTRA = APP_PACKAGE_DOT + "RESULT_HOST_ID_EXTRA";
+    String RESULT_EXTRA_HOST_ID = APP_PACKAGE_DOT + "RESULT_EXTRA_HOST_ID";
     private static final int HOSTS_LOADER = 0;
     @ViewById
     TextView labelEmpty;
@@ -48,6 +49,9 @@ public class VmMigrateActivity extends ActionBarLoaderActivity {
     @Bean
     ProviderFacade provider;
 
+    @ViewById
+    public TextView statusText;
+
     private SimpleCursorAdapter hostsAdapter;
     private CursorAdapterLoader cursorAdapterLoader;
     private String currentHostId;
@@ -56,6 +60,8 @@ public class VmMigrateActivity extends ActionBarLoaderActivity {
 
     @AfterViews
     void init() {
+        statusText.setText(((Selection) getIntent().getParcelableExtra(EXTRA_SELECTION)).getDescription());
+
         getExtras();
         setLoader(currentClusterId, currentHostId);
         setList();
@@ -73,8 +79,8 @@ public class VmMigrateActivity extends ActionBarLoaderActivity {
 
     private void getExtras() {
         Intent intent = getIntent();
-        currentClusterId = intent.getStringExtra(CLUSTER_ID_EXTRA);
-        currentHostId = intent.getStringExtra(HOST_ID_EXTRA);
+        currentClusterId = intent.getStringExtra(EXTRA_CLUSTER_ID);
+        currentHostId = intent.getStringExtra(EXTRA_HOST_ID);
     }
 
     private void setLoader(final String filterClusterId, final String filterHostId) {
@@ -103,16 +109,12 @@ public class VmMigrateActivity extends ActionBarLoaderActivity {
 
     private void setList() {
         listHosts.setAdapter(hostsAdapter);
-        listHosts.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Cursor cursor = hostsAdapter.getCursor();
-                Object item = listHosts.getSelectedItem();
-                if (cursor != null && cursor.moveToPosition(position)) {
-                    selectedHost = new Host();
-                    selectedHost.initFromCursor(cursor);
-                    buttonMigrateToSelected.setEnabled(true);
-                }
+        listHosts.setOnItemClickListener((parent, view, position, id) -> {
+            Cursor cursor = hostsAdapter.getCursor();
+            if (cursor != null && cursor.moveToPosition(position)) {
+                selectedHost = new Host();
+                selectedHost.initFromCursor(cursor);
+                buttonMigrateToSelected.setEnabled(true);
             }
         });
     }
@@ -132,7 +134,7 @@ public class VmMigrateActivity extends ActionBarLoaderActivity {
     @Click(R.id.buttonMigrateToSelected)
     public void clickMigrateToSelected() {
         Intent result = new Intent();
-        result.putExtra(RESULT_HOST_ID_EXTRA, selectedHost.getId());
+        result.putExtra(RESULT_EXTRA_HOST_ID, selectedHost.getId());
         setResult(RESULT_SELECT, result);
         finish();
     }

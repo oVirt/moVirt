@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.ui.triggers;
 
 import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.auth.account.data.Selection;
+import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.util.NullPriorityComparator;
 
@@ -13,16 +14,20 @@ class ViewTrigger implements Comparable<ViewTrigger> {
     final String clusterName;
     final String entityName;
 
-    public ViewTrigger(Trigger trigger, boolean highlight, MovirtAccount account, String clusterName, String entityName) {
+    final Selection selection;
+
+    public ViewTrigger(Trigger trigger, boolean highlight, MovirtAccount account, Cluster cluster, String entityName) {
         this.trigger = trigger;
         this.highlight = highlight;
         this.account = account;
-        this.clusterName = clusterName;
+        clusterName = cluster == null ? null : cluster.getName();
         this.entityName = entityName;
+
+        selection = new Selection(account, new Selection.SelectedCluster(cluster), clusterName, entityName);
     }
 
     public String getPath() {
-        return Selection.getDescription(account, clusterName, entityName);
+        return selection.getDescription();
     }
 
     @Override

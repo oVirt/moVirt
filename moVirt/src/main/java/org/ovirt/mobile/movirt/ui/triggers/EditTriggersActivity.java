@@ -48,7 +48,6 @@ import java.util.List;
 public class EditTriggersActivity extends PresenterStatusSyncableActivity implements EditTriggersContract.View, ConfirmDialogFragment.ConfirmDialogListener {
     public static final String EXTRA_TARGET_ENTITY_ID = "target_entity";
     public static final String EXTRA_SELECTION = "selection";
-    public static final String EXTRA_SELECTION_PATH = "selection_path";
 
     private static final String[] PROJECTION = new String[]{
             OVirtContract.Trigger.CONDITION,
@@ -124,7 +123,7 @@ public class EditTriggersActivity extends PresenterStatusSyncableActivity implem
     @Override
     public void startEditTriggerActivity(ViewTrigger trigger) {
         Intent intent = getTriggerActivityIntent(EditTriggerActivity_.class, trigger.trigger.getUri());
-        intent.putExtra(EXTRA_SELECTION_PATH, trigger.getPath());
+        intent.putExtra(EXTRA_SELECTION, trigger.selection);
         startActivity(intent);
     }
 

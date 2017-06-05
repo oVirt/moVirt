@@ -16,7 +16,7 @@ public class ClusterAndEntity<E extends OVirtEntity> {
         return cluster != null;
     }
 
-    public String getClusterOrDefault() {
-        return cluster != null ? cluster.getName() : "";
+    public String getClusterName() {
+        return cluster == null ? null : cluster.getName();
     }
 }

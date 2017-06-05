@@ -216,7 +216,7 @@ public class VmDetailActivity extends PresenterStatusSyncableActivity implements
                 presenter.migrateToDefault();
             }
             if (resultCode == VmMigrateActivity.RESULT_SELECT) {
-                presenter.migrateTo(data.getStringExtra(VmMigrateActivity.RESULT_HOST_ID_EXTRA));
+                presenter.migrateTo(data.getStringExtra(VmMigrateActivity.RESULT_EXTRA_HOST_ID));
             }
         }
     }
@@ -245,10 +245,11 @@ public class VmDetailActivity extends PresenterStatusSyncableActivity implements
     }
 
     @Override
-    public void startMigrationActivity(String hostId, String clusterId) {
+    public void startMigrationActivity(Selection selection, String hostId, String clusterId) {
         Intent migrateIntent = new Intent(this, VmMigrateActivity_.class);
-        migrateIntent.putExtra(VmMigrateActivity.HOST_ID_EXTRA, hostId);
-        migrateIntent.putExtra(VmMigrateActivity.CLUSTER_ID_EXTRA, clusterId);
+        migrateIntent.putExtra(VmMigrateActivity.EXTRA_SELECTION, selection);
+        migrateIntent.putExtra(VmMigrateActivity.EXTRA_HOST_ID, hostId);
+        migrateIntent.putExtra(VmMigrateActivity.EXTRA_CLUSTER_ID, clusterId);
         startActivityForResult(migrateIntent, REQUEST_MIGRATE);
     }
 

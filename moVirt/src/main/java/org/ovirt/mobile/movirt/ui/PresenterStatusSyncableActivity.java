@@ -4,6 +4,7 @@ import android.widget.TextView;
 
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
+import org.ovirt.mobile.movirt.auth.account.data.Selection;
 import org.ovirt.mobile.movirt.ui.mvp.BasePresenter;
 import org.ovirt.mobile.movirt.ui.mvp.BaseView;
 import org.ovirt.mobile.movirt.ui.mvp.StatusView;
@@ -39,6 +40,12 @@ public abstract class PresenterStatusSyncableActivity extends SyncableActivity i
         super.onDestroy();
     }
 
+    @Override
+    public void displayStatus(Selection selection) {
+        displayStatus(selection.getDescription());
+    }
+
+    @Override
     public void displayStatus(String status) {
         if (statusText == null) {
             throw new IllegalStateException("TextView statusText is missing in this activity.");

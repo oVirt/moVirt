@@ -14,7 +14,7 @@ public interface VmDetailContract {
 
         void displayMenu(MenuState menuState);
 
-        void startMigrationActivity(String hostId, String clusterId);
+        void startMigrationActivity(Selection selection, String hostId, String clusterId);
 
         void startEditTriggersActivity(Selection selection, String vmId);
 

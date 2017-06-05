@@ -90,7 +90,7 @@ public class AccountRxStore {
                     commonSharedPreferencesHelper.setActiveSelection(new StoredActiveSelection(selection));
 
                     if (selection.isCluster()) {
-                        // check for inconsistencies
+                        // check if cluster name changed
                         for (Cluster cluster : selectionClusters.getClusters()) {
                             if (selection.isCluster(cluster.getId())) {
                                 if (!selection.isClusterName(cluster.getName())) {

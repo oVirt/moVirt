@@ -63,13 +63,13 @@ public class EditTriggersPresenter extends DisposablesPresenter<EditTriggersPres
     public EditTriggersPresenter initialize() {
         ObjectUtils.requireNotNull(selection, "selection");
         super.initialize();
-        getView().displayStatus(selection.getDescription(entityId == null ? null : resources.getVm()));
+        getView().displayStatus(selection);
 
         ProviderFacade.QueryBuilder<Trigger> triggersQuery = providerFacade.query(Trigger.class);
         ProviderFacade.QueryBuilder<Cluster> clusterQuery = providerFacade.query(Cluster.class);
         ProviderFacade.QueryBuilder<Vm> vmQuery = providerFacade.query(Vm.class); // just vms for now
 
-        if (!selection.isAllAccounts()) {
+        if (selection.isOneAccount()) {
             triggersQuery.where(Trigger.ACCOUNT_ID, selection.getAccountId());
             clusterQuery.where(Cluster.ACCOUNT_ID, selection.getAccountId());
             vmQuery.where(Vm.ACCOUNT_ID, selection.getAccountId());
@@ -184,7 +184,6 @@ public class EditTriggersPresenter extends DisposablesPresenter<EditTriggersPres
                 Cluster cluster = clusterMap.get(trigger.getClusterId());
                 Vm vm = vmMap.get(trigger.getTargetId());
 
-                String clusterName = cluster == null ? null : cluster.getName();
                 String vmName = vm == null ? null : vm.getName();
 
                 boolean highlight = ObjectUtils.equals(trigger.getAccountId(), selection.getAccountId()) &&
@@ -194,7 +193,7 @@ public class EditTriggersPresenter extends DisposablesPresenter<EditTriggersPres
                 result.add(new ViewTrigger(trigger,
                         highlight,
                         accounts.getAccountById(trigger.getAccountId()),
-                        clusterName,
+                        cluster,
                         vmName));
             }
 

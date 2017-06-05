@@ -2,64 +2,49 @@ package org.ovirt.mobile.movirt.auth.account.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
 
+import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
-import org.springframework.util.StringUtils;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 public class Selection implements Parcelable {
 
-    public static final int APPEND_LENGTH_LIMIT = 10;
+    private static final int APPEND_LENGTH_LIMIT = 10;
 
-    private final MovirtAccount account;
+    protected final MovirtAccount account;
 
-    private final String clusterId;
+    protected final List<String> appendArgs;
 
-    private final transient String clusterName;
+    protected final String clusterId;
 
     protected Selection() {
-        account = null;
-        clusterId = null;
-        clusterName = null;
+        this(null, SelectedCluster.NOT_SELECTED);
     }
 
-    public Selection(MovirtAccount account) {
-        this(account, null, null);
+    public Selection(MovirtAccount account, String... appendList) {
+        this(account, SelectedCluster.NOT_SELECTED, appendList);
     }
 
-    public Selection(MovirtAccount account, String clusterId) {
-        this(account, clusterId, null);
-    }
-
-    public Selection(MovirtAccount account, String clusterId, String clusterName) {
-        ObjectUtils.requireNotNull(account, "account");
+    public Selection(MovirtAccount account, SelectedCluster selectedCluster, String... appendList) {
+        ObjectUtils.requireNotNull(selectedCluster, "selectedCluster");
         this.account = account;
-        this.clusterId = clusterId;
-        this.clusterName = clusterName;
+        this.clusterId = selectedCluster.clusterId;
+        appendArgs = Collections.unmodifiableList(ObjectUtils.asNonEmptyStringList(appendList));
     }
 
     public boolean isAccount(MovirtAccount account) {
         return this.account != null ? this.account.equals(account) : account == null;
     }
 
-    public boolean isNotCluster() {
-        return isCluster(null);
-    }
-
-    public boolean isCluster() {
-        return clusterId != null;
-    }
-
-    public boolean isCluster(String clusterId) {
-        return this.clusterId != null ? this.clusterId.equals(clusterId) : clusterId == null;
-    }
-
-    public boolean isClusterName(String clusterName) {
-        return this.clusterName != null ? this.clusterName.equals(clusterName) : clusterName == null;
-    }
-
     public boolean isAllAccounts() {
         return account == null;
+    }
+
+    public boolean isOneAccount() {
+        return account != null;
     }
 
     public MovirtAccount getAccount() {
@@ -70,54 +55,36 @@ public class Selection implements Parcelable {
         return account == null ? null : account.getId();
     }
 
-    @NonNull
-    public String getAccountName() {
-        return account == null ? "" : account.getName();
+    public boolean isNotCluster() {
+        return clusterId == null;
     }
 
-    public String getDescription(String... appendList) {
-        return getDescription(account, clusterName, appendList);
+    public boolean isCluster() {
+        return clusterId != null;
     }
 
-    public static String getDescription(MovirtAccount account, String clusterName, String... appendList) {
-        if (account == null) {
-            return "All";
-        } else {
-            if (clusterName == null) {
-                return account.getName();
-            } else {
-                StringBuilder sb = new StringBuilder();
-
-                sb.append(limitLength(account.getName(), APPEND_LENGTH_LIMIT));
-
-                if (!StringUtils.isEmpty(clusterName)) {
-                    sb.append('/').append(clusterName);
-                }
-
-                for (int i = 0; i < appendList.length; i++) {
-                    String toAppend = appendList[i];
-                    if (!StringUtils.isEmpty(toAppend)) {
-                        sb.append('/').append(i == appendList.length - 1 ? toAppend : limitLength(toAppend, APPEND_LENGTH_LIMIT));
-                    }
-                }
-
-                return sb.toString();
-            }
-        }
-    }
-
-    private static String limitLength(String input, int limit) {
-        if (input == null) {
-            return "";
-        } else if (input.length() > limit) {
-            return input.substring(0, limit);
-        }
-
-        return input;
+    public boolean isCluster(String clusterId) {
+        return this.clusterId != null ? this.clusterId.equals(clusterId) : clusterId == null;
     }
 
     public String getClusterId() {
         return clusterId;
+    }
+
+    public String getDescription(String... appendList) {
+        List<String> toProcess = ObjectUtils.asNonEmptyStringList(appendList);
+        toProcess.addAll(appendArgs);
+        final Iterator<String> it = toProcess.iterator();
+
+        StringBuilder sb = new StringBuilder(account == null ?
+                "All" : (it.hasNext() ? ObjectUtils.limitLength(account.getName(), APPEND_LENGTH_LIMIT, true) : account.getName()));
+
+        while (it.hasNext()) {
+            String toAppend = it.next();
+            sb.append('/').append(it.hasNext() ? ObjectUtils.limitLength(toAppend, APPEND_LENGTH_LIMIT, true) : toAppend);
+        }
+
+        return sb.toString();
     }
 
     @Override
@@ -129,28 +96,25 @@ public class Selection implements Parcelable {
 
         if (account != null ? !account.equals(selection.account) : selection.account != null)
             return false;
-        if (clusterId != null ? !clusterId.equals(selection.clusterId) : selection.clusterId != null)
-            return false;
-        return clusterName != null ? clusterName.equals(selection.clusterName) : selection.clusterName == null;
+        return appendArgs != null ? appendArgs.equals(selection.appendArgs) : selection.appendArgs == null;
     }
 
     @Override
     public int hashCode() {
         int result = account != null ? account.hashCode() : 0;
-        result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
-        result = 31 * result + (clusterName != null ? clusterName.hashCode() : 0);
+        result = 31 * result + (appendArgs != null ? appendArgs.hashCode() : 0);
         return result;
     }
 
     public Selection(Parcel in) {
+        this.appendArgs = in.createStringArrayList();
         this.clusterId = in.readString();
-        this.clusterName = in.readString();
-        MovirtAccount acc = null;
-        try {
-            acc = new MovirtAccount(in);
-        } catch (IllegalArgumentException ignore) { // is null
+
+        if (in.readInt() < 0) {
+            account = null;
+        } else {
+            account = new MovirtAccount(in);
         }
-        account = acc;
     }
 
     public int describeContents() {
@@ -158,9 +122,13 @@ public class Selection implements Parcelable {
     }
 
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeStringList(appendArgs);
         dest.writeString(clusterId);
-        dest.writeString(clusterName);
-        if (account != null) {
+
+        if (account == null) {
+            dest.writeInt(-1);
+        } else {
+            dest.writeInt(0);
             account.writeToParcel(dest, flags);
         }
     }
@@ -174,4 +142,17 @@ public class Selection implements Parcelable {
             return new Selection[size];
         }
     };
+
+    public static class SelectedCluster {
+        public static final SelectedCluster NOT_SELECTED = new SelectedCluster((String) null);
+        public final String clusterId;
+
+        SelectedCluster(String clusterId) {
+            this.clusterId = clusterId;
+        }
+
+        public SelectedCluster(Cluster cluster) {
+            this.clusterId = cluster == null ? null : cluster.getId();
+        }
+    }
 }

@@ -9,7 +9,7 @@ public class DashboardHelper {
     public static <E extends OVirtEntity> ProviderFacade.QueryBuilder<E> querySelection(ProviderFacade providerFacade, Class<E> clazz, ActiveSelection selection) {
         final ProviderFacade.QueryBuilder<E> queryBuilder = providerFacade.query(clazz);
 
-        if (!selection.isAllAccounts()) {
+        if (selection.isOneAccount()) {
             queryBuilder.where(OVirtContract.AccountEntity.ACCOUNT_ID, selection.getAccountId());
         }
 
