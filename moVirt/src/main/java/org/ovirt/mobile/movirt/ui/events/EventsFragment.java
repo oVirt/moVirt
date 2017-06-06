@@ -37,14 +37,9 @@ public class EventsFragment extends MultipleFacadeBaseListFragment<Event> {
     }
 
     @Override
-    protected SortOrder getDefaultOrder() {
-        return SortOrder.DESCENDING;
-    }
-
-    @Override
     protected SortEntry[] getSortEntries() {
         return new SortEntry[]{
-                new SortEntry(new ItemName(OVirtContract.Event.TIME), SortOrderType.OLDEST_TO_LATEST),
+                new SortEntry(new ItemName(OVirtContract.Event.TIME), SortOrderType.OLDEST_TO_LATEST, SortOrder.DESCENDING),
                 new SortEntry(new ItemName(OVirtContract.Event.SEVERITY), SortOrderType.A_TO_Z),
                 new SortEntry(new ItemName(OVirtContract.Event.DESCRIPTION), SortOrderType.A_TO_Z)
         };

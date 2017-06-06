@@ -20,7 +20,7 @@ class ViewTrigger implements Comparable<ViewTrigger> {
         this.trigger = trigger;
         this.highlight = highlight;
         this.account = account;
-        clusterName = cluster == null ? null : cluster.getName();
+        this.clusterName = cluster == null ? null : cluster.getName();
         this.entityName = entityName;
 
         selection = new Selection(account, new Selection.SelectedCluster(cluster), clusterName, entityName);

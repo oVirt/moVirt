@@ -19,6 +19,9 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.TABLE;
 @DatabaseTable(tableName = TABLE)
 public class Vm extends OVirtAccountNamedEntity implements OVirtContract.Vm {
 
+    public static final String VM_CPU_ORDER_BY_QUERY = String.format("CASE WHEN %s * %s = 0 THEN 0 ELSE %s / (%s * %s) END",
+            CORES_PER_SOCKET, SOCKETS, CPU_USAGE, CORES_PER_SOCKET, SOCKETS);
+
     @Override
     public Uri getBaseUri() {
         return CONTENT_URI;
@@ -90,7 +93,7 @@ public class Vm extends OVirtAccountNamedEntity implements OVirtContract.Vm {
     }
 
     public static double getAverageCpuUsage(int sockets, int coresPerSocket, double cpuUsage) {
-        int cores = sockets * coresPerSocket;
+        int cores = coresPerSocket * sockets;
         return cores == 0 ? 0 : cpuUsage / cores;
     }
 

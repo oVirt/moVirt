@@ -11,6 +11,7 @@ import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.enums.HostStatus;
+import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.ui.listfragment.ClusterBoundBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
@@ -70,8 +71,8 @@ public class HostsFragment extends ClusterBoundBaseListFragment<Host> {
         return new SortEntry[]{
                 new SortEntry(new ItemName(Host.NAME), SortOrderType.A_TO_Z),
                 new SortEntry(new ItemName(Host.STATUS), SortOrderType.A_TO_Z),
-                new SortEntry(new ItemName(Host.CPU_USAGE), SortOrderType.LOW_TO_HIGH),
-                new SortEntry(new ItemName(Host.MEMORY_USAGE), SortOrderType.LOW_TO_HIGH)
+                new SortEntry(new ItemName(Host.CPU_USAGE), SortOrderType.LOW_TO_HIGH, SortOrder.DESCENDING),
+                new SortEntry(new ItemName(Host.MEMORY_USAGE), SortOrderType.LOW_TO_HIGH, SortOrder.DESCENDING)
         };
     }
 }

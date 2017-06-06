@@ -22,6 +22,7 @@ import org.ovirt.mobile.movirt.model.enums.ConsoleProtocol;
 import org.ovirt.mobile.movirt.model.enums.SnapshotStatus;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.ConnectivityHelper;
+import org.ovirt.mobile.movirt.rest.RestCallException;
 import org.ovirt.mobile.movirt.rest.SimpleResponse;
 import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
 import org.ovirt.mobile.movirt.ui.Constants;
@@ -30,6 +31,7 @@ import org.ovirt.mobile.movirt.ui.mvp.AccountDisposablesProgressBarPresenter;
 import org.ovirt.mobile.movirt.util.ConsoleHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.message.CommonMessageHelper;
+import org.ovirt.mobile.movirt.util.resources.Resources;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -71,6 +73,9 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
 
     @Bean
     ConnectivityHelper connectivityHelper;
+
+    @Bean
+    Resources resources;
 
     @Override
     public VmDetailPresenter setVmId(String vmId) {
@@ -155,7 +160,7 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
     @Background
     protected void syncVm() {
         VmFacade facade = environmentStore.getEnvironment(account).getFacade(Vm.class);
-        facade.syncOne(new ProgressBarResponse<>(VmDetailPresenter.this), vmId);
+        facade.syncOne(new ProgressBarResponse<>(this), vmId);
     }
 
     @Background
@@ -253,6 +258,8 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
                                 connectToConsole(details);
                             }
                         });
+            } catch (RestCallException e) {
+                commonMessageHelper.showToast(resources.getNoConsoleFileError(e.getCallResult().name()));
             } catch (AccountDeletedException ignore) {
             }
         }
@@ -273,7 +280,7 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
         } catch (IllegalArgumentException e) {
             commonMessageHelper.showToast(e.getMessage());
         } catch (Exception e) {
-            commonMessageHelper.showToast("Failed to open console client. Check if aSPICE/bVNC is installed.");
+            commonMessageHelper.showToast(resources.getNoConsoleClientError());
         }
     }
 

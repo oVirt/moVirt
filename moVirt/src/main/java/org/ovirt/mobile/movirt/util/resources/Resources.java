@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.util.resources;
 
 import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.mapping.EntityType;
 
 @EBean
 public class Resources extends StringResources {
@@ -13,5 +12,13 @@ public class Resources extends StringResources {
 
     public String getMissingAccountsPermissionError() {
         return getString(R.string.missing_accounts_permission_error);
+    }
+
+    public String getNoConsoleFileError(String error) {
+        return getString(R.string.no_console_file_error, error);
+    }
+
+    public String getNoConsoleClientError() {
+        return getString(R.string.no_console_client_error);
     }
 }

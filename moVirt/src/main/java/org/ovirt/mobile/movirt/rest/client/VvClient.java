@@ -12,6 +12,7 @@ import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 import org.ovirt.mobile.movirt.rest.Request;
 import org.ovirt.mobile.movirt.rest.RequestHandler;
 import org.ovirt.mobile.movirt.rest.Response;
+import org.ovirt.mobile.movirt.rest.RestCallException;
 import org.ovirt.mobile.movirt.rest.client.httpconverter.VvFileHttpMessageConverter;
 import org.ovirt.mobile.movirt.rest.client.requestfactory.OvirtSimpleClientHttpRequestFactory;
 import org.ovirt.mobile.movirt.rest.dto.ConsoleConnectionDetails;
@@ -69,8 +70,8 @@ public class VvClient implements AccountEnvironment.EnvDisposable {
         listeners.destroy();
     }
 
-    public void getConsoleConnectionDetails(final String vmId, final String consoleId, Response<ConsoleConnectionDetails> response) {
-        requestHandler.fireRestRequestSafe(new VVRestClientRequest<ConsoleConnectionDetails>() {
+    public void getConsoleConnectionDetails(final String vmId, final String consoleId, Response<ConsoleConnectionDetails> response) throws RestCallException {
+        requestHandler.fireRestRequest(new VVRestClientRequest<ConsoleConnectionDetails>() {
             @Override
             public ConsoleConnectionDetails fire() {
                 return vvRestClient.getConsoleFile(IdHelper.getIdPart(vmId), IdHelper.getIdPart(consoleId));

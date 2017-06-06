@@ -183,14 +183,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
             orderBySpinnerPosition = i;
-
-            int orderPosition = orderSpinner.getSelectedItemPosition();
-            if (orderPosition == AdapterView.INVALID_POSITION) {
-                orderPosition = orderSpinnerPosition;
-            }
-            final SortEntry orderBy = (SortEntry) adapterView.getSelectedItem();
-
-            setOrderSpinner(orderBy, orderPosition);
+            setOrderSpinner((SortEntry) adapterView.getSelectedItem());
         }
 
         @Override
@@ -199,7 +192,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
         }
     }
 
-    public void setOrderSpinner(SortEntry orderBy, int orderPosition) {
+    public void setOrderSpinner(SortEntry orderBy) {
 
         final SortOrderType sortOrderType = orderBy.getSortOrder();
 
@@ -211,7 +204,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         orderSpinner.setAdapter(spinnerArrayAdapter);
-        orderSpinner.setSelection(orderPosition); // refreshes loader
+        orderSpinner.setSelection((orderBy.getDefaultSortOrder() == SortOrder.ASCENDING) ? ASCENDING_INDEX : DESCENDING_INDEX); // refreshes loader
     }
 
     @Override
@@ -237,8 +230,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
             // initialize
             orderBySpinner.setSelection(orderBySpinnerPosition);
             final SortEntry orderBy = (SortEntry) orderBySpinner.getSelectedItem();
-            orderSpinnerPosition = (getDefaultOrder() == SortOrder.ASCENDING) ? ASCENDING_INDEX : DESCENDING_INDEX;
-            setOrderSpinner(orderBy, orderSpinnerPosition);
+            setOrderSpinner(orderBy);
         } else {
             orderingLayout.setVisibility(View.GONE);
         }
@@ -263,7 +255,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
                 if (customSort == null) {
                     final SortEntry orderBy = (SortEntry) orderBySpinner.getSelectedItem();
                     final SortOrder order = SortOrderType.getSortOrder((String) orderSpinner.getSelectedItem());
-                    query.orderBy(orderBy.getItemName().getColumnName(), order);
+                    query.orderBy(orderBy.orderBySql(), order);
                 } else {
                     for (CustomSort.CustomSortEntry entry : customSort.getSortEntries()) {
                         query.orderBy(entry.getColumnName(), entry.getSortOrder());
@@ -320,10 +312,6 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
 
     protected CustomSort getCustomSort() {
         return null;
-    }
-
-    protected SortOrder getDefaultOrder() {
-        return SortOrder.ASCENDING;
     }
 
     protected SortEntry[] getSortEntries() {

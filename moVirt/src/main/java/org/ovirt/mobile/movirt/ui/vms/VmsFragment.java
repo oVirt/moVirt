@@ -13,11 +13,13 @@ import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
+import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.ui.listfragment.ClusterBoundBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 
+import static org.ovirt.mobile.movirt.model.Vm.VM_CPU_ORDER_BY_QUERY;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.HasCoresPerSocket.CORES_PER_SOCKET;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.HasSockets.SOCKETS;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.CPU_USAGE;
@@ -28,8 +30,6 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
 public class VmsFragment extends ClusterBoundBaseListFragment<Vm> {
-
-    private static final String TAG = VmsFragment.class.getSimpleName();
 
     @InstanceState
     protected String hostId;
@@ -100,8 +100,8 @@ public class VmsFragment extends ClusterBoundBaseListFragment<Vm> {
         return new SortEntry[]{
                 new SortEntry(new ItemName(NAME), SortOrderType.A_TO_Z),
                 new SortEntry(new ItemName(STATUS), SortOrderType.A_TO_Z),
-                new SortEntry(new ItemName(CPU_USAGE), SortOrderType.LOW_TO_HIGH),
-                new SortEntry(new ItemName(MEMORY_USAGE), SortOrderType.LOW_TO_HIGH)
+                new SortEntry(new ItemName(CPU_USAGE), SortOrderType.LOW_TO_HIGH, SortOrder.DESCENDING, VM_CPU_ORDER_BY_QUERY),
+                new SortEntry(new ItemName(MEMORY_USAGE), SortOrderType.LOW_TO_HIGH, SortOrder.DESCENDING)
         };
     }
 }
