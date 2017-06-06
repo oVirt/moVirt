@@ -285,7 +285,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
             orderSpinner.setOnItemSelectedListener(new OrderItemSelectedListener());
         }
 
-        fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.light_blue)));
+        fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.material_blue_400)));
         fab.setOnClickListener(view -> toggleSearchBoxVisibility());
     }
 

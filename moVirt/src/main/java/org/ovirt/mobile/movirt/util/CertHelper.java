@@ -51,7 +51,7 @@ public class CertHelper {
         try {
             loadAndStoreCert(propertiesManager, context.getContentResolver().openInputStream(file), file.toString(), validHostname, startNewChain);
         } catch (FileNotFoundException e) {
-            throw new IllegalArgumentException("Could not open file");
+            throw new IllegalArgumentException("Could not open file. Please check moVirt's permissions.");
         }
     }
 

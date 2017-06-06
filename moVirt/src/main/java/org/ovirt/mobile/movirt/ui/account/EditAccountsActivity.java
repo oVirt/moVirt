@@ -33,6 +33,7 @@ import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.account.AccountRxStore;
 import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
 import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
+import org.ovirt.mobile.movirt.auth.account.data.AllAccounts;
 import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 import org.ovirt.mobile.movirt.ui.BroadcastAwareAppCompatActivity;
@@ -88,7 +89,9 @@ public class EditAccountsActivity extends BroadcastAwareAppCompatActivity implem
         listView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
 
         // TODO refactor to MVP
-        disposables.add(accountRxStore.ALL_ACCOUNTS.distinctUntilChanged()
+        disposables.add(accountRxStore.ALL_ACCOUNTS
+                .startWith(AllAccounts.NO_ACCOUNTS)
+                .distinctUntilChanged()
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(accounts -> {

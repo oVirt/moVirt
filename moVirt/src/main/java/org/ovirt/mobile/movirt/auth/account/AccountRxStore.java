@@ -38,7 +38,7 @@ import static org.ovirt.mobile.movirt.util.preferences.CommonSharedPreferencesHe
 @EBean(scope = EBean.Scope.Singleton)
 public class AccountRxStore {
 
-    public final Subject<AllAccounts> ALL_ACCOUNTS = BehaviorSubject.createDefault(AllAccounts.NO_ACCOUNTS).toSerialized();
+    public final Subject<AllAccounts> ALL_ACCOUNTS = BehaviorSubject.<AllAccounts>create().toSerialized();
 
     public final Subject<ActiveSelection> ACTIVE_SELECTION = BehaviorSubject.createDefault(ActiveSelection.ALL_ACTIVE).toSerialized();
 
@@ -142,7 +142,7 @@ public class AccountRxStore {
 
         String id = UUID.randomUUID().toString();
 
-        for (MovirtAccount acc : getAllAccounts()) {
+        for (MovirtAccount acc : accountManagerHelper.getAllAccounts()) {
             if (acc.getName().equals(name)) {
                 throw new IllegalArgumentException("Account with this name already exists.");
             } else if (acc.getId().equals(id)) {

@@ -31,17 +31,18 @@ import java.security.cert.Certificate;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
-import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.Subject;
 
 @EBean
 public class CertificateManagementPresenter extends AccountListenersDisposablesPresenter
         <CertificateManagementPresenter, CertificateManagementContract.View> implements CertificateManagementContract.Presenter {
 
-    private final Subject<CertHandlingStrategy> certHandlingStrategySubject = PublishSubject.create();
-    private final Subject<Cert[]> certChainSubject = PublishSubject.create();
-    private final Subject<String> validHostnamesSubject = PublishSubject.create();
-    private final Subject<CertLocation> customCertificateLocationSubject = PublishSubject.create();
+    // BehaviorSubject because notifyAndRegisterListener can be called before subscribe on computation scheduler
+    private final Subject<CertHandlingStrategy> certHandlingStrategySubject = BehaviorSubject.create();
+    private final Subject<Cert[]> certChainSubject = BehaviorSubject.create();
+    private final Subject<String> validHostnamesSubject = BehaviorSubject.create();
+    private final Subject<CertLocation> customCertificateLocationSubject = BehaviorSubject.create();
 
     private MessageHelper messageHelper;
 
@@ -139,11 +140,13 @@ public class CertificateManagementPresenter extends AccountListenersDisposablesP
     }
 
     @Override
+    @Background
     public void onCertHandlingStrategyChanged(CertHandlingStrategy certHandlingStrategy) {
         propertiesManager.setCertHandlingStrategy(certHandlingStrategy);
     }
 
     @Override
+    @Background
     public void onValidHostnamesChanged(String hostnames) {
         propertiesManager.setValidHostnameList(PropertyUtils.parseHostnames(hostnames));
     }

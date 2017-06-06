@@ -157,7 +157,7 @@ public class TreeHolder<E extends TreeHolder.HolderNode> extends TreeNode.BaseNo
     private void setSelectedBackground(boolean selected) {
         textView.setContentDescription(selected ? context.getString(R.string.cert_tree_item_selected, textView.getText()) : textView.getText());
         if (selected) {
-            textView.setBackgroundColor(context.getResources().getColor(R.color.selected_blue));
+            textView.setBackgroundColor(context.getResources().getColor(R.color.material_blue_700));
         } else {
             textView.setBackground(context.getResources().getDrawable(R.drawable.abc_item_background_holo_dark));
         }

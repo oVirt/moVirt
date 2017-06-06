@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="light_blue">#80cbc4</color>
-    <color name="selected_blue">#4285f4</color>
+    <color name="material_blue_400">#42a5f5</color>
+    <color name="material_blue_700">#1976d2</color>
     <color name="material_green_300">#66BB6A</color>
     <color name="material_grey_400">#BDBDBD</color>
     <color name="material_grey_500">#9E9E9E</color>

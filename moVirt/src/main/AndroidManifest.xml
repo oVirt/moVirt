@@ -14,6 +14,7 @@
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
     <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/> <!-- Import file certs -->
     <uses-permission android:name="android.permission.CAMERA"/>
 
     <uses-feature
@@ -49,8 +50,8 @@
 
         <activity
             android:name=".ui.auth.connectionsettings.ConnectionSettingsActivity_"
-            android:parentActivityName=".ui.SettingsActivity_"
-            android:label="@string/title_activity_connection_settings"/>
+            android:label="@string/title_activity_connection_settings"
+            android:parentActivityName=".ui.SettingsActivity_"/>
 
 
         <activity

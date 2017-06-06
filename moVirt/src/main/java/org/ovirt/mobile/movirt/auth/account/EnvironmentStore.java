@@ -3,6 +3,7 @@ package org.ovirt.mobile.movirt.auth.account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
@@ -34,6 +35,8 @@ import io.reactivex.subjects.Subject;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class EnvironmentStore {
+
+    private static final String TAG = EnvironmentStore.class.getSimpleName();
 
     private final Object LOCK = new Object();
 
@@ -99,6 +102,7 @@ public class EnvironmentStore {
                 if (newDataSet.contains(account)) {
                     newDataSet.remove(account);
                 } else {
+                    Log.i(TAG, "Removing env: " + account);
                     envsIterator.remove();
                     rxStore.REMOVED_ACCOUNT.onNext(account);
                     entry.getValue().destroy();
@@ -106,6 +110,7 @@ public class EnvironmentStore {
             }
 
             for (MovirtAccount account : newDataSet) {
+                Log.i(TAG, "Adding env: " + account);
                 environmentMap.put(account, new AccountEnvironment(context, accountManager, providerFacade, account));
             }
         }

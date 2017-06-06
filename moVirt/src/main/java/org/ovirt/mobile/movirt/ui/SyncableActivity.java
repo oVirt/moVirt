@@ -135,7 +135,8 @@ public abstract class SyncableActivity extends ActionBarLoaderActivity implement
             sb.append("Scroll to see errors across all accounts.\n\n\n");
         }
         for (ConnectionInfo info : failedInfos) {
-            sb.append("Account ").append(allAccounts.getAccountById(info.getAccountId()).getName())
+            final MovirtAccount account = allAccounts.getAccountById(info.getAccountId());
+            sb.append("Account ").append(account == null ? "_REMOVED_ACCOUNT_" : account.getName())
                     .append("\n\n")
                     .append(info.getMessage(this))
                     .append("\n\n\n");

@@ -43,7 +43,7 @@ public class MainPresenter extends DisposablesPresenter<MainPresenter, MainContr
                 .orderBy(Cluster.NAME)
                 .asObservable();
 
-        getDisposables().add(Observable.combineLatest(rxStore.ALL_ACCOUNTS, clusters, AccountsClusters::new)
+        getDisposables().add(Observable.combineLatest(rxStore.ALL_ACCOUNTS.startWith(AllAccounts.NO_ACCOUNTS), clusters, AccountsClusters::new)
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(accountClusters -> {

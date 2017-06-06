@@ -90,7 +90,7 @@ public class EditTriggersPresenter extends DisposablesPresenter<EditTriggersPres
         final Observable<List<Cluster>> clusterObservable = clusterQuery.asObservable();
         final Observable<List<Vm>> vmObservable = vmQuery.asObservable();
 
-        getDisposables().add(Observable.combineLatest(rxStore.ALL_ACCOUNTS, clusterObservable,
+        getDisposables().add(Observable.combineLatest(rxStore.ALL_ACCOUNTS.startWith(AllAccounts.NO_ACCOUNTS), clusterObservable,
                 triggersObservable, vmObservable, Wrapper::new)
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
