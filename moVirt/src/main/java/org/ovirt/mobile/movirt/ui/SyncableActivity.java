@@ -29,10 +29,11 @@ import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.ConnectivityHelper;
-import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
+import org.ovirt.mobile.movirt.ui.dialogs.ConnInfoDialogFragment;
 import org.ovirt.mobile.movirt.util.Disposables;
 import org.ovirt.mobile.movirt.util.message.CommonMessageHelper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -128,21 +129,22 @@ public abstract class SyncableActivity extends ActionBarLoaderActivity implement
 
     @OptionsItem(R.id.menu_connection)
     public void onConnectionInfo() {
-        StringBuilder sb = new StringBuilder();
         AllAccounts allAccounts = rxStore.getAllAccountsWrapped();
 
-        if (failedInfos.size() > 1) {
-            sb.append("Scroll to see errors across all accounts.\n\n\n");
-        }
+        ArrayList<String> names = new ArrayList<>();
+        ArrayList<String> errors = new ArrayList<>();
+
         for (ConnectionInfo info : failedInfos) {
             final MovirtAccount account = allAccounts.getAccountById(info.getAccountId());
-            sb.append("Account ").append(account == null ? "_REMOVED_ACCOUNT_" : account.getName())
-                    .append("\n\n")
-                    .append(info.getMessage(this))
-                    .append("\n\n\n");
+            if (account == null) {
+                continue;
+            }
+
+            names.add(account.getName());
+            errors.add(info.getMessage(this));
         }
 
-        DialogFragment dialogFragment = ErrorDialogFragment.newInstance(sb.toString());
+        DialogFragment dialogFragment = ConnInfoDialogFragment.newInstance(names, errors);
         dialogFragment.show(getFragmentManager(), "connection_info");
     }
 

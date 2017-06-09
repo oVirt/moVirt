@@ -261,6 +261,7 @@
     <string name="dialog_action_delete_trigger">delete this trigger</string>
     <string name="dialog_action_delete_account">delete this account</string>
     <string name="dialog_action_user_guide">Do you want to continue to the User\'s Guide website</string>
+    <string name="dialog_engine_errors">Engine Errors</string>
 
     <string name="domain_type">Domain Type:</string>
     <string name="storage_type">Storage Type:</string>

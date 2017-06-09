@@ -1,7 +1,6 @@
 package org.ovirt.mobile.movirt.ui;
 
 import android.content.Context;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.LayoutRes;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,26 +13,6 @@ import com.unnamed.b.atv.view.AndroidTreeView;
 import org.ovirt.mobile.movirt.R;
 
 public class TreeHolder<E extends TreeHolder.HolderNode> extends TreeNode.BaseNodeViewHolder<E> {
-
-    public enum IconDimension {
-        DP_24(R.drawable.ic_chevron_right_white_24dp, R.drawable.ic_expand_more_white_24dp),
-        DP_36(R.drawable.ic_chevron_right_white_36dp, R.drawable.ic_expand_more_white_36dp);
-
-        @DrawableRes
-        private final int rightIconId;
-        @DrawableRes
-        private final int moreIconId;
-
-        IconDimension(@DrawableRes int rightIconId, @DrawableRes int moreIconId) {
-            this.rightIconId = rightIconId;
-            this.moreIconId = moreIconId;
-        }
-
-        @DrawableRes
-        public int getResource(boolean activated) {
-            return activated ? moreIconId : rightIconId;
-        }
-    }
 
     private ImageView arrowIcon;
     private TextView textView;
@@ -48,15 +27,15 @@ public class TreeHolder<E extends TreeHolder.HolderNode> extends TreeNode.BaseNo
     @LayoutRes
     private int imageNodeResource;
     private IconDimension iconDimension;
-    private boolean collapsableRoot;
+    private boolean collapsibleRoot;
 
     public TreeHolder(Context context, @LayoutRes int nodeResource, @LayoutRes int imageNodeResource,
-                      IconDimension iconDimension, boolean collapsableRoot) {
+                      IconDimension iconDimension, boolean collapsibleRoot) {
         super(context);
         this.nodeResource = nodeResource;
         this.imageNodeResource = imageNodeResource;
         this.iconDimension = iconDimension;
-        this.collapsableRoot = collapsableRoot;
+        this.collapsibleRoot = collapsibleRoot;
     }
 
     public E getDataNode() {
@@ -94,7 +73,7 @@ public class TreeHolder<E extends TreeHolder.HolderNode> extends TreeNode.BaseNo
             toggle(false);
 
             // expand/collapse onClick and deselect all collapsed nodes, also potentially select this node if it was a parent of collapsed node
-            if (!node.getParent().isRoot() || collapsableRoot) {
+            if (!node.getParent().isRoot() || collapsibleRoot) {
                 arrowIcon.setOnClickListener(v -> {
                     AndroidTreeView treeView = node.getViewHolder().getTreeView();
                     if (node.isExpanded()) {

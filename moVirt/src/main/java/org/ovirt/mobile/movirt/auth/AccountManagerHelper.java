@@ -191,7 +191,10 @@ public class AccountManagerHelper {
                     }
                 } catch (Exception e) {
                     if (callback != null) {
-                        callback.onRemoved(false);
+                        try {
+                            callback.onRemoved(false);
+                        } catch (Exception ignore) {
+                        }
                     }
                 }
             }, null);
@@ -204,7 +207,10 @@ public class AccountManagerHelper {
                     }
                 } catch (Exception e) {
                     if (callback != null) {
-                        callback.onRemoved(false);
+                        try {
+                            callback.onRemoved(false);
+                        } catch (Exception ignore) {
+                        }
                     }
                 }
             }, null);
