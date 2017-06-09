@@ -161,8 +161,7 @@
     <string name="vmsOrderBy">Order</string>
     <string name="prefs_periodic_sync">Periodic Sync</string>
     <string name="prefs_periodic_sync_summary">Enable periodic sync with custom interval instead of system\'s schedule. Enabling with short interval consumes battery!</string>
-    <string name="prefs_global_sync">Global Sync</string>
-    <string name="prefs_global_sync_summary">Engines with enabled sync are synced or disables sync for all engines if unchecked. </string>
+    <string name="prefs_global_sync">Remove Periodic Syncs for All Accounts</string>
     <string name="prefs_periodic_sync_interval">Sync Interval</string>
     <string name="prefs_periodic_sync_interval_summary">Periodic sync interval in minutes. Current: %d</string>
     <string name="prefs_max_max_vms_polled">Max VMs polled</string>
@@ -314,6 +313,7 @@
     <string name="cert_management_import_from_file">from file</string>
     <string name="valid_url_to_configure_certs_error">You must supply valid API URL to configure certificates</string>
     <string name="no_file_selected">No file selected.</string>
+    <string name="removed_syncs">Removed periodic syncs.</string>
 
 </resources>
 

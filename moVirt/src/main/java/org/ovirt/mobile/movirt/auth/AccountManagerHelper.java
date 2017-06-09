@@ -20,6 +20,7 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.message.CommonMessageHelper;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.preferences.CommonSharedPreferencesHelper;
+import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.resources.Resources;
 import org.springframework.util.StringUtils;
 
@@ -66,18 +67,12 @@ public class AccountManagerHelper {
         return resultAccount;
     }
 
-    public boolean isPeriodicSyncable(MovirtAccount account) throws AccountDeletedException {
-        return commonSharedPreferencesHelper.isGlobalPeriodicSyncEnabled() &&
-                environmentStore.getSharedPreferencesHelper(account).isPeriodicSyncEnabled();
-    }
-
-    public void updatePeriodicSync(MovirtAccount account) {
+    public void updatePeriodicSync(MovirtAccount account, boolean syncEnabled) {
         ObjectUtils.requireNotNull(account, "account");
         String authority = OVirtContract.CONTENT_AUTHORITY;
         Bundle bundle = Bundle.EMPTY;
 
         try {
-            boolean syncEnabled = isPeriodicSyncable(account);
             ContentResolver.setSyncAutomatically(account.getAccount(), OVirtContract.CONTENT_AUTHORITY, syncEnabled);
 
             if (syncEnabled) {
@@ -90,12 +85,16 @@ public class AccountManagerHelper {
         }
     }
 
-    public void setAccountSyncable(MovirtAccount account, boolean syncable) {
-        ContentResolver.setIsSyncable(account.getAccount(), OVirtContract.CONTENT_AUTHORITY, syncable ? 1 : 0);
+    public boolean isPeriodicSyncable(MovirtAccount account) throws AccountDeletedException {
+        return account != null && ContentResolver.getSyncAutomatically(account.getAccount(), OVirtContract.CONTENT_AUTHORITY);
     }
 
-    public boolean isAccountSyncable(MovirtAccount account) {
-        return ContentResolver.getIsSyncable(account.getAccount(), OVirtContract.CONTENT_AUTHORITY) == 1;
+    public boolean isSyncable(MovirtAccount account) {
+        return account != null && ContentResolver.getIsSyncable(account.getAccount(), OVirtContract.CONTENT_AUTHORITY) == 1;
+    }
+
+    public void setAccountSyncable(MovirtAccount account, boolean syncable) {
+        ContentResolver.setIsSyncable(account.getAccount(), OVirtContract.CONTENT_AUTHORITY, syncable ? 1 : 0);
     }
 
     /**

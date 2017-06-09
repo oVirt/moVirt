@@ -7,11 +7,8 @@
         android:summary="@string/prefs_engines_settings_summary"
         android:title="@string/prefs_engines_settings"/>
 
-    <CheckBoxPreference
-        android:defaultValue="@bool/default_global_sync"
+    <Preference
         android:key="@string/global_sync_pref_key"
-        android:persistent="true"
-        android:summary="@string/prefs_global_sync_summary"
         android:title="@string/prefs_global_sync"/>
 
     <Preference

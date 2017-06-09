@@ -24,7 +24,7 @@ import org.ovirt.mobile.movirt.auth.account.AccountRxStore;
 import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.ui.account.EditAccountsActivity_;
 import org.ovirt.mobile.movirt.ui.dialogs.ConfirmDialogFragment;
-import org.ovirt.mobile.movirt.util.preferences.SettingsKey;
+import org.ovirt.mobile.movirt.util.message.CommonMessageHelper;
 
 @EActivity
 public class MainSettingsActivity extends BroadcastAwareAppCompatActivity implements ConfirmDialogFragment.ConfirmDialogListener {
@@ -73,6 +73,9 @@ public class MainSettingsActivity extends BroadcastAwareAppCompatActivity implem
         @Bean
         AccountManagerHelper accountManagerHelper;
 
+        @Bean
+        CommonMessageHelper commonMessageHelper;
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -83,15 +86,9 @@ public class MainSettingsActivity extends BroadcastAwareAppCompatActivity implem
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                               String prefKey) {
-            SettingsKey key = SettingsKey.from(prefKey);
-            switch (key) {
-                case GLOBAL_SYNC:
-                    for (MovirtAccount account : rxStore.getAllAccounts()) {
-                        accountManagerHelper.updatePeriodicSync(account);
-                    }
-                    break;
-            }
         }
+
+
 
         @AfterViews
         public void afterViews() {
@@ -100,6 +97,14 @@ public class MainSettingsActivity extends BroadcastAwareAppCompatActivity implem
                         getActivity().getApplicationContext(),
                         EditAccountsActivity_.class);
                 startActivity(intent);
+                return true;
+            });
+
+            globalSync.setOnPreferenceClickListener(preference -> {
+                for (MovirtAccount account : rxStore.getAllAccounts()) {
+                    accountManagerHelper.updatePeriodicSync(account, false);
+                }
+                commonMessageHelper.showToast(getString(R.string.removed_syncs));
                 return true;
             });
 

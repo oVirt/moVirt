@@ -3,6 +3,7 @@ package org.ovirt.mobile.movirt.ui;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -31,8 +32,6 @@ import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-import static org.ovirt.mobile.movirt.util.preferences.SettingsKey.PERIODIC_SYNC;
-
 @EActivity
 public class SettingsActivity extends BroadcastAwareAppCompatActivity {
 
@@ -60,7 +59,7 @@ public class SettingsActivity extends BroadcastAwareAppCompatActivity {
         Preference connectionNotification;
 
         @PreferenceByKey(R.string.periodic_sync_pref_key)
-        Preference periodicSync;
+        CheckBoxPreference periodicSync;
 
         @PreferenceByKey(R.string.periodic_sync_interval_pref_key)
         Preference periodicSyncInterval;
@@ -142,11 +141,11 @@ public class SettingsActivity extends BroadcastAwareAppCompatActivity {
 
         public void toggleVisibility() {
             boolean enabled = account != null;
+
             if (pollEvents != null && vmsSearchQuery != null) { // also the others
                 pollEvents.setEnabled(enabled);
                 connectionNotification.setEnabled(enabled);
                 periodicSync.setEnabled(enabled);
-                periodicSyncInterval.setEnabled(enabled && sharedPreferencesHelper.getBooleanPref(PERIODIC_SYNC));
                 maxEventsPolled.setEnabled(enabled);
                 maxEventsStored.setEnabled(enabled);
                 eventsSearchQuery.setEnabled(enabled);
@@ -218,8 +217,6 @@ public class SettingsActivity extends BroadcastAwareAppCompatActivity {
                 return true;
             });
 
-            periodicSyncInterval.setEnabled(sharedPreferencesHelper.isPeriodicSyncEnabled());
-
             setSyncIntervalPrefSummary();
             setMaxVmsSummary();
             setMaxEventsPolledSummary();
@@ -230,8 +227,22 @@ public class SettingsActivity extends BroadcastAwareAppCompatActivity {
         @Override
         public void onResume() {
             super.onResume();
+            checkPeriodicSyncStatusState();
+
             getPreferenceScreen().getSharedPreferences()
                     .registerOnSharedPreferenceChangeListener(this);
+        }
+
+        private void checkPeriodicSyncStatusState() {
+            boolean periodicSyncable = accountManagerHelper.isPeriodicSyncable(account);
+            // refresh preferences if changed since last time (e.g. system settings)
+            final SharedPreferencesHelper preferencesHelper = environmentStore.getSharedPreferencesHelper(account);
+            if (periodicSyncable != preferencesHelper.isPeriodicSyncEnabled()) {
+                sharedPreferencesHelper.setPeriodicSync(periodicSyncable);
+            }
+
+            periodicSyncInterval.setEnabled(account != null && periodicSyncable);
+            periodicSync.setChecked(periodicSyncable);
         }
 
         @Override
@@ -247,11 +258,12 @@ public class SettingsActivity extends BroadcastAwareAppCompatActivity {
             SettingsKey key = SettingsKey.from(prefKey);
             switch (key) {
                 case PERIODIC_SYNC:
-                    periodicSyncInterval.setEnabled(account != null && sharedPreferencesHelper.getBooleanPref(key));
-                    accountManagerHelper.updatePeriodicSync(account);
+                    final Boolean periodicSyncable = sharedPreferencesHelper.getBooleanPref(key);
+                    periodicSyncInterval.setEnabled(account != null && periodicSyncable);
+                    accountManagerHelper.updatePeriodicSync(account, periodicSyncable);
                     break;
                 case PERIODIC_SYNC_INTERVAL:
-                    accountManagerHelper.updatePeriodicSync(account);
+                    accountManagerHelper.updatePeriodicSync(account, accountManagerHelper.isPeriodicSyncable(account));
                     setSyncIntervalPrefSummary();
                     break;
                 case MAX_EVENTS_POLLED:

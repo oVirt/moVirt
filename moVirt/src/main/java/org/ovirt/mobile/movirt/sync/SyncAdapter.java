@@ -73,7 +73,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             // remember last used sync action, because we may try it again if it fails
             final Subject<SyncAction> syncActions = BehaviorSubject.createDefault(SyncAction.getFirstAction());
             final Observable<LoginStatus> loginStatus = rxStore.isLoginInProgressObservable(movirtAccount)
-                    .observeOn(Schedulers.computation());
+                    .observeOn(Schedulers.newThread());
 
             Observable.combineLatest(syncActions, loginStatus, SyncBundle::new)
                     .doOnNext(syncBundle -> { // sync

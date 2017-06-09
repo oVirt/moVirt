@@ -12,6 +12,7 @@ import org.ovirt.mobile.movirt.ui.mvp.DisposablesPresenter;
 import org.ovirt.mobile.movirt.util.preferences.CommonSharedPreferencesHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -41,7 +42,8 @@ public class MainPresenter extends DisposablesPresenter<MainPresenter, MainContr
         super.initialize();
         Observable<List<Cluster>> clusters = providerFacade.query(Cluster.class)
                 .orderBy(Cluster.NAME)
-                .asObservable();
+                .asObservable()
+                .startWith(Collections.<Cluster>emptyList());
 
         getDisposables().add(Observable.combineLatest(rxStore.ALL_ACCOUNTS.startWith(AllAccounts.NO_ACCOUNTS), clusters, AccountsClusters::new)
                 .subscribeOn(Schedulers.computation())

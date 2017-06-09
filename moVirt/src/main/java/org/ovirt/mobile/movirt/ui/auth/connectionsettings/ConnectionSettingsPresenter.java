@@ -184,7 +184,7 @@ public class ConnectionSettingsPresenter extends AccountDisposablesPresenter<Con
         setLoginProgress(false);
 
         // sync
-        if (accountManagerHelper.isAccountSyncable(account)) {
+        if (accountManagerHelper.isSyncable(account)) {
             accountManagerHelper.triggerRefresh(account);
         } else { // account has never been initialized
             accountManagerHelper.setAccountSyncable(account, true);

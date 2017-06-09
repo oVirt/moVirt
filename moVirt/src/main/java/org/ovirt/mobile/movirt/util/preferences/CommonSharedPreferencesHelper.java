@@ -23,9 +23,6 @@ public class CommonSharedPreferencesHelper {
     @BooleanRes
     boolean defaultPasswordVisibility;
 
-    @BooleanRes
-    boolean defaultGlobalSync;
-
     private SharedPreferences sharedPreferences;
 
     @AfterInject
@@ -56,10 +53,6 @@ public class CommonSharedPreferencesHelper {
         return sharedPreferences.edit()
                 .putBoolean(SettingsKey.FIRST_ACCOUNT_CONFIGURED.getValue(), firstAccountConfigured)
                 .commit();
-    }
-
-    public boolean isGlobalPeriodicSyncEnabled() {
-        return sharedPreferences.getBoolean(SettingsKey.GLOBAL_SYNC.getValue(), defaultGlobalSync);
     }
 
     public boolean isPasswordVisible() {

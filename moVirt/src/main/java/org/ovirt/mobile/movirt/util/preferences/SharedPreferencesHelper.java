@@ -130,4 +130,10 @@ public class SharedPreferencesHelper implements AccountEnvironment.EnvDisposable
     public boolean isConnectionNotificationEnabled() {
         return getBooleanPref(SettingsKey.CONNECTION_NOTIFICATION);
     }
+
+    public boolean setPeriodicSync(boolean isPeriodic) {
+        return sharedPreferences.edit()
+                .putBoolean(SettingsKey.PERIODIC_SYNC.getValue(), isPeriodic)
+                .commit();
+    }
 }
