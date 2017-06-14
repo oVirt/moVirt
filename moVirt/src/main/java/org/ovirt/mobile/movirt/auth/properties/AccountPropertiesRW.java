@@ -144,7 +144,7 @@ public class AccountPropertiesRW {
     private <T> T readObject(AccountProperty property, Class<T> clazz) {
         try {
             return JsonUtils.stringToObject(read(property), clazz);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
             return null;
         }
     }

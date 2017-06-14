@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.ui.storage;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
 import org.ovirt.mobile.movirt.auth.account.data.Selection;
 import org.ovirt.mobile.movirt.model.StorageDomain;
@@ -51,9 +50,7 @@ public class StorageDomainDetailPresenter extends AccountDisposablesPresenter<St
     @Override
     public void destroy() {
         super.destroy();
-        try {
-            environmentStore.getEventProviderHelper(account).deleteTemporaryEvents();
-        } catch (AccountDeletedException ignore) {
-        }
+        environmentStore.safeEnvironmentCall(account,
+                env -> env.getEventProviderHelper().deleteTemporaryEvents());
     }
 }

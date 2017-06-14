@@ -9,8 +9,6 @@ import android.widget.TextView;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
-import org.ovirt.mobile.movirt.auth.account.AccountEnvironment;
 import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 import org.ovirt.mobile.movirt.auth.properties.property.version.support.VersionSupport;
 import org.ovirt.mobile.movirt.model.Disk;
@@ -76,8 +74,7 @@ public class VmDisksFragment extends VmBoundResumeSyncableBaseListFragment<DiskA
     @Background
     @Override
     public void onRefresh() {
-        try {
-            final AccountEnvironment environment = environmentStore.getEnvironment(account);
+        environmentStore.safeEnvironmentCall(account, environment -> {
             Version version = environment.getVersion();
 
             if (VersionSupport.VM_DISKS.isSupported(version)) {
@@ -85,7 +82,6 @@ public class VmDisksFragment extends VmBoundResumeSyncableBaseListFragment<DiskA
             } else if (VersionSupport.DISK_ATTACHMENTS.isSupported(version)) {
                 environment.getFacade(DiskAttachment.class).syncAll(new ProgressBarResponse<>(this), getVmId());
             }
-        } catch (AccountDeletedException ignore) {
-        }
+        });
     }
 }

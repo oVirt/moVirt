@@ -77,7 +77,7 @@ public class VmNicsFragment extends VmBoundResumeSyncableBaseListFragment<Nic> {
     public boolean isResumeSyncable() {
         try {
             return !VersionSupport.NICS_POLLED_WITH_VMS.isSupported(environmentStore.getVersion(account));
-        } catch (AccountDeletedException ignore) {
+        } catch (AccountDeletedException e) {
             return false;
         }
     }

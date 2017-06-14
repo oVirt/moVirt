@@ -6,7 +6,6 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -44,10 +43,8 @@ public class StorageDomainEventsFragment extends NamedEntityResumeSyncableEvents
     protected void sync(Response<List<Event>> response) {
         String storageDomainName = getEntityName(StorageDomain.class, storageDomainId);
         if (!TextUtils.isEmpty(storageDomainName)) {
-            try {
-                environmentStore.getEnvironment(account).getStorageDomainEventFacade().syncAll(response, storageDomainId, storageDomainName);
-            } catch (AccountDeletedException ignore) {
-            }
+            environmentStore.safeEnvironmentCall(account,
+                    env -> env.getStorageDomainEventFacade().syncAll(response, storageDomainId, storageDomainName));
         }
     }
 }

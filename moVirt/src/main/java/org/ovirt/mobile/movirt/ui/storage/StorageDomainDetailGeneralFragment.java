@@ -88,12 +88,8 @@ public class StorageDomainDetailGeneralFragment extends RefreshableLoaderFragmen
     @Override
     @Background
     public void onRefresh() {
-        try {
-            environmentStore.getEnvironment(account)
-                    .getFacade(StorageDomain.class)
-                    .syncOne(new ProgressBarResponse<>(this), storageDomainId);
-        } catch (Exception ignore) {
-        }
+        environmentStore.safeEntityFacadeCall(account, StorageDomain.class,
+                facade -> facade.syncOne(new ProgressBarResponse<>(this), storageDomainId));
     }
 
     @Override

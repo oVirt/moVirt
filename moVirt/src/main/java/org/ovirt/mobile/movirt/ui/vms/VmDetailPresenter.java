@@ -12,8 +12,6 @@ import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
 import org.ovirt.mobile.movirt.auth.account.data.ClusterAndEntity;
 import org.ovirt.mobile.movirt.auth.account.data.Selection;
-import org.ovirt.mobile.movirt.facade.ConsoleFacade;
-import org.ovirt.mobile.movirt.facade.VmFacade;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Console;
 import org.ovirt.mobile.movirt.model.Snapshot;
@@ -159,17 +157,14 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
 
     @Background
     protected void syncVm() {
-        VmFacade facade = environmentStore.getEnvironment(account).getFacade(Vm.class);
-        facade.syncOne(new ProgressBarResponse<>(this), vmId);
+        environmentStore.safeEntityFacadeCall(account, Vm.class,
+                facade -> facade.syncOne(new ProgressBarResponse<>(this), vmId));
     }
 
     @Background
     protected void syncConsoles() {
-        try {
-            ConsoleFacade facade = environmentStore.getEnvironment(account).getFacade(Console.class);
-            facade.syncAll(new ProgressBarResponse<>(this), vmId);
-        } catch (AccountDeletedException ignore) {
-        }
+        environmentStore.safeEntityFacadeCall(account, Console.class,
+                facade -> facade.syncAll(new ProgressBarResponse<>(this), vmId));
     }
 
     @Override
@@ -179,10 +174,9 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
                 client -> client.createSnapshot(snapshot, vmId, new SimpleResponse<Void>() {
                     @Override
                     public void onResponse(Void aVoid) throws RemoteException {
-                        try { // refresh snapshots
-                            environmentStore.getEnvironment(account).getFacade(Snapshot.class).syncAll(vmId);
-                        } catch (AccountDeletedException ignore) {
-                        }
+                        // refresh snapshots
+                        environmentStore.safeEntityFacadeCall(account, Snapshot.class,
+                                facade -> facade.syncAll(vmId));
                     }
                 }));
     }
@@ -192,10 +186,8 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
         super.destroy();
         consoles.onComplete();
         menuState.onComplete();
-        try {
-            environmentStore.getEventProviderHelper(account).deleteTemporaryEvents();
-        } catch (AccountDeletedException ignore) {
-        }
+        environmentStore.safeEnvironmentCall(account,
+                env -> env.getEventProviderHelper().deleteTemporaryEvents());
     }
 
     @Override
@@ -287,11 +279,8 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
     private class SyncVmResponse extends SimpleResponse<Void> {
         @Override
         public void onResponse(Void aVoid) throws RemoteException {
-            try {
-                syncVm();
-                syncConsoles();
-            } catch (AccountDeletedException ignore) {
-            }
+            syncVm();
+            syncConsoles();
         }
     }
 

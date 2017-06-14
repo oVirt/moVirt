@@ -1,6 +1,5 @@
 package org.ovirt.mobile.movirt.util;
 
-import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.properties.PropertyChangedListener;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 
@@ -34,11 +33,8 @@ public class DestroyableListeners {
     }
 
     public void destroy() {
-        try {
-            for (PropertyChangedListener listener : listeners) {
-                propertiesManager.removeListener(listener);
-            }
-        } catch (AccountDeletedException ignore) {
+        for (PropertyChangedListener listener : listeners) {
+            propertiesManager.removeListener(listener);
         }
         listeners.clear();
     }

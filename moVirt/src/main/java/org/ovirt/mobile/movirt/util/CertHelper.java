@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
+import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.manager.OnThread;
 import org.ovirt.mobile.movirt.auth.properties.property.Cert;
@@ -114,9 +115,9 @@ public class CertHelper {
         }
 
         try {
-            propertiesManager.setCertificateChain(certs.toArray(new Cert[certs.size()]), OnThread.BACKGROUND);
+            propertiesManager.setAndNotify(AccountProperty.CERTIFICATE_CHAIN, certs.toArray(new Cert[certs.size()]), OnThread.BACKGROUND);
             if (startNewChain) {
-                propertiesManager.setValidHostnameList(new String[]{validHostname.getHost()}, OnThread.BACKGROUND);
+                propertiesManager.setAndNotify(AccountProperty.VALID_HOSTNAME_LIST, new String[]{validHostname.getHost()}, OnThread.BACKGROUND);
             }
         } catch (AccountDeletedException e) {
             throw e;

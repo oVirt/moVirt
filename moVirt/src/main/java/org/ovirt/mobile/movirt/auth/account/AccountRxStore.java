@@ -21,7 +21,6 @@ import org.ovirt.mobile.movirt.auth.account.data.SyncStatus;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.util.message.CommonMessageHelper;
-import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.ovirt.mobile.movirt.util.preferences.CommonSharedPreferencesHelper;
 
 import java.util.Collection;
@@ -161,18 +160,15 @@ public class AccountRxStore {
     }
 
     public void removeAccount(MovirtAccount account) {
-        try {
-            // try to destroy it and notify others before completely removing it
-            environmentStore.removeEnvironment(account);
-            accountManagerHelper.removeAccount(account, success -> {  // refreshAccounts callback gets called
-                if (success) {
-                    refreshAccounts();
-                } else {
-                    messageHelper.showError(String.format("Could not remove account %s", account.getName()));
-                }
-            });
-        } catch (AccountDeletedException ignored) {
-        }
+        // try to destroy it and notify others before completely removing it
+        environmentStore.removeEnvironment(account);
+        accountManagerHelper.removeAccount(account, success -> {  // refreshAccounts callback gets called
+            if (success) {
+                refreshAccounts();
+            } else {
+                messageHelper.showError(String.format("Could not remove account %s", account.getName()));
+            }
+        });
     }
 
     public Observable<MovirtAccount> onRemovedAccountObservable(MovirtAccount account) {

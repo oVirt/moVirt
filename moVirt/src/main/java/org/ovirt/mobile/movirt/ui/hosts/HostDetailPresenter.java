@@ -5,11 +5,9 @@ import android.os.RemoteException;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
 import org.ovirt.mobile.movirt.auth.account.data.ClusterAndEntity;
 import org.ovirt.mobile.movirt.auth.account.data.Selection;
-import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.StorageDomain;
@@ -81,10 +79,8 @@ public class HostDetailPresenter extends AccountDisposablesProgressBarPresenter<
     @Override
     public void destroy() {
         super.destroy();
-        try {
-            environmentStore.getEventProviderHelper(account).deleteTemporaryEvents();
-        } catch (AccountDeletedException ignore) {
-        }
+        environmentStore.safeEnvironmentCall(account,
+                env -> env.getEventProviderHelper().deleteTemporaryEvents());
     }
 
     /**
@@ -93,11 +89,8 @@ public class HostDetailPresenter extends AccountDisposablesProgressBarPresenter<
     private class SyncHostResponse extends SimpleResponse<Void> {
         @Override
         public void onResponse(Void aVoid) throws RemoteException {
-            try {
-                HostFacade facade = environmentStore.getEnvironment(account).getFacade(Host.class);
-                facade.syncOne(new ProgressBarResponse<>(HostDetailPresenter.this), hostId);
-            } catch (AccountDeletedException ignore) {
-            }
+            environmentStore.safeEntityFacadeCall(account, Host.class,
+                    facade -> facade.syncOne(new ProgressBarResponse<>(HostDetailPresenter.this), hostId));
         }
     }
 }

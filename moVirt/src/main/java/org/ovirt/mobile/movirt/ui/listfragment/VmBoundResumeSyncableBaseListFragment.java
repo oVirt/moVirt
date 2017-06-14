@@ -4,7 +4,6 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.model.base.OVirtAccountEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -39,10 +38,8 @@ public abstract class VmBoundResumeSyncableBaseListFragment<E extends OVirtAccou
     @Override
     @Background
     public void onRefresh() {
-        try {
-            environmentStore.getEnvironment(account).getFacade(entityClass).syncAll(new ProgressBarResponse<>(this), vmId);
-        } catch (AccountDeletedException ignore) {
-        }
+        environmentStore.safeEntityFacadeCall(account, entityClass,
+                facade -> facade.syncAll(new ProgressBarResponse<>(this), vmId));
     }
 }
 

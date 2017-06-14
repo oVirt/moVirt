@@ -4,7 +4,6 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.model.base.OVirtAccountEntity;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -50,11 +49,9 @@ public abstract class AccountFacadeBaseListFragment<E extends OVirtAccountEntity
     @Override
     @Background
     public void onRefresh() {
-        try {
-            if (isSingle()) {
-                environmentStore.getEnvironment(account).getFacade(entityClass).syncAll(new ProgressBarResponse<>(this));
-            }
-        } catch (AccountDeletedException ignore) {
+        if (isSingle()) {
+            environmentStore.safeEntityFacadeCall(account, entityClass,
+                    facade -> facade.syncAll(new ProgressBarResponse<>(this)));
         }
     }
 }

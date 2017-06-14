@@ -88,8 +88,6 @@ public class MainSettingsActivity extends BroadcastAwareAppCompatActivity implem
                                               String prefKey) {
         }
 
-
-
         @AfterViews
         public void afterViews() {
             enginesSettings.setOnPreferenceClickListener(preference -> {

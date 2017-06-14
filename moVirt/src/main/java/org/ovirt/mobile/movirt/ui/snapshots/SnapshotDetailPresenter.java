@@ -8,11 +8,9 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
-import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
 import org.ovirt.mobile.movirt.auth.account.data.ClusterAndEntity;
 import org.ovirt.mobile.movirt.auth.account.data.Selection;
-import org.ovirt.mobile.movirt.facade.SnapshotFacade;
 import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.Snapshot;
 import org.ovirt.mobile.movirt.model.Vm;
@@ -171,11 +169,8 @@ public class SnapshotDetailPresenter extends AccountDisposablesProgressBarPresen
     }
 
     private void syncSnapshots() {
-        try {
-            SnapshotFacade facade = environmentStore.getEnvironment(account).getFacade(Snapshot.class);
-            facade.syncAll(new ProgressBarResponse<>(this), vmId);
-        } catch (AccountDeletedException ignore) {
-        }
+        environmentStore.safeEntityFacadeCall(account, Snapshot.class,
+                facade -> facade.syncAll(new ProgressBarResponse<>(this), vmId));
     }
 
     @Override

@@ -20,7 +20,6 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.message.CommonMessageHelper;
 import org.ovirt.mobile.movirt.util.message.ErrorType;
 import org.ovirt.mobile.movirt.util.preferences.CommonSharedPreferencesHelper;
-import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 import org.ovirt.mobile.movirt.util.resources.Resources;
 import org.springframework.util.StringUtils;
 

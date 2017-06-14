@@ -30,11 +30,7 @@ public class AccountPropertiesManager extends AccountPropertiesManagerCore {
     }
 
     public boolean setAuthToken(String token) throws AccountDeletedException {
-        return setAuthToken(token, OnThread.CURRENT);
-    }
-
-    public boolean setAuthToken(String token, OnThread runOnThread) throws AccountDeletedException {
-        return setAndNotify(AccountProperty.AUTH_TOKEN, token, runOnThread);
+        return setAndNotify(AccountProperty.AUTH_TOKEN, token, OnThread.CURRENT);
     }
 
     public Boolean isFirstLogin() throws AccountDeletedException {
@@ -42,11 +38,7 @@ public class AccountPropertiesManager extends AccountPropertiesManagerCore {
     }
 
     public boolean setFirstLogin(Boolean firstLogin) throws AccountDeletedException {
-        return setFirstLogin(firstLogin, OnThread.CURRENT);
-    }
-
-    public boolean setFirstLogin(Boolean firstLogin, OnThread runOnThread) throws AccountDeletedException {
-        return setAndNotify(AccountProperty.FIRST_LOGIN, firstLogin, runOnThread);
+        return setAndNotify(AccountProperty.FIRST_LOGIN, firstLogin, OnThread.CURRENT);
     }
 
     public String getUsername() throws AccountDeletedException {
@@ -54,23 +46,15 @@ public class AccountPropertiesManager extends AccountPropertiesManagerCore {
     }
 
     public boolean setUsername(String username) throws AccountDeletedException {
-        return setUsername(username, OnThread.CURRENT);
-    }
-
-    public boolean setUsername(String username, OnThread runOnThread) throws AccountDeletedException {
-        return setAndNotify(AccountProperty.USERNAME, username, runOnThread);
+        return setAndNotify(AccountProperty.USERNAME, username, OnThread.CURRENT);
     }
 
     public String getPassword() throws AccountDeletedException {
         return accountPropertiesRW.getResource(AccountProperty.PASSWORD, String.class);
     }
 
-    public boolean setPassword(String password) throws AccountDeletedException {  // triggers sync in later APIs (Android 6)
-        return setPassword(password, OnThread.CURRENT);
-    }
-
-    public boolean setPassword(String password, OnThread runOnThread) throws AccountDeletedException {  // triggers sync in later APIs (Android 6)
-        return setAndNotify(AccountProperty.PASSWORD, password, runOnThread);
+    public boolean setPassword(String password) throws AccountDeletedException {
+        return setAndNotify(AccountProperty.PASSWORD, password, OnThread.CURRENT);
     }
 
     public String getApiUrl() throws AccountDeletedException {
@@ -78,11 +62,7 @@ public class AccountPropertiesManager extends AccountPropertiesManagerCore {
     }
 
     public boolean setApiUrl(String apiUrl) throws AccountDeletedException {
-        return setApiUrl(apiUrl, OnThread.CURRENT);
-    }
-
-    public boolean setApiUrl(String apiUrl, OnThread runOnThread) throws AccountDeletedException {
-        return setAndNotify(AccountProperty.API_URL, apiUrl, runOnThread);
+        return setAndNotify(AccountProperty.API_URL, apiUrl, OnThread.CURRENT);
     }
 
     public String getApiBaseUrl() throws AccountDeletedException {
@@ -95,12 +75,8 @@ public class AccountPropertiesManager extends AccountPropertiesManagerCore {
     }
 
     public boolean setApiVersion(Api newApi) throws AccountDeletedException {
-        return setApiVersion(newApi, OnThread.CURRENT);
-    }
-
-    public boolean setApiVersion(Api newApi, OnThread runOnThread) throws AccountDeletedException {
         Version newVersion = newApi == null ? null : newApi.toVersion();
-        return setAndNotify(AccountProperty.VERSION, newVersion, runOnThread);
+        return setAndNotify(AccountProperty.VERSION, newVersion, OnThread.CURRENT);
     }
 
     @NonNull
@@ -109,11 +85,7 @@ public class AccountPropertiesManager extends AccountPropertiesManagerCore {
     }
 
     public boolean setCertHandlingStrategy(CertHandlingStrategy certHandlingStrategy) throws AccountDeletedException {
-        return setCertHandlingStrategy(certHandlingStrategy, OnThread.CURRENT);
-    }
-
-    public boolean setCertHandlingStrategy(CertHandlingStrategy certHandlingStrategy, OnThread runOnThread) throws AccountDeletedException {
-        return setAndNotify(AccountProperty.CERT_HANDLING_STRATEGY, certHandlingStrategy, runOnThread);
+        return setAndNotify(AccountProperty.CERT_HANDLING_STRATEGY, certHandlingStrategy, OnThread.CURRENT);
     }
 
     public Boolean hasAdminPermissions() throws AccountDeletedException {
@@ -121,11 +93,7 @@ public class AccountPropertiesManager extends AccountPropertiesManagerCore {
     }
 
     public boolean setAdminPermissions(Boolean hasAdminPermissions) throws AccountDeletedException {
-        return setAdminPermissions(hasAdminPermissions, OnThread.CURRENT);
-    }
-
-    public boolean setAdminPermissions(Boolean hasAdminPermissions, OnThread runOnThread) throws AccountDeletedException {
-        return setAndNotify(AccountProperty.HAS_ADMIN_PERMISSIONS, hasAdminPermissions, runOnThread);
+        return setAndNotify(AccountProperty.HAS_ADMIN_PERMISSIONS, hasAdminPermissions, OnThread.CURRENT);
     }
 
     @NonNull
@@ -134,11 +102,7 @@ public class AccountPropertiesManager extends AccountPropertiesManagerCore {
     }
 
     public boolean setCertificateChain(Cert[] certChain) throws AccountDeletedException {
-        return setCertificateChain(certChain, OnThread.CURRENT);
-    }
-
-    public boolean setCertificateChain(Cert[] certChain, OnThread runOnThread) throws AccountDeletedException {
-        return setAndNotify(AccountProperty.CERTIFICATE_CHAIN, certChain, runOnThread);
+        return setAndNotify(AccountProperty.CERTIFICATE_CHAIN, certChain, OnThread.CURRENT);
     }
 
     @NonNull
@@ -152,11 +116,7 @@ public class AccountPropertiesManager extends AccountPropertiesManagerCore {
     }
 
     public boolean setValidHostnameList(String[] hostnameList) throws AccountDeletedException {
-        return setValidHostnameList(hostnameList, OnThread.CURRENT);
-    }
-
-    public boolean setValidHostnameList(String[] hostnameList, OnThread runOnThread) throws AccountDeletedException {
-        return setAndNotify(AccountProperty.VALID_HOSTNAME_LIST, hostnameList, runOnThread);
+        return setAndNotify(AccountProperty.VALID_HOSTNAME_LIST, hostnameList, OnThread.CURRENT);
     }
 
     @NonNull
@@ -165,10 +125,6 @@ public class AccountPropertiesManager extends AccountPropertiesManagerCore {
     }
 
     public boolean setCertificateLocation(CertLocation certificateLocation) throws AccountDeletedException {
-        return setCertificateLocation(certificateLocation, OnThread.CURRENT);
-    }
-
-    public boolean setCertificateLocation(CertLocation certificateLocation, OnThread runOnThread) throws AccountDeletedException {
-        return setAndNotify(AccountProperty.CERTIFICATE_LOCATION, certificateLocation, runOnThread);
+        return setAndNotify(AccountProperty.CERTIFICATE_LOCATION, certificateLocation, OnThread.CURRENT);
     }
 }

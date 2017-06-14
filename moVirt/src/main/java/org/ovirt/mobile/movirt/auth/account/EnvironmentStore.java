@@ -14,6 +14,8 @@ import org.ovirt.mobile.movirt.auth.AccountManagerHelper;
 import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
+import org.ovirt.mobile.movirt.facade.EntityFacade;
+import org.ovirt.mobile.movirt.model.base.OVirtEntity;
 import org.ovirt.mobile.movirt.provider.EventProviderHelper;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.client.LoginClient;
@@ -145,10 +147,24 @@ public class EnvironmentStore {
         return Collections.unmodifiableCollection(environmentMap.values());
     }
 
+    public void safeEnvironmentCall(MovirtAccount account, EnvironmentRunner runner) {
+        AccountEnvironment environment = environmentMap.get(account);
+        if (environment != null) {
+            runner.run(environment);
+        }
+    }
+
     public void safeOvirtClientCall(MovirtAccount account, OvirtClientRunner runner) {
         AccountEnvironment environment = environmentMap.get(account);
         if (environment != null) {
             runner.run(environment.getOVirtClient());
+        }
+    }
+
+    public <E extends OVirtEntity, T extends EntityFacade<E>> void safeEntityFacadeCall(MovirtAccount account, Class<E> clazz, EntityFacadeRunner<E, T> runner) {
+        AccountEnvironment environment = environmentMap.get(account);
+        if (environment != null) {
+            runner.run(environment.getFacade(clazz));
         }
     }
 
@@ -203,7 +219,15 @@ public class EnvironmentStore {
         return getEnvironment(account).getEventProviderHelper();
     }
 
+    public interface EnvironmentRunner {
+        void run(AccountEnvironment environment);
+    }
+
     public interface OvirtClientRunner {
         void run(OVirtClient client);
+    }
+
+    public interface EntityFacadeRunner<E extends OVirtEntity, T extends EntityFacade<E>> {
+        void run(T facade);
     }
 }

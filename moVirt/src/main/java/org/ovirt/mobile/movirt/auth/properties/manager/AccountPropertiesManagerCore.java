@@ -156,7 +156,7 @@ abstract class AccountPropertiesManagerCore implements AccountEnvironment.EnvDis
      * @param runOnThread thread to fire the listeners on
      * @return true if property state changed and listeners were notified
      */
-    boolean setAndNotify(AccountProperty property, Object object, OnThread runOnThread) throws AccountDeletedException {
+    public boolean setAndNotify(AccountProperty property, Object object, OnThread runOnThread) throws AccountDeletedException {
         boolean propertyChanged = propertyDiffers(property, object);
         if (propertyChanged) {
             accountPropertiesRW.setResource(property, object);
