@@ -28,6 +28,8 @@ import org.ovirt.mobile.movirt.model.mapping.EntityType;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.BroadcastAwareAppCompatActivity;
+import org.ovirt.mobile.movirt.util.JsonUtils;
+import org.ovirt.mobile.movirt.util.message.CommonMessageHelper;
 import org.ovirt.mobile.movirt.util.resources.Resources;
 
 import java.util.regex.Pattern;
@@ -79,6 +81,9 @@ public abstract class BaseTriggerActivity extends BroadcastAwareAppCompatActivit
 
     @Bean
     Resources resources;
+
+    @Bean
+    CommonMessageHelper commonMessageHelper;
 
     @ViewById
     TextView statusText;
@@ -173,6 +178,21 @@ public abstract class BaseTriggerActivity extends BroadcastAwareAppCompatActivit
             default:
                 throw new RuntimeException("Unknown condition type selected");
         }
+    }
+
+    public Trigger findSimilarTrigger(Trigger trigger) {
+        final ProviderFacade.QueryBuilder<Trigger> builder = provider.query(Trigger.class)
+                .where(Trigger.ACCOUNT_ID, trigger.getAccountId())
+                .where(Trigger.CLUSTER_ID, trigger.getClusterId())
+                .where(Trigger.TARGET_ID, trigger.getTargetId())
+                .where(Trigger.NOTIFICATION, trigger.getNotificationType().toString())
+                .where(Trigger.CONDITION, JsonUtils.objectToString(trigger.getCondition()))
+                .where(Trigger.ENTITY_TYPE, trigger.getEntityType().toString());
+
+        if (trigger.getId() != null) {
+            builder.whereNotEqual(Trigger.ID, trigger.getId().toString());
+        }
+        return builder.first();
     }
 
     public EntityType getEntityType(Condition triggerCondition) {

@@ -308,6 +308,8 @@
     <string name="missing_accounts_permission_error">Missing GET ACCOUNTS permission. Application may be buggy.</string>
     <string name="no_console_file_error">Could not fetch console .vv file: %1$s</string>
     <string name="no_console_client_error">Failed to open console client. Check if aSPICE/bVNC is installed.</string>
+    <string name="create_duplicate_trigger_error">Created duplicate trigger.The same trigger already exists!"</string>
+    <string name="update_duplicate_trigger_error">Duplicate trigger. The same trigger already exists!"</string>
     <string name="badly_formatted_certs_error">Certificates badly formatted</string>
     <string name="not_self_signed_engine_error">Engine doesn\'t use self-signed CA, please report this issue.</string>
     <string name="cert_management_ovirt_default_url">oVirt\'s default URL</string>

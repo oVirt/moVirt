@@ -1,5 +1,6 @@
 package org.ovirt.mobile.movirt.ui.triggers;
 
+import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EActivity;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.condition.Condition;
@@ -22,7 +23,15 @@ public class AddTriggerActivity extends BaseTriggerActivity {
         trigger.setCondition(condition);
         trigger.setNotificationType(getNotificationType());
 
-        provider.insert(trigger);
+        addTrigger(trigger);
         finish();
+    }
+
+    @Background
+    public void addTrigger(Trigger trigger) {
+        if (findSimilarTrigger(trigger) != null) {
+            commonMessageHelper.showToast(resources.getCreatedDuplicateTriggerError());
+        }
+        provider.insert(trigger);
     }
 }
