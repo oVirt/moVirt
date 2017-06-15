@@ -127,6 +127,7 @@
     <string name="login_error_invalid_api_url">Invalid API URL: %1$s \nExample: %2$s</string>
     <string name="login_error_invalid_username">Invalid username. Use %1$s pattern.\nExample: %2$s</string>
     <string name="login_error_empty_password">Password can\'t be empty.</string>
+    <string name="login_error_plus_password">note: Passwords containing \"+\" do not work until v%1$s</string>
     <string name="login_error_incorrect_ip_port">Could not connect. Make sure ip address and port are correct.</string>
     <string name="login_error_timeout">Reached timeout. Make sure ip address and port are correct. Also, check if the connection is stable.</string>
     <string name="login_error_bad_address_suffix">Not found. \nAddress suffix should be "/ovirt-engine/api"</string>

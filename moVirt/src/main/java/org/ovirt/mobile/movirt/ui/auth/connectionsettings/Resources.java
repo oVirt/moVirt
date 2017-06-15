@@ -6,6 +6,7 @@ import org.androidannotations.annotations.EBean;
 import org.ovirt.mobile.movirt.Broadcasts;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
+import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
 import org.ovirt.mobile.movirt.util.resources.StringResources;
 
 import java.util.Arrays;
@@ -19,6 +20,10 @@ public class Resources extends StringResources {
 
     public String getLoginEmptyPasswordError() {
         return getString(R.string.login_error_empty_password);
+    }
+
+    public String getLoginPlusPasswordError(Version version) {
+        return getString(R.string.login_error_plus_password, version.toString());
     }
 
     public String getLoginInvalidUsernameError() {

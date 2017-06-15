@@ -10,6 +10,7 @@ import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
 import org.ovirt.mobile.movirt.auth.account.data.LoginStatus;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.properties.property.version.support.VersionSupport;
 import org.ovirt.mobile.movirt.ui.auth.connectionsettings.exception.SmallMistakeException;
 import org.ovirt.mobile.movirt.ui.auth.connectionsettings.exception.WrongApiPathException;
 import org.ovirt.mobile.movirt.ui.auth.connectionsettings.exception.WrongArgumentException;
@@ -107,6 +108,10 @@ public class ConnectionSettingsPresenter extends AccountDisposablesPresenter<Con
 
         if (loginInfo.password.length() == 0) {
             throw new SmallMistakeException(resources.getLoginEmptyPasswordError());
+        }
+
+        if (loginInfo.password.contains("+")) {
+            messageHelper.showToast(null, resources.getLoginPlusPasswordError(VersionSupport.PLUS_SIGN_IN_PASSWORD.getSupportedFrom()));
         }
 
         String apiPath = endpointUrl.getPath();
