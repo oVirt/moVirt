@@ -10,8 +10,6 @@ import org.androidannotations.annotations.EService;
 @EService
 public class AuthenticatorService extends Service {
 
-    private static final String TAG = AuthenticatorService.class.getSimpleName();
-
     @Bean
     MovirtAuthenticator authenticator;
 

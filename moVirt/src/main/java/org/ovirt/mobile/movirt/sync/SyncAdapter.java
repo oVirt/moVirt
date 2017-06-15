@@ -1,311 +1,133 @@
 package org.ovirt.mobile.movirt.sync;
 
 import android.accounts.Account;
-import android.app.PendingIntent;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SyncResult;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.os.RemoteException;
+import android.support.v4.util.Pair;
 import android.util.Log;
-import android.util.Pair;
-
-import com.android.internal.util.Predicate;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.RootContext;
-import org.ovirt.mobile.movirt.Broadcasts;
-import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
-import org.ovirt.mobile.movirt.facade.EntityFacade;
-import org.ovirt.mobile.movirt.facade.EntityFacadeLocator;
-import org.ovirt.mobile.movirt.model.Cluster;
-import org.ovirt.mobile.movirt.model.DataCenter;
-import org.ovirt.mobile.movirt.model.Disk;
-import org.ovirt.mobile.movirt.model.Host;
-import org.ovirt.mobile.movirt.model.StorageDomain;
-import org.ovirt.mobile.movirt.model.Vm;
-import org.ovirt.mobile.movirt.model.base.OVirtEntity;
-import org.ovirt.mobile.movirt.model.base.SnapshotEmbeddableEntity;
-import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
-import org.ovirt.mobile.movirt.model.trigger.Trigger;
-import org.ovirt.mobile.movirt.provider.ProviderFacade;
-import org.ovirt.mobile.movirt.rest.SimpleResponse;
-import org.ovirt.mobile.movirt.rest.client.OVirtClient;
-import org.ovirt.mobile.movirt.ui.MainActivityFragments;
-import org.ovirt.mobile.movirt.ui.MainActivity_;
-import org.ovirt.mobile.movirt.util.NotificationHelper;
-import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.auth.AccountManagerHelper;
+import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
+import org.ovirt.mobile.movirt.auth.account.AccountEnvironment;
+import org.ovirt.mobile.movirt.auth.account.AccountRxStore;
+import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
+import org.ovirt.mobile.movirt.auth.account.data.LoginStatus;
+import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
+import org.ovirt.mobile.movirt.auth.account.data.SyncStatus;
+import org.ovirt.mobile.movirt.rest.RestCallException;
+import org.ovirt.mobile.movirt.util.message.CommonMessageHelper;
+import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.Subject;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = SyncAdapter.class.getSimpleName();
-    private static AtomicBoolean inSync = new AtomicBoolean();
 
-    @RootContext
-    Context context;
+    private static final int MAX_SYNC_ERRORS = 2; // for all facade syncs combined
+    private static final int WAIT_BEFORE_NEXT_TRY = 2; // seconds
+
     @Bean
-    OVirtClient oVirtClient;
+    SharedPreferencesHelper sharedPreferencesHelper;
+
     @Bean
-    ProviderFacade provider;
+    CommonMessageHelper commonMessageHelper;
+
     @Bean
-    EntityFacadeLocator entityFacadeLocator;
+    AccountRxStore rxStore;
+
     @Bean
-    EventsHandler eventsHandler;
+    AccountManagerHelper accountManagerHelper;
+
     @Bean
-    AccountPropertiesManager propertiesManager;
-    @Bean
-    NotificationHelper notificationHelper;
-    @Bean
-    MessageHelper messageHelper;
+    EnvironmentStore environmentStore;
 
     public SyncAdapter(Context context) {
-        super(context, true);
-    }
-
-    private static <E extends OVirtEntity> Map<String, E> groupEntitiesById(List<E> entities) {
-        Map<String, E> entityMap = new HashMap<>();
-        for (E entity : entities) {
-            entityMap.put(entity.getId(), entity);
-        }
-        return entityMap;
+        super(context, true, true);
     }
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient providerClient, SyncResult syncResult) {
-        if (!propertiesManager.accountConfigured()) {
-            Log.d(TAG, "Account not configured, not performing sync");
-            return;
-        }
+        try {
+            final MovirtAccount movirtAccount = accountManagerHelper.asMoAccount(account);
+            final AccountEnvironment environment = environmentStore.getEnvironment(movirtAccount);
 
-        if (inSync.compareAndSet(false, true)) {
-            try {
-                sendSyncIntent(true);
-
-                updateClusters();
-                updateDataCenters();
-                facadeSync(Vm.class);
-                facadeSync(Host.class);
-                facadeSync(StorageDomain.class);
-                facadeSync(Disk.class);
-                eventsHandler.updateEvents(false);
-            } catch (Exception e) {
-                messageHelper.showError(e);
-            } finally {
-                inSync.set(false);
-                sendSyncIntent(false);
+            if (environment.isLoginInProgress()) {
+                // sync will be called again if the login succeeds
+                return;
             }
-        }
-    }
+            // onPerformSync calls are guaranteed to be serialized for the same account
+            // so progress is atomic
+            setSyncInProgress(movirtAccount, true);
 
-    private void updateClusters() {
-        oVirtClient.getClusters(getUpdateEntitiesResponse(Cluster.class));
-    }
+            // remember last used sync action, because we may try it again if it fails
+            final Subject<SyncAction> syncActions = BehaviorSubject.createDefault(SyncAction.getFirstAction());
+            final Observable<LoginStatus> loginStatus = rxStore.isLoginInProgressObservable(movirtAccount)
+                    .observeOn(Schedulers.newThread());
 
-    private void updateDataCenters() {
-        oVirtClient.getDataCenters(getUpdateEntitiesResponse(DataCenter.class));
-    }
-
-    private <E extends OVirtEntity> void facadeSync(final Class<E> clazz) {
-        final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
-        entityFacade.syncAll();
-    }
-
-    public <E extends OVirtEntity> SimpleResponse<E> getUpdateEntityResponse(final Class<E> clazz) {
-        return new SimpleResponse<E>() {
-            @Override
-            public void onResponse(E entity) throws RemoteException {
-                updateLocalEntity(entity, clazz);
-            }
-        };
-    }
-
-    public <E extends OVirtEntity> void updateLocalEntity(E entity, final Class<E> clazz) {
-        final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
-        final ProviderFacade.BatchBuilder batch = provider.batch();
-
-        Collection<Trigger<E>> allTriggers = entityFacade.getAllTriggers();
-        updateLocalEntity(entity, clazz, allTriggers, batch);
-        applyBatch(batch);
-    }
-
-    public <E extends OVirtEntity> SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz) {
-        return new SimpleResponse<List<E>>() {
-            @Override
-            public void onResponse(List<E> entities) throws RemoteException {
-                updateLocalEntities(entities, clazz);
-            }
-        };
-    }
-
-    public <E extends OVirtEntity> SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz, final Predicate<E> scopePredicate) {
-        return getUpdateEntitiesResponse(clazz, scopePredicate, true);
-    }
-
-    public <E extends OVirtEntity> SimpleResponse<List<E>> getUpdateEntitiesResponse(final Class<E> clazz, final Predicate<E> scopePredicate,
-                                                                                     final boolean removeExpiredEntities) {
-        return new SimpleResponse<List<E>>() {
-            @Override
-            public void onResponse(List<E> entities) throws RemoteException {
-                updateLocalEntities(entities, clazz, scopePredicate, removeExpiredEntities);
-            }
-        };
-    }
-
-    private void applyBatch(ProviderFacade.BatchBuilder batch) {
-        if (batch.isEmpty()) {
-            Log.d(TAG, "No updates necessary");
-        } else {
-            Log.d(TAG, "Applying batch update");
-            batch.apply();
-        }
-    }
-
-    public <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz) throws RemoteException {
-        updateLocalEntities(remoteEntities, clazz, new Predicate<E>() {
-            @Override
-            public boolean apply(E entity) {
-                return true;
-            }
-        });
-    }
-
-    public <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz, Predicate<E> scopePredicate)
-            throws RemoteException {
-        updateLocalEntities(remoteEntities, clazz, scopePredicate, true);
-    }
-
-    public <E extends OVirtEntity> void updateLocalEntities(List<E> remoteEntities, Class<E> clazz, Predicate<E> scopePredicate,
-                                                            boolean removeExpiredEntities) throws RemoteException {
-        final Map<String, E> remoteEntityMap = groupEntitiesById(remoteEntities);
-        final EntityMapper<E> mapper = EntityMapper.forEntity(clazz);
-        final EntityFacade<E> entityFacade = entityFacadeLocator.getFacade(clazz);
-        Collection<Trigger<E>> allTriggers = new ArrayList<>();
-        if (entityFacade != null) {
-            allTriggers = entityFacade.getAllTriggers();
-        }
-
-        final Cursor cursor = provider.query(clazz).asCursor();
-        if (cursor == null) {
-            return;
-        }
-
-        ProviderFacade.BatchBuilder batch = provider.batch();
-        List<Pair<E, E>> entities = new ArrayList<>();
-
-        while (cursor.moveToNext()) {
-            E localEntity = mapper.fromCursor(cursor);
-            if (scopePredicate.apply(localEntity)) {
-                E remoteEntity = remoteEntityMap.get(localEntity.getId());
-                if (remoteEntity == null) { // local entity obsolete, schedule delete from db
-                    if (removeExpiredEntities) { // except for partial updates
-                        Log.d(TAG, String.format("%s: scheduling delete for URI = %s", clazz.getSimpleName(), localEntity.getUri()));
-                        batch.delete(localEntity);
-                    }
-                } else { // existing entity, update stats if changed
-                    remoteEntityMap.remove(localEntity.getId());
-                    entities.add(new Pair<>(localEntity, remoteEntity));
-                }
-            }
-        }
-
-        checkEntitiesChanged(entities, entityFacade, allTriggers, batch);
-        cursor.close();
-
-        for (E entity : remoteEntityMap.values()) {
-            Log.d(TAG, String.format("%s: scheduling insert for id = %s", clazz.getSimpleName(), entity.getId()));
-            batch.insert(entity);
-        }
-
-        applyBatch(batch);
-    }
-
-    private <E extends OVirtEntity> void updateLocalEntity(E remoteEntity, Class<E> clazz, Collection<Trigger<E>> allTriggers, ProviderFacade.BatchBuilder batch) {
-        final EntityFacade<E> triggerResolver = entityFacadeLocator.getFacade(clazz);
-
-        Collection<E> localEntities = provider.query(clazz).id(remoteEntity.getId()).all();
-        if (localEntities.isEmpty()) {
-            Log.d(TAG, String.format("%s: scheduling insert for id = %s", clazz.getSimpleName(), remoteEntity.getId()));
-            batch.insert(remoteEntity);
-        } else {
-            E localEntity = localEntities.iterator().next();
-            checkEntityChanged(localEntity, remoteEntity, triggerResolver, allTriggers, batch);
-        }
-    }
-
-    private <E extends OVirtEntity> void checkEntityChanged(E localEntity, E remoteEntity, EntityFacade<E> entityFacade, Collection<Trigger<E>> allTriggers, ProviderFacade.BatchBuilder batch) {
-        List<Pair<E, E>> entities = new ArrayList<>();
-        entities.add(new Pair<>(localEntity, remoteEntity));
-        checkEntitiesChanged(entities, entityFacade, allTriggers, batch);
-    }
-
-    private <E extends OVirtEntity> void checkEntitiesChanged(List<Pair<E, E>> entities, EntityFacade<E> entityFacade, Collection<Trigger<E>> allTriggers, ProviderFacade.BatchBuilder batch) {
-
-        List<Pair<E, Trigger<E>>> entitiesAndTriggers = new ArrayList<>();
-        for (Pair<E, E> pair : entities) {
-            E localEntity = pair.first;
-            E remoteEntity = pair.second;
-
-            if (!localEntity.equals(remoteEntity)) {
-                boolean processTriggers = true;
-
-                if (remoteEntity instanceof SnapshotEmbeddableEntity) {
-                    SnapshotEmbeddableEntity snapshotEmbeddableEntity = (SnapshotEmbeddableEntity) localEntity;
-                    processTriggers = !snapshotEmbeddableEntity.isSnapshotEmbedded();
-                }
-
-                if (processTriggers && entityFacade != null) {
-                    final List<Trigger<E>> triggers = entityFacade.getTriggers(localEntity, allTriggers);
-                    Log.d(TAG, String.format("%s: processing triggers for id = %s", localEntity.getClass().getSimpleName(), remoteEntity.getId()));
-
-                    for (Trigger<E> trigger : triggers) {
-                        if (!trigger.getCondition().evaluate(localEntity) && trigger.getCondition().evaluate(remoteEntity)) {
-                            entitiesAndTriggers.add(new Pair<>(remoteEntity, trigger));
+            Observable.combineLatest(syncActions, loginStatus, SyncBundle::new)
+                    .doOnNext(syncBundle -> { // sync
+                        if (syncBundle.action == SyncAction.EVENT
+                                && !environment.getSharedPreferencesHelper().isPollEventsEnabled()) {
+                            return;
                         }
-                    }
-                }
-                Log.d(TAG, String.format("%s: scheduling update for URI = %s", localEntity.getClass().getSimpleName(), localEntity.getUri()));
-                batch.update(remoteEntity);
-            }
+                        environment.getFacade(syncBundle.action.getClazz()).syncAllUnsafe();
+                    })
+                    .retryWhen(errors ->
+                            // run again with another MAX_SYNC_ERRORS tries; + 1 is for signaling the last error
+                            errors.zipWith(Observable.range(1, MAX_SYNC_ERRORS + 1), Pair::new)
+                                    .flatMap(err -> {
+                                        if (err.second == MAX_SYNC_ERRORS + 1 // last try failed
+                                                // or unrecoverable exception
+                                                || ((err.first instanceof RestCallException) && !((RestCallException) err.first).isRepeatable())) {
+                                            return Observable.<Long>error(err.first); // cancel the sync
+                                        }
+                                        // wait few seconds before trying again
+                                        Log.d(TAG, String.format("Account %s: failed sync. Retrying...", movirtAccount.getName()));
+                                        return Observable.timer(WAIT_BEFORE_NEXT_TRY, TimeUnit.SECONDS);
+                                    }))
+                    .doFinally(() -> setSyncInProgress(movirtAccount, false))
+                    //  finish if there is no reason to continue syncing
+                    .takeWhile(SyncBundle::isNotFinished)
+                    // block onPerformSync method -> the sync status will be atomic
+                    .blockingSubscribe(syncBundle -> syncActions.onNext(syncBundle.action.getNextAction()), // continue sync with next action
+                            throwable -> {
+                                // android can interrupt us while we sleep, probably because the same sync is pending; so ignore this one
+                                if (!(throwable instanceof InterruptedException)) {
+                                    // if not, first real error is handled (depends on MAX_SYNC_ERRORS)
+                                    environment.getRestErrorHandler().handleError(throwable, "Sync failed. ");
+                                }
+                            });
+        } catch (AccountDeletedException ignore) {
         }
-        displayNotification(entitiesAndTriggers, entityFacade);
     }
 
-    private <E extends OVirtEntity> void displayNotification(List<Pair<E, Trigger<E>>> entitiesAndTriggers, EntityFacade<E> entityFacade) {
-        if (entitiesAndTriggers.size() == 0) {
-            return;
-        }
-        Intent resultIntent;
-
-        if (entitiesAndTriggers.size() == 1) {
-            E entity = entitiesAndTriggers.get(0).first;
-            final Context appContext = getContext().getApplicationContext();
-            resultIntent = entityFacade.getDetailIntent(entity, appContext);
-            resultIntent.setData(entity.getUri());
-        } else {
-            resultIntent = new Intent(context, MainActivity_.class);
-            resultIntent.setAction(MainActivityFragments.VMS.name());
-            resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        }
-
-        notificationHelper.showTriggersNotification(
-                entitiesAndTriggers, context, PendingIntent.getActivity(context, 0, resultIntent, 0)
-        );
+    private void setSyncInProgress(MovirtAccount account, boolean inSync) {
+        rxStore.SYNC_STATUS.onNext(new SyncStatus(account, inSync));
     }
 
-    private void sendSyncIntent(boolean sync) {
-        Intent intent = new Intent(Broadcasts.IN_SYNC);
-        intent.putExtra(Broadcasts.Extras.SYNCING, sync);
-        context.sendBroadcast(intent);
+    private class SyncBundle {
+        SyncAction action;
+        boolean isLoginInProgress;
+
+        SyncBundle(SyncAction action, LoginStatus loginStatus) {
+            this.action = action;
+            this.isLoginInProgress = loginStatus.isInProgress();
+        }
+
+        boolean isNotFinished() {
+            // somebody canceled our sync or finish ahead of time if login is in progress
+            return !Thread.interrupted() && !isLoginInProgress && action.hasNextAction();
+        }
     }
 }

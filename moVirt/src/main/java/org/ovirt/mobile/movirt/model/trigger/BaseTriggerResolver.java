@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.model.trigger;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.model.base.BaseEntity;
 import org.ovirt.mobile.movirt.model.mapping.EntityType;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -25,25 +26,28 @@ public abstract class BaseTriggerResolver<E extends BaseEntity<?>> implements Tr
     }
 
     @Override
-    public Collection<Trigger<E>> getAllTriggers() {
-        return (Collection<Trigger<E>>) (Collection<?>) provider.query(Trigger.class)
+    public Collection<Trigger> getAllTriggers() {
+        return provider.query(Trigger.class)
                 .where(ENTITY_TYPE, entityType.toString())
                 .all();
     }
 
-    public List<Trigger<E>> getTriggers(String entityId, String clusterId, Collection<Trigger<E>> allTriggers) {
-        final List<Trigger<E>> res = new ArrayList<>();
+    public List<Trigger> getFilteredTriggers(MovirtAccount account, String remoteClusterId, String remoteEntityId, Collection<Trigger> allTriggers) {
+        final List<Trigger> res = new ArrayList<>();
 
-        for (Trigger<E> trigger : allTriggers) {
-            if (entityId != null && entityId.equals(trigger.getTargetId())) {
-                res.add(trigger);
-            }
+        for (Trigger trigger : allTriggers) {
 
-            if (clusterId != null && clusterId.equals(trigger.getTargetId())) {
-                res.add(trigger);
-            }
-
-            if (trigger.getScope() == Trigger.Scope.GLOBAL) {
+            if (trigger.getTargetId() == null) {
+                if (trigger.getClusterId() == null) {
+                    if (trigger.getAccountId() == null) {
+                        res.add(trigger);
+                    } else if (trigger.getAccountId().equals(account == null ? null : account.getId())) {
+                        res.add(trigger);
+                    }
+                } else if (trigger.getClusterId().equals(remoteClusterId)) {
+                    res.add(trigger);
+                }
+            } else if (trigger.getTargetId().equals(remoteEntityId)) {
                 res.add(trigger);
             }
         }

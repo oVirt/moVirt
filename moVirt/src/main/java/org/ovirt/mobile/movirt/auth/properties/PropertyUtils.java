@@ -2,7 +2,6 @@ package org.ovirt.mobile.movirt.auth.properties;
 
 import android.text.TextUtils;
 
-import org.ovirt.mobile.movirt.auth.properties.property.CertHandlingStrategy;
 import org.ovirt.mobile.movirt.util.JsonUtils;
 
 import java.util.ArrayList;
@@ -50,8 +49,8 @@ public class PropertyUtils {
             return Boolean.toString((Boolean) value);
         } else if (value instanceof Long) {
             return Long.toString((Long) value);
-        } else if (value instanceof CertHandlingStrategy) {
-            return Long.toString(((CertHandlingStrategy) value).id());
+        } else if (value instanceof Enum) {
+            return ((Enum) value).name();
         } else {
             return JsonUtils.objectToString(value);
         }

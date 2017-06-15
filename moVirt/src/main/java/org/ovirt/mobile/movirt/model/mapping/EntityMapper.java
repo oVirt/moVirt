@@ -2,11 +2,11 @@ package org.ovirt.mobile.movirt.model.mapping;
 
 import android.database.Cursor;
 
-import org.ovirt.mobile.movirt.model.Cluster;
 import org.ovirt.mobile.movirt.model.base.BaseEntity;
 import org.ovirt.mobile.movirt.model.trigger.Trigger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
@@ -29,9 +29,13 @@ public class EntityMapper<E extends BaseEntity> {
     }
 
     public List<E> listFromCursor(Cursor cursor) {
+        if (cursor.getCount() == 0) {
+            return Collections.emptyList();
+        }
+        cursor.moveToPosition(-1);
+
         List<E> result = new ArrayList<>();
 
-        cursor.moveToPosition(-1);
         while (cursor.moveToNext()) {
             result.add(fromCursor(cursor));
         }
@@ -39,9 +43,7 @@ public class EntityMapper<E extends BaseEntity> {
         return result;
     }
 
-    public static final EntityMapper<Cluster> CLUSTER_MAPPER = new EntityMapper<>(Cluster.class);
-
-    public static final EntityMapper<Trigger<?>> TRIGGER_MAPPER = (EntityMapper) new EntityMapper<>(Trigger.class);
+    public static final EntityMapper<Trigger> TRIGGER_MAPPER = (EntityMapper) new EntityMapper<>(Trigger.class);
 
     public static <E extends BaseEntity<?>> EntityMapper<E> forEntity(Class<E> clazz) {
         return new EntityMapper<>(clazz);

@@ -5,6 +5,6 @@
               android:accountType="org.ovirt.mobile.movirt.authenticator"
               android:userVisible="true"
               android:supportsUploading="false"
-              android:allowParallelSyncs="false"
+              android:allowParallelSyncs="true"
               android:isAlwaysSyncable="true">
 </sync-adapter>

@@ -3,138 +3,176 @@ package org.ovirt.mobile.movirt.rest;
 import android.accounts.AccountManager;
 import android.accounts.AuthenticatorException;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
-import org.ovirt.mobile.movirt.Broadcasts;
-import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.account.AccountEnvironment;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
-import org.ovirt.mobile.movirt.util.message.ErrorType;
-import org.ovirt.mobile.movirt.util.message.MessageHelper;
+import org.ovirt.mobile.movirt.util.DestroyableListeners;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import static org.ovirt.mobile.movirt.rest.RestHelper.prepareAuthToken;
 
-@EBean(scope = EBean.Scope.Singleton)
-public class RequestHandler {
-    private static final String TAG = RequestHandler.class.getSimpleName();
+@EBean
+public class RequestHandler implements AccountEnvironment.EnvDisposable {
+
+    private Version version;
+
+    private AccountPropertiesManager propertiesManager;
+
+    private DestroyableListeners listeners;
+
+    private ErrorHandler errorHandler;
+
     @RootContext
     Context context;
 
     @Bean
-    AccountPropertiesManager accountPropertiesManager;
+    ConnectivityHelper connectivityHelper;
 
-    @Bean
-    MessageHelper messageHelper;
+    public RequestHandler withDefaultErrorHandler(ErrorHandler errorHandler) {
+        ObjectUtils.requireNotNull(errorHandler, "errorHandler");
 
-    private Version version;
+        this.errorHandler = errorHandler;
 
-    @AfterInject
-    public void init() {
-        accountPropertiesManager.notifyAndRegisterListener(new AccountProperty.VersionListener() {
-            @Override
-            public void onPropertyChange(Version newVersion) {
-                version = newVersion;
-            }
-        });
+        return this;
+    }
+
+    public RequestHandler init(AccountPropertiesManager propertiesManager) {
+        ObjectUtils.requireNotNull(propertiesManager, "propertiesManager");
+
+        this.propertiesManager = propertiesManager;
+
+        listeners = new DestroyableListeners(propertiesManager)
+                .notifyAndRegisterListener(new AccountProperty.VersionListener() {
+                    @Override
+                    public void onPropertyChange(Version newVersion) {
+                        version = newVersion;
+                    }
+                });
+
+        return this;
+    }
+
+    @Override
+    public void dispose() {
+        listeners.destroy();
     }
 
     /**
-     * has to be synced because of error handling - otherwise it would not be possible to bind the error
+     * Uses default handler to handler errors if set
      */
-    public synchronized <T> void fireRestRequest(final Request<T> request, final Response<T> response) {
-        if (response != null) {
-            response.before();
-        }
-
-        RestCallResult result = doFireRequestWithPersistentAuth(request, response);
-        if (result == RestCallResult.AUTH_ERROR) {
-            // if it is an expired session it has been cleared - try again.
-            // If the credentials were filled well, now it will pass
-            result = doFireRequestWithPersistentAuth(request, response);
-        }
-
-        if (result != RestCallResult.SUCCESS && response != null) {
-            response.onError();
-        }
-
-        if (response != null) {
-            response.after();
+    public <T> void fireRestRequestSafe(final Request<T> request, final Response<T> response) {
+        try {
+            fireRestRequest(request, response, errorHandler);
+        } catch (RestCallException ignore) {
         }
     }
 
-    private <T, U extends RestClientRootUrl & RestClientHeaders & RestClientSupport> RestCallResult doFireRequestWithPersistentAuth(Request<T> request, Response<T> response) {
-        RestCallResult result = RestCallResult.OTHER_ERROR;
+    public <T> void fireRestRequest(final Request<T> request, final Response<T> response) throws RestCallException {
+        fireRestRequest(request, response, null);
+    }
+
+    public <T> void fireRestRequest(final Request<T> request, Response<T> response, ErrorHandler activeHandler) throws RestCallException {
+        if (response == null) {
+            response = SimpleResponse.dummyResponse();
+        }
+        RestCallException error = null;
+
+        response.before();
+
+        try {
+            doFireRequestWithPersistentAuth(request, response);
+        } catch (RestCallException e) {
+            if (e.getCallResult() == RestCallError.AUTH_FAILED) {
+                try {
+                    // if it is an expired session it has been cleared - try again.
+                    // If the credentials were filled well, now it will pass
+                    doFireRequestWithPersistentAuth(request, response);
+                } catch (RestCallException x) {
+                    error = x;
+                }
+            } else {
+                error = e;
+            }
+        }
+
+        if (error != null) {
+            response.onError();
+
+            if (activeHandler == null) {
+                response.after();
+                throw error;
+            } else {
+                activeHandler.handleError(error);
+            }
+        } else { // reset errors in any case on both handlers
+            if (errorHandler != null) {
+                errorHandler.resetErrors();
+            }
+
+            if (activeHandler != null && errorHandler != activeHandler) {
+                activeHandler.resetErrors();
+            }
+        }
+
+        response.after();
+    }
+
+    private <T, U extends RestClientRootUrl & RestClientHeaders & RestClientSupport> void doFireRequestWithPersistentAuth(Request<T> request, Response<T> response) throws RestCallException {
         U restClient = request.getRestClient();
 
         try {
-            Bundle bundle = accountPropertiesManager.getAuthToken().getResult();
+            Bundle bundle = propertiesManager.getAuthToken().getResult();
             if (bundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
                 String authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
 
                 if (TextUtils.isEmpty(authToken)) {
-                    messageHelper.showError(ErrorType.REST_MAJOR, context.getString(R.string.rest_token_missing));
+                    throw new RestCallException(RestCallError.NO_TOKEN_AVAILABLE);
                 } else {
                     prepareAuthToken(restClient, version, authToken);
-                    T restResponse = request.fire();
-                    result = RestCallResult.SUCCESS;
-                    if (response != null) {
-                        response.onResponse(restResponse);
+                    if (!connectivityHelper.isNetworkAvailable()) {
+                        throw new RestCallException(RestCallError.NO_NETWORK_AVAILABLE);
                     }
+                    T restResponse = request.fire();
+                    response.onResponse(restResponse);
                 }
-            } else if (bundle.containsKey(AccountManager.KEY_INTENT)) {
-                Intent accountAuthenticatorResponse = bundle.getParcelable(AccountManager.KEY_INTENT);
-                Intent editConnectionIntent = new Intent(Broadcasts.NO_CONNECTION_SPECIFIED);
-                editConnectionIntent.putExtra(AccountManager.KEY_INTENT, accountAuthenticatorResponse);
-                context.sendBroadcast(editConnectionIntent);
-
-                result = RestCallResult.CONNECTION_ERROR;
+            } else {
+                throw new RestCallException(RestCallError.NO_CONNECTION_SPECIFIED);
             }
         } catch (ResourceAccessException | AuthenticatorException e) {
-            messageHelper.showError(ErrorType.REST_MINOR, e);
-            result = RestCallResult.CONNECTION_ERROR;
+            throw new RestCallException(RestCallError.NO_CONNECTION, e);
         } catch (HttpClientErrorException e) {
-            String msg = e.getMessage();
             switch (e.getStatusCode()) {
                 case UNAUTHORIZED:
                     // ok, session id is not valid anymore - invalidate it
-                    accountPropertiesManager.setAuthToken(null);
-                    result = RestCallResult.AUTH_ERROR;
-                    break;
+                    propertiesManager.setAuthToken(null);
+                    throw new RestCallException(RestCallError.AUTH_FAILED);
                 case NOT_FOUND:
-                    messageHelper.showError(ErrorType.REST_MAJOR,
-                            context.getString(R.string.rest_url_missing, msg, restClient.getRootUrl()));
-                    break;
+                    throw new RestCallException(RestCallError.WRONG_API_URL, restClient.getRootUrl(), e);
                 default:
-                    messageHelper.showError(ErrorType.REST_MAJOR, messageHelper.createMessage(e));
-                    break;
+                    throw new RestCallException(RestCallError.HTTP_OTHER_ERROR, e);
             }
+        } catch (RestCallException e) {
+            throw e;
         } catch (Exception e) {
-            messageHelper.showError(ErrorType.REST_MAJOR, e);
+            throw new RestCallException(RestCallError.OTHER_ERROR, e);
         }
-
-        if (result == RestCallResult.SUCCESS) {
-            messageHelper.resetMinorErrors();
-        }
-
-        return result;
     }
 
-    private enum RestCallResult {
-        SUCCESS,
-        AUTH_ERROR,
-        CONNECTION_ERROR,
-        OTHER_ERROR
+    public interface ErrorHandler {
+        void handleError(Throwable exception);
+
+        void resetErrors();
     }
 }

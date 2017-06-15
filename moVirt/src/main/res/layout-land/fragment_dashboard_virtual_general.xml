@@ -32,7 +32,7 @@
         <!-- hack for having the same height as physical -->
         <TextView style="@style/percentageCircleSummary"/>
 
-        <org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView
+        <org.ovirt.mobile.movirt.ui.dashboard.generalfragment.PercentageCircleView
             android:id="@+id/cpu_percentage_circle"
             style="@style/percentageCircleView"/>
 
@@ -66,7 +66,7 @@
         <!-- hack for having the same height as physical -->
         <TextView style="@style/percentageCircleSummary"/>
 
-        <org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView
+        <org.ovirt.mobile.movirt.ui.dashboard.generalfragment.PercentageCircleView
             android:id="@+id/memory_percentage_circle"
             style="@style/percentageCircleView"/>
 
@@ -100,7 +100,7 @@
         <!-- hack for having the same height as physical -->
         <TextView style="@style/percentageCircleSummary"/>
 
-        <org.ovirt.mobile.movirt.ui.dashboard.PercentageCircleView
+        <org.ovirt.mobile.movirt.ui.dashboard.generalfragment.PercentageCircleView
             android:id="@+id/storage_percentage_circle"
             style="@style/percentageCircleView"/>
 

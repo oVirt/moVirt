@@ -1,21 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.ovirt.mobile.movirt"
-    android:versionCode="9"
-    android:versionName="1.7.1">
+          package="org.ovirt.mobile.movirt"
+          android:versionCode="9"
+          android:versionName="2.0-a1">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
-    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
-    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
-    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!-- Import file certs -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!-- needed to save cached cert before Kitkat (API 19) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="18" />
+    <uses-permission android:name="android.permission.CAMERA"/>
 
     <uses-feature
         android:name="android.hardware.camera"
-        android:required="false" />
+        android:required="false"/>
 
     <application
         android:name=".MoVirtApp_"
@@ -24,28 +31,37 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.MainActivity_"
+            android:name=".ui.mainactivity.MainActivity_"
             android:label="@string/app_name"
             android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.MainSettingsActivity_"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".ui.mainactivity.MainActivity_"/>
+
         <activity
             android:name=".ui.SettingsActivity_"
-            android:label="@string/title_activity_settings" />
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".ui.account.EditAccountsActivity_"/>
 
         <activity
-            android:name=".ui.auth.AdvancedAuthenticatorActivity_"
+            android:name=".ui.auth.connectionsettings.ConnectionSettingsActivity_"
+            android:label="@string/title_activity_connection_settings"
+            android:parentActivityName=".ui.SettingsActivity_"/>
+
+
+        <activity
+            android:name=".ui.auth.certificatemanagement.CertificateManagementActivity_"
             android:label="@string/certificate_management"
-            android:windowSoftInputMode="stateHidden"
-            android:parentActivityName=".ui.auth.AuthenticatorActivity_"/>
-
-        <activity
-            android:name=".ui.auth.AuthenticatorActivity_"
-            android:label="@string/title_activity_settings" />
+            android:parentActivityName=".ui.auth.connectionsettings.ConnectionSettingsActivity_"
+            android:windowSoftInputMode="stateHidden"/>
 
         <provider
             android:name=".provider.Provider"
@@ -56,12 +72,12 @@
 
         <service android:name=".auth.AuthenticatorService_">
             <intent-filter>
-                <action android:name="android.accounts.AccountAuthenticator" />
+                <action android:name="android.accounts.AccountAuthenticator"/>
             </intent-filter>
 
             <meta-data
                 android:name="android.accounts.AccountAuthenticator"
-                android:resource="@xml/authenticator" />
+                android:resource="@xml/authenticator"/>
         </service>
         <service
             android:name=".sync.SyncService_"
@@ -69,45 +85,57 @@
             android:exported="true">
 
             <intent-filter>
-                <action android:name="android.content.SyncAdapter" />
+                <action android:name="android.content.SyncAdapter"/>
             </intent-filter>
 
             <meta-data
                 android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_adapter" />
+                android:resource="@xml/sync_adapter"/>
         </service>
 
         <activity
+            android:name=".ui.account.EditAccountsActivity_"
+            android:label="@string/title_activity_edit_accounts"
+            android:parentActivityName=".ui.mainactivity.MainActivity_">
+        </activity>
+
+        <activity
+            android:name=".ui.account.AddAccountActivity_"
+            android:label="@string/title_activity_add_account"
+            android:parentActivityName=".ui.account.EditAccountsActivity_">
+        </activity>
+
+        <activity
             android:name=".ui.triggers.EditTriggersActivity_"
-            android:label="@string/title_activity_edit_filters"
-            android:parentActivityName=".ui.MainActivity_" >
+            android:label="@string/title_activity_edit_triggers"
+            android:parentActivityName=".ui.mainactivity.MainActivity_">
         </activity>
 
         <activity
             android:name=".ui.triggers.AddTriggerActivity_"
             android:label="@string/add_trigger"
-            android:windowSoftInputMode="stateHidden"
-            android:parentActivityName=".ui.triggers.EditTriggersActivity_" >
+            android:parentActivityName=".ui.triggers.EditTriggersActivity_"
+            android:windowSoftInputMode="stateHidden">
         </activity>
 
         <activity
             android:name=".ui.triggers.EditTriggerActivity_"
             android:label="@string/edit_trigger"
-            android:windowSoftInputMode="stateHidden"
-            android:parentActivityName=".ui.triggers.EditTriggersActivity_" >
+            android:parentActivityName=".ui.triggers.EditTriggersActivity_"
+            android:windowSoftInputMode="stateHidden">
         </activity>
 
         <activity
             android:name=".ui.vms.VmDetailActivity_"
             android:label="@string/title_activity_vm_details"
-            android:parentActivityName=".ui.MainActivity_"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:parentActivityName=".ui.mainactivity.MainActivity_">
         </activity>
 
         <activity
             android:name=".ui.hosts.HostDetailActivity_"
             android:label="@string/title_activity_host_details"
-            android:parentActivityName=".ui.MainActivity_">
+            android:parentActivityName=".ui.mainactivity.MainActivity_">
         </activity>
 
         <activity
@@ -117,29 +145,29 @@
         <activity
             android:name=".ui.CameraActivity_"
             android:label="@string/title_activity_camera"
-            android:theme="@style/cameraViewStyle" />
+            android:theme="@style/cameraViewStyle"/>
 
         <activity
             android:name=".camera.PreferencesActivity_"
             android:label="@string/preferences_name"
-            android:stateNotNeeded="true" />
+            android:stateNotNeeded="true"/>
 
         <activity
             android:name=".ui.dashboard.DashboardActivity_"
             android:label="@string/title_activity_dashboard"
-            android:parentActivityName=".ui.MainActivity_" >
+            android:parentActivityName=".ui.mainactivity.MainActivity_">
         </activity>
 
         <activity
             android:name=".ui.vms.VmMigrateActivity_"
             android:label="@string/title_activity_migrate_vm"
-            android:parentActivityName=".ui.vms.VmDetailActivity_" >
+            android:parentActivityName=".ui.vms.VmDetailActivity_">
         </activity>
 
         <activity
             android:name=".ui.storage.StorageDomainDetailActivity_"
             android:label="@string/title_activity_storage_domain_details"
-            android:parentActivityName=".ui.MainActivity_" >
+            android:parentActivityName=".ui.mainactivity.MainActivity_">
         </activity>
     </application>
 

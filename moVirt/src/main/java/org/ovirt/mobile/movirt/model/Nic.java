@@ -6,7 +6,7 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import org.ovirt.mobile.movirt.model.base.SnapshotEmbeddableEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtAccountNamedEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -14,7 +14,7 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Nic.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Nic extends SnapshotEmbeddableEntity implements OVirtContract.Nic {
+public class Nic extends OVirtAccountNamedEntity implements OVirtContract.Nic {
 
     @Override
     public Uri getBaseUri() {
@@ -57,10 +57,12 @@ public class Nic extends SnapshotEmbeddableEntity implements OVirtContract.Nic {
         this.plugged = plugged;
     }
 
+    @Override
     public String getVmId() {
         return vmId;
     }
 
+    @Override
     public void setVmId(String vmId) {
         this.vmId = vmId;
     }

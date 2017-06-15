@@ -8,7 +8,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.Event;
+import org.ovirt.mobile.movirt.model.enums.EventSeverity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.SEVERITY;
@@ -36,7 +36,7 @@ public class EventsCursorAdapter extends SimpleCursorAdapter {
                     String severity = cursor.getString(cursor.getColumnIndex(SEVERITY));
                     if (severity != null) {
                         ImageView imageView = (ImageView) view;
-                        Event.Severity status = Event.Severity.valueOf(severity);
+                        EventSeverity status = EventSeverity.fromString(severity);
                         imageView.setImageResource(status.getResource());
                     }
                 }

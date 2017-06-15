@@ -3,7 +3,6 @@ package org.ovirt.mobile.movirt.rest.client;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
@@ -13,6 +12,7 @@ import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
 import org.ovirt.mobile.movirt.MoVirtApp;
+import org.ovirt.mobile.movirt.auth.account.AccountEnvironment;
 import org.ovirt.mobile.movirt.auth.properties.AccountProperty;
 import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
 import org.ovirt.mobile.movirt.auth.properties.property.version.Version;
@@ -26,9 +26,12 @@ import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Nic;
 import org.ovirt.mobile.movirt.model.Snapshot;
+import org.ovirt.mobile.movirt.model.SnapshotDisk;
+import org.ovirt.mobile.movirt.model.SnapshotNic;
 import org.ovirt.mobile.movirt.model.StorageDomain;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
+import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.Request;
 import org.ovirt.mobile.movirt.rest.RequestHandler;
 import org.ovirt.mobile.movirt.rest.Response;
@@ -38,6 +41,9 @@ import org.ovirt.mobile.movirt.rest.client.requestfactory.OvirtSimpleClientHttpR
 import org.ovirt.mobile.movirt.rest.dto.Action;
 import org.ovirt.mobile.movirt.rest.dto.Events;
 import org.ovirt.mobile.movirt.rest.dto.SnapshotAction;
+import org.ovirt.mobile.movirt.util.DestroyableListeners;
+import org.ovirt.mobile.movirt.util.IdHelper;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 import org.ovirt.mobile.movirt.util.message.MessageHelper;
 import org.ovirt.mobile.movirt.util.preferences.SettingsKey;
 import org.ovirt.mobile.movirt.util.preferences.SharedPreferencesHelper;
@@ -46,127 +52,143 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static org.ovirt.mobile.movirt.rest.RestHelper.setAcceptEncodingHeaderAndFactory;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setFilterHeader;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setVersionHeader;
 import static org.ovirt.mobile.movirt.rest.RestHelper.setupAuth;
 
-@EBean(scope = EBean.Scope.Singleton)
-public class OVirtClient {
-    private static final String TAG = OVirtClient.class.getSimpleName();
+@EBean
+public class OVirtClient implements AccountEnvironment.EnvDisposable {
+
+    private AccountPropertiesManager propertiesManager;
+
+    private SharedPreferencesHelper sharedPreferencesHelper;
+
+    private MessageHelper messageHelper;
+
+    private RequestHandler requestHandler;
+
+    private Version version;
+
+    private String accountId;
+
+    private DestroyableListeners listeners;
+
+    @App
+    MoVirtApp app;
+
+    @RootContext
+    Context context;
 
     @RestService
     OVirtRestClient restClient;
 
     @Bean
-    RequestHandler requestHandler;
+    ProviderFacade providerFacade;
 
-    @Bean
-    OvirtSimpleClientHttpRequestFactory requestFactory;
+    public OVirtClient init(AccountPropertiesManager propertiesManager, MessageHelper messageHelper, OvirtSimpleClientHttpRequestFactory requestFactory,
+                            RequestHandler requestHandler, SharedPreferencesHelper sharedPreferencesHelper) {
+        ObjectUtils.requireAllNotNull(propertiesManager, messageHelper, requestFactory, requestHandler, sharedPreferencesHelper);
 
-    @RootContext
-    Context context;
+        this.propertiesManager = propertiesManager;
+        this.accountId = propertiesManager.getManagedAccount().getId();
+        this.messageHelper = messageHelper;
+        this.requestHandler = requestHandler;
+        this.sharedPreferencesHelper = sharedPreferencesHelper;
 
-    @Bean
-    AccountPropertiesManager propertiesManager;
-
-    @App
-    MoVirtApp app;
-
-    @Bean
-    SharedPreferencesHelper sharedPreferencesHelper;
-
-    @Bean
-    MessageHelper messageHelper;
-
-    private Version version;
-
-    @AfterInject
-    public void init() {
         setAcceptEncodingHeaderAndFactory(restClient, requestFactory);
 
-        propertiesManager.notifyAndRegisterListener(new AccountProperty.VersionListener() {
-            @Override
-            public void onPropertyChange(Version newVersion) {
-                setVersionHeader(restClient, newVersion);
-                setupAuth(restClient, newVersion);
-                version = newVersion;
-            }
-        });
+        listeners = new DestroyableListeners(propertiesManager)
+                .notifyAndRegisterListener(new AccountProperty.VersionListener() {
+                    @Override
+                    public void onPropertyChange(Version newVersion) {
+                        setVersionHeader(restClient, newVersion);
+                        setupAuth(restClient, newVersion);
+                        version = newVersion;
+                    }
+                }).notifyAndRegisterListener(new AccountProperty.ApiUrlListener() {
+                    @Override
+                    public void onPropertyChange(String apiUrl) {
+                        restClient.setRootUrl(apiUrl);
+                    }
+                }).notifyAndRegisterListener(new AccountProperty.HasAdminPermissionsListener() {
+                    @Override
+                    public void onPropertyChange(Boolean hasAdminPermissions) {
+                        setFilterHeader(restClient, hasAdminPermissions);
+                    }
+                });
 
-        propertiesManager.notifyAndRegisterListener(new AccountProperty.ApiUrlListener() {
-            @Override
-            public void onPropertyChange(String apiUrl) {
-                restClient.setRootUrl(apiUrl);
-            }
-        });
+        return this;
+    }
 
-        propertiesManager.notifyAndRegisterListener(new AccountProperty.HasAdminPermissionsListener() {
-            @Override
-            public void onPropertyChange(Boolean hasAdminPermissions) {
-                setFilterHeader(restClient, hasAdminPermissions);
-            }
-        });
+    @Override
+    public void dispose() {
+        listeners.destroy();
     }
 
     public void startVm(final String vmId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                restClient.startVm(new Action(), vmId);
+                restClient.startVm(new Action(), IdHelper.getIdPart(vmId));
                 return null;
             }
         }, response);
     }
 
     public void stopVm(final String vmId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                restClient.stopVm(new Action(), vmId);
+                restClient.stopVm(new Action(), IdHelper.getIdPart(vmId));
                 return null;
             }
         }, response);
     }
 
     public void rebootVm(final String vmId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                restClient.rebootVm(new Action(), vmId);
+                restClient.rebootVm(new Action(), IdHelper.getIdPart(vmId));
                 return null;
             }
         }, response);
     }
 
     public void migrateVmToHost(final String vmId, final String hostId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        final String realVmId = IdHelper.getIdPart(vmId);
+        final String realHostId = IdHelper.getIdPart(hostId);
+
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                Action action = version.isV3Api() ? new org.ovirt.mobile.movirt.rest.dto.v3.ActionMigrate(hostId) :
-                        new org.ovirt.mobile.movirt.rest.dto.v4.ActionMigrate(hostId);
-                restClient.migrateVmToHost(action, vmId);
+                Action action = version.isV3Api() ? new org.ovirt.mobile.movirt.rest.dto.v3.ActionMigrate(realHostId) :
+                        new org.ovirt.mobile.movirt.rest.dto.v4.ActionMigrate(realHostId);
+                restClient.migrateVmToHost(action, realVmId);
                 return null;
             }
         }, response);
     }
 
     public void migrateVmToDefaultHost(final String vmId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                restClient.migrateVmToHost(new Action(), vmId);
+                restClient.migrateVmToHost(new Action(), IdHelper.getIdPart(vmId));
                 return null;
             }
         }, response);
     }
 
     public void cancelMigration(final String vmId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                restClient.cancelMigration(new Action(), vmId);
+                restClient.cancelMigration(new Action(), IdHelper.getIdPart(vmId));
                 return null;
             }
         }, response);
@@ -174,70 +196,71 @@ public class OVirtClient {
 
     @NonNull
     public Request<Vm> getVmRequest(final String vmId) {
+        final String realVmId = IdHelper.getIdPart(vmId);
+
         return new RestClientRequest<Vm>() {
             @Override
             public Vm fire() {
-                org.ovirt.mobile.movirt.rest.dto.Vm vm = version.isV3Api() ? restClient.getVmV3(vmId) : restClient.getVmV4(vmId);
-                return vm.toEntity();
+                org.ovirt.mobile.movirt.rest.dto.Vm vm = version.isV3Api() ? restClient.getVmV3(realVmId) : restClient.getVmV4(realVmId);
+                return vm.toEntity(accountId);
             }
         };
     }
 
-    public void getVm(final String vmId, Response<Vm> response) {
-        requestHandler.fireRestRequest(getVmRequest(vmId), response);
-    }
-
     public void activateHost(final String hostId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                restClient.activateHost(new Action(), hostId);
+                restClient.activateHost(new Action(), IdHelper.getIdPart(hostId));
                 return null;
             }
         }, response);
     }
 
     public void dectivateHost(final String hostId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                restClient.deactivateHost(new Action(), hostId);
+                restClient.deactivateHost(new Action(), IdHelper.getIdPart(hostId));
                 return null;
             }
         }, response);
     }
 
     public void deleteSnapshot(final String vmId, final String snapshotId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                restClient.deleteSnapshot(vmId, snapshotId);
+                restClient.deleteSnapshot(IdHelper.getIdPart(vmId), IdHelper.getIdPart(snapshotId));
                 return null;
             }
         }, response);
     }
 
     public void restoreSnapshot(final SnapshotAction snapshotAction, final String vmId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                String snapshotId = snapshotAction.snapshot.id;
+                final String realVmId = IdHelper.getIdPart(vmId);
+                String realSnapshotId = IdHelper.getIdPart(snapshotAction.snapshot.id);
                 SnapshotAction restAction = new SnapshotAction(snapshotAction.restore_memory);
 
-                restClient.restoreSnapshot(restAction, vmId, snapshotId);
+                restClient.restoreSnapshot(restAction, realVmId, realSnapshotId);
                 return null;
             }
         }, response);
     }
 
     public void previewSnapshot(final SnapshotAction snapshotAction, final String vmId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        snapshotAction.snapshot.id = IdHelper.getIdPart(snapshotAction.snapshot.id);
+
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
                 if (version.isV3Api()) {
-                    restClient.previewSnapshotV3(snapshotAction, vmId);
+                    restClient.previewSnapshotV3(snapshotAction, IdHelper.getIdPart(vmId));
                 } else {
-                    restClient.previewSnapshotV4(snapshotAction, vmId);
+                    restClient.previewSnapshotV4(snapshotAction, IdHelper.getIdPart(vmId));
                 }
                 return null;
             }
@@ -245,23 +268,23 @@ public class OVirtClient {
     }
 
     public void createSnapshot(final org.ovirt.mobile.movirt.rest.dto.Snapshot snapshot, final String vmId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
-                restClient.createSnapshot(snapshot, vmId);
+                restClient.createSnapshot(snapshot, IdHelper.getIdPart(vmId));
                 return null;
             }
         }, response);
     }
 
     public void commitSnapshot(final String vmId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
                 if (version.isV3Api()) {
-                    restClient.commitSnapshotV3(new Action(), vmId);
+                    restClient.commitSnapshotV3(new Action(), IdHelper.getIdPart(vmId));
                 } else {
-                    restClient.commitSnapshotV4(new Action(), vmId);
+                    restClient.commitSnapshotV4(new Action(), IdHelper.getIdPart(vmId));
                 }
                 return null;
             }
@@ -269,13 +292,15 @@ public class OVirtClient {
     }
 
     public void undoSnapshot(final String vmId, Response<Void> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<Void>() {
+        final String realVmId = IdHelper.getIdPart(vmId);
+
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override
             public Void fire() {
                 if (version.isV3Api()) {
-                    restClient.undoSnapshotV3(new Action(), vmId);
+                    restClient.undoSnapshotV3(new Action(), realVmId);
                 } else {
-                    restClient.undoSnapshotV4(new Action(), vmId);
+                    restClient.undoSnapshotV4(new Action(), realVmId);
                 }
                 return null;
             }
@@ -284,130 +309,103 @@ public class OVirtClient {
 
     @NonNull
     public Request<Host> getHostRequest(final String hostId) {
+        final String realHostId = IdHelper.getIdPart(hostId);
+
         return new RestClientRequest<Host>() {
             @Override
             public Host fire() {
                 org.ovirt.mobile.movirt.rest.dto.Host wrapper = version.isV3Api() ?
-                        restClient.getHostV3(hostId) : restClient.getHostV4(hostId);
-                return wrapper.toEntity();
+                        restClient.getHostV3(realHostId) : restClient.getHostV4(realHostId);
+                return wrapper.toEntity(accountId);
             }
         };
-    }
-
-    public void getHost(final String hostId, Response<Host> response) {
-        requestHandler.fireRestRequest(getHostRequest(hostId), response);
     }
 
     @NonNull
     public Request<StorageDomain> getStorageDomainRequest(final String storageDomainId) {
+        final String realSdId = IdHelper.getIdPart(storageDomainId);
+
         return new RestClientRequest<StorageDomain>() {
             @Override
             public StorageDomain fire() {
                 org.ovirt.mobile.movirt.rest.dto.StorageDomain wrapper = version.isV3Api() ?
-                        restClient.getStorageDomainV3(storageDomainId) :
-                        restClient.getStorageDomainV4(storageDomainId);
-                return wrapper.toEntity();
-            }
-        };
-    }
-
-    public void getStorageDomain(final String storageDomainId, Response<StorageDomain> response) {
-        requestHandler.fireRestRequest(getStorageDomainRequest(storageDomainId), response);
-    }
-
-    // currently not used
-    public Request<Disk> getDiskRequest(final String vmId, final String id) {
-        return getDiskRequest(vmId, null, id);
-    }
-
-    @NonNull
-    public Request<Disk> getDiskRequest(final String vmId, final String snapshotId, final String id) {
-        final boolean isSnapshotEmbedded = snapshotId != null;
-
-        return new RestClientRequest<Disk>() {
-            @Override
-            public Disk fire() {
-                org.ovirt.mobile.movirt.rest.dto.Disk wrapper;
-                Disk entity;
-
-                if (isSnapshotEmbedded) {
-                    if (version.isV3Api()) {
-                        wrapper = restClient.getDiskV3(vmId, snapshotId, id);
-                    } else {
-                        wrapper = restClient.getDiskV4(vmId, snapshotId, id);
-                    }
-                    entity = wrapper.toEntity();
-                    setVmId(entity, vmId);
-                } else {
-                    if (version.isV3Api()) {
-                        wrapper = restClient.getDiskV3(vmId, id);
-                    } else {
-                        wrapper = restClient.getDiskV4(id);
-                    }
-                    entity = wrapper.toEntity();
-                }
-
-                return entity;
+                        restClient.getStorageDomainV3(realSdId) :
+                        restClient.getStorageDomainV4(realSdId);
+                return wrapper.toEntity(accountId);
             }
         };
     }
 
     public Request<List<DiskAttachment>> getDisksAttachmentsRequest(final String vmId) {
-
         return new RestClientRequest<List<DiskAttachment>>() {
             @Override
             public List<DiskAttachment> fire() {
                 VersionSupport.DISK_ATTACHMENTS.throwIfNotSupported(version);
 
-                return mapToEntities(restClient.getDisksAttachmentsV4(vmId));
+                return mapToEntities(restClient.getDisksAttachmentsV4(IdHelper.getIdPart(vmId)));
             }
         };
     }
 
-    public Request<List<Disk>> getDisksRequest(final String vmId, final String snapshotId) {
+    public Request<List<SnapshotDisk>> getSnapshotDisksRequest(final String vmId, final String snapshotId) {
+        final String realVmId = IdHelper.getIdPart(vmId);
+        final String realSnapshotId = IdHelper.getIdPart(snapshotId);
+
+        return new RestClientRequest<List<SnapshotDisk>>() {
+            @Override
+            public List<SnapshotDisk> fire() {
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.SnapshotDisk> snapshotDisks;
+
+                if (version.isV3Api()) {
+                    snapshotDisks = restClient.getSnapshotDisksV3(realVmId, realSnapshotId);
+                } else {
+                    snapshotDisks = restClient.getSnapshotDisksV4(realVmId, realSnapshotId);
+                }
+
+                if (snapshotDisks != null) {
+                    for (org.ovirt.mobile.movirt.rest.dto.SnapshotDisk disk : snapshotDisks.getList()) {
+                        disk.vmId = realVmId;
+                        disk.snapshotId = realSnapshotId;
+                    }
+                }
+
+                return mapToEntities(snapshotDisks);
+            }
+        };
+    }
+
+    public Request<List<Disk>> getDisksRequest(final String vmId) {
         final boolean downloadAll = vmId == null;
-        final boolean isSnapshotEmbedded = snapshotId != null;
+        final String realVmId = IdHelper.getIdPart(vmId);
 
         return new RestClientRequest<List<Disk>>() {
             @Override
             public List<Disk> fire() {
-                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Disk> wrappers;
-                List<Disk> entities;
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Disk> disks;
 
                 if (downloadAll) {
                     if (version.isV3Api()) {
-                        wrappers = restClient.getDisksV3();
+                        disks = restClient.getDisksV3();
                     } else {
-                        wrappers = restClient.getDisksV4();
+                        disks = restClient.getDisksV4();
                     }
-                    entities = mapToEntities(wrappers);
-                } else if (isSnapshotEmbedded) {
-                    if (version.isV3Api()) {
-                        wrappers = restClient.getDisksV3(vmId, snapshotId);
-                    } else {
-                        wrappers = restClient.getDisksV4(vmId, snapshotId);
-                    }
-                    entities = mapToEntities(wrappers);
-                    setVmId(entities, vmId);
                 } else {
                     VersionSupport.VM_DISKS.throwIfNotSupported(version);
 
                     if (version.isV3Api()) {
-                        wrappers = restClient.getDisksV3(vmId);
+                        disks = restClient.getDisksV3(realVmId);
                     } else {
-                        wrappers = restClient.getDisksV4(vmId);
+                        disks = restClient.getDisksV4(realVmId);
                     }
-
-                    entities = mapToEntities(wrappers);
                 }
 
-                return entities;
+                return mapToEntities(disks);
             }
         };
     }
 
-    public void getClusters(Response<List<Cluster>> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<List<Cluster>>() {
+    public Request<List<Cluster>> getClustersRequest() {
+        return new RestClientRequest<List<Cluster>>() {
             @Override
             public List<Cluster> fire() {
                 if (version.isV3Api()) {
@@ -415,11 +413,11 @@ public class OVirtClient {
                 }
                 return mapToEntities(restClient.getClustersV4());
             }
-        }, response);
+        };
     }
 
-    public void getDataCenters(Response<List<DataCenter>> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<List<DataCenter>>() {
+    public Request<List<DataCenter>> getDataCentersRequest() {
+        return new RestClientRequest<List<DataCenter>>() {
             @Override
             public List<DataCenter> fire() {
                 if (version.isV3Api()) {
@@ -427,72 +425,51 @@ public class OVirtClient {
                 }
                 return mapToEntities(restClient.getDataCentersV4());
             }
-        }, response);
+        };
     }
 
-    public Request<Nic> getNicRequest(final String vmId, final String id) {
-        return getNicRequest(vmId, null, id);
-    }
+    public Request<List<SnapshotNic>> getSnapshotNicsRequest(final String vmId, final String snapshotId) {
+        final String realVmId = IdHelper.getIdPart(vmId);
+        final String realSnapshotId = IdHelper.getIdPart(snapshotId);
 
-    @NonNull
-    public Request<Nic> getNicRequest(final String vmId, final String snapshotId, final String id) {
-        return new RestClientRequest<Nic>() {
+        return new RestClientRequest<List<SnapshotNic>>() {
             @Override
-            public Nic fire() {
-                org.ovirt.mobile.movirt.rest.dto.Nic wrapper;
-                Nic entity;
+            public List<SnapshotNic> fire() {
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.SnapshotNic> snapshotNics;
 
-                if (snapshotId == null) {
-                    if (version.isV3Api()) {
-                        wrapper = restClient.getNicV3(vmId, id);
-                    } else {
-                        wrapper = restClient.getNicV4(vmId, id);
-                    }
-                    entity = wrapper.toEntity();
-                    setVmId(entity, vmId);
+                if (version.isV3Api()) {
+                    snapshotNics = restClient.getSnapshotNicsV3(realVmId, realSnapshotId);
                 } else {
-                    if (version.isV3Api()) {
-                        wrapper = restClient.getNicV3(vmId, snapshotId, id);
-                    } else {
-                        wrapper = restClient.getNicV4(vmId, snapshotId, id);
-                    }
-                    entity = wrapper.toEntity();
+                    snapshotNics = restClient.getSnapshotNicsV4(realVmId, realSnapshotId);
                 }
 
-                return entity;
+                if (snapshotNics != null) {
+                    for (org.ovirt.mobile.movirt.rest.dto.SnapshotNic nic : snapshotNics.getList()) {
+                        nic.vmId = realVmId;
+                        nic.snapshotId = realSnapshotId;
+                    }
+                }
+
+                return mapToEntities(snapshotNics);
             }
         };
     }
 
     public Request<List<Nic>> getNicsRequest(final String vmId) {
-        return getNicsRequest(vmId, null);
-    }
+        final String realVmId = IdHelper.getIdPart(vmId);
 
-    public Request<List<Nic>> getNicsRequest(final String vmId, final String snapshotId) {
         return new RestClientRequest<List<Nic>>() {
             @Override
             public List<Nic> fire() {
-                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Nic> wrappers;
-                List<Nic> entities;
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Nic> nics;
 
-                if (snapshotId == null) {
-                    if (version.isV3Api()) {
-                        wrappers = restClient.getNicsV3(vmId);
-                    } else {
-                        wrappers = restClient.getNicsV4(vmId);
-                    }
-                    entities = mapToEntities(wrappers);
-                    setVmId(entities, vmId);
+                if (version.isV3Api()) {
+                    nics = restClient.getNicsV3(realVmId);
                 } else {
-                    if (version.isV3Api()) {
-                        wrappers = restClient.getNicsV3(vmId, snapshotId);
-                    } else {
-                        wrappers = restClient.getNicsV4(vmId, snapshotId);
-                    }
-                    entities = mapToEntities(wrappers);
+                    nics = restClient.getNicsV4(realVmId);
                 }
 
-                return entities;
+                return mapToEntities(nics);
             }
         };
     }
@@ -514,24 +491,24 @@ public class OVirtClient {
         return new RestClientRequest<List<Vm>>() {
             @Override
             public List<Vm> fire() {
-                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Vm> wrappers;
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Vm> vms;
 
                 if (propertiesManager.hasAdminPermissions()) {
                     int maxVms = sharedPreferencesHelper.getMaxVms();
                     String query = sharedPreferencesHelper.getStringPref(SettingsKey.VMS_SEARCH_QUERY);
                     if (StringUtils.isEmpty(query)) {
-                        wrappers = version.isV3Api() ? restClient.getVmsV3(maxVms) :
+                        vms = version.isV3Api() ? restClient.getVmsV3(maxVms) :
                                 restClient.getVmsV4(maxVms);
                     } else {
-                        wrappers = version.isV3Api() ? restClient.getVmsV3(query, maxVms) :
+                        vms = version.isV3Api() ? restClient.getVmsV3(query, maxVms) :
                                 restClient.getVmsV4(query, maxVms);
                     }
                 } else {
-                    wrappers = version.isV3Api() ? restClient.getVmsV3(-1) :
+                    vms = version.isV3Api() ? restClient.getVmsV3(-1) :
                             restClient.getVmsV4(-1);
                 }
 
-                return mapToEntities(wrappers);
+                return mapToEntities(vms);
             }
         };
     }
@@ -549,43 +526,48 @@ public class OVirtClient {
     }
 
     public Request<List<Snapshot>> getSnapshotsRequest(final String vmId) {
+        final String realVmId = IdHelper.getIdPart(vmId);
+
         return new RestClientRequest<List<Snapshot>>() {
             @Override
             public List<Snapshot> fire() {
-                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Snapshot> wrappers;
-                List<Snapshot> entities;
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Snapshot> snapshots;
 
                 if (version.isV3Api()) {
-                    wrappers = restClient.getSnapshotsV3(vmId);
+                    snapshots = restClient.getSnapshotsV3(realVmId);
                 } else {
-                    wrappers = restClient.getSnapshotsV4(vmId);
+                    snapshots = restClient.getSnapshotsV4(realVmId);
                 }
 
-                entities = mapToEntities(wrappers);
-                setVmId(entities, vmId); // Active VM Snapshot doesn't include this
+                if (snapshots != null) {
+                    for (org.ovirt.mobile.movirt.rest.dto.Snapshot snapshot : snapshots.getList()) {
+                        snapshot.vmId = realVmId; // Active VM Snapshot doesn't include this
+                    }
+                }
 
-                return entities;
+                return mapToEntities(snapshots);
             }
         };
     }
 
     public Request<Snapshot> getSnapshotRequest(final String vmId, final String snapshotId) {
+        final String realVmId = IdHelper.getIdPart(vmId);
+        final String realSnapshotId = IdHelper.getIdPart(snapshotId);
+
         return new RestClientRequest<Snapshot>() {
             @Override
             public Snapshot fire() {
-                org.ovirt.mobile.movirt.rest.dto.Snapshot wrapper;
-                Snapshot entity;
+                org.ovirt.mobile.movirt.rest.dto.Snapshot snapshot;
 
                 if (version.isV3Api()) {
-                    wrapper = restClient.getSnapshotV3(vmId, snapshotId);
+                    snapshot = restClient.getSnapshotV3(realVmId, realSnapshotId);
                 } else {
-                    wrapper = restClient.getSnapshotV4(vmId, snapshotId);
+                    snapshot = restClient.getSnapshotV4(realVmId, realSnapshotId);
                 }
 
-                entity = wrapper.toEntity();
-                setVmId(entity, vmId);
+                snapshot.vmId = realVmId; // Active VM Snapshot doesn't include this
 
-                return entity;
+                return snapshot.toEntity(accountId);
             }
         };
     }
@@ -594,41 +576,89 @@ public class OVirtClient {
         return new RestClientRequest<List<Console>>() {
             @Override
             public List<Console> fire() {
-                return mapToEntities(restClient.getConsoles(vmId));
+                return mapToEntities(restClient.getConsoles(IdHelper.getIdPart(vmId)));
             }
         };
     }
 
-    public void getEventsSince(final int lastEventId, Response<List<Event>> response) {
-        requestHandler.fireRestRequest(new RestClientRequest<List<Event>>() {
+    public Request<List<Event>> getEventsRequest() {
+        return new RestClientRequest<List<Event>>() {
             @Override
             public List<Event> fire() {
-                Events loadedEvents = null;
+                final int lastEventId = providerFacade.query(Event.class)
+                        .where(OVirtContract.Event.ACCOUNT_ID, accountId)
+                        .max(OVirtContract.Event.SHORT_ID)
+                        .asAggregateResult();
+                final String lastStrEventId = Integer.toString(lastEventId);
+
+                int maxEventsPolled = sharedPreferencesHelper.getMaxEventsPolled();
+                Events loadedEvents;
 
                 if (propertiesManager.hasAdminPermissions()) {
-                    int maxEventsStored = sharedPreferencesHelper.getMaxEvents();
+
                     String query = sharedPreferencesHelper.getStringPref(SettingsKey.EVENTS_SEARCH_QUERY);
                     if (!"".equals(query)) {
-                        loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), query, maxEventsStored);
+                        loadedEvents = restClient.getEventsSince(lastStrEventId, query, maxEventsPolled);
                     } else {
-                        loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), maxEventsStored);
+                        loadedEvents = restClient.getEventsSince(lastStrEventId, maxEventsPolled);
                     }
                 } else {
-                    loadedEvents = restClient.getEventsSince(Integer.toString(lastEventId), -1);
+                    loadedEvents = restClient.getEventsSince(lastStrEventId, -1);
+
+                    // user polls all events, so remove excessive events to emulate admin's behavior
+                    if (loadedEvents != null && maxEventsPolled < loadedEvents.getList().size()) {
+                        Map<Integer, org.ovirt.mobile.movirt.rest.dto.Event> sortedEvents = new TreeMap<>(Collections.<Integer>reverseOrder());
+                        for (org.ovirt.mobile.movirt.rest.dto.Event event : loadedEvents.getList()) {
+                            sortedEvents.put(event.id, event);
+                        }
+
+                        loadedEvents.setList(new ArrayList<>(sortedEvents.values()).subList(0, maxEventsPolled - 1));
+                    }
                 }
 
                 if (loadedEvents == null) {
                     return Collections.emptyList();
                 }
 
-                return mapToEntities(loadedEvents, new WrapPredicate<org.ovirt.mobile.movirt.rest.dto.Event>() {
-                    @Override
-                    public boolean toWrap(org.ovirt.mobile.movirt.rest.dto.Event entity) {
-                        return entity.id > lastEventId;
-                    }
-                });
+                return mapToEntities(loadedEvents, entity -> entity.id > lastEventId);
             }
-        }, response);
+        };
+    }
+
+    public Request<List<Event>> getHostEventsRequest(final String hostName) {
+        return new RestClientRequest<List<Event>>() {
+            @Override
+            public List<Event> fire() {
+                if (propertiesManager.hasAdminPermissions()) {
+                    return mapToEntities(restClient.getHostEvents(hostName));
+                }
+                return Collections.emptyList();
+            }
+        };
+    }
+
+    public Request<List<Event>> getVmEventsRequest(final String vmName) {
+        return new RestClientRequest<List<Event>>() {
+            @Override
+            public List<Event> fire() {
+                if (propertiesManager.hasAdminPermissions()) {
+                    return mapToEntities(restClient.getVmEvents(vmName));
+                }
+                return Collections.emptyList();
+            }
+        };
+    }
+
+    public Request<List<Event>> getStorageDomainEventsRequest(final String storageDomainName) {
+        return new RestClientRequest<List<Event>>() {
+            @Override
+            public List<Event> fire() {
+                if (propertiesManager.hasAdminPermissions()) {
+                    return mapToEntities(restClient.getStorageDomainEvents(storageDomainName));
+                }
+                return Collections.emptyList();
+            }
+        };
     }
 
     private <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList) {
@@ -650,7 +680,7 @@ public class OVirtClient {
         for (U rest : wrappers) {
             try {
                 if (predicate == null || predicate.toWrap(rest)) {
-                    entities.add(rest.toEntity());
+                    entities.add(rest.toEntity(accountId));
                 }
             } catch (Exception e) {
                 // showing only as a toast since this problem may persist and we don't want to flood the user with messages like this as dialogs...
@@ -658,20 +688,6 @@ public class OVirtClient {
             }
         }
         return entities;
-    }
-
-    private <E extends OVirtContract.HasVm> void setVmId(E entity, String vmId) {
-        if (entity != null && !StringUtils.isEmpty(vmId)) {
-            entity.setVmId(vmId);
-        }
-    }
-
-    private <E extends OVirtContract.HasVm> void setVmId(List<E> entities, String vmId) {
-        if (entities != null && !StringUtils.isEmpty(vmId)) {
-            for (E entity : entities) {
-                entity.setVmId(vmId);
-            }
-        }
     }
 
     private interface WrapPredicate<E> {

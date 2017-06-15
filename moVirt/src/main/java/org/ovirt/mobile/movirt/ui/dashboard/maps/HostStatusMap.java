@@ -1,6 +1,6 @@
 package org.ovirt.mobile.movirt.ui.dashboard.maps;
 
-import org.ovirt.mobile.movirt.model.Host;
+import org.ovirt.mobile.movirt.model.enums.HostStatus;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,38 +8,35 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by suomiy on 5/18/16.
- */
 public enum HostStatusMap {
     // dashboard position depends on the order
-    WARNING(Host.Status.UNASSIGNED, Host.Status.MAINTENANCE, Host.Status.INSTALLING, Host.Status.REBOOT,
-            Host.Status.PREPARING_FOR_MAINTENANCE, Host.Status.PENDING_APPROVAL, Host.Status.CONNECTING,
-            Host.Status.INSTALLING_OS, Host.Status.KDUMPING),
-    UP(Host.Status.UP),
-    DOWN(Host.Status.DOWN, Host.Status.NON_RESPONSIVE, Host.Status.ERROR, Host.Status.INSTALL_FAILED,
-            Host.Status.NON_OPERATIONAL, Host.Status.INITIALIZING);
+    WARNING(HostStatus.UNASSIGNED, HostStatus.MAINTENANCE, HostStatus.INSTALLING, HostStatus.REBOOT,
+            HostStatus.PREPARING_FOR_MAINTENANCE, HostStatus.PENDING_APPROVAL, HostStatus.CONNECTING,
+            HostStatus.INSTALLING_OS, HostStatus.KDUMPING),
+    UP(HostStatus.UP),
+    DOWN(HostStatus.DOWN, HostStatus.NON_RESPONSIVE, HostStatus.ERROR, HostStatus.INSTALL_FAILED,
+            HostStatus.NON_OPERATIONAL, HostStatus.INITIALIZING);
 
-    private final List<Host.Status> values;
-    private static Map<Host.Status, HostStatusMap> map = new EnumMap<>(Host.Status.class);
+    private final List<HostStatus> values;
+    private static Map<HostStatus, HostStatusMap> map = new EnumMap<>(HostStatus.class);
 
     static {
         for (HostStatusMap item : HostStatusMap.values()) {
-            for (Host.Status status : item.getValues()) {
+            for (HostStatus status : item.getValues()) {
                 map.put(status, item);
             }
         }
     }
 
-    HostStatusMap(Host.Status... values) {
+    HostStatusMap(HostStatus... values) {
         this.values = Collections.unmodifiableList(Arrays.asList(values));
     }
 
-    public List<Host.Status> getValues() {
+    public List<HostStatus> getValues() {
         return values;
     }
 
-    public static DashboardPosition getDashboardPosition(Host.Status status) {
+    public static DashboardPosition getDashboardPosition(HostStatus status) {
         HostStatusMap result = map.get(status);
         return result == null ? DashboardPosition.UNKNOWN : DashboardPosition.fromValue(result.ordinal());
     }

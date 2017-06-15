@@ -1,10 +1,7 @@
 package org.ovirt.mobile.movirt.ui.dialogs;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -18,46 +15,42 @@ import android.widget.LinearLayout;
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
+import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.VmCommand;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.rest.dto.Snapshot;
 import org.springframework.util.StringUtils;
 
-/**
- * Created by suomiy on 15/02/16.
- */
-
 @EFragment
-public class CreateSnapshotDialogFragment extends DialogFragment {
+public class CreateSnapshotDialogFragment extends ListenerDialogFragment<DialogListener.NewSnapshotListener> {
+
+    @InstanceState
+    protected String vmId;
+
+    @InstanceState
+    protected MovirtAccount account;
 
     @Bean
-    ProviderFacade providerFacade;
+    protected EnvironmentStore environmentStore;
 
-    @Bean
-    AccountPropertiesManager propertiesManager;
-
-    private DialogListener.NewSnapshotListener listenerActivity;
-
-    private String vmId;
     private Vm currentVm;
 
     private CheckBox persistMemory;
     private EditText descriptionEdit;
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            listenerActivity = (DialogListener.NewSnapshotListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement NewSnapshotListener");
-        }
-    }
+    @Bean
+    ProviderFacade providerFacade;
 
     public void setVmId(String vmId) {
         this.vmId = vmId;
+    }
+
+    public void setAccount(MovirtAccount account) {
+        this.account = account;
     }
 
     @AfterInject
@@ -76,55 +69,45 @@ public class CreateSnapshotDialogFragment extends DialogFragment {
         persistMemory = (CheckBox) view.findViewById(R.id.persist_memory);
         descriptionEdit = (EditText) view.findViewById(R.id.description_edit);
 
-        if (Vm.Command.SAVE_MEMORY.canExecute(currentVm.getStatus())) {
+        if (VmCommand.SAVE_MEMORY.canExecute(currentVm.getStatus())) {
             saveMemoryLayout.setVisibility(View.VISIBLE);
             persistMemory.setChecked(true);
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(view);
-        builder.setPositiveButton(R.string.create, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String description = descriptionEdit.getText().toString();
-                boolean persistMem = persistMemory.isChecked();
+        builder.setPositiveButton(R.string.create, (dialog, which) -> {
+            String description = descriptionEdit.getText().toString();
+            boolean persistMem = persistMemory.isChecked();
+            Snapshot snapshot = environmentStore.getVersion(account).isV3Api() ?
+                    new org.ovirt.mobile.movirt.rest.dto.v3.Snapshot(description, persistMem) :
+                    new org.ovirt.mobile.movirt.rest.dto.v4.Snapshot(description, persistMem);
+            getListener().onDialogResult(snapshot);
+        });
 
-                Snapshot snapshot = propertiesManager.getApiVersion().isV3Api() ?
-                        new org.ovirt.mobile.movirt.rest.dto.v3.Snapshot(description, persistMem) :
-                        new org.ovirt.mobile.movirt.rest.dto.v4.Snapshot(description, persistMem);
-                listenerActivity.onDialogResult(snapshot);
-            }
-        });
-        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
+        builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.cancel());
 
         AlertDialog dialog = builder.create();
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialog) {
-                final Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
 
-                if (button != null) {
-                    button.setEnabled(false);
-                    descriptionEdit.addTextChangedListener(new TextWatcher() {
-                        @Override
-                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                        }
+        dialog.setOnShowListener(dialog1 -> {
+            final Button button = ((AlertDialog) dialog1).getButton(AlertDialog.BUTTON_POSITIVE);
 
-                        @Override
-                        public void onTextChanged(CharSequence s, int start, int before, int count) {
-                            button.setEnabled(s.length() != 0);
-                        }
+            if (button != null) {
+                button.setEnabled(false);
+                descriptionEdit.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
 
-                        @Override
-                        public void afterTextChanged(Editable s) {
-                        }
-                    });
-                }
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        button.setEnabled(s.length() != 0);
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                    }
+                });
             }
         });
 

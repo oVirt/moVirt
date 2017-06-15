@@ -1,6 +1,7 @@
 package org.ovirt.mobile.movirt.model.trigger;
 
 import org.androidannotations.annotations.EBean;
+import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.model.Vm;
 import org.ovirt.mobile.movirt.model.mapping.EntityType;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
@@ -16,7 +17,7 @@ public class VmTriggerResolver extends BaseTriggerResolver<Vm> implements OVirtC
     }
 
     @Override
-    public List<Trigger<Vm>> getTriggers(Vm entity, Collection<Trigger<Vm>> allTriggers) {
-        return getTriggers(entity.getId(), entity.getClusterId(), allTriggers);
+    public List<Trigger> getFilteredTriggers(MovirtAccount account, Vm entity, Collection<Trigger> allTriggers) {
+        return getFilteredTriggers(account, entity.getClusterId(), entity.getId(), allTriggers);
     }
 }

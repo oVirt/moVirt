@@ -1,7 +1,7 @@
 package org.ovirt.mobile.movirt.ui.hosts;
 
+import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -14,7 +14,10 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ViewById;
+import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
+import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.facade.HostFacade;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -68,12 +71,16 @@ public class HostDetailGeneralFragment extends RefreshableLoaderFragment impleme
     ProviderFacade provider;
 
     @Bean
-    HostFacade hostFacade;
+    EnvironmentStore environmentStore;
+
+    private HostFacade hostFacade;
 
     @AfterViews
     void initLoader() {
-        Uri hostUri = getActivity().getIntent().getData();
-        hostId = hostUri.getLastPathSegment();
+        Intent intent = getActivity().getIntent();
+        hostId = intent.getData().getLastPathSegment();
+        MovirtAccount movirtAccount = intent.getParcelableExtra(Constants.ACCOUNT_KEY);
+        hostFacade = environmentStore.getEnvironment(movirtAccount).getFacade(Host.class);
 
         getLoaderManager().initLoader(0, null, this);
     }
@@ -96,7 +103,7 @@ public class HostDetailGeneralFragment extends RefreshableLoaderFragment impleme
     @Override
     @Background
     public void onRefresh() {
-        hostFacade.syncOne(new ProgressBarResponse<Host>(this), hostId);
+        hostFacade.syncOne(new ProgressBarResponse<>(this), hostId);
     }
 
     @Override

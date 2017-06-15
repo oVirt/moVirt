@@ -2,12 +2,16 @@ package org.ovirt.mobile.movirt.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.ovirt.mobile.movirt.model.enums.EventSeverity;
 import org.ovirt.mobile.movirt.rest.RestEntityWrapper;
+import org.ovirt.mobile.movirt.rest.dto.common.HasId;
+import org.ovirt.mobile.movirt.util.IdHelper;
 
 import java.sql.Timestamp;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Event implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Event> {
+public class Event implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Event>, HasId {
+
     public int id;
     public int code;
     public String description;
@@ -21,30 +25,35 @@ public class Event implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Ev
     public IdRef storage_domain;
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    static class IdRef {
+    static class IdRef implements HasId {
         public String id;
+
+        @Override
+        public String getId() {
+            return id;
+        }
     }
 
     @Override
-    public org.ovirt.mobile.movirt.model.Event toEntity() {
+    public String getId() {
+        return Integer.toString(id);
+    }
+
+    @Override
+    public org.ovirt.mobile.movirt.model.Event toEntity(String accountId) {
         org.ovirt.mobile.movirt.model.Event event = new org.ovirt.mobile.movirt.model.Event();
-        event.setId(id);
+        event.setIds(accountId, getId());
         event.setCode(code);
         event.setDescription(description);
-
-        try {
-            event.setSeverity(org.ovirt.mobile.movirt.model.Event.Severity.valueOf(severity.toUpperCase()));
-        } catch (Exception e) {
-            // fallback...
-            event.setSeverity(org.ovirt.mobile.movirt.model.Event.Severity.NORMAL);
-        }
-
+        event.setSeverity(EventSeverity.fromString(severity));
         event.setTime(new Timestamp(time));
-        if (vm != null) event.setVmId(vm.id);
-        if (host != null) event.setHostId(host.id);
-        if (cluster != null) event.setClusterId(cluster.id);
-        if (storage_domain != null) event.setStorageDomainId(storage_domain.id);
-        if (data_center != null) event.setDataCenterId(data_center.id);
+
+        event.setVmId(IdHelper.combinedIdSafe(accountId, vm));
+        event.setHostId(IdHelper.combinedIdSafe(accountId, host));
+        event.setClusterId(IdHelper.combinedIdSafe(accountId, cluster));
+        event.setStorageDomainId(IdHelper.combinedIdSafe(accountId, storage_domain));
+        event.setDataCenterId(IdHelper.combinedIdSafe(accountId, data_center));
+
         return event;
     }
 }

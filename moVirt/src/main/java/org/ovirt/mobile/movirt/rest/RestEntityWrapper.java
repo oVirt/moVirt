@@ -1,5 +1,5 @@
 package org.ovirt.mobile.movirt.rest;
 
 public interface RestEntityWrapper<E> {
-    E toEntity();
+    E toEntity(String accountId);
 }

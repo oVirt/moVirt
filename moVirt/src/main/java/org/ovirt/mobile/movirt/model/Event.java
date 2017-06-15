@@ -6,8 +6,8 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.model.base.BaseEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtAccountEntity;
+import org.ovirt.mobile.movirt.model.enums.EventSeverity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 
@@ -16,44 +16,18 @@ import java.sql.Timestamp;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Event.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
+public class Event extends OVirtAccountEntity implements OVirtContract.Event {
 
     @Override
     public Uri getBaseUri() {
         return CONTENT_URI;
     }
 
-    public static final class Codes {
-
-        public static final int USER_VDC_LOGIN = 30;
-        public static final int USER_VDC_LOGOUT = 31;
-    }
-
-    public enum Severity {
-        NORMAL(R.drawable.log_normal),
-        WARNING(R.drawable.log_warning),
-        ERROR(R.drawable.log_error),
-        ALERT(R.drawable.log_alert);
-
-        private final int resource;
-
-        Severity(int resource) {
-            this.resource = resource;
-        }
-
-        public int getResource() {
-            return resource;
-        }
-    }
-
-    @DatabaseField(columnName = ID, id = true)
-    private int id;
-
     @DatabaseField(columnName = DESCRIPTION, canBeNull = false)
     private String description;
 
     @DatabaseField(columnName = SEVERITY, canBeNull = false)
-    private Severity severity;
+    private EventSeverity severity;
 
     @DatabaseField(columnName = TIME, canBeNull = false)
     private Timestamp time;
@@ -73,15 +47,16 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
     @DatabaseField(columnName = DATA_CENTER_ID)
     private String dataCenterId;
 
+    @DatabaseField(columnName = TEMPORARY)
+    private boolean temporary;
+
+    public static final class Codes {
+
+        public static final int USER_VDC_LOGIN = 30;
+        public static final int USER_VDC_LOGOUT = 31;
+    }
+
     private transient int code;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
 
     public String getDescription() {
         return description;
@@ -91,11 +66,11 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
         this.description = description;
     }
 
-    public Severity getSeverity() {
+    public EventSeverity getSeverity() {
         return severity;
     }
 
-    public void setSeverity(Severity severity) {
+    public void setSeverity(EventSeverity severity) {
         this.severity = severity;
     }
 
@@ -147,6 +122,14 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
         return dataCenterId;
     }
 
+    public boolean isTemporary() {
+        return temporary;
+    }
+
+    public void setTemporary(boolean temporary) {
+        this.temporary = temporary;
+    }
+
     public int getCode() {
         return code;
     }
@@ -156,8 +139,7 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
     }
 
     public ContentValues toValues() {
-        ContentValues values = new ContentValues();
-        values.put(ID, id);
+        ContentValues values = super.toValues();
         values.put(DESCRIPTION, description);
         values.put(SEVERITY, severity.toString());
         values.put(TIME, time.toString());
@@ -166,20 +148,59 @@ public class Event extends BaseEntity<Integer> implements OVirtContract.Event {
         values.put(CLUSTER_ID, clusterId);
         values.put(STORAGE_DOMAIN_ID, storageDomainId);
         values.put(DATA_CENTER_ID, dataCenterId);
+        values.put(TEMPORARY, temporary);
 
         return values;
     }
 
     @Override
-    protected void initFromCursorHelper(CursorHelper cursorHelper) {
-        setId(cursorHelper.getInt(ID));
+    public void initFromCursorHelper(CursorHelper cursorHelper) {
+        super.initFromCursorHelper(cursorHelper);
         setDescription(cursorHelper.getString(DESCRIPTION));
-        setSeverity(cursorHelper.getEnum(SEVERITY, Severity.class));
+        setSeverity(cursorHelper.getEnum(SEVERITY, EventSeverity.class));
         setTime(cursorHelper.getTimestamp(TIME));
         setVmId(cursorHelper.getString(VM_ID));
         setHostId(cursorHelper.getString(HOST_ID));
         setClusterId(cursorHelper.getString(CLUSTER_ID));
         setStorageDomainId(cursorHelper.getString(STORAGE_DOMAIN_ID));
         setDataCenterId(cursorHelper.getString(DATA_CENTER_ID));
+        setTemporary(cursorHelper.getBoolean(TEMPORARY));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Event)) return false;
+        if (!super.equals(o)) return false;
+
+        Event event = (Event) o;
+
+        if (temporary != event.temporary) return false;
+        if (description != null ? !description.equals(event.description) : event.description != null)
+            return false;
+        if (severity != event.severity) return false;
+        if (time != null ? !time.equals(event.time) : event.time != null) return false;
+        if (vmId != null ? !vmId.equals(event.vmId) : event.vmId != null) return false;
+        if (hostId != null ? !hostId.equals(event.hostId) : event.hostId != null) return false;
+        if (clusterId != null ? !clusterId.equals(event.clusterId) : event.clusterId != null)
+            return false;
+        if (storageDomainId != null ? !storageDomainId.equals(event.storageDomainId) : event.storageDomainId != null)
+            return false;
+        return dataCenterId != null ? dataCenterId.equals(event.dataCenterId) : event.dataCenterId == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (severity != null ? severity.hashCode() : 0);
+        result = 31 * result + (time != null ? time.hashCode() : 0);
+        result = 31 * result + (vmId != null ? vmId.hashCode() : 0);
+        result = 31 * result + (hostId != null ? hostId.hashCode() : 0);
+        result = 31 * result + (clusterId != null ? clusterId.hashCode() : 0);
+        result = 31 * result + (storageDomainId != null ? storageDomainId.hashCode() : 0);
+        result = 31 * result + (dataCenterId != null ? dataCenterId.hashCode() : 0);
+        result = 31 * result + (temporary ? 1 : 0);
+        return result;
     }
 }

@@ -2,28 +2,28 @@ package org.ovirt.mobile.movirt.model.condition;
 
 import junit.framework.TestCase;
 
-import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.util.JsonUtils;
 
 public class ConditionSerializationTest extends TestCase {
 
     public void testCpuCondition() {
-        CpuThresholdCondition condition = new CpuThresholdCondition(42);
-        CpuThresholdCondition condition2 = serializationTransform(condition);
+        VmCpuThresholdCondition condition = new VmCpuThresholdCondition(42);
+        VmCpuThresholdCondition condition2 = serializationTransform(condition);
 
         assertEquals(condition.getPercentageLimit(), condition2.getPercentageLimit());
     }
 
     public void testMemoryCondition() {
-        MemoryThresholdCondition condition = new MemoryThresholdCondition(42);
-        MemoryThresholdCondition condition2 = serializationTransform(condition);
+        VmMemoryThresholdCondition condition = new VmMemoryThresholdCondition(42);
+        VmMemoryThresholdCondition condition2 = serializationTransform(condition);
 
         assertEquals(condition.getPercentageLimit(), condition2.getPercentageLimit());
     }
 
     public void testStatusCondition() {
-        StatusCondition condition = new StatusCondition(Vm.Status.DOWN);
-        StatusCondition condition2 = serializationTransform(condition);
+        VmStatusCondition condition = new VmStatusCondition(VmStatus.DOWN);
+        VmStatusCondition condition2 = serializationTransform(condition);
 
         assertEquals(condition.getStatus(), condition2.getStatus());
     }

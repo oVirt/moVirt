@@ -19,18 +19,11 @@ import org.ovirt.mobile.movirt.util.JsonUtils;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Trigger.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class Trigger<E extends BaseEntity<?>> extends BaseEntity<Integer> implements OVirtContract.Trigger {
+public class Trigger extends BaseEntity<Integer> implements OVirtContract.Trigger {
 
     @Override
     public Uri getBaseUri() {
         return CONTENT_URI;
-    }
-
-    public enum Scope {
-        GLOBAL,
-        CLUSTER,
-        ITEM
-
     }
 
     public enum NotificationType implements HasDisplayResourceId {
@@ -52,35 +45,48 @@ public class Trigger<E extends BaseEntity<?>> extends BaseEntity<Integer> implem
     @DatabaseField(columnName = ID, generatedId = true, allowGeneratedIdInsert = true)
     private int id;
 
-    @DatabaseField(columnName = NOTIFICATION, canBeNull = false)
-    private NotificationType notificationType;
+    @DatabaseField(columnName = ACCOUNT_ID, canBeNull = true)
+    private String accountId;
 
-    @DatabaseField(columnName = CONDITION, canBeNull = false, persisterClass = ConditionPersister.class)
-    private Condition<E> condition;
-
-    @DatabaseField(columnName = SCOPE, canBeNull = false)
-    private Scope scope;
+    @DatabaseField(columnName = CLUSTER_ID, canBeNull = true)
+    private String clusterId;
 
     @DatabaseField(columnName = TARGET_ID, canBeNull = true)
     private String targetId;
 
+    @DatabaseField(columnName = NOTIFICATION, canBeNull = false)
+    private NotificationType notificationType;
+
+    @DatabaseField(columnName = CONDITION, canBeNull = false, persisterClass = ConditionPersister.class)
+    private Condition condition;
+
     @DatabaseField(columnName = ENTITY_TYPE, canBeNull = false)
     private EntityType entityType;
 
+    @Override
     public Integer getId() {
         return id;
     }
 
+    @Override
     public void setId(Integer id) {
         this.id = id;
     }
 
-    public Scope getScope() {
-        return scope;
+    public String getAccountId() {
+        return accountId;
     }
 
-    public void setScope(Scope scope) {
-        this.scope = scope;
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
+    }
+
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(String clusterId) {
+        this.clusterId = clusterId;
     }
 
     public String getTargetId() {
@@ -99,11 +105,11 @@ public class Trigger<E extends BaseEntity<?>> extends BaseEntity<Integer> implem
         this.notificationType = notificationType;
     }
 
-    public Condition<E> getCondition() {
+    public <E extends BaseEntity<?>> Condition<E> getCondition() {
         return condition;
     }
 
-    public void setCondition(Condition<E> condition) {
+    public <E extends BaseEntity<?>> void setCondition(Condition<E> condition) {
         this.condition = condition;
     }
 
@@ -121,10 +127,11 @@ public class Trigger<E extends BaseEntity<?>> extends BaseEntity<Integer> implem
         if (id != 0) {
             contentValues.put(ID, id);
         }
+        contentValues.put(ACCOUNT_ID, accountId);
+        contentValues.put(CLUSTER_ID, clusterId);
+        contentValues.put(TARGET_ID, targetId);
         contentValues.put(NOTIFICATION, notificationType.toString());
         contentValues.put(CONDITION, JsonUtils.objectToString(condition));
-        contentValues.put(SCOPE, scope.toString());
-        contentValues.put(TARGET_ID, targetId);
         contentValues.put(ENTITY_TYPE, entityType.toString());
         return contentValues;
     }
@@ -132,10 +139,16 @@ public class Trigger<E extends BaseEntity<?>> extends BaseEntity<Integer> implem
     @Override
     public void initFromCursorHelper(CursorHelper cursorHelper) {
         setId(cursorHelper.getInt(OVirtContract.Trigger.ID));
+        setAccountId(cursorHelper.getString(OVirtContract.Trigger.ACCOUNT_ID));
+        setClusterId(cursorHelper.getString(OVirtContract.Trigger.CLUSTER_ID));
+        setTargetId(cursorHelper.getString(OVirtContract.Trigger.TARGET_ID));
         setNotificationType(cursorHelper.getEnum(OVirtContract.Trigger.NOTIFICATION, Trigger.NotificationType.class));
         setCondition(cursorHelper.getJson(OVirtContract.Trigger.CONDITION, Condition.class));
-        setScope(cursorHelper.getEnum(OVirtContract.Trigger.SCOPE, Trigger.Scope.class));
-        setTargetId(cursorHelper.getString(OVirtContract.Trigger.TARGET_ID));
         setEntityType(cursorHelper.getEnum(OVirtContract.Trigger.ENTITY_TYPE, EntityType.class));
+    }
+
+    @Override
+    public String toString() {
+        return condition == null ? "" : condition.toString();
     }
 }

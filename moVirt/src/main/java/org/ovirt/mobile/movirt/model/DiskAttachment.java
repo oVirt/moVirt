@@ -6,7 +6,7 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import org.ovirt.mobile.movirt.model.base.OVirtBaseEntity;
+import org.ovirt.mobile.movirt.model.base.OVirtAccountEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -14,17 +14,17 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.DiskAttachment.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class DiskAttachment extends OVirtBaseEntity implements OVirtContract.DiskAttachment {
+public class DiskAttachment extends OVirtAccountEntity implements OVirtContract.DiskAttachment {
 
     @Override
     public Uri getBaseUri() {
         return CONTENT_URI;
     }
 
-    @DatabaseField(columnName = DISK_ID)
+    @DatabaseField(columnName = DISK_ID, canBeNull = false)
     private String diskId;
 
-    @DatabaseField(columnName = VM_ID)
+    @DatabaseField(columnName = VM_ID, canBeNull = false)
     private String vmId;
 
     @Override

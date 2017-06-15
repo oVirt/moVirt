@@ -5,18 +5,21 @@ import android.util.Log;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
+import org.ovirt.mobile.movirt.auth.properties.manager.AccountPropertiesManager;
+import org.ovirt.mobile.movirt.facade.intent.EntityIntentResolver;
+import org.ovirt.mobile.movirt.facade.intent.IntentResolvers;
 import org.ovirt.mobile.movirt.model.base.OVirtEntity;
 import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
-import org.ovirt.mobile.movirt.model.trigger.Trigger;
 import org.ovirt.mobile.movirt.rest.CompositeResponse;
 import org.ovirt.mobile.movirt.rest.Request;
 import org.ovirt.mobile.movirt.rest.RequestHandler;
 import org.ovirt.mobile.movirt.rest.Response;
+import org.ovirt.mobile.movirt.rest.RestCallException;
 import org.ovirt.mobile.movirt.rest.client.OVirtClient;
-import org.ovirt.mobile.movirt.sync.SyncAdapter;
+import org.ovirt.mobile.movirt.sync.DbUpdater;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 @EBean
@@ -24,30 +27,60 @@ public abstract class BaseEntityFacade<E extends OVirtEntity> implements EntityF
     public static final String TAG = BaseEntityFacade.class.getSimpleName();
 
     @Bean
-    SyncAdapter syncAdapter;
+    DbUpdater dbUpdater;
 
     @Bean
-    OVirtClient oVirtClient;
+    IntentResolvers intentResolvers;
 
-    @Bean
-    RequestHandler requestHandler;
+    protected MovirtAccount account;
 
-    private final Class<E> clazz;
+    protected OVirtClient oVirtClient;
+
+    protected RequestHandler requestHandler;
+
+    protected AccountPropertiesManager propertiesManager;
+
+    protected final Class<E> clazz;
 
     protected BaseEntityFacade(Class<E> clazz) {
         this.clazz = clazz;
     }
 
-    protected abstract Request<E> getSyncOneRestRequest(String id, String... ids);
+    public BaseEntityFacade<E> init(AccountPropertiesManager propertiesManager, OVirtClient oVirtClient, RequestHandler requestHandler) {
+        ObjectUtils.requireAllNotNull(oVirtClient, requestHandler);
+
+        this.propertiesManager = propertiesManager;
+        this.account = propertiesManager.getManagedAccount();
+        this.oVirtClient = oVirtClient;
+        this.requestHandler = requestHandler;
+        return this;
+    }
+
+    @Override
+    public EntityIntentResolver<E> getIntentResolver() {
+        return intentResolvers.getResolver(clazz);
+    }
+
+    protected Request<E> getSyncOneRestRequest(String id, String... ids) {
+        throw new UnsupportedOperationException("Sync for one entity not implemented.");
+    }
 
     protected abstract Request<List<E>> getSyncAllRestRequest(String... ids);
 
-    protected CompositeResponse<E> getSyncOneResponse(final Response<E> response, String... ids) {
-        return new CompositeResponse<>(syncAdapter.getUpdateEntityResponse(clazz), response);
+    protected CompositeResponse<E> getSyncOneResponse(Response<E> response, String... ids) {
+        return respond().asUpdateEntityResponse().addResponse(response);
     }
 
-    protected CompositeResponse<List<E>> getSyncAllResponse(final Response<List<E>> response, String... ids) {
-        return new CompositeResponse<>(syncAdapter.getUpdateEntitiesResponse(clazz), response);
+    protected Response<List<E>> getSyncAllResponse(Response<List<E>> response, String... ids) {
+        return respond().asUpdateEntitiesResponse().addResponse(response);
+    }
+
+    protected DbUpdater.UpdateLocalEntitiesBuilder<E> respond() {
+        return dbUpdater.update(clazz).whereAccount(account.getId());
+    }
+
+    protected <T extends OVirtEntity> DbUpdater.UpdateLocalEntitiesBuilder<T> respond(Class<T> clazzz) {
+        return dbUpdater.update(clazzz).whereAccount(account.getId());
     }
 
     @Override
@@ -62,8 +95,8 @@ public abstract class BaseEntityFacade<E extends OVirtEntity> implements EntityF
 
     @Override
     public void syncOne(Response<E> response, String id, String... ids) {
-        Log.d(TAG, String.format("Syncing one %s with %d ids specified", clazz.getSimpleName(), ids.length + 1));
-        requestHandler.fireRestRequest(getSyncOneRestRequest(id, ids), getSyncOneResponse(response, ids));
+        log("one", ids.length + 1);
+        requestHandler.fireRestRequestSafe(getSyncOneRestRequest(id, ids), getSyncOneResponse(response, ids));
     }
 
     @Override
@@ -73,19 +106,22 @@ public abstract class BaseEntityFacade<E extends OVirtEntity> implements EntityF
 
     @Override
     public void syncAll(Response<List<E>> response, String... ids) {
-        Log.d(TAG, String.format("Syncing all %s's with %d ids specified", clazz.getSimpleName(), ids.length));
+        log("all", ids.length);
+        requestHandler.fireRestRequestSafe(getSyncAllRestRequest(ids), getSyncAllResponse(response, ids));
+    }
+
+    @Override
+    public void syncAllUnsafe(String... ids) throws RestCallException {
+        syncAllUnsafe(null, ids);
+    }
+
+    @Override
+    public void syncAllUnsafe(Response<List<E>> response, String... ids) throws RestCallException {
+        log("all", ids.length);
         requestHandler.fireRestRequest(getSyncAllRestRequest(ids), getSyncAllResponse(response, ids));
     }
 
-    @Override
-    public Collection<Trigger<E>> getAllTriggers() {
-        // TriggerResolver does not have to be implemented, return an empty list as default
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<Trigger<E>> getTriggers(E entity, Collection<Trigger<E>> allTriggers) {
-        // TriggerResolver does not have to be implemented, return an empty list as default
-        return Collections.emptyList();
+    private void log(String amount, int ids) {
+        Log.d(TAG, String.format("Account %s: syncing  %s %s's with %d ids specified", account.getName(), amount, clazz.getSimpleName(), ids));
     }
 }

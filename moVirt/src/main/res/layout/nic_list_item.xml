@@ -1,34 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:paddingBottom="3dp"
-    android:paddingTop="3dp">
-
-    <TextView
-        android:id="@+id/nic_mac"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingBottom="5dp"
-        android:textSize="15sp" />
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:padding="@dimen/item_margin">
 
     <ImageView
         android:id="@+id/nic_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:gravity="end"
-        android:paddingRight="10dp" />
+        android:paddingEnd="@dimen/item_horizontal_margin"
+        android:paddingLeft="@dimen/item_horizontal_margin"
+        android:paddingRight="@dimen/item_horizontal_margin"
+        android:paddingStart="@dimen/item_horizontal_margin"/>
 
-    <TextView
-        android:id="@+id/nic_para"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_below="@id/nic_mac"
-        android:textSize="15sp" />
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/inner_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_toLeftOf="@id/nic_status"
+                    android:layout_toStartOf="@id/nic_status"
+                    android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/nic_mac"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"/>
+
+        <TextView
+            android:id="@+id/nic_para"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_below="@id/nic_mac"
+            android:paddingTop="5dp"
+            android:textSize="15sp"/>
+    </RelativeLayout>
 
 </RelativeLayout>

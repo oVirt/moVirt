@@ -2,11 +2,9 @@ package org.ovirt.mobile.movirt.rest;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.Collections;
 import java.util.List;
 
-/**
- * Created by suomiy on 6/21/16.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class RestEntityWrapperList<E extends RestEntityWrapper> {
     private List<E> list;
@@ -16,6 +14,10 @@ public abstract class RestEntityWrapperList<E extends RestEntityWrapper> {
     }
 
     public List<E> getList() {
-        return list;
+        return list == null ? Collections.emptyList() : list;
+    }
+
+    public void setList(List<E> list) {
+        this.list = list;
     }
 }

@@ -9,7 +9,7 @@ public abstract class DiskAttachment implements RestEntityWrapper<org.ovirt.mobi
 
     // public String id; // currently same as diskId
 
-    public org.ovirt.mobile.movirt.model.DiskAttachment toEntity() {
+    public org.ovirt.mobile.movirt.model.DiskAttachment toEntity(String accountId) {
         return new org.ovirt.mobile.movirt.model.DiskAttachment();
     }
 }

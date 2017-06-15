@@ -2,28 +2,19 @@ package org.ovirt.mobile.movirt.rest.dto.v3;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.ovirt.mobile.movirt.util.IdHelper;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Host extends org.ovirt.mobile.movirt.rest.dto.Host {
     public Status status;
     public Cluster cluster;
 
     @Override
-    public org.ovirt.mobile.movirt.model.Host toEntity() {
-        org.ovirt.mobile.movirt.model.Host host = super.toEntity();
-        host.setStatus(mapStatus(status));
-        if (cluster != null) {
-            host.setClusterId(cluster.id);
-        }
+    public org.ovirt.mobile.movirt.model.Host toEntity(String accountId) {
+        org.ovirt.mobile.movirt.model.Host host = super.toEntity(accountId);
+        host.setStatus(Status.asHostStatus(status));
+        host.setClusterId(IdHelper.combinedIdSafe(accountId, cluster));
 
         return host;
-    }
-
-    private static org.ovirt.mobile.movirt.model.Host.Status mapStatus(Status state) {
-        try {
-            return org.ovirt.mobile.movirt.model.Host.Status.valueOf(state.state.toUpperCase());
-        } catch (Exception e) {
-            // this is the error status also on engine
-            return org.ovirt.mobile.movirt.model.Host.Status.UNASSIGNED;
-        }
     }
 }

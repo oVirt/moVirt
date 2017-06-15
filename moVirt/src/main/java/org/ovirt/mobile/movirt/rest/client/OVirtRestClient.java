@@ -15,6 +15,7 @@ import org.androidannotations.rest.spring.api.MediaType;
 import org.androidannotations.rest.spring.api.RestClientHeaders;
 import org.androidannotations.rest.spring.api.RestClientRootUrl;
 import org.androidannotations.rest.spring.api.RestClientSupport;
+import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.rest.dto.Action;
 import org.ovirt.mobile.movirt.rest.dto.Consoles;
 import org.ovirt.mobile.movirt.rest.dto.Events;
@@ -69,6 +70,15 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
 
     @Get("/events;max={maxToLoad}?from={lastEventId}&search={query}")
     Events getEventsSince(@Path String lastEventId, @Path String query, @Path int maxToLoad);
+
+    @Get("/events;max=" + Constants.MAX_EVENTS_PER_ENTITY + "?search=event_vm={vmName}")
+    Events getVmEvents(@Path String vmName);
+
+    @Get("/events;max=" + Constants.MAX_EVENTS_PER_ENTITY + "?search=event_host={hostName}")
+    Events getHostEvents(@Path String hostName);
+
+    @Get("/events;max=" + Constants.MAX_EVENTS_PER_ENTITY + "?search=event_storage={storageDomainName}")
+    Events getStorageDomainEvents(@Path String storageDomainName);
 
     @Get("/vms/{vmId}/graphicsconsoles")
     Consoles getConsoles(@Path String vmId);
@@ -148,18 +158,6 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/vms/{vmId}")
     org.ovirt.mobile.movirt.rest.dto.v4.Vm getVmV4(@Path String vmId);
 
-    @Get("/vms/{vmId}/disks/{diskId}")
-    org.ovirt.mobile.movirt.rest.dto.v3.Disk getDiskV3(@Path String vmId, @Path String diskId);
-
-    @Get("/disks/{diskId}")
-    org.ovirt.mobile.movirt.rest.dto.v4.Disk getDiskV4(@Path String diskId);
-
-    @Get("/vms/{vmId}/snapshots/{snapshotId}/disks/{diskId}")
-    org.ovirt.mobile.movirt.rest.dto.v3.Disk getDiskV3(@Path String vmId, @Path String snapshotId, @Path String diskId);
-
-    @Get("/vms/{vmId}/snapshots/{snapshotId}/disks/{diskId}")
-    org.ovirt.mobile.movirt.rest.dto.v4.Disk getDiskV4(@Path String vmId, @Path String snapshotId, @Path String diskId);
-
     @Get("/vms/{vmId}/disks")
     org.ovirt.mobile.movirt.rest.dto.v3.Disks getDisksV3(@Path String vmId);
 
@@ -167,22 +165,10 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     org.ovirt.mobile.movirt.rest.dto.v4.Disks getDisksV4(@Path String vmId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/disks")
-    org.ovirt.mobile.movirt.rest.dto.v3.Disks getDisksV3(@Path String vmId, @Path String snapshotId);
+    org.ovirt.mobile.movirt.rest.dto.v3.SnapshotDisks getSnapshotDisksV3(@Path String vmId, @Path String snapshotId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/disks")
-    org.ovirt.mobile.movirt.rest.dto.v4.Disks getDisksV4(@Path String vmId, @Path String snapshotId);
-
-    @Get("/vms/{vmId}/nics/{nicId}")
-    org.ovirt.mobile.movirt.rest.dto.v3.Nic getNicV3(@Path String vmId, @Path String nicId);
-
-    @Get("/vms/{vmId}/nics/{nicId}")
-    org.ovirt.mobile.movirt.rest.dto.v4.Nic getNicV4(@Path String vmId, @Path String nicId);
-
-    @Get("/vms/{vmId}/snapshots/{snapshotId}/nics/{nicId}")
-    org.ovirt.mobile.movirt.rest.dto.v3.Nic getNicV3(@Path String vmId, @Path String snapshotId, @Path String nicId);
-
-    @Get("/vms/{vmId}/snapshots/{snapshotId}/nics/{nicId}")
-    org.ovirt.mobile.movirt.rest.dto.v4.Nic getNicV4(@Path String vmId, @Path String snapshotId, @Path String nicId);
+    org.ovirt.mobile.movirt.rest.dto.v4.SnapshotDisks getSnapshotDisksV4(@Path String vmId, @Path String snapshotId);
 
     @Get("/vms/{vmId}/nics")
     org.ovirt.mobile.movirt.rest.dto.v3.Nics getNicsV3(@Path String vmId);
@@ -191,10 +177,10 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     org.ovirt.mobile.movirt.rest.dto.v4.Nics getNicsV4(@Path String vmId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/nics")
-    org.ovirt.mobile.movirt.rest.dto.v3.Nics getNicsV3(@Path String vmId, @Path String snapshotId);
+    org.ovirt.mobile.movirt.rest.dto.v3.SnapshotNics getSnapshotNicsV3(@Path String vmId, @Path String snapshotId);
 
     @Get("/vms/{vmId}/snapshots/{snapshotId}/nics")
-    org.ovirt.mobile.movirt.rest.dto.v4.Nics getNicsV4(@Path String vmId, @Path String snapshotId);
+    org.ovirt.mobile.movirt.rest.dto.v4.SnapshotNics getSnapshotNicsV4(@Path String vmId, @Path String snapshotId);
 
     @Get("/vms/{vmId}/diskattachments")
     org.ovirt.mobile.movirt.rest.dto.v4.DiskAttachments getDisksAttachmentsV4(@Path String vmId);

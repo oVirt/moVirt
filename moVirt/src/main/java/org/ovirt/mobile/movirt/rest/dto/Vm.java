@@ -2,8 +2,12 @@ package org.ovirt.mobile.movirt.rest.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import org.ovirt.mobile.movirt.rest.ParseUtils;
 import org.ovirt.mobile.movirt.rest.RestEntityWrapper;
+import org.ovirt.mobile.movirt.rest.dto.common.HasId;
+import org.ovirt.mobile.movirt.rest.dto.common.Statistic;
+import org.ovirt.mobile.movirt.rest.dto.common.Statistics;
+import org.ovirt.mobile.movirt.rest.dto.common.VmCpu;
+import org.ovirt.mobile.movirt.rest.dto.common.VmOs;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.math.BigDecimal;
@@ -11,7 +15,7 @@ import java.math.RoundingMode;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
+public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm>, HasId {
 
     private static final String CPU_PERCENTAGE_STAT = "cpu.current.total";
     private static final String TOTAL_MEMORY_STAT = "memory.installed";
@@ -22,27 +26,17 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
     public String name;
     public Statistics statistics;
     public String memory;
-    public Os os;
-    public Cpu cpu;
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Os {
-        public String type;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Cpu {
-        public Topology topology;
-    }
+    public VmOs os;
+    public VmCpu cpu;
 
     @Override
-    public String toString() {
-        return String.format("Vm: name=%s, id=%s", name, id);
+    public String getId() {
+        return id;
     }
 
-    public org.ovirt.mobile.movirt.model.Vm toEntity() {
+    public org.ovirt.mobile.movirt.model.Vm toEntity(String accountId) {
         org.ovirt.mobile.movirt.model.Vm vm = new org.ovirt.mobile.movirt.model.Vm();
-        vm.setId(id);
+        vm.setIds(accountId, id);
         vm.setName(name);
 
         if (statistics != null && statistics.statistic != null) {
@@ -61,14 +55,8 @@ public class Vm implements RestEntityWrapper<org.ovirt.mobile.movirt.model.Vm> {
         }
 
         vm.setMemorySize(ObjectUtils.parseLong(memory));
-
-        if (cpu != null && cpu.topology != null) {
-            vm.setSockets(ParseUtils.intOrDefault(cpu.topology.sockets));
-            vm.setCoresPerSocket(ParseUtils.intOrDefault(cpu.topology.cores));
-        } else {
-            vm.setSockets(-1);
-            vm.setCoresPerSocket(-1);
-        }
+        vm.setSockets(VmCpu.socketsOrDefault(cpu));
+        vm.setCoresPerSocket(VmCpu.coresPerSocketOrDefault(cpu));
 
         if (os != null) {
             vm.setOsType(os.type);

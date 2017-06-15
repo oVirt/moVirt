@@ -9,7 +9,7 @@ public class Provider extends OrmLiteProvider<DatabaseHelper, UriMatcher> {
 
     @Override
     protected DatabaseHelper createHelper() {
-        return new DatabaseHelper(getContext());
+        return DatabaseHelper.getInstance(getContext());
     }
 
     @Override

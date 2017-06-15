@@ -2,40 +2,37 @@ package org.ovirt.mobile.movirt.util.message;
 
 import android.support.annotation.NonNull;
 
+import org.ovirt.mobile.movirt.util.ObjectUtils;
+
 public class Message {
-    private final ErrorType type;
-    private final String detail;
-    private final String header;
+    private ErrorType type = ErrorType.NORMAL;
+    private String detail;
+    private String header;
     private Integer logPriority;
 
-    public Message(String detail) {
-        this(ErrorType.NORMAL, detail);
-    }
-
-    public Message(ErrorType type, String detail) {
-        this(type, detail, null);
-    }
-
-    public Message(ErrorType type, String detail, String header) {
-        this(type, detail, header, null); // unknown log priority
-    }
-
-    public Message(ErrorType type, String detail, int logPriority) {
-        this(type, detail, null, logPriority);
-    }
-
-    public Message(ErrorType type, String detail, String header, Integer logPriority) {
-        if (type == null) {
-            throw new IllegalArgumentException("null type");
-        }
-        if (detail == null) {
-            throw new IllegalArgumentException("null detail");
-        }
-
+    public Message setType(ErrorType type) {
         this.type = type;
+        return this;
+    }
+
+    public Message setDetail(String detail) {
         this.detail = detail;
+        return this;
+    }
+
+    public Message setDetail(Throwable throwable) {
+        this.detail = ObjectUtils.throwableToString(throwable);
+        return this;
+    }
+
+    public Message setHeader(String header) {
         this.header = header;
+        return this;
+    }
+
+    public Message setLogPriority(Integer logPriority) {
         this.logPriority = logPriority;
+        return this;
     }
 
     @NonNull
@@ -45,15 +42,11 @@ public class Message {
 
     @NonNull
     public String getDetail() {
-        return detail;
+        return detail == null ? "" : detail;
     }
 
     public String getHeader() {
         return header;
-    }
-
-    public void setLogPriority(Integer logPriority) {
-        this.logPriority = logPriority;
     }
 
     public Integer getLogPriority() {

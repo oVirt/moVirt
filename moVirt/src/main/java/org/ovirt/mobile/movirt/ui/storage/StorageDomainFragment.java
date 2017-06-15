@@ -10,7 +10,8 @@ import android.widget.TextView;
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.StorageDomain;
-import org.ovirt.mobile.movirt.ui.listfragment.BaseEntityListFragment;
+import org.ovirt.mobile.movirt.model.enums.StorageDomainStatus;
+import org.ovirt.mobile.movirt.ui.listfragment.MultipleFacadeBaseListFragment;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.ItemName;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
@@ -19,7 +20,7 @@ import static org.ovirt.mobile.movirt.provider.OVirtContract.StorageDomain.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.StorageDomain.STATUS;
 
 @EFragment(R.layout.fragment_base_entity_list)
-public class StorageDomainFragment extends BaseEntityListFragment<StorageDomain> {
+public class StorageDomainFragment extends MultipleFacadeBaseListFragment<StorageDomain> {
 
     public StorageDomainFragment() {
         super(StorageDomain.class);
@@ -43,12 +44,7 @@ public class StorageDomainFragment extends BaseEntityListFragment<StorageDomain>
                 } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
                     ImageView imageView = (ImageView) view;
                     String statusString = cursor.getString(cursor.getColumnIndex(STATUS));
-                    if (statusString != null) {
-                        StorageDomain.Status status = StorageDomain.Status.valueOf(statusString);
-                        imageView.setImageResource(status.getResource());
-                    } else {
-                        imageView.setImageResource(StorageDomain.Status.UNKNOWN.getResource());
-                    }
+                    imageView.setImageResource(StorageDomainStatus.fromString(statusString).getResource());
                 }
 
                 return true;

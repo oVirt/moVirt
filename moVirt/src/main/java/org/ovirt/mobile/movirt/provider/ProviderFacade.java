@@ -2,46 +2,70 @@ package org.ovirt.mobile.movirt.provider;
 
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
+import android.support.annotation.NonNull;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.text.TextUtils;
 import android.util.Log;
+
+import com.squareup.sqlbrite.BriteContentResolver;
+import com.squareup.sqlbrite.SqlBrite;
 
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.ovirt.mobile.movirt.model.base.BaseEntity;
 import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
+import org.ovirt.mobile.movirt.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-@EBean
+import hu.akarnokd.rxjava.interop.RxJavaInterop;
+import io.reactivex.Observable;
+import rx.schedulers.Schedulers;
+
+@EBean(scope = EBean.Scope.Singleton)
 public class ProviderFacade {
     public static final String TAG = ProviderFacade.class.getSimpleName();
+
+    // BriteContentResolver does not detect batch updates so we need to throttle notifications by 200 ms
+    private static final int THROTTLE_BATCH = 200; //ms
 
     @RootContext
     Context context;
 
     private ContentProviderClient contentClient;
 
+    private BriteContentResolver briteResolver;
+
     @AfterInject
     void initContentProviderClient() {
-        contentClient = context.getContentResolver().acquireContentProviderClient(OVirtContract.BASE_CONTENT_URI);
+        final ContentResolver contentResolver = context.getContentResolver();
+        contentClient = contentResolver.acquireContentProviderClient(OVirtContract.BASE_CONTENT_URI);
+
+        SqlBrite sqlBrite = new SqlBrite.Builder().build();
+        // TODO possibly refactor to use sqlBrite.wrapDatabaseHelper(), but all queries must use SqlBrite
+        briteResolver = sqlBrite.wrapContentProvider(contentResolver, Schedulers.io());
     }
 
     public class QueryBuilder<E extends BaseEntity<?>> {
         private static final String URI_FIELD_NAME = "CONTENT_URI";
+        private static final String TABLE_FIELD_NAME = "TABLE";
 
         private final Class<E> clazz;
         private final Uri baseUri;
+        private final String table;
 
         StringBuilder selection = new StringBuilder();
         List<String> selectionArgs = new ArrayList<>();
@@ -54,6 +78,7 @@ public class ProviderFacade {
             this.clazz = clazz;
             try {
                 this.baseUri = (Uri) clazz.getField(URI_FIELD_NAME).get(null);
+                this.table = (String) clazz.getField(TABLE_FIELD_NAME).get(null);
             } catch (Exception e) { // NoSuchFieldException | IllegalAccessException -  since SDK version 19
                 throw new RuntimeException("Assertion error: Class: " + clazz + " does not define static field " + URI_FIELD_NAME, e);
             }
@@ -61,6 +86,16 @@ public class ProviderFacade {
 
         public QueryBuilder<E> projection(String[] projection) {
             this.projection = projection;
+            return this;
+        }
+
+        public QueryBuilder<E> max(String columnName) {
+            this.projection = new String[]{"MAX(" + columnName + ")"};
+            return this;
+        }
+
+        public QueryBuilder<E> min(String columnName) {
+            this.projection = new String[]{"MIN(" + columnName + ")"};
             return this;
         }
 
@@ -77,6 +112,8 @@ public class ProviderFacade {
         }
 
         public QueryBuilder<E> whereIn(String columnName, String[] values) {
+            assertNotEmpty(columnName);
+
             if (selection.length() > 0) {
                 selection.append(" AND ");
             }
@@ -100,6 +137,8 @@ public class ProviderFacade {
         }
 
         public QueryBuilder<E> empty(String columnName) {
+            assertNotEmpty(columnName);
+
             if (selection.length() > 0) {
                 selection.append(" AND ");
             }
@@ -114,7 +153,7 @@ public class ProviderFacade {
         }
 
         public QueryBuilder<E> where(String columnName, String value, Relation relation) {
-            assert !columnName.equals("") : "columnName cannot be empty or null";
+            assertNotEmpty(columnName);
 
             if (selection.length() > 0) {
                 selection.append(" AND ");
@@ -148,6 +187,10 @@ public class ProviderFacade {
         }
 
         private String sortOrderWithLimit() {
+            return sortOrderWithLimit(limitClause);
+        }
+
+        private String sortOrderWithLimit(String limitClause) {
             StringBuilder res = new StringBuilder();
             String sortOrderString = sortOrder.toString();
             res.append(!"".equals(sortOrderString) ? sortOrderString : OVirtContract.ROW_ID);
@@ -157,15 +200,35 @@ public class ProviderFacade {
         }
 
         public QueryBuilder<E> orderBy(String columnName, SortOrder order) {
-            assert !columnName.equals("") : "columnName cannot be empty or null";
+            assertNotEmpty(columnName);
 
             if (sortOrder.length() > 0) {
                 sortOrder.append(", ");
             }
-            sortOrder.append(columnName).append(" ");
-            sortOrder.append(order).append(" ");
+            sortOrder.append(columnName)
+                    .append(" COLLATE NOCASE ")
+                    .append(order)
+                    .append(" ");
 
             return this;
+        }
+
+        /**
+         * @return 0 if no result found
+         */
+        public int asAggregateResult() {
+
+            try {
+                Cursor cursor = asCursor();
+                if (cursor.moveToNext()) {
+                    String max = cursor.getString(0);
+                    if (max != null) {
+                        return Integer.parseInt(max);
+                    }
+                }
+            } catch (Exception ignore) {
+            }
+            return 0;
         }
 
         public Cursor asCursor() {
@@ -173,7 +236,7 @@ public class ProviderFacade {
                 return contentClient.query(baseUri,
                         projection,
                         selection.toString(),
-                        selectionArgs.toArray(new String[selectionArgs.size()]),
+                        getSelectionArgs(),
                         sortOrderWithLimit());
             } catch (RemoteException e) {
                 Log.e(TAG, "Error querying " + baseUri, e);
@@ -186,8 +249,40 @@ public class ProviderFacade {
                     baseUri,
                     projection,
                     selection.toString(),
-                    selectionArgs.toArray(new String[selectionArgs.size()]),
+                    getSelectionArgs(),
                     sortOrderWithLimit());
+        }
+
+        @NonNull
+        public Observable<List<E>> asObservable() {
+            return RxJavaInterop.toV2Observable(asObservableInternal(THROTTLE_BATCH));
+        }
+
+        @NonNull
+        public Observable<List<E>> asObservable(int throttle) {
+            return RxJavaInterop.toV2Observable(asObservableInternal(throttle));
+        }
+
+        private rx.Observable<List<E>> asObservableInternal(int throttle) {
+            return briteResolver.createQuery(baseUri,
+                    projection,
+                    selection.toString(),
+                    getSelectionArgs(),
+                    sortOrderWithLimit(), true)
+                    .mapToList(cursor -> EntityMapper.forEntity(clazz).fromCursor(cursor))
+                    .throttleFirst(throttle, TimeUnit.MILLISECONDS);
+        }
+
+        public Observable<E> singleAsObservable() {
+            rx.Observable<E> o = briteResolver.createQuery(baseUri,
+                    projection,
+                    selection.toString(),
+                    getSelectionArgs(),
+                    sortOrderWithLimit(" LIMIT 1 "), true)
+                    .mapToOne(cursor -> EntityMapper.forEntity(clazz).fromCursor(cursor))
+                    .throttleFirst(THROTTLE_BATCH, TimeUnit.MILLISECONDS);
+
+            return RxJavaInterop.toV2Observable(o);
         }
 
         public Collection<E> all() {
@@ -196,13 +291,15 @@ public class ProviderFacade {
                 return Collections.emptyList();
             }
 
-            List<E> result = new ArrayList<>();
-            while (cursor.moveToNext()) {
-                result.add(EntityMapper.forEntity(clazz).fromCursor(cursor));
+            try {
+                List<E> result = new ArrayList<>(cursor.getCount());
+                while (cursor.moveToNext()) {
+                    result.add(EntityMapper.forEntity(clazz).fromCursor(cursor));
+                }
+                return result;
+            } finally {
+                ObjectUtils.closeSilently(cursor);
             }
-
-            cursor.close();
-            return result;
         }
 
         public E first() {
@@ -210,11 +307,39 @@ public class ProviderFacade {
             if (cursor == null) {
                 return null;
             }
+            try {
+                return cursor.moveToNext() ? EntityMapper.forEntity(clazz).fromCursor(cursor) : null;
+            } finally {
+                ObjectUtils.closeSilently(cursor);
+            }
+        }
 
-            E entity = cursor.moveToNext() ? EntityMapper.forEntity(clazz).fromCursor(cursor) : null;
-            cursor.close();
+        public E last() {
+            Cursor cursor = asCursor();
+            if (cursor == null) {
+                return null;
+            }
+            try {
+                return cursor.moveToLast() ? EntityMapper.forEntity(clazz).fromCursor(cursor) : null;
+            } finally {
+                ObjectUtils.closeSilently(cursor);
+            }
+        }
 
-            return entity;
+        public int delete() {
+            try {
+                return contentClient.delete(baseUri,
+                        selection.toString(),
+                        getSelectionArgs());
+            } catch (RemoteException e) {
+                Log.e(TAG, "Error deleting " + baseUri, e);
+                throw new RuntimeException(e);
+            }
+        }
+
+        @NonNull
+        private String[] getSelectionArgs() {
+            return selectionArgs.toArray(new String[selectionArgs.size()]);
         }
     }
 
@@ -223,6 +348,13 @@ public class ProviderFacade {
 
         public <E extends BaseEntity<?>> BatchBuilder insert(E entity) {
             batch.add(ContentProviderOperation.newInsert(entity.getBaseUri()).withValues(entity.toValues()).build());
+            return this;
+        }
+
+        public <E extends BaseEntity<?>> BatchBuilder insert(Collection<E> entities) {
+            for (E entity : entities) {
+                insert(entity);
+            }
             return this;
         }
 
@@ -242,6 +374,10 @@ public class ProviderFacade {
             } catch (RemoteException | OperationApplicationException e) {
                 throw new RuntimeException("Batch apply failed", e);
             }
+        }
+
+        public int size() {
+            return batch.size();
         }
 
         public boolean isEmpty() {
@@ -283,61 +419,13 @@ public class ProviderFacade {
         return -1;
     }
 
-    public void deleteEventsAndLetOnly(int leave) {
-        int id = getSmallestFrom(leave);
-        if (id != 0) {
-            try {
-                contentClient.delete(OVirtContract.Event.CONTENT_URI,
-                        OVirtContract.Event.ID + " < ?",
-                        new String[]{Integer.toString(id)}
-                );
-            } catch (RemoteException e) {
-                Log.e(TAG, "Error deleting events", e);
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
     public BatchBuilder batch() {
         return new BatchBuilder();
     }
 
-    public int deleteEvents() {
-        return deleteAll(OVirtContract.Event.CONTENT_URI);
-    }
-
-    private int getSmallestFrom(int from) {
-        try {
-            Cursor cursor = contentClient.query(OVirtContract.Event.CONTENT_URI,
-                    new String[]{OVirtContract.Event.ID},
-                    null,
-                    null,
-                    OVirtContract.Event.ID + " DESC LIMIT " + from);
-
-            if (cursor.moveToLast()) {
-                return cursor.getInt(0);
-            }
-        } catch (RemoteException e) {
-            Log.e(TAG, "Error determining last event id", e);
-            throw new RuntimeException(e);
+    private void assertNotEmpty(String columnName) {
+        if (TextUtils.isEmpty(columnName)) {
+            throw new IllegalArgumentException("columnName cannot be empty or null");
         }
-        return 0;
-    }
-
-    public int getLastEventId() {
-        try {
-            Cursor cursor = contentClient.query(OVirtContract.Event.CONTENT_URI,
-                    new String[]{"MAX(" + OVirtContract.Event.ID + ")"},
-                    null,
-                    null,
-                    null);
-            if (cursor.moveToNext()) {
-                return cursor.getInt(0);
-            }
-        } catch (RemoteException e) {
-            Log.e(TAG, "Error determining last event id", e);
-            throw new RuntimeException(e);
-        }
-        return 0;
     }
 }

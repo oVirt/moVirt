@@ -2,9 +2,13 @@ package org.ovirt.mobile.movirt.util;
 
 import android.util.Log;
 
+import org.springframework.util.StringUtils;
+
 import java.io.Closeable;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public final class ObjectUtils {
@@ -36,6 +40,18 @@ public final class ObjectUtils {
             }
 
             throw new IllegalArgumentException(sb.toString());
+        }
+    }
+
+    /**
+     * @param objects objects to be checked against
+     * @throws IllegalArgumentException if o is null
+     */
+    public static void requireAllNotNull(Object... objects) {
+        for (int i = 0; i < objects.length; i++) {
+            if (objects[i] == null) {
+                throw new IllegalArgumentException(String.format(Locale.ENGLISH, "objects[ %d] cannot be null.", i));
+            }
         }
     }
 
@@ -137,5 +153,29 @@ public final class ObjectUtils {
         if (throwOut != null) {
             throw throwOut;
         }
+    }
+
+    public static List<String> asNonEmptyStringList(String[] array) {
+        List<String> result = new ArrayList<>();
+
+        for (String elem : array) {
+            if (!StringUtils.isEmpty(elem)) {
+                result.add(elem);
+            }
+        }
+        return result;
+    }
+
+    public static String limitLength(String input, int limit, boolean ellipsize) {
+        if (input == null) {
+            input = "";
+        } else if (input.length() > limit) {
+            input = input.substring(0, ellipsize ? limit - 1 : limit);
+            if (ellipsize) {
+                input += "…";
+            }
+        }
+
+        return input;
     }
 }

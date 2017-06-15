@@ -1,194 +1,229 @@
 <?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="fill_parent">
-
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="25dp"
-        android:paddingTop="10dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin">
 
-            <TextView
-                android:id="@+id/conditionTypeLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/trigger_condition_type"
-                android:textSize="20sp" />
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:orientation="vertical">
 
-            <RadioGroup
-                android:id="@+id/conditionRadioGroup"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingLeft="25dp">
-
-                <RadioButton
-                    android:id="@+id/radio_button_cpu"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:onClick="onRadioButtonClicked"
-                    android:text="@string/radio_button_cpu" />
+                    android:orientation="vertical">
 
-                <RadioButton
-                    android:id="@+id/radio_button_memory"
-                    android:layout_width="wrap_content"
+                    <TextView
+                        android:id="@+id/conditionTypeLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/trigger_condition_type"
+                        android:textSize="20sp"/>
+
+                    <RadioGroup
+                        android:id="@+id/conditionRadioGroup"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingLeft="25dp">
+
+                        <RadioButton
+                            android:id="@+id/radio_button_cpu"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:onClick="onRadioButtonClicked"
+                            android:text="@string/radio_button_cpu"/>
+
+                        <RadioButton
+                            android:id="@+id/radio_button_memory"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="onRadioButtonClicked"
+                            android:text="@string/radio_button_memory"/>
+
+                        <RadioButton
+                            android:id="@+id/radio_button_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="onRadioButtonClicked"
+                            android:text="@string/radio_button_status"/>
+
+                        <RadioButton
+                            android:id="@+id/radio_button_event"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="onRadioButtonClicked"
+                            android:text="@string/radio_button_event"/>
+                    </RadioGroup>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/rangePanel"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="onRadioButtonClicked"
-                    android:text="@string/radio_button_memory" />
+                    android:orientation="vertical">
 
-                <RadioButton
-                    android:id="@+id/radio_button_status"
-                    android:layout_width="wrap_content"
+                    <TextView
+                        android:id="@+id/thresholdLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/threshold"
+                        android:textSize="20sp"/>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="25dp">
+
+                        <EditText
+                            android:id="@+id/percentageEdit"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:minWidth="45dp"
+                            android:textSize="15sp"/>
+
+                        <TextView
+                            android:id="@+id/percentSign"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_toRightOf="@+id/percentageEdit"
+                            android:text="@string/percentage_sign"
+                            android:textSize="20sp"/>
+                    </RelativeLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/statusPanel"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="onRadioButtonClicked"
-                    android:text="@string/radio_button_status" />
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
-                <RadioButton
-                    android:id="@+id/radio_button_event"
-                    android:layout_width="wrap_content"
+                    <TextView
+                        android:id="@+id/statusLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/status"
+                        android:textSize="20sp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:paddingLeft="25dp">
+
+                        <Spinner
+                            android:id="@+id/statusSpinner"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:entries="@array/statuses"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- option for Event triggers -->
+                <LinearLayout
+                    android:id="@+id/regexPanel"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="onRadioButtonClicked"
-                    android:text="@string/radio_button_event" />
-            </RadioGroup>
-        </LinearLayout>
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
-        <LinearLayout
-            android:id="@+id/rangePanel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/regexLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/regex"
+                        android:textSize="20sp"/>
 
-            <TextView
-                android:id="@+id/thresholdLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/threshold"
-                android:textSize="20sp" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:paddingLeft="25dp"
+                        android:weightSum="1">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingLeft="25dp">
+                        <EditText
+                            android:id="@+id/regexEdit"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.5"
+                            android:inputType="text"/>
+                    </LinearLayout>
+                </LinearLayout>
 
-                <EditText
-                    android:id="@+id/percentageEdit"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:minWidth="45dp"
-                    android:textSize="15sp" />
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/percentSign"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_toRightOf="@+id/percentageEdit"
-                    android:text="@string/percentage_sign"
-                    android:textSize="20sp" />
-            </RelativeLayout>
-        </LinearLayout>
+                    <TextView
+                        android:id="@+id/notificationTypeLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/notification_type"
+                        android:textSize="20sp"/>
 
-        <LinearLayout
-            android:id="@+id/statusPanel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:orientation="vertical">
+                    <RadioGroup
+                        android:id="@+id/notificationRadioGroup"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingLeft="25dp">
 
-            <TextView
-                android:id="@+id/statusLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/status"
-                android:textSize="20sp" />
+                        <RadioButton
+                            android:id="@+id/radio_button_blink"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="true"
+                            android:text="@string/radio_button_blink"/>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:paddingLeft="25dp">
+                        <RadioButton
+                            android:id="@+id/radio_button_vibrate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/radio_button_vibrate"/>
+                    </RadioGroup>
+                </LinearLayout>
 
-                <Spinner
-                    android:id="@+id/statusSpinner"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:entries="@array/statuses" />
             </LinearLayout>
-        </LinearLayout>
+        </ScrollView>
 
-        <!-- option for Event triggers -->
-        <LinearLayout
-            android:id="@+id/regexPanel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/regexLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/regex"
-                android:textSize="20sp" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:paddingLeft="25dp"
-                android:weightSum="1">
-
-                <EditText
-                    android:id="@+id/regexEdit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.5"
-                    android:inputType="text" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/notificationTypeLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/notification_type"
-                android:textSize="20sp" />
-
-            <RadioGroup
-                android:id="@+id/notificationRadioGroup"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingLeft="25dp">
-
-                <RadioButton
-                    android:id="@+id/radio_button_blink"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/radio_button_blink" />
-
-                <RadioButton
-                    android:id="@+id/radio_button_vibrate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/radio_button_vibrate" />
-            </RadioGroup>
-        </LinearLayout>
+        <include layout="@layout/status_footer"/>
 
     </LinearLayout>
-</ScrollView>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_marginBottom="@dimen/fab_and_footer_margin"
+            android:layout_marginLeft="@dimen/fab_margin"
+            android:layout_marginRight="@dimen/fab_margin"
+            android:layout_marginTop="@dimen/fab_margin"
+            android:src="@drawable/ic_done_black_24dp"
+            app:borderWidth="0dp"
+            />
+    </FrameLayout>
+</FrameLayout>
+

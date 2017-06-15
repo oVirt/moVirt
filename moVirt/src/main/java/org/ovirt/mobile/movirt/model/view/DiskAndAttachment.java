@@ -5,7 +5,7 @@ import android.net.Uri;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-import org.ovirt.mobile.movirt.model.base.OvirtNamedViewEntity;
+import org.ovirt.mobile.movirt.model.base.OvirtAccountNamedViewEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.util.CursorHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
@@ -13,7 +13,7 @@ import org.ovirt.mobile.movirt.util.ObjectUtils;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.DiskAndAttachment.TABLE;
 
 @DatabaseTable(tableName = TABLE)
-public class DiskAndAttachment extends OvirtNamedViewEntity implements OVirtContract.DiskAndAttachment {
+public class DiskAndAttachment extends OvirtAccountNamedViewEntity implements OVirtContract.DiskAndAttachment {
 
     @Override
     public Uri getBaseUri() {

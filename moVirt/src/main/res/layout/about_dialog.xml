@@ -26,18 +26,10 @@
             android:textSize="16sp"/>
 
         <TextView
-            android:id="@+id/app_users_guide"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/app_version"
-            android:text="@string/moVirt_users_guide"
-            android:textSize="16sp"/>
-
-        <TextView
             android:id="@+id/app_readme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/app_users_guide"
+            android:layout_below="@+id/app_version"
             android:text="@string/moVirt_readme"
             android:textSize="16sp"/>
 

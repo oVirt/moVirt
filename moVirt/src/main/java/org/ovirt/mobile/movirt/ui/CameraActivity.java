@@ -42,10 +42,12 @@ import org.ovirt.mobile.movirt.camera.CaptureActivityHandler;
 import org.ovirt.mobile.movirt.camera.InactivityTimer;
 import org.ovirt.mobile.movirt.camera.PreferencesActivity_;
 import org.ovirt.mobile.movirt.camera.ViewfinderView;
-import org.ovirt.mobile.movirt.facade.HostFacade;
+import org.ovirt.mobile.movirt.facade.intent.HostIntentResolver;
 import org.ovirt.mobile.movirt.model.Event;
 import org.ovirt.mobile.movirt.model.Host;
 import org.ovirt.mobile.movirt.model.Vm;
+import org.ovirt.mobile.movirt.model.enums.HostStatus;
+import org.ovirt.mobile.movirt.model.enums.VmStatus;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.dialogs.ErrorDialogFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsCursorAdapter;
@@ -54,14 +56,13 @@ import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
 import java.io.IOException;
 
 import static org.ovirt.mobile.movirt.provider.OVirtContract.BaseEntity.ID;
-import static org.ovirt.mobile.movirt.provider.OVirtContract.SnapshotEmbeddableEntity.SNAPSHOT_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.HOST_ID;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.NAME;
 import static org.ovirt.mobile.movirt.provider.OVirtContract.Vm.STATUS;
 
 @EActivity(R.layout.activity_camera)
 @OptionsMenu(R.menu.camera)
-public class CameraActivity extends MovirtActivity implements SurfaceHolder.Callback {
+public class CameraActivity extends SyncableActivity implements SurfaceHolder.Callback {
 
     private static final String TAG = CameraActivity.class.getSimpleName();
     private static final long SCAN_DELAY_MS = 100L;
@@ -69,7 +70,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
     private static final int VMS_LOADER = FIRST_CHILD_LOADER + 1;
     private static final int HOSTS_LOADER = FIRST_CHILD_LOADER + 2;
     @Bean
-    HostFacade hostFacade;
+    HostIntentResolver hostIntentResolver;
     @ViewById
     TextView textHostName;
     @ViewById
@@ -163,7 +164,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
                     textView.setText(vmName);
                 } else if (columnIndex == cursor.getColumnIndex(STATUS)) {
                     ImageView imageView = (ImageView) view;
-                    Vm.Status status = Vm.Status.valueOf(cursor.getString(cursor.getColumnIndex(STATUS)));
+                    VmStatus status = VmStatus.valueOf(cursor.getString(cursor.getColumnIndex(STATUS)));
                     imageView.setImageResource(status.getResource());
                 }
                 return true;
@@ -180,7 +181,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         cursorVmsAdapterLoader = new CursorAdapterLoader(vmListAdapter) {
             @Override
             public synchronized Loader<Cursor> onCreateLoader(int id, Bundle args) {
-                final ProviderFacade.QueryBuilder<Vm> query = providerFacade.query(Vm.class).empty(SNAPSHOT_ID);
+                final ProviderFacade.QueryBuilder<Vm> query = providerFacade.query(Vm.class);
 
                 if (lastHost == null) {
                     return query.where(HOST_ID, "0").asLoader();
@@ -404,7 +405,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
     @Click
     void buttonOpenHostDetails() {
         if (lastHost != null) {
-            startActivity(hostFacade.getDetailIntent(lastHost, this));
+            startActivity(hostIntentResolver.getDetailIntent(lastHost, this));
         }
     }
 
@@ -427,7 +428,7 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
         textCpuUsage.setText(String.format("%.2f%%", host.getCpuUsage()));
         textMemoryUsage.setText(String.format("%.2f%%", host.getMemoryUsage()));
         //show status icon
-        Host.Status status = host.getStatus();
+        HostStatus status = host.getStatus();
         imageStatus.setImageResource(status.getResource());
 
         panelParent.setVisibility(View.VISIBLE);
@@ -439,10 +440,17 @@ public class CameraActivity extends MovirtActivity implements SurfaceHolder.Call
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            // SHORT_ID ignores other Hosts with same id on multiple engines
             if (lastResult == null) {
-                return providerFacade.query(Host.class).id("0").asLoader();
+                return providerFacade.query(Host.class)
+                        .where(Host.SHORT_ID, "0")
+                        .asLoader();
             } else {
-                return providerFacade.query(Host.class).id(lastResult).asLoader();
+                return providerFacade.query(Host.class)
+                        .where(Host.SHORT_ID, lastResult)
+                        .orderBy(Host.ACCOUNT_ID)
+                        .limit(1)
+                        .asLoader();
             }
         }
 

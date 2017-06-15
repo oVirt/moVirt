@@ -12,7 +12,7 @@ import java.util.List;
 public final class RestMapper {
     private static final String TAG = RestMapper.class.getSimpleName();
 
-    public static <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList) {
+    public static <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList, String accountId) {
         if (wrappersList == null) {
             return Collections.emptyList();
         }
@@ -26,7 +26,7 @@ public final class RestMapper {
         List<E> entities = new ArrayList<>();
         for (U rest : wrappers) {
             try {
-                entities.add(rest.toEntity());
+                entities.add(rest.toEntity(accountId));
             } catch (Exception e) {
                 Log.e(TAG, "Error parsing rest response, ignoring: " + rest.toString() + " error: " + e.getMessage());
             }

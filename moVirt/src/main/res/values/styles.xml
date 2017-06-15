@@ -157,9 +157,14 @@
         <item name="android:background">?android:attr/listDivider</item>
     </style>
 
-    <style name="CertTreeNodeStyle">
+    <style name="SmallPaddingTreeNode">
         <item name="android:paddingLeft">18dp</item>
     </style>
+
+    <style name="LargePaddingTreeNode">
+        <item name="android:paddingLeft">20dp</item>
+    </style>
+
 
     <style name="dashboardOverviewFragmentHeader">
         <item name="android:layout_gravity">center_horizontal</item>

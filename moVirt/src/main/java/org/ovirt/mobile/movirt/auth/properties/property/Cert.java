@@ -12,14 +12,7 @@ import java.util.Arrays;
 
 public class Cert {
 
-    public enum LOCATION_TYPE {
-        NETWORK,
-        FILESYSTEM
-    }
-
     private String location;
-
-    private LOCATION_TYPE locationType;
 
     private byte[] content;
 
@@ -29,14 +22,6 @@ public class Cert {
 
     public void setLocation(String location) {
         this.location = location;
-    }
-
-    public LOCATION_TYPE getLocationType() {
-        return locationType;
-    }
-
-    public void setLocationType(LOCATION_TYPE locationType) {
-        this.locationType = locationType;
     }
 
     public byte[] getContent() {

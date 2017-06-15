@@ -1,7 +1,7 @@
 package org.ovirt.mobile.movirt.ui.storage;
 
+import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -14,10 +14,13 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ViewById;
-import org.androidannotations.annotations.res.StringRes;
+import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.R;
-import org.ovirt.mobile.movirt.facade.StorageDomainFacade;
+import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
+import org.ovirt.mobile.movirt.auth.account.data.MovirtAccount;
 import org.ovirt.mobile.movirt.model.StorageDomain;
+import org.ovirt.mobile.movirt.model.enums.StorageDomainStatus;
+import org.ovirt.mobile.movirt.model.mapping.EntityMapper;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
 import org.ovirt.mobile.movirt.ui.RefreshableLoaderFragment;
@@ -29,6 +32,7 @@ public class StorageDomainDetailGeneralFragment extends RefreshableLoaderFragmen
     private static final String TAG = StorageDomainDetailGeneralFragment.class.getSimpleName();
 
     private String storageDomainId = null;
+    private MovirtAccount account;
 
     @ViewById
     TextView statusView;
@@ -51,19 +55,17 @@ public class StorageDomainDetailGeneralFragment extends RefreshableLoaderFragmen
     @ViewById
     SwipeRefreshLayout swipeGeneralContainer;
 
-    @StringRes(R.string.details_for_storage_domain)
-    String STORAGE_DOMAIN_DETAILS;
-
     @Bean
     ProviderFacade provider;
 
     @Bean
-    StorageDomainFacade storageDomainFacade;
+    EnvironmentStore environmentStore;
 
     @AfterViews
     void initLoader() {
-        Uri storageDomainUri = getActivity().getIntent().getData();
-        storageDomainId = storageDomainUri.getLastPathSegment();
+        final Intent intent = getActivity().getIntent();
+        storageDomainId = intent.getData().getLastPathSegment();
+        account = intent.getParcelableExtra(Constants.ACCOUNT_KEY);
 
         getLoaderManager().initLoader(0, null, this);
     }
@@ -86,7 +88,8 @@ public class StorageDomainDetailGeneralFragment extends RefreshableLoaderFragmen
     @Override
     @Background
     public void onRefresh() {
-        storageDomainFacade.syncOne(new ProgressBarResponse<StorageDomain>(this), storageDomainId);
+        environmentStore.safeEntityFacadeCall(account, StorageDomain.class,
+                facade -> facade.syncOne(new ProgressBarResponse<>(this), storageDomainId));
     }
 
     @Override
@@ -100,13 +103,12 @@ public class StorageDomainDetailGeneralFragment extends RefreshableLoaderFragmen
             Log.e(TAG, "Error loading Storage Domain");
             return;
         }
-        renderStorageDomain(storageDomainFacade.mapFromCursor(data));
+        renderStorageDomain(EntityMapper.forEntity(StorageDomain.class).fromCursor(data));
     }
 
     private void renderStorageDomain(StorageDomain storageDomain) {
-        getActivity().setTitle(String.format(STORAGE_DOMAIN_DETAILS, storageDomain.getName()));
-        StorageDomain.Status status = storageDomain.getStatus();
-        statusView.setText(status != null ? status.toString().toLowerCase() : StorageDomain.Status.UNKNOWN.toString().toLowerCase());
+        StorageDomainStatus status = storageDomain.getStatus();
+        statusView.setText(status != null ? status.toString().toLowerCase() : StorageDomainStatus.UNKNOWN.toString().toLowerCase());
         if (storageDomain.getType() != null) {
             domainTypeView.setText(storageDomain.getType().toString());
         } else {
