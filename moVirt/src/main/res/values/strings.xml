@@ -137,6 +137,7 @@
     <string name="login_error_bad_cert">Use proper certificate, or select %1$s.\nError details: %2$s</string>
     <string name="login_error_empty_fields">Fields shouldn\'t be empty.</string>
     <string name="login_error_no_account">Login failed. Account deleted.</string>
+    <string name="login_error_unsupported_engine">Connected to engine v%1$s. Engines before v%2$s are not supported and may not work correctly. Try to install older version of moVirt if you encounter problems. \n\n\n See versions table at https://github.com/oVirt/moVirt/blob/master/README.md</string>
     <string name="login_success">Login successful</string>
 
     <string name="advanced_authenticator_error_max_visible_certs_reached">Maximum of %1$d visible certificates is supported. Showing only %1$d bottom certificates of the hierarchy.</string>

@@ -200,7 +200,12 @@ public class ConnectionSettingsPresenter extends AccountDisposablesPresenter<Con
 
         rxStore.ACTIVE_SELECTION.onNext(new ActiveSelection(account));
         messageHelper.showToast(resources.getLoginSuccess());
-        finishSafe();
+
+        if (VersionSupport.OVIRT_ENGINE.isSupported(propertiesManager.getApiVersion())) {
+            finishSafe();
+        } else {
+            messageHelper.showError(ErrorType.USER, resources.getUnsupportedEngineError(propertiesManager.getApiVersion(), VersionSupport.OVIRT_ENGINE.getSupportedFrom()));
+        }
     }
 
     private void setUserData(LoginInfo loginInfo) throws AccountDeletedException {
