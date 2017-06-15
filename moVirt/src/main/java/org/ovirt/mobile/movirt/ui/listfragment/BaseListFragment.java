@@ -95,9 +95,6 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
     @InstanceState
     public int orderBySpinnerPosition;
 
-    @InstanceState
-    public int orderSpinnerPosition;
-
     protected final Class<E> entityClass;
 
     private final TextWatcher textWatcher = new TextWatcher() {
@@ -154,10 +151,12 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
         for (int i = 0; i < orderBySpinner.getCount(); i++) {
             SortEntry sortEntry = (SortEntry) orderBySpinner.getItemAtPosition(i);
             if (sortEntry.getItemName().getColumnName().equals(orderBy)) {
-                orderSpinnerPosition = (order == SortOrder.ASCENDING) ? ASCENDING_INDEX : DESCENDING_INDEX;
                 orderSpinner.setSelection(AdapterView.INVALID_POSITION); // gets reset by orderBySpinner
-
                 orderBySpinner.setSelection(i);
+
+                setOrderSpinner(sortEntry, (order == SortOrder.ASCENDING) ? ASCENDING_INDEX : DESCENDING_INDEX);
+                resetListViewPosition();
+                restartLoader();
                 break;
             }
         }
@@ -167,7 +166,6 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
 
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-            orderSpinnerPosition = i;
             resetListViewPosition();
             restartLoader();
         }
@@ -183,7 +181,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
             orderBySpinnerPosition = i;
-            setOrderSpinner((SortEntry) adapterView.getSelectedItem());
+            setOrderSpinner((SortEntry) adapterView.getSelectedItem(), AdapterView.INVALID_POSITION);
         }
 
         @Override
@@ -192,7 +190,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
         }
     }
 
-    public void setOrderSpinner(SortEntry orderBy) {
+    public void setOrderSpinner(SortEntry orderBy, int orderSpinnerPosition) {
 
         final SortOrderType sortOrderType = orderBy.getSortOrder();
 
@@ -204,7 +202,10 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         orderSpinner.setAdapter(spinnerArrayAdapter);
-        orderSpinner.setSelection((orderBy.getDefaultSortOrder() == SortOrder.ASCENDING) ? ASCENDING_INDEX : DESCENDING_INDEX); // refreshes loader
+        if (orderSpinnerPosition == AdapterView.INVALID_POSITION) {
+            orderSpinnerPosition = (orderBy.getDefaultSortOrder() == SortOrder.ASCENDING) ? ASCENDING_INDEX : DESCENDING_INDEX;
+        }
+        orderSpinner.setSelection(orderSpinnerPosition); // refreshes loader
     }
 
     @Override
@@ -230,7 +231,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
             // initialize
             orderBySpinner.setSelection(orderBySpinnerPosition);
             final SortEntry orderBy = (SortEntry) orderBySpinner.getSelectedItem();
-            setOrderSpinner(orderBy);
+            setOrderSpinner(orderBy, AdapterView.INVALID_POSITION);
         } else {
             orderingLayout.setVisibility(View.GONE);
         }
