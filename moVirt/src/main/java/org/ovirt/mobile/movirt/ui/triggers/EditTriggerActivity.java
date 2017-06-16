@@ -139,6 +139,7 @@ public class EditTriggerActivity extends BaseTriggerActivity implements HasLoade
 
         trigger.setCondition(condition);
         trigger.setNotificationType(getNotificationType());
+        trigger.setEntityType(getEntityType(condition));
 
         updateTrigger(trigger);
         finish();
