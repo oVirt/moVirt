@@ -27,7 +27,6 @@ import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.account.AccountRxStore;
 import org.ovirt.mobile.movirt.auth.account.EnvironmentStore;
-import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
 import org.ovirt.mobile.movirt.model.base.BaseEntity;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.provider.SortOrder;
@@ -38,19 +37,14 @@ import org.ovirt.mobile.movirt.ui.listfragment.spinner.CustomSort;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortOrderType;
 import org.ovirt.mobile.movirt.util.CursorAdapterLoader;
-import org.ovirt.mobile.movirt.util.Disposables;
-
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 
 @EFragment(R.layout.fragment_base_entity_list)
 public abstract class BaseListFragment<E extends BaseEntity<?>> extends RefreshableLoaderFragment
-        implements HasLoader {
+        implements HasLoader, BaseListFragmentContract.View {
 
     private static final int BASE_LOADER = 0;
 
     private static final int ITEMS_PER_PAGE = 20;
-    private static final int ASCENDING_INDEX = 0, DESCENDING_INDEX = 1; // order spinner indexes
 
     @ViewById(android.R.id.list)
     protected ListView listView;
@@ -85,17 +79,18 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
     @Bean
     public AccountRxStore rxStore;
 
-    protected ActiveSelection activeSelection = ActiveSelection.ALL_ACTIVE;
-
-    private Disposables disposables = new Disposables();
+    @InstanceState
+    public boolean searchToggle;
 
     @InstanceState
-    public boolean searchtoggle;
+    public int orderSpinnerPosition = AdapterView.INVALID_POSITION;
 
     @InstanceState
-    public int orderBySpinnerPosition;
+    public int orderBySpinnerPosition = AdapterView.INVALID_POSITION;
 
     protected final Class<E> entityClass;
+
+    protected BaseListFragmentContract.Presenter presenter;
 
     private final TextWatcher textWatcher = new TextWatcher() {
         @Override
@@ -108,8 +103,7 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
 
         @Override
         public void afterTextChanged(Editable editable) {
-            resetListViewPosition();
-            restartLoader();
+            refreshDisplay();
         }
     };
 
@@ -143,31 +137,12 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
         endlessScrollListener.resetListener();
     }
 
-    public void setOrderingSpinners(String orderBy, SortOrder order) {
-        if (order == null || orderBy == null) {
-            return;
-        }
-
-        for (int i = 0; i < orderBySpinner.getCount(); i++) {
-            SortEntry sortEntry = (SortEntry) orderBySpinner.getItemAtPosition(i);
-            if (sortEntry.getItemName().getColumnName().equals(orderBy)) {
-                orderSpinner.setSelection(AdapterView.INVALID_POSITION); // gets reset by orderBySpinner
-                orderBySpinner.setSelection(i);
-
-                setOrderSpinner(sortEntry, (order == SortOrder.ASCENDING) ? ASCENDING_INDEX : DESCENDING_INDEX);
-                resetListViewPosition();
-                restartLoader();
-                break;
-            }
-        }
-    }
-
     class OrderItemSelectedListener implements AdapterView.OnItemSelectedListener {
 
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-            resetListViewPosition();
-            restartLoader();
+            orderSpinnerPosition = i;
+            presenter.onOrderSelected(SortOrder.fromIndex(i));
         }
 
         @Override
@@ -181,31 +156,13 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
         @Override
         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
             orderBySpinnerPosition = i;
-            setOrderSpinner((SortEntry) adapterView.getSelectedItem(), AdapterView.INVALID_POSITION);
+            presenter.onOrderBySelected((SortEntry) adapterView.getSelectedItem());
         }
 
         @Override
         public void onNothingSelected(AdapterView<?> adapterView) {
 
         }
-    }
-
-    public void setOrderSpinner(SortEntry orderBy, int orderSpinnerPosition) {
-
-        final SortOrderType sortOrderType = orderBy.getSortOrder();
-
-        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_spinner_item, new String[]{
-                sortOrderType.getAscDisplayName(), // ASCENDING_INDEX
-                sortOrderType.getDescDisplayName() // DESCENDING_INDEX
-        });
-        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        orderSpinner.setAdapter(spinnerArrayAdapter);
-        if (orderSpinnerPosition == AdapterView.INVALID_POSITION) {
-            orderSpinnerPosition = (orderBy.getDefaultSortOrder() == SortOrder.ASCENDING) ? ASCENDING_INDEX : DESCENDING_INDEX;
-        }
-        orderSpinner.setSelection(orderSpinnerPosition); // refreshes loader
     }
 
     @Override
@@ -216,9 +173,14 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
     @AfterViews
     protected void init() {
         initSpinners();
-        activeSelection = rxStore.getActiveSelection();
         initAdapters();
         initListeners();
+
+        presenter = BaseListFragmentPresenter_.getInstance_(getActivity().getApplicationContext())
+                .initAllSortEntries(getSortEntries())
+                .initSelection(asSortEntry(orderBySpinnerPosition), SortOrder.fromIndex(orderSpinnerPosition))
+                .setView(this)
+                .initialize();
     }
 
     private void initSpinners() {
@@ -227,14 +189,22 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
                     android.R.layout.simple_spinner_item, getSortEntries());
             spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             orderBySpinner.setAdapter(spinnerArrayAdapter);
-
-            // initialize
-            orderBySpinner.setSelection(orderBySpinnerPosition);
-            final SortEntry orderBy = (SortEntry) orderBySpinner.getSelectedItem();
-            setOrderSpinner(orderBy, AdapterView.INVALID_POSITION);
         } else {
             orderingLayout.setVisibility(View.GONE);
         }
+    }
+
+    public void swapOrderSpinner(SortEntry orderBy) {
+
+        final SortOrderType sortOrderType = orderBy.getSortOrder();
+
+        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_spinner_item, new String[]{
+                sortOrderType.getDisplayNameBySortOrder(SortOrder.fromIndex(0)), // ASCENDING
+                sortOrderType.getDisplayNameBySortOrder(SortOrder.fromIndex(1)) // DESCENDING
+        });
+        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        orderSpinner.setAdapter(spinnerArrayAdapter);
     }
 
     protected void initAdapters() {
@@ -270,10 +240,6 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
         getLoaderManager().initLoader(BASE_LOADER, null, cursorAdapterLoader);
     }
 
-    protected void appendQuery(ProviderFacade.QueryBuilder<E> query) {
-        // left intentionally empty
-    }
-
     protected void initListeners() {
         listView.setOnScrollListener(endlessScrollListener);
         listView.setOnItemLongClickListener(getOnItemLongClickListener());
@@ -290,17 +256,8 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
         fab.setOnClickListener(view -> toggleSearchBoxVisibility());
     }
 
-    protected void initRx(Disposables disposables) {
-        disposables.add(rxStore.ACTIVE_SELECTION
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(selection -> {
-                    if (!activeSelection.equals(selection)) {
-                        activeSelection = selection;
-                        resetListViewPosition();
-                        restartLoader();
-                    }
-                }));
+    protected void appendQuery(ProviderFacade.QueryBuilder<E> query) {
+        // left intentionally empty
     }
 
     protected void onScrollStateChanged(AbsListView view, int scrollState) {
@@ -329,8 +286,8 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
     }
 
     public void toggleSearchBoxVisibility() {
-        searchtoggle = !searchtoggle;
-        setSearchBoxVisibility(searchtoggle);
+        searchToggle = !searchToggle;
+        setSearchBoxVisibility(searchToggle);
     }
 
     @UiThread(propagation = UiThread.Propagation.REUSE)
@@ -341,26 +298,62 @@ public abstract class BaseListFragment<E extends BaseEntity<?>> extends Refresha
 
     @Override
     public void destroyLoader() {
-        disposables.destroy();
         getLoaderManager().destroyLoader(BASE_LOADER);
     }
 
     @Override
-    public void onResume() {
-        setSearchBoxVisibility(searchtoggle);
-        initRx(disposables);
-        super.onResume();
-    }
-
-    public Disposables getDisposables() {
-        return disposables;
+    public void refreshDisplay() {
+        if (isResumed()) {
+            resetListViewPosition();
+            restartLoader();
+        }
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void displaySelection(SortEntry sortEntry, SortOrder sortOrder) {
+        orderBySpinner.setSelection(asSortEntryIndex(sortEntry));
+        swapOrderSpinner(sortEntry);
+        orderSpinner.setSelection(sortOrder.getIndex());
+    }
+
+    @Override
+    public BaseListFragmentContract.Presenter getPresenter() {
+        return presenter;
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (presenter != null) {
+            presenter.destroy();
+        }
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onResume() {
+        setSearchBoxVisibility(searchToggle);
+        super.onResume();
     }
 
     protected abstract CursorAdapter createCursorAdapter();
+
+    private SortEntry asSortEntry(int index) {
+        final SortEntry[] sortEntries = getSortEntries();
+        if (index >= 0 && index < sortEntries.length) {
+            return sortEntries[index];
+        }
+        return null;
+    }
+
+    private int asSortEntryIndex(SortEntry sortEntry) {
+        final SortEntry[] sortEntries = getSortEntries();
+        for (int i = 0; i < sortEntries.length; i++) {
+            SortEntry entry = sortEntries[i];
+            if (entry.equals(sortEntry)) {
+                return i;
+            }
+        }
+        return 0;
+    }
 }
 

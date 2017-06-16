@@ -1,5 +1,7 @@
 package org.ovirt.mobile.movirt.ui.listfragment.spinner;
 
+import org.ovirt.mobile.movirt.provider.SortOrder;
+
 import java.util.HashMap;
 
 public enum SortOrderType {
@@ -31,6 +33,10 @@ public enum SortOrderType {
 
     public String getDescDisplayName() {
         return descDisplayName;
+    }
+
+    public String getDisplayNameBySortOrder(SortOrder sortOrder) {
+        return sortOrder == SortOrder.ASCENDING ? ascDisplayName : descDisplayName;
     }
 
     public static org.ovirt.mobile.movirt.provider.SortOrder getSortOrder(String displayName) {

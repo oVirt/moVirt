@@ -26,6 +26,25 @@ public class ItemName {
         return displayName;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ItemName)) return false;
+
+        ItemName itemName = (ItemName) o;
+
+        if (columnName != null ? !columnName.equals(itemName.columnName) : itemName.columnName != null)
+            return false;
+        return displayName != null ? displayName.equals(itemName.displayName) : itemName.displayName == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = columnName != null ? columnName.hashCode() : 0;
+        result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
+        return result;
+    }
+
     private static String makeReadable(String string) {
         StringBuilder builder = new StringBuilder();
         Iterator<String> parts = Arrays.asList(string.split("(_)|(\\s)")).iterator();

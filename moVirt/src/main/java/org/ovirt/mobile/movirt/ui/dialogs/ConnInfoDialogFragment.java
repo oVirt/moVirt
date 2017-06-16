@@ -57,7 +57,8 @@ public class ConnInfoDialogFragment extends DialogFragment {
             content.setText(errors.get(i));
 
             if (names.size() == 1) {
-                arrowIcon.setVisibility(View.GONE);
+                arrowIcon.setVisibility(View.INVISIBLE);
+                header.setVisibility(View.INVISIBLE);
                 content.setVisibility(View.VISIBLE);
             } else {
                 LinearLayout headerContainer = (LinearLayout) nextError.findViewById(R.id.headerContainer);
@@ -77,7 +78,7 @@ public class ConnInfoDialogFragment extends DialogFragment {
 
         return new AlertDialog.Builder(getActivity())
                 .setView(view)
-                .setTitle(R.string.dialog_engine_errors)
+                .setTitle(names.size() == 1 ? getString(R.string.dialog_one_engine_errors, names.get(0)) : getString(R.string.dialog_engine_errors))
                 .setPositiveButton(android.R.string.ok, null)
                 .create();
     }
