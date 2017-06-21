@@ -119,6 +119,9 @@ public class EnvironmentStore {
     }
 
     void removeEnvironment(MovirtAccount account) {
+        if (account == null) {
+            return;
+        }
         final AccountEnvironment environment;
         synchronized (LOCK) {
             environment = environmentMap.remove(account);

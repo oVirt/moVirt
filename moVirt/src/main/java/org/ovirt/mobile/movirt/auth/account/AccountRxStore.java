@@ -166,7 +166,7 @@ public class AccountRxStore {
             if (success) {
                 refreshAccounts();
             } else {
-                messageHelper.showError(String.format("Could not remove account %s", account.getName()));
+                messageHelper.showError(String.format("Could not remove account %s", account == null ? null : account.getName()));
             }
         });
     }

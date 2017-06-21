@@ -213,6 +213,10 @@ public class EditAccountsActivity extends BroadcastAwareAppCompatActivity implem
     }
 
     private MovirtAccount getSelectedAccount() {
+        if (listView.getCount() <= 0) {
+            return null;
+        }
+
         int position = listView.getCheckedItemPosition();
         AccountWrapper wrapper = (AccountWrapper) listView.getItemAtPosition(position);
         return wrapper == null ? null : wrapper.account;
