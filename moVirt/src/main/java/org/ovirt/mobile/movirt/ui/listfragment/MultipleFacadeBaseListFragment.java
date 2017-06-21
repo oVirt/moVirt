@@ -5,6 +5,7 @@ import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.auth.account.AccountDeletedException;
 import org.ovirt.mobile.movirt.auth.account.AccountEnvironment;
+import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
 import org.ovirt.mobile.movirt.model.base.OVirtAccountEntity;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
 import org.ovirt.mobile.movirt.ui.ProgressBarResponse;
@@ -25,6 +26,7 @@ public abstract class MultipleFacadeBaseListFragment<E extends OVirtAccountEntit
     protected void appendQuery(ProviderFacade.QueryBuilder<E> query) {
         super.appendQuery(query);
 
+        ActiveSelection activeSelection = rxStore.getActiveSelection();
         if (isMultiple() && activeSelection.isOneAccount()) {
             query.where(OVirtAccountEntity.ACCOUNT_ID, activeSelection.getAccountId());
         }
@@ -39,6 +41,7 @@ public abstract class MultipleFacadeBaseListFragment<E extends OVirtAccountEntit
             try {
                 Collection<AccountEnvironment> environments;
 
+                ActiveSelection activeSelection = rxStore.getActiveSelection();
                 if (activeSelection.isAllAccounts()) {
                     environments = environmentStore.getAllEnvironments();
                 } else {

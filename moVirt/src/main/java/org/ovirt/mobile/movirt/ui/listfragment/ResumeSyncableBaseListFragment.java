@@ -6,7 +6,6 @@ import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
 import org.ovirt.mobile.movirt.model.base.OVirtAccountEntity;
 import org.ovirt.mobile.movirt.rest.ConnectivityHelper;
-import org.ovirt.mobile.movirt.util.Disposables;
 
 import io.reactivex.schedulers.Schedulers;
 
@@ -24,10 +23,10 @@ public abstract class ResumeSyncableBaseListFragment<E extends OVirtAccountEntit
     }
 
     @Override
-    protected void initRx(Disposables disposables) {
-        super.initRx(disposables);
+    protected void init() {
+        super.init();
         if (isSingle()) {
-            disposables.add(rxStore.isSyncInProgressObservable(account)
+            presenter.getDisposables().add(rxStore.isSyncInProgressObservable(account)
                     .skip(1) // do not refresh current state
                     .filter(syncStatus -> !syncStatus.isInProgress())
                     .subscribeOn(Schedulers.computation())

@@ -2,6 +2,7 @@ package org.ovirt.mobile.movirt.ui.listfragment;
 
 import org.androidannotations.annotations.EFragment;
 import org.ovirt.mobile.movirt.R;
+import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
 import org.ovirt.mobile.movirt.model.base.OVirtAccountEntity;
 import org.ovirt.mobile.movirt.provider.OVirtContract;
 import org.ovirt.mobile.movirt.provider.ProviderFacade;
@@ -20,6 +21,7 @@ public abstract class ClusterBoundBaseListFragment<E extends OVirtAccountEntity 
     protected void appendQuery(ProviderFacade.QueryBuilder<E> query) {
         super.appendQuery(query);
 
+        ActiveSelection activeSelection = rxStore.getActiveSelection();
         if (isMultiple() && activeSelection.isCluster()) {
             query.where(CLUSTER_ID, activeSelection.getClusterId());
         }

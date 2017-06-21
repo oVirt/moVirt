@@ -42,6 +42,7 @@ import org.ovirt.mobile.movirt.ui.dialogs.AccountDialogFragment;
 import org.ovirt.mobile.movirt.ui.events.EventsFragment_;
 import org.ovirt.mobile.movirt.ui.hosts.HostsFragment_;
 import org.ovirt.mobile.movirt.ui.listfragment.BaseListFragment;
+import org.ovirt.mobile.movirt.ui.listfragment.BaseListFragmentContract;
 import org.ovirt.mobile.movirt.ui.storage.StorageDomainFragment_;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity;
 import org.ovirt.mobile.movirt.ui.triggers.EditTriggersActivity_;
@@ -297,15 +298,17 @@ public class MainActivity extends PresenterStatusSyncableActivity implements Mai
 
                             if (fragment != null && fragment instanceof BaseListFragment && !fragment.isDetached()) {
                                 BaseListFragment baseListFragment = (BaseListFragment) fragment;
-                                baseListFragment.setOrderingSpinners(orderBy, order);
+                                final BaseListFragmentContract.Presenter presenter = baseListFragment.getPresenter();
+                                if (presenter != null) {
+                                    presenter.setSelection(orderBy, order);
+                                }
                             }
+                            viewPager.setOnPageChangeListener(null);
                         }
-                        viewPager.setOnPageChangeListener(null);
                     }
 
                     @Override
                     public void onPageSelected(int position) {
-
                     }
 
                     @Override
@@ -317,7 +320,12 @@ public class MainActivity extends PresenterStatusSyncableActivity implements Mai
 
         String action = intent.getAction();
         if (action != null && !action.isEmpty()) {
-            viewPager.setCurrentItem(MainActivityFragments.valueOf(intent.getAction()).ordinal(), false);
+            final MainActivityFragments fragment = MainActivityFragments.valueOf(intent.getAction());
+            int current = viewPager.getCurrentItem();
+            if (fragment.ordinal() == current) { // to fire listener
+                viewPager.setCurrentItem(current == 0 ? 1 : current - 1, false);
+            }
+            viewPager.setCurrentItem(fragment.ordinal(), false);
         }
     }
 
