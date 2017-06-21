@@ -21,4 +21,12 @@ public class Resources extends StringResources {
     public String getNoConsoleClientError() {
         return getString(R.string.no_console_client_error);
     }
+
+    public String getCreatedDuplicateTriggerError() {
+        return getString(R.string.create_duplicate_trigger_error);
+    }
+
+    public String getUpdateDuplicateTriggerError() {
+        return getString(R.string.update_duplicate_trigger_error);
+    }
 }

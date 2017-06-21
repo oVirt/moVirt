@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.InstanceState;
 import org.ovirt.mobile.movirt.R;
@@ -138,9 +139,18 @@ public class EditTriggerActivity extends BaseTriggerActivity implements HasLoade
 
         trigger.setCondition(condition);
         trigger.setNotificationType(getNotificationType());
+        trigger.setEntityType(getEntityType(condition));
 
-        provider.update(trigger);
+        updateTrigger(trigger);
         finish();
+    }
+
+    @Background
+    public void updateTrigger(Trigger trigger) {
+        if (findSimilarTrigger(trigger) != null) {
+            commonMessageHelper.showToast(resources.getUpdateDuplicateTriggerError());
+        }
+        provider.update(trigger);
     }
 
     @Override
