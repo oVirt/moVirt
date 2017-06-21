@@ -222,7 +222,7 @@ public class EditTriggersActivity extends PresenterStatusSyncableActivity implem
         int position = listView.getCheckedItemPosition();
         ViewTrigger trigger = null;
 
-        if (position >= 0) {
+        if (position >= 0 && listView.getCount() > 0) {
             trigger = (ViewTrigger) listView.getItemAtPosition(position);
         }
 

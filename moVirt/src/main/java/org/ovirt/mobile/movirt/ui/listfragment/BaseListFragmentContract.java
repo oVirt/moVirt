@@ -1,6 +1,5 @@
 package org.ovirt.mobile.movirt.ui.listfragment;
 
-import org.ovirt.mobile.movirt.auth.account.data.ActiveSelection;
 import org.ovirt.mobile.movirt.provider.SortOrder;
 import org.ovirt.mobile.movirt.ui.listfragment.spinner.SortEntry;
 import org.ovirt.mobile.movirt.ui.mvp.BasePresenter;

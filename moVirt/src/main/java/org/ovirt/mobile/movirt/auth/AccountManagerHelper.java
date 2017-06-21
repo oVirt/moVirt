@@ -179,8 +179,9 @@ public class AccountManagerHelper {
     }
 
     public void removeAccount(MovirtAccount account, AccountRemovedListener callback) {
-        System.out.println(account);
-        if (Build.VERSION.SDK_INT < 22) {
+        if (account == null) {
+            callback.onRemoved(false);
+        } else if (Build.VERSION.SDK_INT < 22) {
             accountManager.removeAccount(account.getAccount(), future -> {
                 try {
                     boolean result = future.getResult(Constants.REMOVE_ACCOUNT_CALLBACK_TIMEOUT, TimeUnit.SECONDS);
