@@ -25,8 +25,9 @@ public abstract class PresenterStatusSyncableActivity extends SyncableActivity i
     @Override
     protected void onStop() {
         if (isFinishing()) {
-            if (getPresenter() != null) {
-                getPresenter().destroy();
+            final BasePresenter presenter = getPresenter();
+            if (presenter != null) {
+                presenter.destroy();
             }
         }
         super.onStop();
@@ -34,8 +35,9 @@ public abstract class PresenterStatusSyncableActivity extends SyncableActivity i
 
     @Override
     protected void onDestroy() {
-        if (getPresenter() != null) {
-            getPresenter().destroy();
+        final BasePresenter presenter = getPresenter();
+        if (presenter != null) {
+            presenter.destroy();
         }
         super.onDestroy();
     }
