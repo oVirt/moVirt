@@ -31,17 +31,28 @@ public class CommonMessageHelper {
     @RootContext
     Context context;
 
-    @UiThread(propagation = UiThread.Propagation.REUSE)
     public void showToast(String msg) {
         showToast(getAccount(), msg);
     }
 
-    @UiThread(propagation = UiThread.Propagation.REUSE)
+    public void showShortToast(String msg) {
+        showShortToast(getAccount(), msg);
+    }
+
     public void showToast(MovirtAccount account, String msg) {
+        showToast(account, msg, Toast.LENGTH_LONG);
+    }
+
+    public void showShortToast(MovirtAccount account, String msg) {
+        showToast(account, msg, Toast.LENGTH_SHORT);
+    }
+
+    @UiThread(propagation = UiThread.Propagation.REUSE)
+    protected void showToast(MovirtAccount account, String msg, int duration) {
         if (account != null) {
             msg = String.format("%s: %s", account.getName(), msg);
         }
-        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+        Toast.makeText(context, msg, duration).show();
     }
 
     public String createMessage(HttpClientErrorException ex) {

@@ -151,7 +151,8 @@ public abstract class SyncableActivity extends ActionBarLoaderActivity implement
     @OptionsItem(R.id.action_refresh)
     @Background
     public void onRefresh() {
-        if (!connectivityHelper.isNetworkAvailable()) {
+        boolean networkAvailable = connectivityHelper.isNetworkAvailable();
+        if (!networkAvailable) {
             // show toast but allow system to notice refresh
             commonMessageHelper.showToast(getString(R.string.rest_no_network));
         }
@@ -159,11 +160,21 @@ public abstract class SyncableActivity extends ActionBarLoaderActivity implement
         final ActiveSelection activeSelection = rxStore.getActiveSelection();
 
         if (activeSelection.isAllAccounts()) {
+            notifySyncing(networkAvailable, null);
             for (MovirtAccount account : rxStore.getAllAccounts()) {
                 accountManagerHelper.triggerRefresh(account);
             }
-        } else {
+        } else if (accountManagerHelper.isSyncable(activeSelection.getAccount())) {
+            notifySyncing(networkAvailable, activeSelection.getAccount());
             accountManagerHelper.triggerRefresh(activeSelection.getAccount());
+        }
+    }
+
+    private void notifySyncing(boolean networkAvailable, MovirtAccount account) {
+        if (networkAvailable) {
+            String message = account == null ? getString(R.string.syncing_all) :
+                    getString(R.string.syncing, account.getName());
+            commonMessageHelper.showShortToast(message);
         }
     }
 

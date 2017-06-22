@@ -22,13 +22,17 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.OptionsItem;
+import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.ovirt.mobile.movirt.Constants;
 import org.ovirt.mobile.movirt.R;
@@ -69,6 +73,9 @@ public class AddAccountActivity extends BroadcastAwareAppCompatActivity {
     @ViewById
     FloatingActionButton fab;
 
+    @ViewById
+    ProgressBar progressBar;
+
     @Bean
     AccountRxStore accountRxStore;
 
@@ -85,14 +92,28 @@ public class AddAccountActivity extends BroadcastAwareAppCompatActivity {
 
     @Click(R.id.fab)
     void createAccount() {
+        setInProgress(true);
+        newAccount();
+    }
+
+    @Background
+    void newAccount() {
         try {
             MovirtAccount account = accountRxStore.addAccount(name.getText().toString());
             finishWithResult(account);
         } catch (IllegalArgumentException e) {
+            setInProgress(false);
             commonMessageHelper.showError(ErrorType.USER, e.getMessage());
         } catch (Exception e) {
+            setInProgress(false);
             commonMessageHelper.showError(e);
         }
+    }
+
+    @UiThread(propagation = UiThread.Propagation.REUSE)
+    void setInProgress(boolean inProgress) {
+        fab.setEnabled(!inProgress);
+        progressBar.setVisibility(inProgress ? View.VISIBLE : View.GONE);
     }
 
     @OptionsItem(android.R.id.home)
