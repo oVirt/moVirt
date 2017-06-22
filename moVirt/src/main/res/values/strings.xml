@@ -319,6 +319,7 @@
     <string name="valid_url_to_configure_certs_error">You must supply valid API URL to configure certificates</string>
     <string name="no_file_selected">No file selected.</string>
     <string name="removed_syncs">Removed periodic syncs.</string>
-
+    <string name="syncing">Syncing %1$s</string>
+    <string name="syncing_all">Syncing All</string>
 </resources>
 

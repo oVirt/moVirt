@@ -123,7 +123,7 @@ public class AccountManagerHelper {
         ContentResolver.requestSync(acc, OVirtContract.CONTENT_AUTHORITY, b);
     }
 
-    public MovirtAccount asMoAccount(Account account) throws AccountDeletedException {
+    public MovirtAccount asMoAccount(Account account) throws IllegalStateException {
         final String id = accountManager.getUserData(account, AccountProperty.ID.getPackageKey());
         if (StringUtils.isEmpty(id)) {
             throw new IllegalStateException("Incompatible account from old moVirt version.");

@@ -81,7 +81,7 @@ public class MovirtAuthenticator extends AbstractAccountAuthenticator {
                         accountManager.setAuthToken(account, authTokenType, authToken);
                     }
                 }
-            } catch (AccountDeletedException ignore) {
+            } catch (AccountDeletedException | IllegalStateException ignore) {
             }
         }
 

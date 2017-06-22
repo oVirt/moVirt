@@ -108,7 +108,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                     environment.getRestErrorHandler().handleError(throwable, "Sync failed. ");
                                 }
                             });
-        } catch (AccountDeletedException ignore) {
+        } catch (AccountDeletedException | IllegalStateException ignore) {
         }
     }
 

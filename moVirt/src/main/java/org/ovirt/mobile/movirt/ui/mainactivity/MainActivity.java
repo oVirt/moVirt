@@ -110,6 +110,7 @@ public class MainActivity extends PresenterStatusSyncableActivity implements Mai
                 new EventsFragment_());
 
         viewPager.setAdapter(pagerAdapter);
+        viewPager.setOffscreenPageLimit(PAGER_TITLES.length - 1);
         pagerTabStrip.setTabIndicatorColorResource(R.color.material_deep_teal_200);
     }
 
