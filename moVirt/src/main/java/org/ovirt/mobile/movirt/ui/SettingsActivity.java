@@ -170,18 +170,21 @@ public class SettingsActivity extends BroadcastAwareAppCompatActivity {
             });
 
             periodicSyncInterval.setOnPreferenceChangeListener((preference, newValue) -> {
-                String errorMessage = "Interval should be not less then 1 minute.";
                 int newValueInt;
                 try {
                     newValueInt = Integer.parseInt((String) newValue);
                     if (newValueInt < 1) {
-                        messageHelper.showToast(errorMessage);
+                        messageHelper.showToast("Interval should be not less then 1 minute.");
                         return false;
+                    }
+                    if (newValueInt <= 10) {
+                        messageHelper.showToast("The syncs may be delayed considerably by Android (mainly 7+)");
                     }
                 } catch (NumberFormatException e) {
                     messageHelper.showToast(e.getMessage());
                     return false;
                 }
+
                 return true;
             });
 

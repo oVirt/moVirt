@@ -140,6 +140,10 @@ public class AccountRxStore {
             throw new IllegalArgumentException("Name shouldn't be longer than 20 characters.");
         }
 
+        if (name.toLowerCase().equals("all")) {
+            throw new IllegalArgumentException("This name is reserved.");
+        }
+
         String id = UUID.randomUUID().toString();
 
         for (MovirtAccount acc : accountManagerHelper.getAllAccounts()) {
