@@ -1,6 +1,6 @@
 # Privacy Policy
 
-We built the moVirt as a open source app. This app is provided by us at no cost and is intended
+We built the moVirt as an open source app. This app is provided by us at no cost and is intended
 for use as is.
 
 This page is used to inform website visitors regarding our policies with the collection, use, and
