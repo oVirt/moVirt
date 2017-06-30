@@ -174,7 +174,7 @@ public class SettingsActivity extends BroadcastAwareAppCompatActivity {
                 try {
                     newValueInt = Integer.parseInt((String) newValue);
                     if (newValueInt < 1) {
-                        messageHelper.showToast("Interval should be not less then 1 minute.");
+                        messageHelper.showToast("Interval should not be shorter than 1 minute.");
                         return false;
                     }
                     if (newValueInt <= 10) {
