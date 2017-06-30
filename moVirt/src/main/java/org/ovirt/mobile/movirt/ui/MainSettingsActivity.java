@@ -119,6 +119,7 @@ public class MainSettingsActivity extends BroadcastAwareAppCompatActivity implem
                 dialog.setContentView(R.layout.about_dialog);
                 dialog.setTitle(getString(R.string.prefs_about_moVirt));
                 ((TextView) dialog.findViewById(R.id.app_readme)).setMovementMethod(LinkMovementMethod.getInstance());
+                ((TextView) dialog.findViewById(R.id.app_privacy_policy)).setMovementMethod(LinkMovementMethod.getInstance());
                 dialog.show();
                 return true;
             });

@@ -40,6 +40,7 @@ and check out the [User's guide](https://github.com/oVirt/moVirt/wiki/User%27s-g
 ### Useful links
 
 * [Wiki](https://github.com/oVirt/moVirt/wiki)
+* [Privacy Policy](https://github.com/oVirt/moVirt/blob/master/PRIVACY_POLICY.md)
 * [moVirt on YouTube](https://www.youtube.com/channel/UCX2a6qOrCrUYGQCGLlHz2-A)
 * [oVirt's Wiki about moVirt](http://www.ovirt.org/Project_moVirt)
 
