@@ -254,9 +254,17 @@ public class VmDetailActivity extends PresenterStatusSyncableActivity implements
     }
 
     @Override
-    public void startConsoleActivity(Uri uri) {
+    public void startVncConsoleActivity(Uri uri) {
         Intent intent = new Intent(Intent.ACTION_VIEW)
                 .setType("application/vnd.vnc")
+                .setData(uri);
+        startActivity(intent);
+    }
+
+    @Override
+    public void startSpiceConsoleActivity(Uri uri) {
+        Intent intent = new Intent(Intent.ACTION_VIEW)
+                .setType("application/vnd.spice")
                 .setData(uri);
         startActivity(intent);
     }

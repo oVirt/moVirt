@@ -266,8 +266,10 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
                 ConsoleHelper.saveConsoleCertToFile(caCertPath, details.getCertificate());
             }
             final VmDetailContract.View view = getView();
-            if (view != null) {
-                view.startConsoleActivity(Uri.parse(ConsoleHelper.makeConsoleUrl(details, caCertPath)));
+            if (view != null && details.getProtocol() == ConsoleProtocol.SPICE) {
+                view.startSpiceConsoleActivity(Uri.parse(ConsoleHelper.makeConsoleUrl(details, caCertPath)));
+            } else if (view != null && details.getProtocol() == ConsoleProtocol.VNC) {
+                view.startVncConsoleActivity(Uri.parse(ConsoleHelper.makeConsoleUrl(details, caCertPath)));
             }
         } catch (IllegalArgumentException e) {
             commonMessageHelper.showToast(e.getMessage());

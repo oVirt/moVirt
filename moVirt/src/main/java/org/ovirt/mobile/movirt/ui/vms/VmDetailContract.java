@@ -18,7 +18,9 @@ public interface VmDetailContract {
 
         void startEditTriggersActivity(Selection selection, String vmId);
 
-        void startConsoleActivity(Uri uri);
+        void startVncConsoleActivity(Uri uri);
+
+        void startSpiceConsoleActivity(Uri uri);
     }
 
     interface Presenter extends AccountPresenter {
