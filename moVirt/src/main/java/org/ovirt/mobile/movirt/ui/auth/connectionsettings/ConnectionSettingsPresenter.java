@@ -163,6 +163,8 @@ public class ConnectionSettingsPresenter extends AccountDisposablesPresenter<Con
                 messageHelper.showError(ErrorType.LOGIN, e, resources.getLoginIncorrectIpPortError());
             } else if (cause instanceof SocketTimeoutException) {
                 messageHelper.showError(ErrorType.LOGIN, e, resources.getLoginTimeoutError());
+            } else {
+                messageHelper.showError(ErrorType.LOGIN, resources.getLoginError(e.getMessage()));
             }
         }
     }
