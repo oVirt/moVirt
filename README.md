@@ -19,13 +19,14 @@ Get the newest version [here](https://github.com/oVirt/moVirt/blob/master/moVirt
 and check out the [User's guide](https://github.com/oVirt/moVirt/wiki/User%27s-guide)
 
 ### Supported oVirt and Android per moVirt version
-| oVirt \ moVirt  | [1.1](https://github.com/oVirt/moVirt/raw/430cb4a1aae86e66a3ed3a3b7cae7d072354cb76/moVirt/moVirt-release.apk)<sup>1</sup>  | [1.2](https://github.com/oVirt/moVirt/raw/f8585585a02396de7dd555860a102e2ba4dff4f8/moVirt/moVirt-release.apk)<sup>1</sup> | [1.3](https://github.com/oVirt/moVirt/raw/976cceaad5d298b9e734a9b79cf4966a088eacc3/moVirt/moVirt-release.apk)<sup>2</sup>, [1.4](https://github.com/oVirt/moVirt/raw/4896f4d8cecd6b733d921324a347505bc6437f72/moVirt/moVirt-release.apk)<sup>2</sup> | [1.5](https://github.com/oVirt/moVirt/raw/9ce19a6a16e76da79473887a0074066b9e3ea494/moVirt/moVirt-release.apk)<sup>2</sup> | [1.6 - 2.0](https://github.com/oVirt/moVirt/releases)<sup>2</sup> |
+| oVirt \ moVirt  | [1.1](https://github.com/oVirt/moVirt/raw/430cb4a1aae86e66a3ed3a3b7cae7d072354cb76/moVirt/moVirt-release.apk)<sup>1</sup>  | [1.2](https://github.com/oVirt/moVirt/raw/f8585585a02396de7dd555860a102e2ba4dff4f8/moVirt/moVirt-release.apk)<sup>1</sup> | [1.3](https://github.com/oVirt/moVirt/raw/976cceaad5d298b9e734a9b79cf4966a088eacc3/moVirt/moVirt-release.apk)<sup>2</sup>, [1.4](https://github.com/oVirt/moVirt/raw/4896f4d8cecd6b733d921324a347505bc6437f72/moVirt/moVirt-release.apk)<sup>2</sup> | [1.5](https://github.com/oVirt/moVirt/raw/9ce19a6a16e76da79473887a0074066b9e3ea494/moVirt/moVirt-release.apk)<sup>2</sup> | [1.6 - 2.0.1](https://github.com/oVirt/moVirt/releases)<sup>2</sup> |
 | --------------- | ---- | --- | ----| --- | --- |
 | **3.4**         | yes  | yes | no<sup>3</sup>  | no<sup>3</sup>  | no<sup>3</sup>  | no<sup>3</sup>  |
 | **3.5**         |  no  | yes | yes | no<sup>3</sup>  | no<sup>3</sup>  | no<sup>3</sup>  |
 | **3.6**         |  no  | no  | yes | yes | yes |
 | **4.0**         |  no  | no  | no | yes | yes |
 | **4.1**         |  no  | no  | no | no<sup>3</sup> | yes |
+| **4.2**         |  no  | no  | no | no<sup>3</sup> | yes|
 
 **[1]**: works on Android 4.0+ <br/>
 **[2]**: works on Android 4.1+ <br/>
