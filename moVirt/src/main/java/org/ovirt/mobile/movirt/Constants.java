@@ -15,4 +15,6 @@ public interface Constants {
     int MAX_EVENTS_PER_ENTITY = 250; // max events to download for standalone entity
 
     int MAX_ACCOUNT_NAME_LENTH = 20;
+
+    String FOLLOW_STATISTICS = "follow=statistics";
 }
