@@ -201,8 +201,20 @@ public class OVirtClient implements AccountEnvironment.EnvDisposable {
         return new RestClientRequest<Vm>() {
             @Override
             public Vm fire() {
-                org.ovirt.mobile.movirt.rest.dto.Vm vm = version.isV3Api() ? restClient.getVmV3(realVmId) : restClient.getVmV4(realVmId);
-                return vm.toEntity(accountId);
+                org.ovirt.mobile.movirt.rest.dto.Vm wrapper;
+
+                if (version.isV3Api()) {
+                    wrapper = restClient.getVmV3(realVmId);
+                } else if (VersionSupport.FOLLOW_LINKS.isSupported(version)) {
+                    wrapper = buggedEnhancedRequest(VersionSupport.FOLLOW_BUG,
+                            () -> restClient.getVmV4_2(realVmId),
+                            () -> restClient.getVmV4(realVmId),
+                            "statistics of vm id=" + realVmId);
+                } else {
+                    wrapper = restClient.getVmV4(realVmId);
+                }
+
+                return wrapper.toEntity(accountId);
             }
         };
     }
@@ -314,8 +326,19 @@ public class OVirtClient implements AccountEnvironment.EnvDisposable {
         return new RestClientRequest<Host>() {
             @Override
             public Host fire() {
-                org.ovirt.mobile.movirt.rest.dto.Host wrapper = version.isV3Api() ?
-                        restClient.getHostV3(realHostId) : restClient.getHostV4(realHostId);
+                org.ovirt.mobile.movirt.rest.dto.Host wrapper;
+
+                if (version.isV3Api()) {
+                    wrapper = restClient.getHostV3(realHostId);
+                } else if (VersionSupport.FOLLOW_LINKS.isSupported(version)) {
+                    wrapper = buggedEnhancedRequest(VersionSupport.FOLLOW_BUG,
+                            () -> restClient.getHostV4_2(realHostId),
+                            () -> restClient.getHostV4(realHostId),
+                            "statistics of host id=" + realHostId);
+                } else {
+                    wrapper = restClient.getHostV4(realHostId);
+                }
+
                 return wrapper.toEntity(accountId);
             }
         };
@@ -478,10 +501,19 @@ public class OVirtClient implements AccountEnvironment.EnvDisposable {
         return new RestClientRequest<List<Host>>() {
             @Override
             public List<Host> fire() {
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Host> hosts;
                 if (version.isV3Api()) {
-                    return mapToEntities(restClient.getHostsV3());
+                    hosts = restClient.getHostsV3();
+                } else if (VersionSupport.FOLLOW_LINKS.isSupported(version)) {
+                    hosts = buggedEnhancedRequest(VersionSupport.FOLLOW_BUG,
+                            () -> restClient.getHostsV4_2(),
+                            () -> restClient.getHostsV4(),
+                            "statistics of hosts");
+                } else {
+                    hosts = restClient.getHostsV4();
                 }
-                return mapToEntities(restClient.getHostsV4());
+
+                return mapToEntities(hosts);
             }
         };
     }
@@ -491,21 +523,41 @@ public class OVirtClient implements AccountEnvironment.EnvDisposable {
         return new RestClientRequest<List<Vm>>() {
             @Override
             public List<Vm> fire() {
-                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Vm> vms;
+                RestEntityWrapperList<? extends org.ovirt.mobile.movirt.rest.dto.Vm> vms = null;
+                int tmpMaxVms = -1;
 
                 if (propertiesManager.hasAdminPermissions()) {
-                    int maxVms = sharedPreferencesHelper.getMaxVms();
-                    String query = sharedPreferencesHelper.getStringPref(SettingsKey.VMS_SEARCH_QUERY);
-                    if (StringUtils.isEmpty(query)) {
-                        vms = version.isV3Api() ? restClient.getVmsV3(maxVms) :
-                                restClient.getVmsV4(maxVms);
-                    } else {
-                        vms = version.isV3Api() ? restClient.getVmsV3(query, maxVms) :
-                                restClient.getVmsV4(query, maxVms);
+                    tmpMaxVms = sharedPreferencesHelper.getMaxVms();
+                    final String query = sharedPreferencesHelper.getStringPref(SettingsKey.VMS_SEARCH_QUERY);
+
+                    if (!StringUtils.isEmpty(query)) {
+                        final int maxVms = tmpMaxVms;
+
+                        if (version.isV3Api()) {
+                            vms = restClient.getVmsV3(query, maxVms);
+                        } else if (VersionSupport.FOLLOW_LINKS.isSupported(version)) {
+                            vms = buggedEnhancedRequest(VersionSupport.FOLLOW_BUG,
+                                    () -> restClient.getVmsV4_2(query, maxVms),
+                                    () -> restClient.getVmsV4(query, maxVms),
+                                    "statistics of vms");
+                        } else {
+                            vms = restClient.getVmsV4(query, maxVms);
+                        }
                     }
-                } else {
-                    vms = version.isV3Api() ? restClient.getVmsV3(-1) :
-                            restClient.getVmsV4(-1);
+                }
+
+                final int maxVms = tmpMaxVms;
+                if (vms == null) {
+                    if (version.isV3Api()) {
+                        vms = restClient.getVmsV3(maxVms);
+                    } else if (VersionSupport.FOLLOW_LINKS.isSupported(version)) {
+                        vms = buggedEnhancedRequest(VersionSupport.FOLLOW_BUG,
+                                () -> restClient.getVmsV4_2(maxVms),
+                                () -> restClient.getVmsV4(maxVms),
+                                "statistics of vms");
+                    } else {
+                        vms = restClient.getVmsV4(maxVms);
+                    }
                 }
 
                 return mapToEntities(vms);
@@ -661,6 +713,20 @@ public class OVirtClient implements AccountEnvironment.EnvDisposable {
         };
     }
 
+    private <E> E buggedEnhancedRequest(VersionSupport buggedVersions, RequestRunner<E> enhancedRequest, RequestRunner<E> request, String requestInfo) {
+        try {
+            return enhancedRequest.run();
+        } catch (Exception e) {
+            if (buggedVersions.isSupported(version)) {
+                E result = request.run();
+                messageHelper.showToast("Could not fetch " + requestInfo);
+                return result;
+            } else {
+                throw e;
+            }
+        }
+    }
+
     private <E, U extends RestEntityWrapper<E>> List<E> mapToEntities(RestEntityWrapperList<U> wrappersList) {
         return mapToEntities(wrappersList, null);
     }
@@ -688,6 +754,10 @@ public class OVirtClient implements AccountEnvironment.EnvDisposable {
             }
         }
         return entities;
+    }
+
+    private interface RequestRunner<E> {
+        E run();
     }
 
     private interface WrapPredicate<E> {

@@ -12,7 +12,13 @@ public enum VersionSupport {
 
     PLUS_SIGN_IN_PASSWORD(new Version(4, 1, 2), Version.MAX_VALUE),
 
-    OVIRT_ENGINE(new Version(3, 6, 0), Version.MAX_VALUE);
+    OVIRT_ENGINE(new Version(3, 6, 0), Version.MAX_VALUE),
+
+    FOLLOW_LINKS(new Version(4, 2, 0), Version.MAX_VALUE),
+
+    // NPE on the engine: affects hosts
+    // FIXME: change supportedUntil after this bug is resolved https://bugzilla.redhat.com/show_bug.cgi?id=1547050
+    FOLLOW_BUG(new Version(4, 2, 0), Version.MAX_VALUE);
 
     private Version supportedFrom;
     private Version supportedUntil;

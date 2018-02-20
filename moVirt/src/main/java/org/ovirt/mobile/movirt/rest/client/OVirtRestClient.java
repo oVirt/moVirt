@@ -31,7 +31,8 @@ import static org.ovirt.mobile.movirt.rest.RestHelper.SESSION_TTL;
 import static org.ovirt.mobile.movirt.rest.RestHelper.VERSION;
 
 @Rest(converters = MappingJackson2HttpMessageConverter.class)
-@Accept(MediaType.APPLICATION_JSON + "; detail=statistics+nics") // nics work only in v3 API
+@Accept(MediaType.APPLICATION_JSON + "; detail=statistics+nics")
+// nics work only in v3 API, statistics work only in  < 4.2
 @RequiresHeader({FILTER, ACCEPT_ENCODING, SESSION_TTL, PREFER, VERSION})
 @SetsCookie(JSESSIONID)
 @RequiresCookie(JSESSIONID)
@@ -116,11 +117,17 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/vms;max={maxToLoad}")
     org.ovirt.mobile.movirt.rest.dto.v4.Vms getVmsV4(@Path int maxToLoad);
 
+    @Get("/vms;max={maxToLoad}?" + Constants.FOLLOW_STATISTICS)
+    org.ovirt.mobile.movirt.rest.dto.v4.Vms getVmsV4_2(@Path int maxToLoad);
+
     @Get("/vms;max={maxToLoad}?search={query}")
     org.ovirt.mobile.movirt.rest.dto.v3.Vms getVmsV3(@Path String query, @Path int maxToLoad);
 
     @Get("/vms;max={maxToLoad}?search={query}")
     org.ovirt.mobile.movirt.rest.dto.v4.Vms getVmsV4(@Path String query, @Path int maxToLoad);
+
+    @Get("/vms;max={maxToLoad}?search={query}&" + Constants.FOLLOW_STATISTICS)
+    org.ovirt.mobile.movirt.rest.dto.v4.Vms getVmsV4_2(@Path String query, @Path int maxToLoad);
 
     @Get("/clusters")
     org.ovirt.mobile.movirt.rest.dto.v3.Clusters getClustersV3();
@@ -158,6 +165,9 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/vms/{vmId}")
     org.ovirt.mobile.movirt.rest.dto.v4.Vm getVmV4(@Path String vmId);
 
+    @Get("/vms/{vmId}?" + Constants.FOLLOW_STATISTICS)
+    org.ovirt.mobile.movirt.rest.dto.v4.Vm getVmV4_2(@Path String vmId);
+
     @Get("/vms/{vmId}/disks")
     org.ovirt.mobile.movirt.rest.dto.v3.Disks getDisksV3(@Path String vmId);
 
@@ -191,11 +201,17 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Get("/hosts")
     org.ovirt.mobile.movirt.rest.dto.v4.Hosts getHostsV4();
 
+    @Get("/hosts?" + Constants.FOLLOW_STATISTICS)
+    org.ovirt.mobile.movirt.rest.dto.v4.Hosts getHostsV4_2();
+
     @Get("/hosts/{hostId}")
     org.ovirt.mobile.movirt.rest.dto.v3.Host getHostV3(@Path String hostId);
 
     @Get("/hosts/{hostId}")
     org.ovirt.mobile.movirt.rest.dto.v4.Host getHostV4(@Path String hostId);
+
+    @Get("/hosts/{hostId}?" + Constants.FOLLOW_STATISTICS)
+    org.ovirt.mobile.movirt.rest.dto.v4.Host getHostV4_2(@Path String hostId);
 
     @Get("/vms/{vmId}/snapshots")
     org.ovirt.mobile.movirt.rest.dto.v3.Snapshots getSnapshotsV3(@Path String vmId);
