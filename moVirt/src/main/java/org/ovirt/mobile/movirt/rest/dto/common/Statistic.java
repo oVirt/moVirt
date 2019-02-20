@@ -14,6 +14,7 @@ public class Statistic {
         public List<Value> value;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Value {
         public String datum;
     }

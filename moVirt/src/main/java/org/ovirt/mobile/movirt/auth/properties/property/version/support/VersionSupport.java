@@ -16,9 +16,7 @@ public enum VersionSupport {
 
     FOLLOW_LINKS(new Version(4, 2, 0), Version.MAX_VALUE),
 
-    // NPE on the engine: affects hosts
-    // FIXME: change supportedUntil after this bug is resolved https://bugzilla.redhat.com/show_bug.cgi?id=1547050
-    FOLLOW_BUG(new Version(4, 2, 0), Version.MAX_VALUE);
+    FOLLOW_BUG(new Version(4, 2, 0), new Version(4, 2, 2));
 
     private Version supportedFrom;
     private Version supportedUntil;
