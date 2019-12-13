@@ -11,9 +11,16 @@
         app:showAsAction="ifRoom|withText" />
 
     <item
+        android:id="@+id/action_shutdown"
+        android:icon="@drawable/icn_stop"
+        android:title="@string/shutdown"
+        android:visible="false"
+        app:showAsAction="ifRoom|withText" />
+
+    <item
         android:id="@+id/action_stop"
         android:icon="@drawable/icn_stop"
-        android:title="@string/stop"
+        android:title="@string/power_off"
         android:visible="false"
         app:showAsAction="ifRoom|withText" />
 

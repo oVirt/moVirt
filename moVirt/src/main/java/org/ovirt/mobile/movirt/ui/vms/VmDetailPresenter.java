@@ -225,6 +225,13 @@ public class VmDetailPresenter extends AccountDisposablesProgressBarPresenter<Vm
 
     @Override
     @Background
+    public void shutdownVm() {
+        environmentStore.safeOvirtClientCall(account,
+                client -> client.shutdownVm(vmId, new SyncVmResponse()));
+    }
+
+    @Override
+    @Background
     public void rebootVm() {
         environmentStore.safeOvirtClientCall(account,
                 client -> client.rebootVm(vmId, new SyncVmResponse()));

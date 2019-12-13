@@ -82,7 +82,8 @@
     <string name="percentage_sign">%</string>
     <string name="edit_trigger">Edit Trigger</string>
     <string name="run">Run</string>
-    <string name="stop">Stop</string>
+    <string name="power_off">Power Off</string>
+    <string name="shutdown">Shutdown</string>
     <string name="reboot">Reboot</string>
     <string name="start_migration">Start Migration</string>
     <string name="cancel_migration">Cancel Migration</string>
@@ -252,7 +253,8 @@
 
     <string name="dialog_action_delete_certificate">delete stored certificates</string>
     <string name="dialog_action_delete_certificate_header">It is needed to delete old certificates to switch between engine/custom url.</string>
-    <string name="dialog_action_stop_vm">stop the VM</string>
+    <string name="dialog_action_power_off_vm">power off the VM</string>
+    <string name="dialog_action_shutdown_vm">shutdown the VM</string>
     <string name="dialog_action_reboot_vm">reboot the VM</string>
     <string name="dialog_action_stop_migrate_vm">cancel VM migration</string>
     <string name="dialog_action_deactivate_host">put the host to maintenance</string>
