@@ -45,6 +45,9 @@ public interface OVirtRestClient extends RestClientRootUrl, RestClientHeaders, R
     @Post("/vms/{vmId}/stop")
     void stopVm(@Body Action action, @Path String vmId);
 
+    @Post("/vms/{vmId}/shutdown")
+    void shutdownVm(@Body Action action, @Path String vmId);
+
     @Post("/vms/{vmId}/reboot")
     void rebootVm(@Body Action action, @Path String vmId);
 

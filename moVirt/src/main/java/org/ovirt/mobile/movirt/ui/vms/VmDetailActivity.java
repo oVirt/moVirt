@@ -46,6 +46,7 @@ public class VmDetailActivity extends PresenterStatusSyncableActivity implements
     private static final int ACTION_STOP_VM = 0;
     private static final int ACTION_REBOOT_VM = 1;
     private static final int ACTION_STOP_MIGRATE_VM = 2;
+    private static final int ACTION_SHUTDOWN_VM = 3;
 
     @ViewById
     ViewPager viewPager;
@@ -61,6 +62,8 @@ public class VmDetailActivity extends PresenterStatusSyncableActivity implements
     MenuItem menuRun;
     @OptionsMenuItem(R.id.action_stop)
     MenuItem menuStop;
+    @OptionsMenuItem(R.id.action_shutdown)
+    MenuItem menuShutdown;
     @OptionsMenuItem(R.id.action_reboot)
     MenuItem menuReboot;
     @OptionsMenuItem(R.id.action_start_migration)
@@ -142,6 +145,7 @@ public class VmDetailActivity extends PresenterStatusSyncableActivity implements
     public boolean onPrepareOptionsMenu(Menu menu) {
         menuRun.setVisible(menuState.hasStatus() && VmCommand.RUN.canExecute(menuState.status));
         menuStop.setVisible(menuState.hasStatus() && VmCommand.STOP.canExecute(menuState.status));
+        menuShutdown.setVisible(menuState.hasStatus() && VmCommand.SHUTDOWN.canExecute(menuState.status));
         menuReboot.setVisible(menuState.hasStatus() && VmCommand.REBOOT.canExecute(menuState.status));
         menuStartMigration.setVisible(menuState.hasStatus() && VmCommand.START_MIGRATION.canExecute(menuState.status));
         menuCancelMigration.setVisible(menuState.hasStatus() && VmCommand.CANCEL_MIGRATION.canExecute(menuState.status));
@@ -165,11 +169,18 @@ public class VmDetailActivity extends PresenterStatusSyncableActivity implements
         presenter.startVm();
     }
 
+    @OptionsItem(R.id.action_shutdown)
+    void shutdown() {
+        DialogFragment confirmDialog = ConfirmDialogFragment
+                .newInstance(ACTION_SHUTDOWN_VM, getString(R.string.dialog_action_shutdown_vm));
+        confirmDialog.show(getFragmentManager(), "confirmShutdownVM");
+    }
+
     @OptionsItem(R.id.action_stop)
     void stop() {
         DialogFragment confirmDialog = ConfirmDialogFragment
-                .newInstance(ACTION_STOP_VM, getString(R.string.dialog_action_stop_vm));
-        confirmDialog.show(getFragmentManager(), "confirmStopVM");
+                .newInstance(ACTION_STOP_VM, getString(R.string.dialog_action_power_off_vm));
+        confirmDialog.show(getFragmentManager(), "confirmPowerOffVM");
     }
 
     @OptionsItem(R.id.action_reboot)
@@ -193,6 +204,9 @@ public class VmDetailActivity extends PresenterStatusSyncableActivity implements
             switch (actionId) {
                 case ACTION_STOP_VM:
                     presenter.stopVm();
+                    break;
+                case ACTION_SHUTDOWN_VM:
+                    presenter.shutdownVm();
                     break;
                 case ACTION_REBOOT_VM:
                     presenter.rebootVm();

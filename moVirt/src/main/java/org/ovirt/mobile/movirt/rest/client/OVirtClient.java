@@ -149,6 +149,16 @@ public class OVirtClient implements AccountEnvironment.EnvDisposable {
         }, response);
     }
 
+    public void shutdownVm(final String vmId, Response<Void> response) {
+        requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
+            @Override
+            public Void fire() {
+                restClient.shutdownVm(new Action(), IdHelper.getIdPart(vmId));
+                return null;
+            }
+        }, response);
+    }
+
     public void rebootVm(final String vmId, Response<Void> response) {
         requestHandler.fireRestRequestSafe(new RestClientRequest<Void>() {
             @Override

@@ -32,6 +32,8 @@ public interface VmDetailContract {
 
         void stopVm();
 
+        void shutdownVm();
+
         void rebootVm();
 
         void cancelMigration();
