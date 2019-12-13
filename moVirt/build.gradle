@@ -37,8 +37,8 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-databind:2.6.3'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.6.3'
 
-    compile 'com.journeyapps:zxing-android-embedded:+@aar'
-    compile 'com.google.zxing:core:3.+'
+    compile 'com.journeyapps:zxing-android-embedded:3.5.0@aar'
+    compile 'com.google.zxing:core:3.3.3' // min API 24 for later versions
 
     apt "org.androidannotations:androidannotations:$androidAnnottationVersion"
     compile "org.androidannotations:androidannotations-api:$androidAnnottationVersion"
