@@ -1,8 +1,7 @@
 package org.ovirt.mobile.movirt.facade.predicates;
 
-import com.android.internal.util.Predicate;
-
 import org.ovirt.mobile.movirt.provider.OVirtContract.HasVm;
+import org.ovirt.mobile.movirt.util.Predicate;
 
 public class VmIdPredicate<T extends HasVm> implements Predicate<T> {
     private final String vmId;

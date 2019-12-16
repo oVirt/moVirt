@@ -8,8 +8,6 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.util.Pair;
 
-import com.android.internal.util.Predicate;
-
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
@@ -27,6 +25,7 @@ import org.ovirt.mobile.movirt.ui.MainActivityFragments;
 import org.ovirt.mobile.movirt.ui.mainactivity.MainActivity_;
 import org.ovirt.mobile.movirt.util.NotificationHelper;
 import org.ovirt.mobile.movirt.util.ObjectUtils;
+import org.ovirt.mobile.movirt.util.Predicate;
 
 import java.util.ArrayList;
 import java.util.Collection;

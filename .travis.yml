@@ -1,5 +1,5 @@
 language: android
-script: "./gradlew build"
+script: "./gradlew build -x test"
 android:
   components:
     - tools
@@ -8,7 +8,7 @@ android:
     - extra-android-m2repository
     - extra-android-support
     - android-22
-    - android-26
+    - android-29
   licenses:
     - 'android-sdk-preview-license-.+'
     - 'android-sdk-license-.+'
