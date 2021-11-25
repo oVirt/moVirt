@@ -1,5 +1,8 @@
 moVirt
 ======
+
+**This app is not maintained anymore and was not tested on newer Android versions nor with newer oVirt versions.**
+
 [![Build Status](https://travis-ci.org/oVirt/moVirt.svg)](https://travis-ci.org/oVirt/moVirt)
 [![Gitter](https://badges.gitter.im/matobet/moVirt/Lobby.svg)](https://gitter.im/matobet/moVirt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
